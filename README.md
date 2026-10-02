@@ -19,10 +19,13 @@ Data: © Lands Department, HKSAR Government (CSDI). Elevation: SRTM via AWS Terr
 - Day / night: lit windows, street lights, neon signs, runway, approach and lead-in strobe lights, PAPI
 - Weather: clear, rain, typhoon, storm, low cloud, fog, plus a lightning toggle. Wind, gusts and turbulence affect the flight
 - Landmarks: the checkerboard, Kowloon Walled City (pre-1994, or the 1998 park), Bank of China Tower, Central Plaza, The Center, HSBC, Jardine House, Exchange Square, One IFC, Lippo Centre, Hopewell Centre, the Convention Centre extension, the TST Clock Tower, the Cultural Centre, Ocean Terminal, the Hung Hom Coliseum, and the Kai Tak terminal and tower
-- Traffic: cars, red taxis and buses on the main roads; container ships, Star Ferries, junks and tugs in the harbour
+- Traffic: about 6,900 vehicles on the real main roads and the Kowloon City streets: red Crown Comfort-style taxis with silver roofs (and green New Territories taxis), cream minibuses, double-decker buses, lorries and cars. In the harbour: container ships, Star Ferries, junks, tugs, and two liners at Ocean Terminal
+- Kowloon City street scene: shop signs from period photos (新澧傢俬, 鳳香園, 金輝粥麵專家, 珍珍珠寶金行, 君皇酒樓, 黃珍珍 and more), signs hung across the streets, rooftop billboard frames, air-conditioners, laundry poles, bamboo scaffolding, and Nathan Road neon. Corporate logos are left out
+- Street view: stand on a Kowloon City street and watch the aircraft pass just overhead
+- The Garden Hill obstacle beacon in Sham Shui Po, and the sequenced lead-in strobes to touchdown
 - Flight decks per type: the 747-400 (CRT glass, yokes, four thrust levers), the 777-200 (LCD glass, yokes) and the A330/A340 (sidesticks, ECAM, Airbus blue-grey). Live PFD, ND, EICAS/ECAM and checklist displays; the controls, levers, flap and gear handles move. The HUD overlay is optional
 - Passenger cabin: a 3D interior with seats in each type's layout (3-4-3, 3-3-3, 2-4-2), bins, windows and passengers. Pick a row and side, then drag to look around
-- Views: cockpit, exterior, control tower, cabin seat
+- Views: cockpit, exterior, control tower, Kowloon City street, cabin seat
 - Sound: engines, wind, rain, a touchdown thud with tyre chirp, brake squeal, reverser roar, gear hydraulics with a lock clunk, flap motor, gear-down rumble, thunder, GPWS
 - Autopilot and autothrottle that fly the full approach and autoland
 - GPWS callouts and warnings, engine, wind, rain and thunder sound
