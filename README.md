@@ -34,6 +34,9 @@ Data: © Lands Department, HKSAR Government (CSDI). Elevation: SRTM via AWS Terr
 - Zoom 1×, 2×, 4×, 8×, 16× (I / O); time 1×, 2×, 4×, 8× (T); jump back or forward 10 seconds ([ / ]), including back from a crash
 - GPWS callouts and warnings, engine, wind, rain and thunder sound
 
+## Background reel
+The home screen plays a 58-second muted loop (`assets/video/reel.mp4`, with a WebM fallback and a poster). It's rendered from the sim itself: a 747 at night, an A330 breaking out of low cloud, gear and flaps deploying, the turn at the checkerboard, ailerons over Kowloon City, a 747 low over a Kowloon City street, a 777 crabbing in a typhoon, an A340 in a lightning storm, and touchdowns in rain and at night. It's paused during play and skipped for reduced-motion users.
+
 ## Modes
 - **IGS 13 approach**: the original game. Start on the IGS at 3,100 ft and land.
 - **Free flight**: start lined up on Runway 13. Take off over Kowloon Bay and fly anywhere; landings are graded but the flight carries on (touch-and-go with full thrust). The autopilot holds heading, altitude and speed once airborne.
