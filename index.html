@@ -152,7 +152,7 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
       <button class="btn" id="seatSide" type="button">Left</button>
     </div>
     <select id="viewSel" aria-label="Camera view">
-      <option value="cockpit">Cockpit</option><option value="chase">Exterior</option><option value="tower">Tower</option><option value="street">Street (Kowloon City)</option><option value="cabin">Cabin seat</option>
+      <option value="cockpit">Cockpit</option><option value="chase">Exterior</option><option value="tower">Tower</option><option value="street">Spectator: Kowloon City street</option><option value="ped">Spectator: Prince Edward Road</option><option value="carpark">Spectator: car park roof</option><option value="boat">Spectator: boat in the harbour</option><option value="cabin">Cabin seat</option>
     </select>
     <select id="wxSel" aria-label="Weather"></select>
     <button class="btn" id="btnNight" type="button" aria-pressed="false">Night</button>
@@ -570,7 +570,7 @@ function buildSignAtlas(){
 function quadBuilder(){const P=[],U=[],I=[];return {P,U,I,add(cx,cy,cz,ax,az,w,h,cell){const n=P.length/3;const hw=w/2,hh=h/2;
   for(const [u,v] of[[0,0],[1,0],[1,1],[0,1]]){P.push(cx+ax*(u-.5)*w,cy+(v-.5)*h,cz+az*(u-.5)*w);U.push(cell[0]+u*cell[2],cell[1]+v*cell[3])}I.push(n,n+1,n+2,n,n+2,n+3)},
   mesh(mat){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(P,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(U,2));g.setIndex(I);g.computeBoundingSphere();return new THREE.Mesh(g,mat)}}}
-let STREET_CAM=null,signMesh,signMat;
+let STREET_CAM=null,signMesh,signMat;const SPOTS={};
 function nearApproach(x,z){const i=pathNearestGlobal(x,z);const p=PATH.pts[i];return {d:p.d,lat:Math.abs(pathLateral(i,x,z))}}
 function buildStreetScene(){
   buildSignAtlas();const Q=quadBuilder(),A=signAtlas.cells;
@@ -610,11 +610,17 @@ function buildStreetScene(){
   {const R=[],S=[];const rib=(arr,r,hw,y)=>{const n=Math.max(2,Math.ceil(r.L/12));let base=arr.length/3;for(let k=0;k<=n;k++){const p=roadPoint(r,r.L*k/n*.9999);const nx=Math.cos(p[2]),nz=Math.sin(p[2]);for(const sd of[-1,1]){const x=p[0]+nx*hw*sd,z=p[1]+nz*hw*sd;arr.push(x,Math.max(terrainAt(x,z),.6)+y,z)}}return [base,n]};
    const IR=[],IS=[];const idx=(I,b,n)=>{for(let k=0;k<n;k++){const a=b+k*2;I.push(a,a+2,a+1,a+1,a+2,a+3)}};
    for(const r of STREETS){const m=r.w[Math.floor(r.w.length/2)];const n=nearApproach(m[0],m[1]);if(n.d<-50||n.d>4200||n.lat>900)continue;const [b1,n1]=rib(S,r,7,.35);idx(IS,b1,n1);const [b2,n2]=rib(R,r,4.6,.45);idx(IR,b2,n2)}
+   for(const r of ROADS){if(!r.w.some(p=>Math.hypot(p[0],p[1])<2600))continue;const [b1,n1]=rib(S,r,14,.3);idx(IS,b1,n1);const [b2,n2]=rib(R,r,11,.4);idx(IR,b2,n2)}
    const mk=(P,I,c,o)=>{const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(P,3));g.setIndex(I);const m=new THREE.Mesh(g,new THREE.MeshBasicMaterial({color:c,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:o,polygonOffsetUnits:o}));TERRAIN_MATS.push(m.material);m.material.userData.street=true;scene.add(m)};
    mk(S,IS,0x8f8b84,-3);mk(R,IR,0x3c3e42,-5)}
   // street camera: a Kowloon City street right under the final turn, like the famous photos
   let best=null;for(const r of STREETS)for(let s=0;s<r.L;s+=6){const p=roadPoint(r,s);const n=nearApproach(p[0],p[1]);if(n.d<380||n.d>900)continue;const bl=buildingAt(p[0],p[1],3);if(bl)continue;const sc=n.lat+Math.abs(n.d-560)*.05;if(!best||sc<best.sc)best={sc,x:p[0],z:p[1]}}
   if(best)STREET_CAM=[best.x,Math.max(terrainAt(best.x,best.z),.6)+1.7,best.z];
+  SPOTS.street=STREET_CAM;
+  // Prince Edward Road, right beside the threshold: the road and the flyover photos
+  {let b2=null;for(const r of ROADS)for(let s=0;s<r.L;s+=8){const p=roadPoint(r,s);const sr=rwS(p[0],p[1]),lr=rwL(p[0],p[1]);if(sr<-420||sr>-120||Math.abs(lr)>160)continue;if(buildingAt(p[0],p[1],2))continue;const sc=Math.abs(sr+260)*.4+Math.abs(lr-50);if(!b2||sc<b2.sc)b2={sc,x:p[0],z:p[1]}}
+   if(b2)SPOTS.ped=[b2.x,Math.max(terrainAt(b2.x,b2.z),.6)+1.7,b2.z];else{const q=rwP(-250,60);SPOTS.ped=[q[0],terrainAt(q[0],q[1])+1.7,q[1]]}}
+
   // Garden Hill obstacle beacon (Sham Shui Po), red lights for aircraft on the IGS
   {const x=-2990,z=-1209,gy=terrainAt(x,z);const mast=new THREE.Mesh(new THREE.CylinderGeometry(.25,.6,24,6).translate(0,12,0),new THREE.MeshLambertMaterial({color:0xc93a2a}));mast.position.set(x,gy,z);scene.add(mast);
    const bands=[];for(let y=0;y<24;y+=6){const b=new THREE.Mesh(new THREE.CylinderGeometry(.62,.62,3,6).translate(0,y+1.5,0),new THREE.MeshLambertMaterial({color:0xf2f0ea}));b.position.set(x,gy,z);scene.add(b)}
@@ -837,6 +843,18 @@ function buildAirport(){
   const cab=new THREE.Mesh(new THREE.CylinderGeometry(8,6,6,8).translate(0,47,0),new THREE.MeshLambertMaterial({color:0x2c3b44,emissive:0x0}));cab.position.set(TW[0],RWY.elev,TW[1]);cab.userData.neon=0x5c7f78;landmarkLights.push(cab);scene.add(cab);
   const cabRoof=new THREE.Mesh(new THREE.CylinderGeometry(9,9,1.4,8).translate(0,50.6,0),new THREE.MeshLambertMaterial({color:0xcfcac0}));cabRoof.position.set(TW[0],RWY.elev,TW[1]);scene.add(cabRoof);
   addCollider(TW[0]-9,TW[0]+9,TW[1]-9,TW[1]+9,52,'the control tower');
+  // multi-storey car park beside the terminal: the spotters' roof
+  {const cs=170,cl=-330,ch=17;const cp=new THREE.Mesh(new THREE.BoxGeometry(70,ch,110).translate(0,ch/2,0),cityMaterial({color:0xcfcac0}));placeAlong(cp,cs,cl,RWY.elev);
+   for(let y=3.4;y<ch;y+=3.4){const sl=new THREE.Mesh(new THREE.BoxGeometry(71,.5,111).translate(0,y,0),new THREE.MeshLambertMaterial({color:0x9a968c}));placeAlong(sl,cs,cl,RWY.elev)}
+   const par=new THREE.Mesh(new THREE.BoxGeometry(72,1.1,112).translate(0,ch+.55,0),new THREE.MeshLambertMaterial({color:0xbdb8ad,side:THREE.DoubleSide}));placeAlong(par,cs,cl,RWY.elev);
+   const roof=new THREE.Mesh(new THREE.BoxGeometry(68,.3,108).translate(0,ch+.15,0),new THREE.MeshLambertMaterial({color:0x6e6c68}));placeAlong(roof,cs,cl,RWY.elev);
+   // spotters with cameras along the runway-side parapet
+   const pm=[0xf0c9c9,0x2f4f8a,0xe9e6dc,0x8a2f2f,0x3a6b3a];for(let i=0;i<9;i++){const q=rwP(cs-40+i*9+rr(-2,2),cl+30);const body=new THREE.Mesh(new THREE.BoxGeometry(.5,1.1,.3).translate(0,.95,0),new THREE.MeshLambertMaterial({color:pick(pm)}));body.position.set(q[0],RWY.elev+ch+.3,q[1]);scene.add(body);
+     const legs=new THREE.Mesh(new THREE.BoxGeometry(.4,.8,.25).translate(0,.4,0),new THREE.MeshLambertMaterial({color:0x2b3550}));legs.position.copy(body.position);scene.add(legs);
+     const head=new THREE.Mesh(new THREE.SphereGeometry(.13,8,6),new THREE.MeshLambertMaterial({color:0x2a211a}));head.position.set(q[0],RWY.elev+ch+.3+1.65,q[1]);scene.add(head)}
+   const q=rwP(cs+8,cl+35.4);SPOTS.carpark=[q[0],RWY.elev+ch+.3+1.75,q[1]];const p=rwP(cs,cl);addCollider(p[0]-60,p[0]+60,p[1]-60,p[1]+60,RWY.elev+ch+1.2,'the Kai Tak car park')}
+  // a junk moored off the runway in the harbour (south-west side)
+  {const q=rwP(1650,330);const j=shipModel('junk');j.position.set(q[0],0,q[1]);j.rotation.y=-(RWY.hdg-90)*D2R;scene.add(j);const bow=new THREE.Vector3(-11,0,0).applyEuler(j.rotation);SPOTS.boat=[q[0]+bow.x,4.6,q[1]+bow.z];SPOTS.boatShip=j}
   // parked aircraft at the terminal
   const types=['b744','a333','b772','b744','a343','a333'];
   for(let i=0;i<6;i++){const m=buildAircraftModel(AC[types[i]],{tail:[0x1d6f6a,0xb53a2c,0x23406e,0x6a1f2f,0x1d6f6a,0x3a5f2e][i],gear:true});const p=rwP(120+i*85,-560);m.position.set(p[0],RWY.elev,p[1]);m.rotation.y=-(RWY.hdg-90)*D2R;m.scale.setScalar(1);scene.add(m);parked.push(m)}
@@ -858,6 +876,7 @@ function buildAirport(){
   // approach guide gates
   buildHoops();
 }
+function rwP3__unused(){}
 function rwP3(s,l,y){const p=rwP(s,l);return [p[0],RWY.elev+y,p[1]]}
 function buildHoops(){
   const pos=[],W=84,H=46,T=1.6;
@@ -1537,10 +1556,11 @@ function updateCamera(dt){
     const gy=groundInfo(want.x,want.z).h+3;if(want.y<gy)want.y=gy;
     if(camera.userData.snap){camera.position.copy(want);camera.userData.snap=false}else camera.position.lerp(want,1-Math.exp(-dt*5));
     camera.lookAt(tx,ty,tz);camera.fov=58;
-  } else if(V==='street'&&STREET_CAM){
-    camera.position.set(STREET_CAM[0],STREET_CAM[1],STREET_CAM[2]);_v.set(s.x,s.y+a.cy,s.z);
-    const d=camera.position.distanceTo(_v);if(d>2200){const P=PATH.pts;const j=PATH.iA;_v.set(P[j].x,P[j].alt,P[j].z)}camera.lookAt(_v);
-    camera.rotateY(look.yaw*.6);camera.rotateX(look.pitch*.6);camera.fov=78/look.dist;
+  } else if(SPOTS[V]){
+    const sp=SPOTS[V];camera.position.set(sp[0],sp[1]+(V==='boat'?Math.sin(performance.now()/900)*.35:0),sp[2]);_v.set(s.x,s.y+a.cy,s.z);
+    const d=camera.position.distanceTo(_v);if(d>2600&&V!=='boat'){const P=PATH.pts;const j=V==='street'?PATH.iA:PATH.iB;_v.set(P[j].x,P[j].alt,P[j].z)}else if(d>4500){const q=rwP(-300,0);_v.set(q[0],60,q[1])}
+    camera.lookAt(_v);camera.rotateY(look.yaw*.6);camera.rotateX(look.pitch*.6);if(V==='boat')camera.rotateZ(Math.sin(performance.now()/1300)*.02);
+    camera.fov=(V==='carpark'||V==='boat'?clamp(2*Math.atan(a.span*1.5/Math.max(d,1))*R2D,18,70):78)/look.dist;
   } else if(V==='tower'){
     camera.position.set(ST.tower[0],ST.tower[1],ST.tower[2]);camera.lookAt(s.x,s.y+a.cy,s.z);
     const dist=camera.position.distanceTo(_v.set(s.x,s.y,s.z));camera.fov=clamp(2*Math.atan(a.span*2.6/dist)*R2D/look.dist,3,60);
@@ -1614,7 +1634,7 @@ function drawHUD(){
     for(let i=-2;i<=2;i++){if(!i)continue;hc.beginPath();hc.arc(cx+i*24*k,ly,3*k,0,Math.PI*2);hc.stroke()}hc.beginPath();hc.moveTo(cx,ly-8*k);hc.lineTo(cx,ly+8*k);hc.stroke();
     diamond(cx-lv*24*k,ly,7*k,COL.mag);txt('IGS',cx-70*k,ly+4*k,11*k,COL.dim,'right')}
   }
-  if(V==='tower'||V==='street'){txt(Math.round(ias)+' kt   '+Math.round(alt).toLocaleString('en')+' ft   '+(vs>=0?'+':'')+Math.round(vs/10)*10+' fpm',cx,Math.max(54,HH*.1)+20,15*k,COL.ph,'center',700)}
+  if(V==='tower'||SPOTS[V]){txt(Math.round(ias)+' kt   '+Math.round(alt).toLocaleString('en')+' ft   '+(vs>=0?'+':'')+Math.round(vs/10)*10+' fpm',cx,Math.max(54,HH*.1)+20,15*k,COL.ph,'center',700)}
   // ---- bottom status ----
   const by=HH-24-(ctlVisible()?(HW<820?150:0):0);
   const flapsL=a.flaps[Math.round(s.flapIdx)];const flapMoving=Math.abs(s.flapPos-s.flapIdx)>.02;
@@ -1687,7 +1707,7 @@ window.addEventListener('keydown',e=>{
   keys[e.code]=true;const s=ST;
   switch(e.code){
     case 'KeyG':toggleGear();break;case 'KeyF':setFlaps(1);break;case 'KeyV':setFlaps(-1);break;
-    case 'KeyC':{const o=['cockpit','chase','tower','street','cabin'];setView(o[(o.indexOf(CFG.view)+1)%5]);break}
+    case 'KeyC':{const o=['cockpit','chase','tower','street','ped','carpark','boat','cabin'];setView(o[(o.indexOf(CFG.view)+1)%o.length]);break}
     case 'KeyZ':toggleAP();break;case 'KeyN':CFG.night=!CFG.night;applyEnvironment();break;case 'KeyP':togglePause();break;
   }
   if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();
@@ -1803,7 +1823,7 @@ function frame(now){
   if(mode==='fly'&&!paused)gpws(dt);
   const t=now/1000;LIGHT_U.uTime.value=t;
   if(!paused){updateTraffic(dt,CFG.night);updateShips(dt,t);updateFX(dt)}
-  updateAircraftVisual();if(hoops)hoops.visible=CFG.guide&&CFG.view!=='street'&&CFG.view!=='tower';
+  updateAircraftVisual();if(hoops)hoops.visible=CFG.guide&&!SPOTS[CFG.view]&&CFG.view!=='tower';
   if(deckGroup&&deckGroup.visible){drawDisplays(dt);animateDeck()}
   if(mode==='attract'){attractCamera(dt)}else updateCamera(dt);
   sky.position.copy(camera.position);stars.position.copy(camera.position);
