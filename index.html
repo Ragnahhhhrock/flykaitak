@@ -196,6 +196,7 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
     <button class="btn" id="btnFwd" type="button" title="Forward 10 seconds ( ] )">+10 s</button>
     <select id="wxSel" aria-label="Weather"></select>
     <button class="btn" id="btnNight" type="button" aria-pressed="false">Night</button>
+    <button class="btn" id="btnClouds" type="button" aria-pressed="true" title="Cloud layers on/off ( U )">Clouds</button>
     <button class="btn" id="btnAP" type="button" aria-pressed="false">Autopilot</button>
     <button class="btn" id="btnDeck" type="button" aria-pressed="false">Cockpit</button>
     <button class="btn" id="btnHud" type="button" aria-pressed="true">HUD</button>
@@ -250,6 +251,7 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
       <fieldset>
         <legend>Weather</legend>
         <div class="chips" id="wxChips"></div>
+        <label class="tog"><input type="checkbox" id="optClouds" checked><span>Clouds<small>Cloud layers and flying through them. Untick for a clear sky in any weather.</small></span></label>
         <label class="tog"><input type="checkbox" id="optLightning"><span>Lightning<small>Adds flashes and thunder to any weather. Storm turns it on anyway.</small></span></label>
       </fieldset>
       <fieldset>
@@ -272,7 +274,7 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
           <span><kbd>C</kbd></span><span>Cycle view: cockpit, exterior, tower, cabin</span>
           <span><kbd>Z</kbd></span><span>Autopilot on/off</span>
           <span><kbd>K</kbd></span><span>Show or hide the cockpit panel (cockpit view)</span>
-          <span><kbd>N</kbd> <kbd>P</kbd></span><span>Day/night, pause</span>
+          <span><kbd>N</kbd> <kbd>P</kbd> <kbd>U</kbd></span><span>Day/night, pause, clouds</span>
           <span><kbd>I</kbd> <kbd>O</kbd></span><span>Zoom in / out (1× to 16×)</span>
           <span><kbd>T</kbd></span><span>Time speed 1×, 2×, 4×, 8×</span>
           <span><kbd>[</kbd> <kbd>]</kbd></span><span>Jump back / forward 10 seconds (back works after a crash too)</span>
@@ -419,7 +421,7 @@ const WX={
 };
 
 /* ---------------- state & settings ---------------- */
-const CFG={zoom:1,ts:1,deck:false,hud:true,ac:'b744',night:false,wx:'clear',lightning:false,guide:true,ap:false,walled:true,view:'cockpit',sound:true,seatRow:34,seatLeft:true};
+const CFG={zoom:1,ts:1,deck:false,hud:true,ac:'b744',night:false,wx:'clear',lightning:false,clouds:true,guide:true,ap:false,walled:true,view:'cockpit',sound:true,seatRow:34,seatLeft:true};
 const ST={};let mode='loading'; // loading | attract | fly | ended
 let paused=false;
 
@@ -1130,7 +1132,7 @@ function setClouds(wx){
   if(!wx.cloud)return;
   const tex=cloudTexture(wx.cloud.cov);tex.repeat.set(9,9);
   for(let k=0;k<3;k++){const m=new THREE.Mesh(new THREE.PlaneGeometry(90000,90000).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false,side:THREE.DoubleSide,color:0xffffff,opacity:k===1?.95:.7}));
-    m.position.set(-6000,wx.cloud.base+k*70,0);m.renderOrder=2;scene.add(m);cloudLayers.push(m);if(k>0){m.material.map=tex.clone();m.material.map.needsUpdate=true;m.material.map.repeat.set(9,9);m.material.map.offset.set(k*.37,k*.21)}}
+    m.position.set(-6000,wx.cloud.base+k*70,0);m.renderOrder=2;m.visible=CFG.clouds;m.userData.drift=[.0009*(k+1),.0004*(k+1)];scene.add(m);cloudLayers.push(m);if(k>0){m.material.map=tex.clone();m.material.map.needsUpdate=true;m.material.map.repeat.set(9,9);m.material.map.offset.set(k*.37,k*.21)}}
 }
 function buildRain(){
   const n=5000;rainPos=new Float32Array(n*6);for(let i=0;i<n;i++){const x=rr(-90,90),y=rr(-50,60),z=rr(-90,90);rainPos.set([x,y,z,x,y-2.4,z],i*6)}
@@ -1937,7 +1939,7 @@ window.addEventListener('keydown',e=>{
     case 'KeyG':toggleGear();break;case 'KeyF':setFlaps(1);break;case 'KeyV':setFlaps(-1);break;
     case 'KeyC':{const o=['cockpit','chase','tower','street','ped','carpark','boat','cabin'];setView(o[(o.indexOf(CFG.view)+1)%o.length]);break}
     case 'KeyZ':toggleAP();break;case 'BracketLeft':timeJump(-10);break;case 'BracketRight':timeJump(10);break;
-    case 'KeyT':setTs(CFG.ts>=8?1:CFG.ts*2);break;case 'KeyI':setZoom(Math.min(16,CFG.zoom*2));break;case 'KeyO':setZoom(Math.max(1,CFG.zoom/2));break;case 'KeyK':CFG.deck=!CFG.deck;syncButtons();break;case 'KeyN':CFG.night=!CFG.night;applyEnvironment();break;case 'KeyP':togglePause();break;
+    case 'KeyT':setTs(CFG.ts>=8?1:CFG.ts*2);break;case 'KeyI':setZoom(Math.min(16,CFG.zoom*2));break;case 'KeyO':setZoom(Math.max(1,CFG.zoom/2));break;case 'KeyK':CFG.deck=!CFG.deck;syncButtons();break;case 'KeyN':CFG.night=!CFG.night;applyEnvironment();break;case 'KeyU':setClouds_on(!CFG.clouds);break;case 'KeyP':togglePause();break;
   }
   if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();
 });
@@ -1971,6 +1973,7 @@ function readInputs(dt){
 function toggleGear(){if(ST.ap){toggleAP(false)}ST.gearDown=!ST.gearDown;syncButtons()}
 function setFlaps(d){if(ST.ap)toggleAP(false);ST.flapIdx=clamp(ST.flapIdx+d,0,4);syncButtons();toast('Flaps '+ST.ac.flaps[ST.flapIdx])}
 function toggleAP(on){ST.ap=on===undefined?!ST.ap:on;if(mode==='fly')track('autopilot',{on:ST.ap});if(ST.ap){ST.apI=0;toast('Autopilot and autothrottle engaged')}else toast('Autopilot off: you have control');syncButtons()}
+function setClouds_on(on){CFG.clouds=on;for(const c of cloudLayers)c.visible=on;syncButtons();toast('Clouds '+(on?'on':'off'))}
 function togglePause(){paused=!paused;syncButtons()}
 function setView(v){if(mode==='fly'&&v!==CFG.view)track('view_change',{view:v});CFG.view=v;document.getElementById('viewSel').value=v;look.yaw=look.pitch=0;look.dist=1;camera.userData.snap=true;
   document.getElementById('cabin').hidden=v!=='cabin';document.getElementById('seatbox').hidden=v!=='cabin';
@@ -1980,7 +1983,7 @@ function setView(v){if(mode==='fly'&&v!==CFG.view)track('view_change',{view:v});
 function updateSeatTag(){const letters=CFG.seatLeft?'A':'K';document.getElementById('seattag').textContent='ROW '+CFG.seatRow+' · SEAT '+letters;document.getElementById('seatSide').textContent=CFG.seatLeft?'Left':'Right'}
 function syncButtons(){
   document.getElementById('btnAP').setAttribute('aria-pressed',String(!!ST.ap));document.getElementById('btnPause').setAttribute('aria-pressed',String(paused));
-  document.getElementById('btnGuide').setAttribute('aria-pressed',String(CFG.guide));document.getElementById('btnHud').setAttribute('aria-pressed',String(CFG.hud));const bd=document.getElementById('btnDeck');bd.setAttribute('aria-pressed',String(CFG.deck));bd.hidden=CFG.view!=='cockpit';document.getElementById('btnSound').setAttribute('aria-pressed',String(CFG.sound));
+  document.getElementById('btnGuide').setAttribute('aria-pressed',String(CFG.guide));document.getElementById('btnHud').setAttribute('aria-pressed',String(CFG.hud));const bd=document.getElementById('btnDeck');bd.setAttribute('aria-pressed',String(CFG.deck));bd.hidden=CFG.view!=='cockpit';document.getElementById('btnSound').setAttribute('aria-pressed',String(CFG.sound));document.getElementById('btnClouds').setAttribute('aria-pressed',String(CFG.clouds));
   document.getElementById('btnGear').textContent='Gear '+(ST.gearDown?'↓':'↑');
 }
 let toastT=0;function toast(t){const el=document.getElementById('toast');el.textContent=t;el.classList.add('on');toastT=performance.now()+2600}
@@ -1994,7 +1997,7 @@ for(const k in AC){const a=AC[k];const l=document.createElement('label');l.class
 const wxChips=document.getElementById('wxChips'),wxSel=document.getElementById('wxSel');
 for(const k in WX){const l=document.createElement('label');l.className='chip';l.innerHTML=`<input type="radio" name="wx" value="${k}" ${k===CFG.wx?'checked':''}><span>${WX[k].label}</span>`;wxChips.appendChild(l);const o=document.createElement('option');o.value=k;o.textContent=WX[k].label;wxSel.appendChild(o)}
 function readSetup(){CFG.ac=document.querySelector('input[name=ac]:checked').value;CFG.night=document.querySelector('input[name=tod]:checked').value==='night';CFG.wx=document.querySelector('input[name=wx]:checked').value;
-  CFG.lightning=document.getElementById('optLightning').checked;CFG.guide=document.getElementById('optGuide').checked;CFG.ap=document.getElementById('optAP').checked;CFG.walled=document.getElementById('optWalled').checked}
+  CFG.lightning=document.getElementById('optLightning').checked;CFG.clouds=document.getElementById('optClouds').checked;CFG.guide=document.getElementById('optGuide').checked;CFG.ap=document.getElementById('optAP').checked;CFG.walled=document.getElementById('optWalled').checked}
 document.getElementById('btnGo').addEventListener('click',startFlight);
 document.getElementById('btnAgain').addEventListener('click',startFlight);
 document.getElementById('btnSetup').addEventListener('click',showSetup);
@@ -2008,6 +2011,7 @@ document.getElementById('tsSel').addEventListener('change',e=>{setTs(+e.target.v
 document.getElementById('btnBack').addEventListener('click',()=>timeJump(-10));
 document.getElementById('btnFwd').addEventListener('click',()=>timeJump(10));
 wxSel.addEventListener('change',e=>{CFG.wx=e.target.value;track('weather_change',{});applyEnvironment();e.target.blur()});
+document.getElementById('btnClouds').addEventListener('click',()=>{track('clouds_toggle',{on:!CFG.clouds});setClouds_on(!CFG.clouds)});
 document.getElementById('btnNight').addEventListener('click',()=>{CFG.night=!CFG.night;track('day_night_toggle',{});applyEnvironment()});
 document.getElementById('btnAP').addEventListener('click',()=>toggleAP());
 document.getElementById('btnDeck').addEventListener('click',()=>{CFG.deck=!CFG.deck;syncButtons()});
@@ -2068,8 +2072,10 @@ function frame(now){
   if(mode==='attract'){attractCamera(dt)}else updateCamera(dt);
   if(window.__kt&&window.__kt.freeCam){const f=window.__kt.freeCam;camera.position.set(f[0],f[1],f[2]);camera.lookAt(f[3],f[4],f[5]);camera.fov=60;camera.updateProjectionMatrix()}
   sky.position.copy(camera.position);stars.position.copy(camera.position);
+  // cloud drift
+  if(!paused&&CFG.clouds)for(const c of cloudLayers){const d=c.userData.drift;if(d){c.material.map.offset.x+=d[0]*dt;c.material.map.offset.y+=d[1]*dt}}
   // in-cloud fog
-  const w=WX[CFG.wx];let dens=ENV.dens;if(w.cloud&&w.cloud.cov>.8){const cb=w.cloud.base;const y=camera.position.y;if(y>cb-25&&y<cb+180){dens=Math.max(dens,.0075*sstep(cb-25,cb+20,y))}}
+  const w=WX[CFG.wx];let dens=ENV.dens;if(CFG.clouds&&w.cloud&&w.cloud.cov>.8){const cb=w.cloud.base;const y=camera.position.y;if(y>cb-25&&y<cb+180){dens=Math.max(dens,.0075*sstep(cb-25,cb+20,y))}}
   scene.fog.density=dens;LIGHT_U.uFogD.value=dens;
   if(dens>ENV.dens*1.5)scene.fog.color.setHex(CFG.night?0x241e1a:0xb9bfc2);else scene.fog.color.setHex(ENV.fogBase);
   // lightning
