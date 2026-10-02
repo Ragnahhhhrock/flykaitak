@@ -140,6 +140,15 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
 
 #toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 64px);transform:translateX(-50%);background:var(--panel);border:1px solid var(--line-2);padding:8px 14px;border-radius:3px;font-size:13px;letter-spacing:.04em;opacity:0;transition:opacity .25s;pointer-events:none;max-width:calc(100% - 32px);text-align:center}
 #toast.on{opacity:1}
+#radio{position:fixed;left:10px;top:calc(env(safe-area-inset-top,0px) + 226px);width:min(330px,calc(100% - 20px));display:flex;flex-direction:column;gap:3px;pointer-events:none;font-size:12px;line-height:1.35;letter-spacing:.02em}
+#radio[hidden]{display:none}
+#radio .rl{background:var(--panel);border-left:3px solid var(--line-2);padding:4px 8px;border-radius:2px;animation:rlIn .2s ease-out}
+#radio .rl b{font-weight:600;margin-right:6px;font-size:10px;letter-spacing:.1em;color:var(--amber)}
+#radio .rl.TWR{border-left-color:var(--phosphor)}#radio .rl.APP{border-left-color:var(--amber)}#radio .rl.YOU{border-left-color:var(--magenta)}
+#radio .rl.YOU b{color:var(--magenta)}#radio .rl.TWR b{color:var(--phosphor)}#radio .rl.OTH{opacity:.78}#radio .rl.OTH b{color:var(--line-2)}
+@keyframes rlIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@media (max-width:700px){#radio{top:calc(env(safe-area-inset-top,0px) + 170px);font-size:11px}}
+@media (prefers-reduced-motion:reduce){#radio .rl{animation:none}}
 
 #result{position:fixed;inset:0;display:grid;place-items:center;background:rgba(6,10,12,.62);padding:16px;overflow:auto}
 #result[hidden]{display:none!important}
@@ -203,6 +212,7 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
     <button class="btn" id="btnHud" type="button" aria-pressed="true">HUD</button>
     <button class="btn" id="btnGuide" type="button" aria-pressed="true">Guide</button>
     <button class="btn" id="btnSound" type="button" aria-pressed="true">Sound</button>
+    <button class="btn" id="btnRadio" type="button" aria-pressed="true" title="ATC radio on/off ( R )">Radio</button>
     <button class="btn" id="btnPause" type="button" aria-pressed="false">Pause</button>
     <button class="btn" id="btnMenu" type="button">Menu</button>
   </div>
@@ -221,6 +231,7 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
 </div>
 
 <div id="toast" role="status" aria-live="polite"></div>
+<div id="radio" aria-live="off" hidden></div>
 
 <section id="setup" hidden>
   <div class="brand">
@@ -295,7 +306,7 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
       <p class="later">Aerial imagery and map data © Lands Department, HKSAR Government (CSDI open data). Elevation: SRTM via AWS Terrain Tiles. Modern imagery is corrected to 1998 around Kai Tak, West Kowloon and the Central waterfront.</p>
       <details>
         <summary>Coming in later versions</summary>
-        <p class="later" style="margin-top:10px">Aircraft: 747-200/300, 767-300, MD-11, A300-600, A320, 737-300, L-1011 TriStar, DC-10.<br>Radio: Kai Tak tower and approach calls, other crews on frequency.</p>
+        <p class="later" style="margin-top:10px">Aircraft: 747-200/300, 767-300, MD-11, A300-600, A320, 737-300, L-1011 TriStar, DC-10.<br>Radio: more crews and voices, taxi and ground calls.</p>
       </details>
     </div>
   </div>
@@ -431,7 +442,7 @@ const WX={
 };
 
 /* ---------------- state & settings ---------------- */
-const CFG={game:'approach',zoom:1,ts:1,deck:false,hud:true,ac:'b744',night:false,wx:'clear',lightning:false,clouds:true,guide:true,ap:false,walled:true,view:'cockpit',sound:true,seatRow:34,seatLeft:true};
+const CFG={game:'approach',zoom:1,ts:1,deck:false,hud:true,ac:'b744',night:false,wx:'clear',lightning:false,clouds:true,guide:true,ap:false,walled:true,view:'cockpit',sound:true,radio:true,seatRow:34,seatLeft:true};
 const ST={};let mode='loading'; // loading | attract | fly | ended
 let paused=false;
 
@@ -1498,6 +1509,7 @@ const sfx=(()=>{
     mute(on){if(master)master.gain.value=on?.9:0},
     stopAll(){if(!ctx)return;const t=ctx.currentTime;for(const g of[eng,whineG,wind,revG,sqG,hydG,flapG,rumG])g.gain.setTargetAtTime(0,t,.2);hydG.hiss.gain.setTargetAtTime(0,t,.2)},
     burst(len,freq,g0,delay=0,type='lowpass',q){if(!ctx)return;const s=ctx.createBufferSource();s.buffer=WHITE;const f=filt(type,freq,q);const g=gain();const t=ctx.currentTime+delay;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(g0,t+.012);g.gain.exponentialRampToValueAtTime(.001,t+len);s.connect(f);f.connect(g);g.connect(master);s.start(t);s.stop(t+len+.1)},
+    squelch(){this.burst(.07,3400,.09,0,'bandpass',1.4);this.burst(.05,1900,.05,.02,'bandpass',2)},
     thump(k){this.burst(.6,140,.9*k);this.burst(.25,420,.35*k)},
     screech(k){this.burst(.55,1500,.32*k,.02,'bandpass',4);this.burst(.4,2300,.18*k,.06,'bandpass',5)},
     clunk(){this.burst(.18,260,.5);this.burst(.08,900,.15,.01)},
@@ -1511,6 +1523,88 @@ function pickVoice(){try{const v=synth.getVoices();voice=v.find(x=>/en-US/i.test
 if(synth){pickVoice();synth.onvoiceschanged=pickVoice}
 function speak(t,urgent){if(!synth||!CFG.sound||mode!=='fly')return;try{if(urgent)synth.cancel();if(!t)return;const u=new SpeechSynthesisUtterance(t);if(voice)u.voice=voice;u.rate=1.08;u.pitch=.75;u.volume=.9;synth.speak(u)}catch(e){}}
 function say(t){if(t)toast(t)}
+
+/* =====================================================================
+   ATC RADIO — Hong Kong Approach 119.1 and Kai Tak Tower 118.7 (frequencies from the 1996 AIP chart)
+   Calls are triggered by position along the IGS path, so rewinds and the autopilot work the same way.
+   ===================================================================== */
+const RAD={q:[],cur:null,gap:0,flags:{},call:'Harbour 482',next:28,lastChk:-99,lines:[],nChk:0};
+const QNH={clear:1012,rain:1008,typhoon:985,storm:996,lowcloud:1010,fog:1014};
+const OTHERS=['Lantau 120','Pearl 66','Victoria 318','Jade 7','Lamma 905','Tsing Yi 41'];
+const NUMW=['zero','one','two','three','four','five','six','seven','eight','niner'];
+const RV={APP:{p:.72,r:1.1,v:.9,l:'APP 119.1'},TWR:{p:.92,r:1.12,v:.9,l:'TWR 118.7'},YOU:{p:.62,r:1.08,v:.8,l:'YOU'},OTH:{p:1.18,r:1.18,v:.62,l:'CREW'}};
+function spokenize(t){return t.replace(/\d+(?:\.\d+)?/g,m=>m.split('').map(c=>c==='.'?'decimal':NUMW[+c]).join(' ')).replace(/\bQNH\b/g,'Q N H').replace(/\bIGS\b/g,'I G S').replace(/\bDME\b/g,'D M E')}
+function windText(){const w=WX[CFG.wx];if(w.ws<4)return 'wind variable at '+Math.max(1,Math.round(w.ws))+' knots';
+  return 'wind '+String(Math.round(w.wd/10)*10).padStart(3,'0')+' at '+Math.round(w.ws)+' knots'+(w.gust>=4?' gusting '+Math.round(w.ws+w.gust*.9):'')}
+function visText(){const w=WX[CFG.wx];return w.vis<5000?', visibility '+(Math.round(w.vis/100)*100)+' metres':''}
+function radioClear(){RAD.q.length=0;RAD.cur=null;RAD.gap=0;for(const l of RAD.lines)l.el.remove();RAD.lines.length=0;const el=document.getElementById('radio');if(el)el.hidden=true}
+function radioReset(){radioClear();RAD.flags={};RAD.next=28;RAD.lastChk=-99;RAD.nChk=0;RAD.call='Harbour '+(100+Math.floor(Math.random()*890))}
+function radioSay(who,text){
+  if(!CFG.radio||mode!=='fly')return;
+  if(RAD.q.length>=6){const i=RAD.q.findIndex(m=>m.who==='OTH');RAD.q.splice(i>=0?i:0,1)}
+  RAD.q.push({who,text});
+}
+function radioShow(m){
+  const el=document.getElementById('radio');el.hidden=false;
+  const d=document.createElement('div');d.className='rl '+m.who;const b=document.createElement('b');b.textContent=RV[m.who].l;d.append(b,document.createTextNode(m.text));el.appendChild(d);
+  RAD.lines.push({el:d,t:14});while(RAD.lines.length>4)RAD.lines.shift().el.remove();
+  if(synth&&CFG.sound){try{const u=new SpeechSynthesisUtterance(spokenize(m.text));const v=RV[m.who];if(voice)u.voice=voice;u.rate=v.r;u.pitch=v.p;u.volume=v.v;synth.speak(u)}catch(e){}}
+}
+function radioPump(dt){
+  for(let i=RAD.lines.length-1;i>=0;i--){const l=RAD.lines[i];l.t-=dt;if(l.t<=0){l.el.remove();RAD.lines.splice(i,1)}}
+  if(!RAD.lines.length&&!RAD.cur)document.getElementById('radio').hidden=true;
+  if(RAD.cur){RAD.cur.t-=dt;if(RAD.cur.t<=0){RAD.cur=null;RAD.gap=.5+Math.random()*.6;if(CFG.sound)sfx.squelch()}}
+  else if(RAD.gap>0)RAD.gap-=dt;
+  if(!RAD.cur&&RAD.gap<=0&&RAD.q.length){const m=RAD.q.shift();m.t=Math.max(2,spokenize(m.text).length*.056)+.3;RAD.cur=m;if(CFG.sound)sfx.squelch();radioShow(m)}
+}
+function chatter(freq){
+  const oc=OTHERS[(Math.random()*OTHERS.length)|0],W=windText();
+  const A=[
+    [['APP',`${oc}, Hong Kong Approach, cleared IGS approach runway 13. Report checkerboard in sight.`],['OTH',`Cleared IGS 13, wilco, ${oc}.`]],
+    [['APP',`${oc}, Hong Kong Approach, hold at waypoint Golf, minimum holding altitude 6000 feet. Expect further clearance in 5 minutes.`],['OTH',`Holding at Golf, ${oc}.`]],
+    [['APP',`${oc}, contact Kai Tak Tower 118.7.`],['OTH',`118.7, ${oc}.`]]];
+  const T=[
+    [['TWR',`${oc}, Kai Tak Tower, ${W}, runway 13 cleared to land.`],['OTH',`Cleared to land 13, ${oc}.`]],
+    [['TWR',`${oc}, line up and wait, runway 13.`],['OTH',`Line up and wait, ${oc}.`]],
+    [['TWR',`${oc}, ${W}, runway 13 cleared for takeoff.`],['OTH',`Cleared for takeoff 13, ${oc}.`]],
+    [['OTH',`Kai Tak Tower, ${oc}, checkerboard in sight.`],['TWR',`${oc}, ${W}, runway 13 cleared to land.`],['OTH',`Cleared to land 13, ${oc}.`]]];
+  // when the player is on the runway or final, other crews are only told to continue behind
+  const S=[[['TWR',`${oc}, Kai Tak Tower, continue approach, number 2 for runway 13.`],['OTH',`Continue approach, number 2, ${oc}.`]],
+    [['OTH',`Kai Tak Tower, ${oc}, checkerboard in sight.`],['TWR',`${oc}, continue approach, I will call your landing clearance.`],['OTH',`Continue, ${oc}.`]]];
+  const L=freq==='APP'?A:CFG.game==='watch'?T:S;for(const [who,t] of L[(Math.random()*L.length)|0])radioSay(who,t);
+}
+function atcUpdate(dt){
+  const s=ST;
+  if(mode!=='fly'||!CFG.radio){if(RAD.q.length||RAD.cur||RAD.lines.length)radioClear();return}
+  if(paused)return;
+  for(const k in RAD.flags)if(RAD.flags[k]>s.t+.5)delete RAD.flags[k];
+  radioPump(dt);
+  if(s.ended||CFG.ts>1)return;
+  const once=k=>{if(RAD.flags[k]!==undefined)return false;RAD.flags[k]=s.t;return true};
+  const call=RAD.call,full=call+' Heavy',q=QNH[CFG.wx],W=windText(),wet=WX[CFG.wx].rain>.3?', runway wet':'';
+  let freq='APP';
+  if(CFG.game==='watch'){RAD.next-=dt;if(RAD.next<=0&&!RAD.q.length&&!RAD.cur){chatter(Math.random()<.4?'APP':'TWR');RAD.next=14+Math.random()*16}return}
+  if(CFG.game==='approach'){
+    const p=PATH.pts[s.pi],d=p.d,tD=PATH.turnD;
+    if(s.t>1.5&&once('init')){radioSay('APP',`${full}, Hong Kong Approach, radar contact. Cleared IGS approach runway 13, QNH ${q}. Report checkerboard in sight.`);radioSay('YOU',`Cleared IGS 13, QNH ${q}, will report checkerboard, ${call}.`)}
+    else if(d<tD+4500&&d>tD&&once('handoff')){radioSay('APP',`${call}, contact Kai Tak Tower 118.7.`);radioSay('YOU',`118.7, ${call}.`);radioSay('TWR',`${call}, Kai Tak Tower, ${W}. Report checkerboard in sight.`)}
+    else if(d<tD+1800&&d>tD-400&&once('checker')){radioSay('YOU',`Checkerboard in sight, ${call}.`);radioSay('TWR',`${call}, ${W}${visText()}${wet}, runway 13 cleared to land.`);radioSay('YOU',`Cleared to land 13, ${call}.`)}
+    freq=RAD.flags.handoff!==undefined?'TWR':'APP';
+    if(RAD.flags.init!==undefined&&s.t>25&&d>tD+800&&s.t-RAD.lastChk>45&&RAD.nChk<2&&!s.onGround){
+      const dv=s.y-p.alt;
+      if(dv<-50||dv>130){RAD.lastChk=s.t;RAD.nChk++;radioSay(freq,`${call}, check your height, you are ${dv<0?'below':'above'} the glidepath.`)}}
+  }else if(CFG.game==='free'){
+    if(s.onGround&&!s.td&&s.t>2&&once('clr')){radioSay('TWR',`${full}, Kai Tak Tower, ${W}${wet}, runway 13 cleared for takeoff.`);radioSay('YOU',`Cleared for takeoff 13, ${call}.`)}
+    if(!s.onGround&&s.ra/FT>400&&once('dep')){radioSay('TWR',`${call}, contact Approach 119.1.`);radioSay('YOU',`119.1, ${call}.`);radioSay('APP',`${call}, Hong Kong Approach, radar contact, QNH ${q}. Report leaving the zone.`)}
+    freq=RAD.flags.dep!==undefined?'APP':'TWR';
+  }
+  if(s.td&&s.onGround&&s.Gs<40*KT&&once('vacate')){radioSay('TWR',`${call}, vacate when able and taxi to the apron. Contact Ground.`);radioSay('YOU',`Vacating, ${call}.`)}
+  RAD.next-=dt;
+  if(RAD.next<=0){RAD.next=30+Math.random()*25;
+    const busy=RAD.q.length||RAD.cur||s.warn||(CFG.game==='approach'&&!s.onGround&&s.ra/FT<700&&PATH.pts[s.pi].d<PATH.turnD+1800);
+    if(!busy)chatter(freq)}
+}
+function toggleRadio(){CFG.radio=!CFG.radio;if(!CFG.radio){radioClear();if(synth)synth.cancel()}tog('radio',CFG.radio?'on':'off');syncButtons()}
 
 /* =====================================================================
    EXPLOSION
@@ -2050,7 +2144,7 @@ window.addEventListener('keydown',e=>{
   switch(e.code){
     case 'KeyG':toggleGear();break;case 'KeyF':setFlaps(1);break;case 'KeyV':setFlaps(-1);break;
     case 'KeyC':{const o=CFG.game==='watch'?['carpark','ped','street','boat','checker','tower','chase']:['cockpit','chase','tower','street','ped','carpark','boat','checker','cabin'];setView(o[(o.indexOf(CFG.view)+1)%o.length]);break}
-    case 'KeyZ':toggleAP();break;case 'BracketLeft':timeJump(-10);break;case 'BracketRight':timeJump(10);break;
+    case 'KeyZ':toggleAP();break;case 'KeyR':toggleRadio();break;case 'BracketLeft':timeJump(-10);break;case 'BracketRight':timeJump(10);break;
     case 'KeyT':setTs(CFG.ts>=8?1:CFG.ts*2);break;case 'KeyI':setZoom(Math.min(16,CFG.zoom*2));break;case 'KeyO':setZoom(Math.max(1,CFG.zoom/2));break;case 'KeyK':toggleDeck();break;case 'KeyN':toggleNight();break;case 'KeyU':setClouds_on(!CFG.clouds);break;case 'KeyP':togglePause();break;
   }
   VIA='button';
@@ -2099,7 +2193,7 @@ function setView(v){if(CFG.game==='watch'&&(v==='cockpit'||v==='cabin'))v='carpa
   if(v==='cabin'&&!ST.ap&&!ST.onGround&&mode==='fly'&&CFG.game==='approach'){toggleAP(true);toast('The computer is flying. Enjoy the view from your seat.')}
   updateSeatTag();syncButtons()}
 function updateSeatTag(){const letters=CFG.seatLeft?'A':'K';document.getElementById('seattag').textContent='ROW '+CFG.seatRow+' · SEAT '+letters;document.getElementById('seatSide').textContent=CFG.seatLeft?'Left':'Right'}
-function syncButtons(){
+function syncButtons(){document.getElementById('btnRadio').setAttribute('aria-pressed',String(CFG.radio));
   document.getElementById('btnAP').setAttribute('aria-pressed',String(!!ST.ap));document.getElementById('btnPause').setAttribute('aria-pressed',String(paused));
   document.getElementById('btnGuide').setAttribute('aria-pressed',String(CFG.guide));document.getElementById('btnHud').setAttribute('aria-pressed',String(CFG.hud));const bd=document.getElementById('btnDeck');bd.setAttribute('aria-pressed',String(CFG.deck));bd.hidden=CFG.view!=='cockpit';document.getElementById('btnSound').setAttribute('aria-pressed',String(CFG.sound));document.getElementById('btnClouds').setAttribute('aria-pressed',String(CFG.clouds));
   document.getElementById('btnGear').textContent='Gear '+(ST.gearDown?'↓':'↑');
@@ -2142,6 +2236,7 @@ document.getElementById('btnDeck').addEventListener('click',toggleDeck);
 document.getElementById('btnHud').addEventListener('click',toggleHud);
 document.getElementById('btnGuide').addEventListener('click',toggleGuide);
 document.getElementById('btnSound').addEventListener('click',toggleSound);
+document.getElementById('btnRadio').addEventListener('click',toggleRadio);
 document.getElementById('btnPause').addEventListener('click',togglePause);
 document.getElementById('btnGear').addEventListener('click',toggleGear);
 document.getElementById('btnFlapUp').addEventListener('click',()=>setFlaps(-1));
@@ -2150,12 +2245,12 @@ document.getElementById('seatRow').addEventListener('input',e=>{CFG.seatRow=+e.t
 document.getElementById('seatSide').addEventListener('click',()=>{CFG.seatLeft=!CFG.seatLeft;tog('seat_side',CFG.seatLeft?'left':'right');updateSeatTag()});
 for(const b of document.querySelectorAll('#bar button,#ctl button'))b.addEventListener('click',()=>b.blur());
 
-function showSetup(){flightEnd('quit');mode='attract';paused=false;for(const id of['bar','ctl','map','result','cabin'])document.getElementById(id).hidden=true;document.getElementById('setup').hidden=false;sfx.stopAll();if(synth)synth.cancel();
+function showSetup(){flightEnd('quit');mode='attract';paused=false;for(const id of['bar','ctl','map','result','cabin'])document.getElementById(id).hidden=true;document.getElementById('setup').hidden=false;sfx.stopAll();if(synth)synth.cancel();radioClear();
   clearFX();CFG.ap=true;resetFlight();ST.ap=true;spawnAircraftModel();buildAI();CFG.view='chase';applyEnvironment();setWalled(document.getElementById('optWalled').checked)}
 function startFlight(){
   readSetup();flightEnd('restart');clearFX();mode='fly';paused=false;SEED=window.__capture?1998:1998+Math.floor(Math.random()*1000);
   for(const id of['setup','result'])document.getElementById(id).hidden=true;for(const id of['bar','ctl','map'])document.getElementById(id).hidden=false;
-  resetFlight();ST.attempted=false;flightBegin();HIST.length=0;spawnAircraftModel();FOCUS=null;
+  resetFlight();ST.attempted=false;flightBegin();radioReset();HIST.length=0;spawnAircraftModel();FOCUS=null;
   if(CFG.game==='watch')buildAISchedule(0,true);else if(CFG.game==='free')buildAISchedule(-100,false);else buildAI();
   applyEnvironment();setWalled(CFG.walled);hoops.visible=CFG.guide&&CFG.game==='approach';wxSel.value=CFG.wx;
   const W=CFG.game==='watch';
@@ -2195,6 +2290,7 @@ function frame(now,manual){
   else if(running&&!ST.ended){acc+=dt*(mode==='fly'?CFG.ts:1);const h=1/120;let n=0;while(acc>=h&&n<1200){physStep(h);acc-=h;n++}if(mode==='fly')recordHistory()}
   if(mode==='attract'&&ST.ended){resetFlight();ST.ap=true;}
   if(mode==='fly'&&!paused&&CFG.game!=='watch')gpws(dt);
+  atcUpdate(dt);
   const t=now/1000;LIGHT_U.uTime.value=t;WATER_U.uTime.value=t;
   const sdt=dt*(mode==='fly'?CFG.ts:1);
   if(!paused){updateTraffic(sdt,CFG.night);updateShips(sdt,t);updateFX(dt)}
@@ -2244,7 +2340,7 @@ const fontsReady=document.fonts&&document.fonts.ready?Promise.race([document.fon
 fontsReady.then(()=>setTimeout(boot,30));
 
 /* test hooks */
-window.__kt={CFG,ST,PATH,AC,start:(o={})=>{Object.assign(CFG,o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.game}]`).checked=true;document.querySelector(`input[name=tod][value=${CFG.night?'night':'day'}]`).checked=true;startFlight()},
+window.__kt={CFG,ST,PATH,AC,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.game}]`).checked=true;document.querySelector(`input[name=tod][value=${CFG.night?'night':'day'}]`).checked=true;startFlight()},
   run:(sec)=>{if(CFG.game==='watch'){ST.t+=sec;return {t:ST.t}}const h=1/120;for(let i=0;i<sec*120&&!ST.ended;i++){physStep(h);if(i%60===0)recordHistory()}return {ended:ST.ended,td:ST.td,t:ST.t,x:ST.x,y:ST.y,z:ST.z,V:ST.V/KT,d:PATH.pts[ST.pi].d}},
   get mode(){return mode},get CFG(){return CFG},frame:(now)=>frame(now,true),get FOCUS(){return FOCUS},step:()=>physStep(1/120),rwS,setZoom:z=>{CFG.zoom=z},get AI(){return AI},get shipLights(){return shipLights},get SHIPS(){return SHIPS},get DISP(){return DISP},get deck(){return deckGroup},get streetCam(){return STREET_CAM},get water(){return water},get camera(){return camera},get nStreets(){return STREETS.length},drawDisplays,look,setView,terrainAt,buildingAt,groundInfo};
 })();

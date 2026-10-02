@@ -24,7 +24,7 @@ You are helping build Fly Kai Tak, a browser flight simulator of the 1998 Runway
 - Links: the design system artifact, the playable artifact, https://flykaitak.com
 
 ## Roadmap
-1. ATC radio: Kai Tak approach and tower instructions, other crews on frequency
+1. ATC radio (first version shipped: approach/tower calls, captions, R toggle). Next: ground and taxi calls, more voices, go-arounds, crews matched to the AI traffic
 2. More aircraft: 747-200/300, 767-300, MD-11, A300-600, A320, 737-300, L-1011, DC-10
 3. Runway 31 departures and approaches; Lei Yue Mun approach
 4. Higher-detail Kowloon City blocks and more hand-built landmarks

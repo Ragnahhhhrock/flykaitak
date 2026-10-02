@@ -27,6 +27,7 @@ Data: © Lands Department, HKSAR Government (CSDI). Elevation: SRTM via AWS Terr
 - Passenger cabin: a 3D interior with seats in each type's layout (3-4-3, 3-3-3, 2-4-2), bins, windows and passengers. Pick a row and side, then drag to look around
 - Views: cockpit, exterior, control tower, four spectator spots, cabin seat
 - Sound: engines, wind, rain, a touchdown thud with tyre chirp, brake squeal, reverser roar, gear hydraulics with a lock clunk, flap motor, gear-down rumble, thunder, GPWS
+- ATC radio: Hong Kong Approach (119.1) clears you for the IGS 13 approach and hands you to Kai Tak Tower (118.7), who clears you to land after you report the checkerboard. Calls follow your position and the live weather (wind, QNH, visibility), your readbacks are automatic, and other crews chatter on frequency. Free flight gets a takeoff clearance and the hand-off to Approach; Spectator plays the tower and approach traffic. Captions show on screen, voices use the browser's speech synthesis, and R turns the radio off
 - Autopilot and autothrottle that fly the full approach and autoland
 - Moving control surfaces: ailerons and elevators follow the controls, flaps follow the flap setting, spoilers deploy on touchdown (on the AI traffic too)
 - Other airliners: a 747 landing two minutes ahead of you, an A340 following you in on the IGS, departures taxiing out and climbing over Kowloon Bay, two aircraft in the hold west of the harbour, and apron movements
@@ -49,6 +50,7 @@ Data: © Lands Department, HKSAR Government (CSDI). Elevation: SRTM via AWS Terr
 | C | Cycle view |
 | Drag | Look around (cockpit, cabin) / orbit (exterior) |
 | Z | Autopilot |
+| R | ATC radio on/off |
 | N, P | Day/night, pause |
 | I / O | Zoom in / out |
 | T | Time speed |
@@ -66,6 +68,6 @@ On touch screens, use the on-screen yoke, thrust lever and gear/flap buttons.
 Google Analytics 4 with game events. See docs/analytics.md.
 
 ## Roadmap
-- ATC radio: Kai Tak approach and tower instructions, other crews on frequency
+- ATC radio, next: ground and taxi calls, more voices, go-around instructions, crews that match the AI traffic
 - More aircraft: 747-200/300, 767-300, MD-11, A300-600, A320, 737-300, L-1011, DC-10
 - Higher-fidelity terrain and coastline, more hand-built landmarks
