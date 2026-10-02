@@ -28,6 +28,8 @@ Data: © Lands Department, HKSAR Government (CSDI). Elevation: SRTM via AWS Terr
 - Views: cockpit, exterior, control tower, four spectator spots, cabin seat
 - Sound: engines, wind, rain, a touchdown thud with tyre chirp, brake squeal, reverser roar, gear hydraulics with a lock clunk, flap motor, gear-down rumble, thunder, GPWS
 - Autopilot and autothrottle that fly the full approach and autoland
+- Other airliners: a 747 landing two minutes ahead of you, an A340 following you in on the IGS, departures taxiing out and climbing over Kowloon Bay, two aircraft in the hold west of the harbour, and apron movements
+- Zoom 1×, 2×, 4×, 8×, 16× (I / O); time 1×, 2×, 4×, 8× (T); jump back or forward 10 seconds ([ / ]), including back from a crash
 - GPWS callouts and warnings, engine, wind, rain and thunder sound
 
 ## Controls
@@ -42,6 +44,10 @@ Data: © Lands Department, HKSAR Government (CSDI). Elevation: SRTM via AWS Terr
 | Drag | Look around (cockpit, cabin) / orbit (exterior) |
 | Z | Autopilot |
 | N, P | Day/night, pause |
+| I / O | Zoom in / out |
+| T | Time speed |
+| [ / ] | Back / forward 10 s |
+| K | Cockpit panel on/off |
 
 On touch screens, use the on-screen yoke, thrust lever and gear/flap buttons.
 

@@ -181,6 +181,10 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
     <select id="viewSel" aria-label="Camera view">
       <option value="cockpit">Cockpit</option><option value="chase">Exterior</option><option value="tower">Tower</option><option value="street">Spectator: Kowloon City street</option><option value="ped">Spectator: Prince Edward Road</option><option value="carpark">Spectator: car park roof</option><option value="boat">Spectator: boat in the harbour</option><option value="cabin">Cabin seat</option>
     </select>
+    <select id="zoomSel" aria-label="Zoom"><option value="1">Zoom 1×</option><option value="2">2×</option><option value="4">4×</option><option value="8">8×</option><option value="16">16×</option></select>
+    <select id="tsSel" aria-label="Time speed"><option value="1">Time 1×</option><option value="2">2×</option><option value="4">4×</option><option value="8">8×</option></select>
+    <button class="btn" id="btnBack" type="button" title="Back 10 seconds ( [ )">−10 s</button>
+    <button class="btn" id="btnFwd" type="button" title="Forward 10 seconds ( ] )">+10 s</button>
     <select id="wxSel" aria-label="Weather"></select>
     <button class="btn" id="btnNight" type="button" aria-pressed="false">Night</button>
     <button class="btn" id="btnAP" type="button" aria-pressed="false">Autopilot</button>
@@ -260,6 +264,9 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
           <span><kbd>Z</kbd></span><span>Autopilot on/off</span>
           <span><kbd>K</kbd></span><span>Show or hide the cockpit panel (cockpit view)</span>
           <span><kbd>N</kbd> <kbd>P</kbd></span><span>Day/night, pause</span>
+          <span><kbd>I</kbd> <kbd>O</kbd></span><span>Zoom in / out (1× to 16×)</span>
+          <span><kbd>T</kbd></span><span>Time speed 1×, 2×, 4×, 8×</span>
+          <span><kbd>[</kbd> <kbd>]</kbd></span><span>Jump back / forward 10 seconds (back works after a crash too)</span>
           <span>Drag the view</span><span>Look around (cockpit, cabin) or orbit (exterior)</span>
         </div>
         <p style="margin-top:12px">Brakes and reversers work automatically after touchdown. Pull thrust to idle in the flare.</p>
@@ -288,6 +295,7 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
       <dl class="stats" id="resStats"></dl>
       <div class="res-actions">
         <button class="go" id="btnAgain" type="button"><span>Fly it again</span></button>
+        <button class="btn" id="btnRewind" type="button">Rewind 10 s</button>
         <button class="btn" id="btnSetup" type="button">Change setup</button>
       </div>
     </div>
@@ -402,7 +410,7 @@ const WX={
 };
 
 /* ---------------- state & settings ---------------- */
-const CFG={deck:true,hud:true,ac:'b744',night:false,wx:'clear',lightning:false,guide:true,ap:false,walled:true,view:'cockpit',sound:true,seatRow:34,seatLeft:true};
+const CFG={zoom:1,ts:1,deck:true,hud:true,ac:'b744',night:false,wx:'clear',lightning:false,guide:true,ap:false,walled:true,view:'cockpit',sound:true,seatRow:34,seatLeft:true};
 const ST={};let mode='loading'; // loading | attract | fly | ended
 let paused=false;
 
@@ -1226,6 +1234,19 @@ function apUpdate(dt){
   if(onFinal&&ra<5)s.throttle=0;
 }
 
+/* ---------------- time travel ---------------- */
+const HIST=[];const HKEYS=['x','y','z','V','gamma','psi','theta','phi','flapIdx','flapPos','gearDown','gearPos','throttle','thrust','onGround','Gs','psiG','vx','vy','vz','t','pi','apI','ap','tailstrike','gdot'];
+function recordHistory(){const s=ST;if(s.ended)return;const last=HIST[HIST.length-1];if(last&&s.t-last.t<.5)return;const o={};for(const k of HKEYS)o[k]=s[k];o.td=s.td?{...s.td}:null;o.callouts={...s.callouts};HIST.push(o);if(HIST.length>2400)HIST.shift()}
+function timeJump(sec){
+  if(mode!=='fly'&&mode!=='ended')return;const s=ST;
+  if(sec<0){const target=s.t+sec;let i=HIST.length-1;while(i>0&&HIST[i].t>target)i--;const o=HIST[i];if(!o)return;HIST.length=i+1;
+    for(const k of HKEYS)s[k]=o[k];s.td=o.td?{...o.td}:null;s.callouts={...o.callouts};
+    if(s.ended){s.ended=null;clearFX();acModel.visible=true;document.getElementById('result').hidden=true;mode='fly';document.getElementById('ctl').hidden=CFG.view==='cabin'}
+    s.warn='';toast('Back to '+fmtT(s.t))}
+  else{if(s.ended)return;const h=1/120;for(let i=0;i<sec*120&&!s.ended;i++){physStep(h);if(i%60===0)recordHistory()}toast('Forward to '+fmtT(s.t))}
+}
+function fmtT(t){return Math.floor(t/60)+':'+String(Math.floor(t%60)).padStart(2,'0')}
+
 /* ---------------- end states ---------------- */
 function crash(title,why){
   const s=ST;if(s.ended)return;s.ended={crash:true,title,why,t:s.t};s.crashT=performance.now();
@@ -1529,6 +1550,63 @@ function buildCabin(a,key){
 }
 
 /* =====================================================================
+   AI TRAFFIC — other airliners, as pure functions of sim time (so rewind just works)
+   ===================================================================== */
+const AI=[];
+function pathAtC(c){const P=PATH.pts;c=clamp(c,0,P[P.length-1].c);let lo=0,hi=P.length-1;while(hi-lo>1){const m=(lo+hi)>>1;if(P[m].c<c)lo=m;else hi=m}const a=P[lo],b=P[hi];const t=(c-a.c)/Math.max(1e-6,b.c-a.c);
+  return {x:lerp(a.x,b.x,t),z:lerp(a.z,b.z,t),alt:lerp(a.alt,b.alt,t),h:a.h+angDiff(b.h,a.h)*t,k:a.k}}
+function polyPose(pts,t){ // pts: [[s,l,tArrive],…] ground taxi along runway coordinates
+  for(let i=1;i<pts.length;i++){if(t<=pts[i][2]){const a=pts[i-1],b=pts[i];const u=clamp((t-a[2])/Math.max(.01,b[2]-a[2]),0,1);const s=lerp(a[0],b[0],u),l=lerp(a[1],b[1],u);const q=rwP(s,l);
+    const d=rwP(b[0]-a[0],b[1]-a[1]);return {x:q[0],z:q[1],y:RWY.elev,psi:Math.atan2(d[0],-d[1]),theta:0,phi:0,gear:1,moving:u<1}}}
+  const a=pts[pts.length-2]||pts[0],b=pts[pts.length-1];const q=rwP(b[0],b[1]);const d=rwP(b[0]-a[0],b[1]-a[1]);return {x:q[0],z:q[1],y:RWY.elev,psi:Math.atan2(d[0],-d[1]),theta:0,phi:0,gear:1,moving:false}}
+function arrivalPose(t,c0){
+  const v=76,thr=PATH.pts.find(p=>p.d<=0).c;const tdC=thr+300;const tTD=(tdC-c0)/v;
+  if(t<0)return null;
+  if(t<tTD){const c=c0+v*t;const p=pathAtC(c);const p2=pathAtC(c+v*3);let phi=-Math.atan(v*v*(p2.k||0)/G);
+    const flare=clamp((t-(tTD-5))/5,0,1);return {x:p.x,z:p.z,y:p.alt+flare*-.5,psi:p.h,theta:(2+flare*3)*D2R,phi,gear:c>thr-9000?1:0,lights:true}}
+  const dt=t-tTD,a=2.0,vT=10;const tDec=(v-vT)/a;let s;
+  if(dt<tDec)s=300+v*dt-.5*a*dt*dt;else s=300+(v*v-vT*vT)/(2*a)+vT*(dt-tDec);
+  if(s<1800){const q=rwP(s,0);return {x:q[0],z:q[1],y:RWY.elev,psi:RWY.hdg*D2R,theta:dt<4?(4-dt)*D2R:0,phi:0,gear:1,lights:true}}
+  const t0=tTD+tDec+(1800-300-(v*v-vT*vT)/(2*a))/vT;
+  return polyPose([[1800,0,t0],[1900,-96,t0+16],[1780,-96,t0+28],[600,-96,t0+146],[420,-300,t0+174],[300,-470,t0+198]],t);
+}
+function departurePose(t,gate){
+  const taxi=[[gate,-560,0],[gate,-300,25],[gate-40,-96,48],[40,-96,48+(gate-80)/9],[0,-40,60+(gate-80)/9],[0,0,68+(gate-80)/9]];
+  const tLine=taxi[taxi.length-1][2]+12;if(t<tLine)return polyPose(taxi,t);
+  const tau=t-tLine,a=2.2,vR=82;const tR=vR/a,sR=.5*a*tR*tR;
+  if(tau<tR){const s=.5*a*tau*tau;const q=rwP(s,0);return {x:q[0],z:q[1],y:RWY.elev,psi:RWY.hdg*D2R,theta:0,phi:0,gear:1,lights:true}}
+  // climb out over Kowloon Bay, then a right turn toward the south over the harbour
+  const tc=tau-tR,v=vR+Math.min(30,tc*1.2);let s=sR+vR*tc+.6*Math.min(tc,25)**2;const gam=Math.min(8,tc*2.5)*D2R;const alt=RWY.elev+Math.max(0,(s-sR))*Math.tan(gam)*.95;
+  let psi=RWY.hdg*D2R,x,z;const turnStart=60;
+  if(tc<turnStart){const q=rwP(s,0);x=q[0];z=q[1]}else{const q=rwP(sR+vR*turnStart+.6*625,0);const R=3200;const ang=Math.min((tc-turnStart)*v/R,1.0);psi=RWY.hdg*D2R+ang;
+    const c=[q[0]+R*Math.cos(RWY.hdg*D2R),q[1]+R*Math.sin(RWY.hdg*D2R)];x=c[0]-R*Math.cos(psi);z=c[1]-R*Math.sin(psi);const extra=Math.max(0,(tc-turnStart)*v-R);x+=Math.sin(psi)*extra;z-=Math.cos(psi)*extra}
+  return {x,z,y:Math.min(alt+(tc>turnStart?(tc-turnStart)*6:0),2400),psi,theta:tc<4?tc*2.5*D2R:9*D2R,phi:tc>turnStart&&tc<turnStart+40?-18*D2R:0,gear:tc<6?1:0,lights:tc<90}
+}
+function holdingPose(t,cx,cz,alt,R,ph){const v=105,w=v/R;const a=t*w+ph;return {x:cx+Math.cos(a)*R,z:cz+Math.sin(a)*R,y:alt,psi:a+Math.PI,theta:2*D2R,phi:Math.atan(v*v/(G*R)),gear:0}}
+const AI_LIVERIES=[0x7a1f24,0x23406e,0x3a5f2e,0xc9a23a,0x5b2a6b,0x2b2f34,0x1f6f8a,0x8a5a2b];
+function buildAI(){
+  for(const a of AI){scene.remove(a.m)}AI.length=0;
+  const mk=(type,tail,fn)=>{const m=buildAircraftModel(AC[type],{tail,cheat:tail,gear:true});m.rotation.order='YXZ';scene.add(m);
+    const L=[];for(const p of m.userData.navPts)L.push(p[0],p[1],p[2],p[3],p[4],p[5],2.4,-1);for(const p of m.userData.strobePts)L.push(p[0],p[1],p[2],1,1,1,4,.37);
+    const ll=makeLights([0,AC[type].cy-1,-AC[type].len*.48,1,.97,.9,9,-1]);m.add(makeLights(L),ll);AI.push({m,fn,ll,type})};
+  const c0=PATH.pts[0].c;
+  mk('a333',AI_LIVERIES[0],t=>departurePose(t+70,430));                       // departs before you arrive
+  mk('b744',AI_LIVERIES[1],t=>arrivalPose(t,c0+8600));                         // lands about two minutes ahead of you
+  mk('b772',AI_LIVERIES[2],t=>departurePose(t-24,515));                      // lines up once the runway is clear
+  mk('a343',AI_LIVERIES[3],t=>arrivalPose(t-85,c0));                           // following you in on the IGS
+  mk('b744',AI_LIVERIES[4],t=>holdingPose(t,-11000,5200,1850,2600,0));         // holding west of the harbour
+  mk('a333',AI_LIVERIES[5],t=>holdingPose(t,-11000,5200,2150,2600,Math.PI));   // the next level up
+  mk('b744',AI_LIVERIES[6],t=>departurePose(t-330,600));
+  mk('a333',AI_LIVERIES[7],t=>polyPose([[700,-200,0],[700,-110,20],[1500,-110,105],[1500,-200,125]],(t%260)));  // repositioning on the apron
+}
+function updateAI(){
+  const t=ST.t||0;
+  for(const a of AI){const p=a.fn(t);if(!p||Math.hypot(p.x,p.z)>30000){a.m.visible=false;continue}
+    a.m.visible=true;a.m.position.set(p.x,p.y,p.z);a.m.rotation.set(p.theta||0,-p.psi,-(p.phi||0),'YXZ');
+    const gr=a.m.userData.gear;gr.visible=p.gear>.5;a.ll.visible=!!p.lights}
+}
+
+/* =====================================================================
    VIEWS & CAMERA
    ===================================================================== */
 let acModel=null,navLights=null,strobeLights=null,landingLight=null,shadow=null,deckGroup=null,cabinGroup=null;
@@ -1594,6 +1672,7 @@ function updateCamera(dt){
     camera.position.set(ST.tower[0],ST.tower[1],ST.tower[2]);camera.lookAt(s.x,s.y+a.cy,s.z);
     const dist=camera.position.distanceTo(_v.set(s.x,s.y,s.z));camera.fov=clamp(2*Math.atan(a.span*2.6/dist)*R2D/look.dist,3,60);
   }
+  if(CFG.zoom>1)camera.fov=2*Math.atan(Math.tan(camera.fov*D2R/2)/CFG.zoom)*R2D;
   camera.updateProjectionMatrix();
 }
 let attractT=0;
@@ -1730,6 +1809,7 @@ function gpws(dt){
    ===================================================================== */
 const keys={};
 window.addEventListener('keydown',e=>{
+  if(mode==='ended'&&(e.code==='BracketLeft')){timeJump(-10);return}
   if(e.target&&(e.target.tagName==='INPUT'||e.target.tagName==='SELECT')&&e.key!=='Enter')return;
   if(mode==='attract'&&e.key==='Enter'&&!document.getElementById('setup').hidden){startFlight();return}
   if(mode!=='fly')return;
@@ -1737,7 +1817,8 @@ window.addEventListener('keydown',e=>{
   switch(e.code){
     case 'KeyG':toggleGear();break;case 'KeyF':setFlaps(1);break;case 'KeyV':setFlaps(-1);break;
     case 'KeyC':{const o=['cockpit','chase','tower','street','ped','carpark','boat','cabin'];setView(o[(o.indexOf(CFG.view)+1)%o.length]);break}
-    case 'KeyZ':toggleAP();break;case 'KeyK':CFG.deck=!CFG.deck;syncButtons();break;case 'KeyN':CFG.night=!CFG.night;applyEnvironment();break;case 'KeyP':togglePause();break;
+    case 'KeyZ':toggleAP();break;case 'BracketLeft':timeJump(-10);break;case 'BracketRight':timeJump(10);break;
+    case 'KeyT':setTs(CFG.ts>=8?1:CFG.ts*2);break;case 'KeyI':setZoom(Math.min(16,CFG.zoom*2));break;case 'KeyO':setZoom(Math.max(1,CFG.zoom/2));break;case 'KeyK':CFG.deck=!CFG.deck;syncButtons();break;case 'KeyN':CFG.night=!CFG.night;applyEnvironment();break;case 'KeyP':togglePause();break;
   }
   if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();
 });
@@ -1798,8 +1879,15 @@ function readSetup(){CFG.ac=document.querySelector('input[name=ac]:checked').val
 document.getElementById('btnGo').addEventListener('click',startFlight);
 document.getElementById('btnAgain').addEventListener('click',startFlight);
 document.getElementById('btnSetup').addEventListener('click',showSetup);
+document.getElementById('btnRewind').addEventListener('click',()=>{mode='fly';timeJump(-10)});
 document.getElementById('btnMenu').addEventListener('click',showSetup);
 document.getElementById('viewSel').addEventListener('change',e=>setView(e.target.value));
+function setZoom(z){CFG.zoom=z;document.getElementById('zoomSel').value=String(z);toast('Zoom '+z+'×')}
+function setTs(v){CFG.ts=v;document.getElementById('tsSel').value=String(v);toast('Time '+v+'×')}
+document.getElementById('zoomSel').addEventListener('change',e=>{setZoom(+e.target.value);e.target.blur()});
+document.getElementById('tsSel').addEventListener('change',e=>{setTs(+e.target.value);e.target.blur()});
+document.getElementById('btnBack').addEventListener('click',()=>timeJump(-10));
+document.getElementById('btnFwd').addEventListener('click',()=>timeJump(10));
 wxSel.addEventListener('change',e=>{CFG.wx=e.target.value;applyEnvironment();e.target.blur()});
 document.getElementById('btnNight').addEventListener('click',()=>{CFG.night=!CFG.night;applyEnvironment()});
 document.getElementById('btnAP').addEventListener('click',()=>toggleAP());
@@ -1816,18 +1904,18 @@ document.getElementById('seatSide').addEventListener('click',()=>{CFG.seatLeft=!
 for(const b of document.querySelectorAll('#bar button,#ctl button'))b.addEventListener('click',()=>b.blur());
 
 function showSetup(){mode='attract';paused=false;for(const id of['bar','ctl','map','result','cabin'])document.getElementById(id).hidden=true;document.getElementById('setup').hidden=false;sfx.stopAll();if(synth)synth.cancel();
-  clearFX();CFG.ap=true;resetFlight();ST.ap=true;spawnAircraftModel();CFG.view='chase';applyEnvironment();setWalled(document.getElementById('optWalled').checked)}
+  clearFX();CFG.ap=true;resetFlight();ST.ap=true;spawnAircraftModel();buildAI();CFG.view='chase';applyEnvironment();setWalled(document.getElementById('optWalled').checked)}
 function startFlight(){
   readSetup();clearFX();mode='fly';paused=false;SEED=1998+Math.floor(Math.random()*1000);
   for(const id of['setup','result'])document.getElementById(id).hidden=true;for(const id of['bar','ctl','map'])document.getElementById(id).hidden=false;
-  resetFlight();spawnAircraftModel();applyEnvironment();setWalled(CFG.walled);hoops.visible=CFG.guide;wxSel.value=CFG.wx;
+  resetFlight();HIST.length=0;spawnAircraftModel();buildAI();applyEnvironment();setWalled(CFG.walled);hoops.visible=CFG.guide;wxSel.value=CFG.wx;
   document.getElementById('flightid').textContent=ST.ac.short.toUpperCase()+' · IGS 13 · '+(CFG.night?'NIGHT':'DAY')+' · '+WX[CFG.wx].label.toUpperCase();
   setView(CFG.ap?'chase':'cockpit');
   syncButtons();sfx.start();sfx.mute(CFG.sound);lightningT=rr(4,9);
   toast(CFG.ap?'Autopilot engaged. Pick a view or a cabin seat.':'Established on the IGS, 3,100 ft. You have control.');
 }
 function showResult(){
-  const s=ST,e=s.ended;if(!e)return;mode='ended';const card=document.getElementById('resCard');card.classList.toggle('crash',!!e.crash);
+  const s=ST,e=s.ended;if(!e||mode!=='fly')return;mode='ended';const card=document.getElementById('resCard');card.classList.toggle('crash',!!e.crash);
   document.getElementById('ctl').hidden=true;
   const st=document.getElementById('resStats');st.innerHTML='';const row=(a,b)=>{st.insertAdjacentHTML('beforeend',`<dt>${a}</dt><dd>${b}</dd>`)};
   if(e.landed){const g=gradeLanding(s.td);document.getElementById('resEyebrow').textContent='Landed · Runway 13';document.getElementById('resTitle').textContent='Welcome to Hong Kong';document.getElementById('resGrade').textContent=g.g;
@@ -1848,11 +1936,13 @@ function frame(now){
   let dt=Math.min(.05,(now-last)/1000);last=now;if(mode==='loading')return;
   const running=(mode==='fly'||mode==='attract')&&!paused;
   if(mode==='fly'&&!paused)readInputs(dt);
-  if(running&&!ST.ended){acc+=dt;const h=1/120;while(acc>=h){physStep(h);acc-=h}}
+  if(running&&!ST.ended){acc+=dt*(mode==='fly'?CFG.ts:1);const h=1/120;let n=0;while(acc>=h&&n<1200){physStep(h);acc-=h;n++}if(mode==='fly')recordHistory()}
   if(mode==='attract'&&ST.ended){resetFlight();ST.ap=true;}
   if(mode==='fly'&&!paused)gpws(dt);
   const t=now/1000;LIGHT_U.uTime.value=t;
-  if(!paused){updateTraffic(dt,CFG.night);updateShips(dt,t);updateFX(dt)}
+  const sdt=dt*(mode==='fly'?CFG.ts:1);
+  if(!paused){updateTraffic(sdt,CFG.night);updateShips(sdt,t);updateFX(dt)}
+  updateAI();
   updateAircraftVisual();if(hoops)hoops.visible=CFG.guide&&!SPOTS[CFG.view]&&CFG.view!=='tower';
   if(deckGroup&&deckGroup.visible){drawDisplays(dt);animateDeck()}
   if(mode==='attract'){attractCamera(dt)}else updateCamera(dt);
@@ -1892,8 +1982,8 @@ fontsReady.then(()=>setTimeout(boot,30));
 
 /* test hooks */
 window.__kt={CFG,ST,PATH,AC,start:(o={})=>{Object.assign(CFG,o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=tod][value=${CFG.night?'night':'day'}]`).checked=true;startFlight()},
-  run:(sec)=>{const h=1/120;for(let i=0;i<sec*120&&!ST.ended;i++){physStep(h);}return {ended:ST.ended,td:ST.td,t:ST.t,x:ST.x,y:ST.y,z:ST.z,V:ST.V/KT,d:PATH.pts[ST.pi].d}},
-  get mode(){return mode},get DISP(){return DISP},get deck(){return deckGroup},get streetCam(){return STREET_CAM},get water(){return water},get camera(){return camera},get nStreets(){return STREETS.length},drawDisplays,look,setView,terrainAt,buildingAt,groundInfo};
+  run:(sec)=>{const h=1/120;for(let i=0;i<sec*120&&!ST.ended;i++){physStep(h);if(i%60===0)recordHistory()}return {ended:ST.ended,td:ST.td,t:ST.t,x:ST.x,y:ST.y,z:ST.z,V:ST.V/KT,d:PATH.pts[ST.pi].d}},
+  get mode(){return mode},get AI(){return AI},get DISP(){return DISP},get deck(){return deckGroup},get streetCam(){return STREET_CAM},get water(){return water},get camera(){return camera},get nStreets(){return STREETS.length},drawDisplays,look,setView,terrainAt,buildingAt,groundInfo};
 })();
 </script>
 <!--/FRAG:BODY-->
