@@ -3,9 +3,35 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Fly the 1998 Runway 13 IGS approach into Hong Kong Kai Tak in your browser: the checkerboard, the 47° right turn low over Kowloon City, and a runway that ends in the harbour. Real aerial imagery, four airliners, day and night, typhoons.">
+<link rel="canonical" href="https://flykaitak.com/">
+<meta name="theme-color" content="#0a1115">
+<meta name="color-scheme" content="dark">
+<meta name="author" content="Fly Kai Tak">
+<meta name="keywords" content="Kai Tak, flight simulator, Hong Kong, 1998, IGS 13, checkerboard hill, 747, browser game, VHHH">
+<link rel="icon" href="assets/brand/mark.svg" type="image/svg+xml">
+<link rel="icon" href="assets/brand/favicon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="assets/brand/apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Fly Kai Tak">
+<meta property="og:title" content="Fly Kai Tak · the Runway 13 IGS approach, Hong Kong 1998">
+<meta property="og:description" content="Hit the checkerboard, turn right, land before the harbour. A browser flight simulator of Kai Tak's famous approach over Kowloon City.">
+<meta property="og:url" content="https://flykaitak.com/">
+<meta property="og:image" content="https://flykaitak.com/assets/social/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="A 747 passes low over a Kowloon City street sign on the final turn into Kai Tak.">
+<meta property="og:locale" content="en_GB">
+<meta property="og:locale:alternate" content="zh_HK">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Fly Kai Tak · the Runway 13 IGS approach, Hong Kong 1998">
+<meta name="twitter:description" content="Hit the checkerboard, turn right, land before the harbour. Kai Tak's famous approach, in your browser.">
+<meta name="twitter:image" content="https://flykaitak.com/assets/social/twitter-card.jpg">
+<meta name="twitter:image:alt" content="A 747 passes low over a Kowloon City street sign on the final turn into Kai Tak.">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Fly Kai Tak","alternateName":"啟德機場","url":"https://flykaitak.com/","description":"A browser flight simulator of the 1998 Runway 13 IGS approach into Hong Kong Kai Tak.","genre":["Flight simulator"],"gamePlatform":"Web browser","applicationCategory":"Game","operatingSystem":"Any","image":"https://flykaitak.com/assets/social/og-image.jpg","inLanguage":"en","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
 <!--FRAG:HEAD-->
 <title>Fly Kai Tak</title>
-<meta name="description" content="Fly the Runway 13 IGS approach into Hong Kong Kai Tak, 1998: the checkerboard, the 47-degree turn over Kowloon City, and the harbour.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=B612:wght@400;700&family=B612+Mono:wght@400;700&family=Noto+Serif+TC:wght@700;900&display=swap">
@@ -14,7 +40,8 @@
    Single deliberate night-cockpit look: dark glass, phosphor numerals, Kai Tak checkerboard orange as the one accent. */
 :root{
   --ink:#0a1115; --panel:rgba(9,16,20,.86); --panel-2:rgba(18,30,36,.92); --line:#27373e; --line-2:#3a5058;
-  --text:#e9eee8; --muted:#93a6a2; --checker:#ef6a2c; --checker-ink:#2a1206; --paper:#f5efe3;
+  --text:#e9eee8; --muted:#93a6a2; --checker:#e8571f; --checker-ink:#2a1206; --paper:#f5efe3;
+  --jade-deep:#005f4b; --jade:#1f8a5b; --jade-pale:#cfe6d9; --livery-white:#f6f5f0; --belly:#a9aeb1; --cheat-red:#d6262b;
   --phosphor:#8ff5a8; --amber:#ffb94a; --alarm:#ff5b4f; --magenta:#ff5ad9;
   --f-ui:"B612",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
   --f-num:"B612 Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
@@ -28,7 +55,7 @@ button,select,input{font-family:inherit}
 .btn{appearance:none;border:1px solid var(--line-2);background:var(--panel-2);color:var(--text);font-size:12px;letter-spacing:.06em;text-transform:uppercase;padding:8px 11px;border-radius:3px;cursor:pointer;line-height:1}
 .btn:hover{border-color:var(--muted)}
 .btn:focus-visible,.chip:focus-within,.card:focus-within,input:focus-visible,select:focus-visible{outline:2px solid var(--checker);outline-offset:2px}
-.btn[aria-pressed="true"]{background:var(--checker);border-color:var(--checker);color:var(--checker-ink);font-weight:700}
+.btn[aria-pressed="true"]{background:var(--jade);border-color:var(--jade);color:var(--livery-white);font-weight:700}
 
 /* ---------- setup sheet ---------- */
 #setup{position:fixed;inset:0;overflow:auto;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,560px);background:linear-gradient(90deg,rgba(10,17,21,0) 0%,rgba(10,17,21,.35) 40%,rgba(10,17,21,.94) 62%)}
@@ -41,7 +68,7 @@ button,select,input{font-family:inherit}
 .checkband{height:14px;background:repeating-conic-gradient(var(--checker) 0 25%,var(--paper) 0 50%) 0 0/14px 14px}
 .sheet{background:var(--panel);border-left:1px solid var(--line);min-height:100%;display:flex;flex-direction:column;backdrop-filter:blur(6px)}
 .sheet-body{padding:22px 28px 28px;display:grid;gap:22px}
-.eyebrow{font-family:var(--f-num);font-size:11px;letter-spacing:.22em;color:var(--checker);text-transform:uppercase;margin:0}
+.eyebrow{font-family:var(--f-num);font-size:11px;letter-spacing:.22em;color:#ff6b5e;text-transform:uppercase;margin:0}
 .sheet h1{font-size:26px;line-height:1.15;margin:6px 0 8px;text-wrap:balance;font-weight:700}
 .sheet p{margin:0;color:var(--muted);font-size:13.5px;line-height:1.55;max-width:62ch}
 fieldset{border:0;margin:0;padding:0;display:grid;gap:10px;min-width:0}
@@ -49,7 +76,7 @@ legend{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--
 .cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .card{position:relative;border:1px solid var(--line);border-radius:3px;padding:10px 12px;cursor:pointer;display:grid;gap:4px;background:rgba(255,255,255,.015)}
 .card input{position:absolute;opacity:0;pointer-events:none}
-.card:has(input:checked){border-color:var(--checker);background:rgba(239,106,44,.08)}
+.card:has(input:checked){border-color:var(--jade);background:rgba(31,138,91,.12)}
 .card b{font-size:14px}
 .card span{font-family:var(--f-num);font-size:11px;color:var(--muted);line-height:1.5}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
@@ -59,9 +86,9 @@ legend{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--
 .chip input:checked+span{background:var(--paper);color:#13191c;border-color:var(--paper);font-weight:700}
 .toggles{display:grid;gap:8px}
 .tog{display:flex;gap:10px;align-items:flex-start;font-size:13px;cursor:pointer;line-height:1.4}
-.tog input{accent-color:var(--checker);margin-top:2px;width:16px;height:16px;flex:none}
+.tog input{accent-color:var(--jade);margin-top:2px;width:16px;height:16px;flex:none}
 .tog small{display:block;color:var(--muted);font-size:12px}
-.go{appearance:none;border:0;cursor:pointer;background:var(--checker);color:var(--checker-ink);font-weight:700;font-size:15px;letter-spacing:.08em;text-transform:uppercase;padding:15px 18px;border-radius:3px;display:flex;justify-content:space-between;align-items:center}
+.go{appearance:none;border:0;cursor:pointer;background:var(--jade);color:var(--livery-white);font-weight:700;font-size:15px;letter-spacing:.08em;text-transform:uppercase;padding:15px 18px;border-radius:3px;display:flex;justify-content:space-between;align-items:center}
 .go:hover{filter:brightness(1.08)}
 .go .k{font-family:var(--f-num);font-size:12px;opacity:.75}
 details{border-top:1px solid var(--line);padding-top:14px}
@@ -79,7 +106,7 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
 .tools select{appearance:none;background:var(--panel-2);color:var(--text);border:1px solid var(--line-2);border-radius:3px;font-size:12px;padding:7px 10px;letter-spacing:.04em}
 #seatbox{display:flex;gap:6px;align-items:center;background:var(--panel-2);border:1px solid var(--line-2);border-radius:3px;padding:3px 8px;font-size:12px}
 #seatbox[hidden]{display:none!important}
-#seatbox input[type=range]{width:90px;accent-color:var(--checker)}
+#seatbox input[type=range]{width:90px;accent-color:var(--jade)}
 #map{position:fixed;left:10px;top:calc(env(safe-area-inset-top,0px) + 50px);width:168px;height:168px;border:1px solid var(--line);border-radius:3px;background:rgba(9,16,20,.72)}
 #map[hidden]{display:none!important}
 
@@ -94,7 +121,7 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
 .cfg{display:grid;gap:6px}
 .cfg .btn{min-width:74px;padding:10px 8px}
 .thr{display:grid;justify-items:center;gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:8px 6px}
-.thr input{writing-mode:vertical-lr;direction:rtl;height:140px;width:28px;accent-color:var(--checker)}
+.thr input{writing-mode:vertical-lr;direction:rtl;height:140px;width:28px;accent-color:var(--jade)}
 .thr span{font-family:var(--f-num);font-size:11px;color:var(--muted)}
 
 #cabin{position:fixed;inset:0;pointer-events:none}
@@ -157,6 +184,7 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
     <select id="wxSel" aria-label="Weather"></select>
     <button class="btn" id="btnNight" type="button" aria-pressed="false">Night</button>
     <button class="btn" id="btnAP" type="button" aria-pressed="false">Autopilot</button>
+    <button class="btn" id="btnDeck" type="button" aria-pressed="true">Cockpit</button>
     <button class="btn" id="btnHud" type="button" aria-pressed="true">HUD</button>
     <button class="btn" id="btnGuide" type="button" aria-pressed="true">Guide</button>
     <button class="btn" id="btnSound" type="button" aria-pressed="true">Sound</button>
@@ -230,6 +258,7 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
           <span><kbd>F</kbd> <kbd>V</kbd></span><span>Flaps extend / retract</span>
           <span><kbd>C</kbd></span><span>Cycle view: cockpit, exterior, tower, cabin</span>
           <span><kbd>Z</kbd></span><span>Autopilot on/off</span>
+          <span><kbd>K</kbd></span><span>Show or hide the cockpit panel (cockpit view)</span>
           <span><kbd>N</kbd> <kbd>P</kbd></span><span>Day/night, pause</span>
           <span>Drag the view</span><span>Look around (cockpit, cabin) or orbit (exterior)</span>
         </div>
@@ -373,7 +402,7 @@ const WX={
 };
 
 /* ---------------- state & settings ---------------- */
-const CFG={hud:true,ac:'b744',night:false,wx:'clear',lightning:false,guide:true,ap:false,walled:true,view:'cockpit',sound:true,seatRow:34,seatLeft:true};
+const CFG={deck:true,hud:true,ac:'b744',night:false,wx:'clear',lightning:false,guide:true,ap:false,walled:true,view:'cockpit',sound:true,seatRow:34,seatLeft:true};
 const ST={};let mode='loading'; // loading | attract | fly | ended
 let paused=false;
 
@@ -1019,7 +1048,7 @@ function buildAircraftModel(a,opt={}){
   const cheat=new THREE.Mesh(new THREE.CylinderGeometry(R*1.005,R*1.005,L*.6,28,1,true,0,Math.PI*2).rotateX(Math.PI/2),new THREE.MeshLambertMaterial({color:opt.tail||0x1d6f6a,transparent:true,opacity:0}));
   const winM=new THREE.MeshLambertMaterial({color:0x1b2328,emissive:0x000000});winM.userData.cabin=true;
   for(const sd of[-1,1]){const w=new THREE.Mesh(new THREE.BoxGeometry(.05,.42,L*.68),winM);w.position.set(sd*R*.985,cy+R*.06,-L*.02);w.userData.winStrip=true;g.add(w);
-    const st=new THREE.Mesh(new THREE.BoxGeometry(.05,.35,L*.78),new THREE.MeshLambertMaterial({color:opt.tail||0x1d6f6a}));st.position.set(sd*R*.97,cy-R*.2,-L*.02);g.add(st)}
+    const st=new THREE.Mesh(new THREE.BoxGeometry(.05,.5,L*.8),new THREE.MeshLambertMaterial({color:opt.cheat||opt.tail||0x1d6f6a}));st.position.set(sd*R*.97,cy-R*.2,-L*.02);g.add(st)}
   // cockpit windows
   const cw=new THREE.Mesh(new THREE.BoxGeometry(R*1.1,.7,1.6),dark);cw.position.set(0,cy+R*(a.hump?1.25:.55),-L/2+L*.065);cw.rotation.x=.4;g.add(cw);
   if(a.hump){const h=new THREE.Mesh(new THREE.SphereGeometry(1,24,14),white);h.scale.set(R*.82,R*.62,L*.17);h.position.set(0,cy+R*.62,-L/2+L*.23);g.add(h);
@@ -1493,7 +1522,7 @@ function buildCabin(a,key){
     _m4.compose(_v.set(x,C.floor+.99,z+.3),_q,_s.set(1,1,1));head.setMatrixAt(k,_m4);k++;
     if(rnd()<.72){g.userData.paxAt=g.userData.paxAt||{};g.userData.paxAt[r+','+i]=pk;_m4.compose(_v.set(x,C.floor+.78,z+.05),_q.identity(),_s.set(1,1,1));pBody.setMatrixAt(pk,_m4);pBody.setColorAt(pk,tc.setHex(pick(shirt)));
       _m4.compose(_v.set(x,C.floor+1.13,z+.03),_q.identity(),_s.set(1,1,1));pHead.setMatrixAt(pk,_m4);pHead.setColorAt(pk,tc.setHex(pick(hair)));pk++}}}
-  pHead.count=pk;pBody.count=pk;g.add(cush,back,head,pHead,pBody);g.userData.pax={pHead,pBody};
+  g.add(cush,back,head);g.userData.pax=null; // seats only, no passengers
   // bulkheads front and rear
   for(const zz of[C.z0,C.z1]){const bh=new THREE.Mesh(new THREE.CircleGeometry(C.Ri,24),M(0xd9d4c8,{side:THREE.DoubleSide}));bh.position.set(0,a.cy,zz);g.add(bh)}
   g.userData.C=C;g.visible=false;return g;
@@ -1509,7 +1538,7 @@ const _tint=new THREE.Color(1,.93,.8);
 const look={yaw:0,pitch:0,orbitYaw:0,orbitPitch:.18,dist:1};
 function spawnAircraftModel(){
   if(acModel){scene.remove(acModel)}
-  acModel=buildAircraftModel(ST.ac,{tail:0x1d6f6a});acModel.rotation.order='YXZ';scene.add(acModel);
+  acModel=buildAircraftModel(ST.ac,{tail:0x1f8a5b,cheat:0x005f4b});acModel.rotation.order='YXZ';scene.add(acModel);
   if(deckGroup)scene.remove(deckGroup);if(cabinGroup)scene.remove(cabinGroup);COCKPIT_MATS=[];CABIN_MATS=[];
   deckGroup=buildCockpit(ST.ac,CFG.ac);cabinGroup=buildCabin(ST.ac,CFG.ac);scene.add(deckGroup,cabinGroup);applyInteriorLight();
   const nv=[],sb=[];for(const p of acModel.userData.navPts)nv.push(p[0],p[1],p[2],p[3],p[4],p[5],2.2,-1);
@@ -1526,7 +1555,7 @@ function updateAircraftVisual(){
   if(!s.ended)acModel.visible=CFG.view!=='cockpit';
   const inCab=CFG.view==='cabin';acModel.traverse(o=>{if(o.userData.winStrip)o.visible=!inCab});
   for(const G of[deckGroup,cabinGroup])if(G){G.position.copy(acModel.position);G.rotation.copy(acModel.rotation)}
-  if(deckGroup)deckGroup.visible=CFG.view==='cockpit'&&!s.ended&&mode!=='attract';if(cabinGroup)cabinGroup.visible=inCab&&!s.ended&&mode!=='attract';
+  if(deckGroup)deckGroup.visible=CFG.view==='cockpit'&&CFG.deck&&!s.ended&&mode!=='attract';if(cabinGroup)cabinGroup.visible=inCab&&!s.ended&&mode!=='attract';
   // landing light & shadow
   const night=CFG.night;landingLight.intensity=night&&s.gearDown?2.2:0;
   _v.set(0,a.cy-1,-a.len*.2).applyQuaternion(acModel.quaternion).add(acModel.position);landingLight.position.copy(_v);
@@ -1543,7 +1572,7 @@ function updateCamera(dt){
     _ea.set(look.pitch-6*D2R,look.yaw,0,'YXZ');_qa.setFromEuler(_ea);camera.quaternion.copy(acModel.quaternion).multiply(_qa);camera.fov=66;
   } else if(V==='cabin'){
     const U=cabinGroup.userData,C=U.C,side=CFG.seatLeft?-1:1;const r=clamp(CFG.seatRow-4,0,U.rows-1);
-    const key=r+','+(side<0?0:U.xs.length-1);if(U.hiddenKey!==key){const P=U.pax;
+    const key=r+','+(side<0?0:U.xs.length-1);if(U.pax&&U.hiddenKey!==key){const P=U.pax;
       if(U.hiddenKey&&U.hiddenM){for(const [m,mx] of U.hiddenM){m.setMatrixAt(mx.i,mx.m);m.instanceMatrix.needsUpdate=true}}U.hiddenM=null;
       const pk=U.paxAt&&U.paxAt[key];if(pk!==undefined){U.hiddenM=[];for(const m of[P.pHead,P.pBody]){const mm=new THREE.Matrix4();m.getMatrixAt(pk,mm);U.hiddenM.push([m,{i:pk,m:mm}]);m.setMatrixAt(pk,new THREE.Matrix4().makeScale(0,0,0));m.instanceMatrix.needsUpdate=true}}
       U.hiddenKey=key}
@@ -1708,7 +1737,7 @@ window.addEventListener('keydown',e=>{
   switch(e.code){
     case 'KeyG':toggleGear();break;case 'KeyF':setFlaps(1);break;case 'KeyV':setFlaps(-1);break;
     case 'KeyC':{const o=['cockpit','chase','tower','street','ped','carpark','boat','cabin'];setView(o[(o.indexOf(CFG.view)+1)%o.length]);break}
-    case 'KeyZ':toggleAP();break;case 'KeyN':CFG.night=!CFG.night;applyEnvironment();break;case 'KeyP':togglePause();break;
+    case 'KeyZ':toggleAP();break;case 'KeyK':CFG.deck=!CFG.deck;syncButtons();break;case 'KeyN':CFG.night=!CFG.night;applyEnvironment();break;case 'KeyP':togglePause();break;
   }
   if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();
 });
@@ -1747,11 +1776,11 @@ function setView(v){CFG.view=v;document.getElementById('viewSel').value=v;look.y
   document.getElementById('cabin').hidden=v!=='cabin';document.getElementById('seatbox').hidden=v!=='cabin';
   if(mode==='fly'){document.getElementById('map').hidden=v==='cabin';document.getElementById('ctl').hidden=v==='cabin'||!!ST.ended}
   if(v==='cabin'&&!ST.ap&&!ST.onGround&&mode==='fly'){toggleAP(true);toast('The computer is flying. Enjoy the view from your seat.')}
-  updateSeatTag()}
+  updateSeatTag();syncButtons()}
 function updateSeatTag(){const letters=CFG.seatLeft?'A':'K';document.getElementById('seattag').textContent='ROW '+CFG.seatRow+' · SEAT '+letters;document.getElementById('seatSide').textContent=CFG.seatLeft?'Left':'Right'}
 function syncButtons(){
   document.getElementById('btnAP').setAttribute('aria-pressed',String(!!ST.ap));document.getElementById('btnPause').setAttribute('aria-pressed',String(paused));
-  document.getElementById('btnGuide').setAttribute('aria-pressed',String(CFG.guide));document.getElementById('btnHud').setAttribute('aria-pressed',String(CFG.hud));document.getElementById('btnSound').setAttribute('aria-pressed',String(CFG.sound));
+  document.getElementById('btnGuide').setAttribute('aria-pressed',String(CFG.guide));document.getElementById('btnHud').setAttribute('aria-pressed',String(CFG.hud));const bd=document.getElementById('btnDeck');bd.setAttribute('aria-pressed',String(CFG.deck));bd.hidden=CFG.view!=='cockpit';document.getElementById('btnSound').setAttribute('aria-pressed',String(CFG.sound));
   document.getElementById('btnGear').textContent='Gear '+(ST.gearDown?'↓':'↑');
 }
 let toastT=0;function toast(t){const el=document.getElementById('toast');el.textContent=t;el.classList.add('on');toastT=performance.now()+2600}
@@ -1774,6 +1803,7 @@ document.getElementById('viewSel').addEventListener('change',e=>setView(e.target
 wxSel.addEventListener('change',e=>{CFG.wx=e.target.value;applyEnvironment();e.target.blur()});
 document.getElementById('btnNight').addEventListener('click',()=>{CFG.night=!CFG.night;applyEnvironment()});
 document.getElementById('btnAP').addEventListener('click',()=>toggleAP());
+document.getElementById('btnDeck').addEventListener('click',()=>{CFG.deck=!CFG.deck;syncButtons()});
 document.getElementById('btnHud').addEventListener('click',()=>{CFG.hud=!CFG.hud;syncButtons()});
 document.getElementById('btnGuide').addEventListener('click',()=>{CFG.guide=!CFG.guide;hoops.visible=CFG.guide;syncButtons()});
 document.getElementById('btnSound').addEventListener('click',()=>{CFG.sound=!CFG.sound;sfx.mute(CFG.sound);if(!CFG.sound&&synth)synth.cancel();syncButtons()});

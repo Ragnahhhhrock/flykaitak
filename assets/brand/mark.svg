@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Fly Kai Tak">
+  <!-- Fly Kai Tak mark: the Kowloon Tsai checkerboard, crossed by the 47° right turn onto Runway 13 -->
+  <rect width="64" height="64" rx="12" fill="#0a1115"/>
+  <g transform="translate(8 8)">
+    <rect width="48" height="48" fill="#f5efe3"/>
+    <path fill="#e8571f" d="M0 0h12v12H0zM24 0h12v12H24zM12 12h12v12H12zM36 12h12v12H36zM0 24h12v12H0zM24 24h12v12H24zM12 36h12v12H12zM36 36h12v12H36z"/>
+  </g>
+  <path d="M4 21 C 24 20, 36 26, 44 38 L 58 58" fill="none" stroke="#0a1115" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M4 21 C 24 20, 36 26, 44 38 L 58 58" fill="none" stroke="#1f8a5b" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
