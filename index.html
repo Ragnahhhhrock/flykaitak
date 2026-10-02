@@ -41,7 +41,7 @@
 :root{
   --ink:#0a1115; --panel:rgba(9,16,20,.86); --panel-2:rgba(18,30,36,.92); --line:#27373e; --line-2:#3a5058;
   --text:#e9eee8; --muted:#93a6a2; --checker:#e8571f; --checker-ink:#2a1206; --paper:#f5efe3;
-  --jade-deep:#005f4b; --jade:#1f8a5b; --jade-pale:#cfe6d9; --livery-white:#f6f5f0; --belly:#a9aeb1; --cheat-red:#d6262b;
+  --jade-deep:#005f4b; --jade:#1b7d52; --jade-bright:#2fa36d; --jade-pale:#cfe6d9; --livery-white:#f6f5f0; --belly:#a9aeb1; --cheat-red:#d6262b;
   --phosphor:#8ff5a8; --amber:#ffb94a; --alarm:#ff5b4f; --magenta:#ff5ad9;
   --f-ui:"B612",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
   --f-num:"B612 Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
@@ -76,7 +76,7 @@ legend{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--
 .cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .card{position:relative;border:1px solid var(--line);border-radius:3px;padding:10px 12px;cursor:pointer;display:grid;gap:4px;background:rgba(255,255,255,.015)}
 .card input{position:absolute;opacity:0;pointer-events:none}
-.card:has(input:checked){border-color:var(--jade);background:rgba(31,138,91,.12)}
+.card:has(input:checked){border-color:var(--jade-bright);background:rgba(31,138,91,.12)}
 .card b{font-size:14px}
 .card span{font-family:var(--f-num);font-size:11px;color:var(--muted);line-height:1.5}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
