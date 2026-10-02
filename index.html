@@ -197,7 +197,7 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
     <select id="wxSel" aria-label="Weather"></select>
     <button class="btn" id="btnNight" type="button" aria-pressed="false">Night</button>
     <button class="btn" id="btnAP" type="button" aria-pressed="false">Autopilot</button>
-    <button class="btn" id="btnDeck" type="button" aria-pressed="true">Cockpit</button>
+    <button class="btn" id="btnDeck" type="button" aria-pressed="false">Cockpit</button>
     <button class="btn" id="btnHud" type="button" aria-pressed="true">HUD</button>
     <button class="btn" id="btnGuide" type="button" aria-pressed="true">Guide</button>
     <button class="btn" id="btnSound" type="button" aria-pressed="true">Sound</button>
@@ -419,7 +419,7 @@ const WX={
 };
 
 /* ---------------- state & settings ---------------- */
-const CFG={zoom:1,ts:1,deck:true,hud:true,ac:'b744',night:false,wx:'clear',lightning:false,guide:true,ap:false,walled:true,view:'cockpit',sound:true,seatRow:34,seatLeft:true};
+const CFG={zoom:1,ts:1,deck:false,hud:true,ac:'b744',night:false,wx:'clear',lightning:false,guide:true,ap:false,walled:true,view:'cockpit',sound:true,seatRow:34,seatLeft:true};
 const ST={};let mode='loading'; // loading | attract | fly | ended
 let paused=false;
 
