@@ -234,6 +234,7 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
         </div>
         <p style="margin-top:12px">Brakes and reversers work automatically after touchdown. Pull thrust to idle in the flare.</p>
       </details>
+      <p class="later">Aerial imagery and map data © Lands Department, HKSAR Government (CSDI open data). Elevation: SRTM via AWS Terrain Tiles. Modern imagery is corrected to 1998 around Kai Tak, West Kowloon and the Central waterfront.</p>
       <details>
         <summary>Coming in later versions</summary>
         <p class="later" style="margin-top:10px">Aircraft: 747-200/300, 767-300, MD-11, A300-600, A320, 737-300, L-1011 TriStar, DC-10.<br>Radio: Kai Tak tower and approach calls, other crews on frequency.</p>
@@ -289,7 +290,7 @@ const rwP=(s,l)=>[s*RWY.u[0]+l*RWY.r[0],s*RWY.u[1]+l*RWY.r[1]];
 const IGS_HDG=88, GP=3.1*D2R, VIGS=[Math.sin(IGS_HDG*D2R),-Math.cos(IGS_HDG*D2R)];
 
 const PATH=(()=>{
-  const sP=-1430, P=rwP(sP,0), Rt=1470, tl=Rt*Math.tan((RWY.hdg-IGS_HDG)/2*D2R);
+  const sP=-1240, P=rwP(sP,0), Rt=1470, tl=Rt*Math.tan((RWY.hdg-IGS_HDG)/2*D2R);
   const A=[P[0]-tl*VIGS[0],P[1]-tl*VIGS[1]];
   const LEN1=15400, S=[A[0]-LEN1*VIGS[0],A[1]-LEN1*VIGS[1]];
   const pts=[];const push=(x,z,h,k)=>pts.push({x,z,h:h*D2R,k});
@@ -313,48 +314,40 @@ function pathNearest(x,z,hint){
 function pathNearestGlobal(x,z){const P=PATH.pts;let best=0,bd=1e18;for(let i=0;i<P.length;i+=6){const dx=P[i].x-x,dz=P[i].z-z,d=dx*dx+dz*dz;if(d<bd){bd=d;best=i}}return pathNearest(x,z,best)}
 function pathLateral(i,x,z){const p=PATH.pts[i];return (x-p.x)*Math.cos(p.h)+(z-p.z)*Math.sin(p.h)}
 
-/* ---------------- geography ---------------- */
-const K=1000;
-const km=a=>a.map(p=>[p[0]*K,p[1]*K]);
-const LAND=[
- {n:'Kowloon',p:km([[-30,-30],[14,-30],[14,4.0],[5.2,4.3],[4.2,3.0],[3.7,1.5],[3.0,0.2],[1.6,-0.6],[0.4,-0.2],[0.3,0.6],[-0.2,1.6],[-1.0,2.6],[-2.0,3.4],[-2.7,3.6],[-3.4,3.1],[-3.8,1.8],[-4.4,0.2],[-5.6,-0.8],[-7.5,-1.6],[-10,-2.6],[-14,-3.4],[-20,-4],[-30,-4.5]])},
- {n:'Hong Kong Island',p:km([[-12,5.5],[-5.5,4.9],[-4.3,4.65],[-3.5,4.75],[-2.6,4.6],[-2.0,4.65],[-1.0,4.7],[1.0,4.8],[3.0,5.2],[4.6,5.0],[6,6],[6,14],[-12,14]])},
- {n:'Tsing Yi',p:km([[-12.6,-2.7],[-9.8,-2.5],[-9.5,0.4],[-11.2,1.3],[-12.7,0.5]])},
- {n:'Stonecutters',p:km([[-7.6,0.9],[-6.4,0.8],[-6.3,1.6],[-7.5,1.7]])},
- {n:'Lantau',p:km([[-40,-3],[-20.5,-1.6],[-19.2,3.5],[-22,9],[-40,9]])},
-];
-function inPoly(x,z,p){let c=false;for(let i=0,j=p.length-1;i<p.length;j=i++){const a=p[i],b=p[j];if(((a[1]>z)!==(b[1]>z))&&(x<(b[0]-a[0])*(z-a[1])/(b[1]-a[1])+a[0]))c=!c}return c}
-function landAt(x,z){for(const L of LAND)if(inPoly(x,z,L.p))return L;return null}
-function coastDist(x,z){let m=1e9;for(const L of LAND){const p=L.p;for(let i=0,j=p.length-1;i<p.length;j=i++){const ax=p[j][0],az=p[j][1],bx=p[i][0],bz=p[i][1];const dx=bx-ax,dz=bz-az;const t=clamp(((x-ax)*dx+(z-az)*dz)/(dx*dx+dz*dz),0,1);const d=Math.hypot(x-ax-t*dx,z-az-t*dz);if(d<m)m=d}}return m}
-function inAirport(x,z){const s=rwS(x,z),l=rwL(x,z);return (s>-90&&s<RWY.len+70&&l>-150&&l<130)||(s>120&&s<1700&&l>=130&&l<720)}
-const HILLS=[
- {n:'Lion Rock',x:-600,z:-3000,h:495,s:560},{n:'Beacon Hill',x:-2600,z:-2500,h:457,s:540},{n:'Kowloon Peak',x:3300,z:-2700,h:602,s:800},
- {n:'Tate\'s Cairn',x:1300,z:-3400,h:440,s:700},{n:'Golden Hill',x:-5900,z:-3800,h:380,s:1000},{n:'Tai Mo Shan',x:-9000,z:-9500,h:957,s:2600},
- {n:'Victoria Peak',x:-4600,z:6800,h:552,s:1000},{n:'Mount Cameron',x:-1500,z:6900,h:440,s:900},{n:'Mount Butler',x:500,z:6900,h:436,s:800},
- {n:'Mount Parker',x:2600,z:7200,h:532,s:1100},{n:'Devil\'s Peak',x:5000,z:3500,h:222,s:450},{n:'Tsing Yi',x:-11000,z:-900,h:334,s:900},
- {n:'Lantau',x:-24000,z:2500,h:934,s:3000},
-];
-const CHK={x:-230,z:-1040,h:90,s:150}; // Checkerboard Hill (Kowloon Tsai), modelled separately at high resolution
-const chkH=(x,z)=>CHK.h*Math.exp(-((x-CHK.x)**2+(z-CHK.z)**2)/(2*CHK.s*CHK.s));
-function hillsAt(x,z){let h=0;for(const k of HILLS){const d2=(x-k.x)**2+(z-k.z)**2;if(d2<9*k.s*k.s)h+=k.h*Math.exp(-d2/(2*k.s*k.s))}return h}
+/* ---------------- geography (real data, loaded at boot) ---------------- */
+// Local frame: metres from the Runway 13 threshold (22.32558N 114.19262E). Assets are built by tools/build.py
+// from Hong Kong Lands Department open data (aerial imagery, basemap) and SRTM elevation.
+const GEO={outer:{x0:-28000,z0:-17000,x1:14000,z1:14000},inner:{x0:-8000,z0:-3800,x1:4800,z1:9000}};
+const HILLS=[{n:'Lion Rock',x:-558,z:-2948},{n:'Beacon Hill',x:-2350,z:-2550},{n:'Kowloon Peak',x:3442,z:-2032},{n:"Tate's Cairn",x:2536,z:-3726},
+ {n:'Golden Hill',x:-4183,z:-4147},{n:'Tai Mo Shan',x:-7010,z:-9440},{n:'Victoria Peak',x:-4853,z:5504},{n:'Mount Cameron',x:-1176,z:7043},
+ {n:'Mount Butler',x:884,z:6268},{n:'Mount Parker',x:2430,z:6268},{n:"Devil's Peak",x:5075,z:3277},{n:'Tsing Yi',x:-9043,z:-1933},{n:'Checkerboard Hill',x:-760,z:-1200}];
+const CHK={x:-760,z:-1200,boost:24,s:170}; // Kowloon Tsai hill: SRTM smooths it, so a little height is added back
+const chkH=(x,z)=>CHK.boost*Math.exp(-((x-CHK.x)**2+(z-CHK.z)**2)/(2*CHK.s*CHK.s));
 function nearestHill(x,z){let b=null,bd=1e18;for(const k of HILLS){const d=(x-k.x)**2+(z-k.z)**2;if(d<bd){bd=d;b=k}}return b}
-
-const TG={x0:-28000,z0:-17000,nx:420,nz:310,d:100};
-TG.h=new Float32Array((TG.nx+1)*(TG.nz+1));
-function buildTerrainField(){
-  for(let j=0;j<=TG.nz;j++)for(let i=0;i<=TG.nx;i++){
-    const x=TG.x0+i*TG.d,z=TG.z0+j*TG.d;const land=landAt(x,z);const cd=coastDist(x,z);
-    TG.h[j*(TG.nx+1)+i]=land?3.5+hillsAt(x,z)*sstep(0,520,cd):-1-14*sstep(0,320,cd);
-  }
-}
-function gridH(x,z){
-  const fx=(x-TG.x0)/TG.d,fz=(z-TG.z0)/TG.d;const i=Math.floor(fx),j=Math.floor(fz);
-  if(i<0||j<0||i>=TG.nx||j>=TG.nz)return -15;
-  const tx=fx-i,tz=fz-j,W=TG.nx+1;const a=TG.h[j*W+i],b=TG.h[j*W+i+1],c=TG.h[(j+1)*W+i],d=TG.h[(j+1)*W+i+1];
-  return lerp(lerp(a,b,tx),lerp(c,d,tx),tz);
-}
-function terrainAt(x,z){ // natural ground incl. checkerboard hill (no airport)
-  let h=gridH(x,z);const ch=chkH(x,z);if(ch>0.5)h=Math.max(h,3.5+ch);return h;
+// 1998 coastline fixes: Central Reclamation Phase III (2000s) was still harbour
+const WATER1998=[[-3460,-2330,4240,4650]];
+function gridSample(G,x,z){const fx=(x-G.x0)/G.d,fz=(z-G.z0)/G.d;const i=Math.floor(fx),j=Math.floor(fz);if(i<0||j<0||i>=G.nx-1||j>=G.nz-1)return -12;
+  const tx=fx-i,tz=fz-j,W=G.nx,h=G.h;return lerp(lerp(h[j*W+i],h[j*W+i+1],tx),lerp(h[(j+1)*W+i],h[(j+1)*W+i+1],tx),tz)}
+function inInner(x,z){const g=GEO.inner;return x>g.x0+80&&x<g.x1-80&&z>g.z0+80&&z<g.z1-80}
+function terrainAt(x,z){if(!GEO.O)return 0;let h=inInner(x,z)?gridSample(GEO.I,x,z):gridSample(GEO.O,x,z);if(h>0.5)h+=chkH(x,z);return h}
+function landAt(x,z){return terrainAt(x,z)>0.5}
+const APRON=(s,l)=>s>-60&&s<900&&l<=-130&&l>-860;
+function inAirport(x,z){const s=rwS(x,z),l=rwL(x,z);return (s>-90&&s<RWY.len+70&&l>-150&&l<130)||APRON(s,l)}
+const TEX={};
+async function loadGeo(progress){
+  const get=async(u,t)=>{const r=await fetch(u);if(!r.ok)throw new Error(u+' '+r.status);return t==='json'?r.json():r.arrayBuffer()};
+  const tl=new THREE.TextureLoader();const tex=u=>new Promise((res,rej)=>tl.load(u,res,undefined,()=>rej(new Error(u))));
+  progress('LOADING TERRAIN');
+  const [tb,bb,roads,to,ti]=await Promise.all([get('assets/terrain.bin'),get('assets/buildings.bin'),get('assets/roads.json','json'),tex('assets/aerial_outer.jpg'),tex('assets/aerial_inner.jpg')]);
+  const hd=new Int32Array(tb,0,4);const nO=hd[0]*hd[1],nI=hd[2]*hd[3];
+  const hO=new Int16Array(tb,16,nO),hI=new Int16Array(tb,16+nO*2,nI);
+  const mk=(R,nx,nz,src)=>{const h=new Float32Array(src.length);for(let i=0;i<src.length;i++)h[i]=src[i]/10;return {x0:R.x0,z0:R.z0,nx,nz,d:(R.x1-R.x0)/(nx-1),h}};
+  GEO.O=mk(GEO.outer,hd[0],hd[1],hO);GEO.I=mk(GEO.inner,hd[2],hd[3],hI);
+  for(const G of[GEO.O,GEO.I])for(let j=0;j<G.nz;j++)for(let i=0;i<G.nx;i++){const x=G.x0+i*G.d,z=G.z0+j*G.d;for(const w of WATER1998)if(x>w[0]&&x<w[1]&&z>w[2]&&z<w[3])G.h[j*G.nx+i]=-8;
+    const s=rwS(x,z),l=rwL(x,z);if(s>-140&&s<RWY.len+120&&l>-200&&l<180||APRON(s,l+60)||APRON(s,l-60))G.h[j*G.nx+i]=Math.min(G.h[j*G.nx+i],2.5)}
+  const nb=new Int32Array(bb,0,1)[0];GEO.B=new Int16Array(bb,4,nb*6);GEO.nb=nb;GEO.roads=roads;
+  for(const t of[to,ti]){t.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());t.minFilter=THREE.LinearMipmapLinearFilter}
+  TEX.outer=to;TEX.inner=ti;
 }
 
 /* ---------------- aircraft data ---------------- */
@@ -465,69 +458,41 @@ function cityMaterial(opts={}){
 function canvasTex(w,h,draw,rep){const c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d');draw(g,w,h);const t=new THREE.CanvasTexture(c);t.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());if(rep){t.wrapS=t.wrapT=THREE.RepeatWrapping}return t}
 
 /* ---------------- terrain ---------------- */
-let terrainMesh,water,waterNormal;
+let water,TERRAIN_MATS=[];
+function terrainMesh(G,R,tex,skipInner,offset){
+  const W=G.nx,H=G.nz,pos=new Float32Array(W*H*3),uv=new Float32Array(W*H*2),idx=[];
+  for(let j=0;j<H;j++)for(let i=0;i<W;i++){const k=j*W+i,x=G.x0+i*G.d,z=G.z0+j*G.d;let h=G.h[k];if(h>0.5)h+=chkH(x,z);
+    pos[k*3]=x;pos[k*3+1]=h;pos[k*3+2]=z;uv[k*2]=(x-R.x0)/(R.x1-R.x0);uv[k*2+1]=1-(z-R.z0)/(R.z1-R.z0)}
+  const I=GEO.inner;
+  for(let j=0;j<H-1;j++)for(let i=0;i<W-1;i++){
+    if(skipInner){const xa=G.x0+i*G.d,za=G.z0+j*G.d;if(xa>I.x0+160&&xa+G.d<I.x1-160&&za>I.z0+160&&za+G.d<I.z1-160)continue}
+    const a=j*W+i,b=a+1,c=a+W,d=c+1;idx.push(a,c,b,b,c,d)}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(pos,3));g.setAttribute('uv',new THREE.BufferAttribute(uv,2));
+  g.setIndex(new (W*H>65535?THREE.Uint32BufferAttribute:THREE.Uint16BufferAttribute)(idx,1));
+  const m=new THREE.MeshBasicMaterial({map:tex,color:0xffffff,polygonOffset:!!offset,polygonOffsetFactor:offset||0,polygonOffsetUnits:offset||0});
+  TERRAIN_MATS.push(m);const mesh=new THREE.Mesh(g,m);scene.add(mesh);return mesh;
+}
 function buildTerrain(){
-  const W=TG.nx+1,H=TG.nz+1,pos=new Float32Array(W*H*3),col=new Float32Array(W*H*3),idx=[];
-  const cU=new THREE.Color(0x6d6a63),cG=new THREE.Color(0x56703f),cG2=new THREE.Color(0x3f5a33),cR=new THREE.Color(0x7c776a),cS=new THREE.Color(0xa49a80),cW=new THREE.Color(0x2b3d40),tmp=new THREE.Color();
-  for(let j=0;j<H;j++)for(let i=0;i<W;i++){
-    const k=j*W+i,x=TG.x0+i*TG.d,z=TG.z0+j*TG.d,h=TG.h[k];pos[k*3]=x;pos[k*3+1]=h;pos[k*3+2]=z;
-    const e=h-3.5;
-    if(h<0.5)tmp.copy(cW).lerp(cS,clamp((h+3)/3.5,0,1));
-    else if(e<30){tmp.copy(cU).lerp(cG,sstep(8,30,e)*.7);if(e<2&&h<4)tmp.lerp(cS,.3)}
-    else if(e<350)tmp.copy(cG).lerp(cG2,sstep(60,300,e));
-    else tmp.copy(cG2).lerp(cR,sstep(350,600,e));
-    const n=(Math.sin(x*.013)*Math.cos(z*.011)+Math.sin(x*.041+z*.037))*.04;
-    col[k*3]=tmp.r+n;col[k*3+1]=tmp.g+n;col[k*3+2]=tmp.b+n;
-  }
-  for(let j=0;j<TG.nz;j++)for(let i=0;i<TG.nx;i++){const a=j*W+i,b=a+1,c=a+W,d=c+1;idx.push(a,c,b,b,c,d)}
-  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(pos,3));g.setAttribute('color',new THREE.BufferAttribute(col,3));g.setIndex(idx);g.computeVertexNormals();
-  terrainMesh=new THREE.Mesh(g,new THREE.MeshLambertMaterial({vertexColors:true}));scene.add(terrainMesh);
-  // checkerboard hill: high-resolution knoll
-  const nseg=new THREE.PlaneGeometry(1040,1040,60,60);nseg.rotateX(-Math.PI/2);
-  const kp=nseg.attributes.position;const kc=new Float32Array(kp.count*3);
-  for(let i=0;i<kp.count;i++){const x=kp.getX(i)+CHK.x,z=kp.getZ(i)+CHK.z;const h=Math.max(3.6+chkH(x,z),gridH(x,z)+.25);kp.setXYZ(i,x,h,z);
-    tmp.copy(cU).lerp(cG,sstep(4,20,h)).lerp(cG2,sstep(30,80,h));kc[i*3]=tmp.r;kc[i*3+1]=tmp.g;kc[i*3+2]=tmp.b}
-  nseg.setAttribute('color',new THREE.BufferAttribute(kc,3));nseg.computeVertexNormals();
-  const knoll=new THREE.Mesh(nseg,new THREE.MeshLambertMaterial({vertexColors:true,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}));scene.add(knoll);
-  // water
-  waterNormal=canvasTex(256,256,(g,w,h)=>{const im=g.createImageData(w,h);for(let y=0;y<h;y++)for(let x=0;x<w;x++){const a=x/w*Math.PI*2,b=y/h*Math.PI*2;
-     const dx=Math.cos(a*3+b*2)*.5+Math.cos(a*7-b*5)*.3+Math.cos(a*13+b*11)*.2, dy=Math.cos(b*4-a*1)*.5+Math.cos(b*6+a*5)*.3+Math.cos(b*15-a*9)*.2;
-     const i=(y*w+x)*4;im.data[i]=128+dx*55;im.data[i+1]=128+dy*55;im.data[i+2]=255;im.data[i+3]=255}g.putImageData(im,0,0)},true);
-  waterNormal.repeat.set(1400,1400);
-  water=new THREE.Mesh(new THREE.PlaneGeometry(140000,140000),new THREE.MeshLambertMaterial({color:0x1e4a52}));
+  terrainMesh(GEO.O,GEO.outer,TEX.outer,true,0);
+  terrainMesh(GEO.I,GEO.inner,TEX.inner,false,-1);
+  water=new THREE.Mesh(new THREE.PlaneGeometry(160000,160000),new THREE.MeshLambertMaterial({color:0x24474d}));
   water.rotation.x=-Math.PI/2;water.position.y=0;scene.add(water);
 }
 
 /* ---------------- roads & traffic ---------------- */
-const ROADS=[
- {n:'Prince Edward Road',w:[[-4200,-600],[-2600,-700],[-900,-650],[150,-300],[1300,-560],[2600,-260],[3450,500],[3950,2200]]},
- {n:'Nathan Road',w:[[-2380,3300],[-2500,1500],[-2650,-400],[-2720,-1500]]},
- {n:'Waterloo Road',w:[[-2550,500],[-1500,-200],[-700,-900],[-150,-1600]]},
- {n:'Chatham Road',w:[[-2300,3150],[-1250,1650],[-420,620],[60,-240]]},
- {n:'Lai Chi Kok Road',w:[[-2700,-400],[-4500,-700],[-6500,-1300],[-9000,-2300]]},
- {n:'Gloucester Road',w:[[-7000,5050],[-4500,4880],[-3000,4930],[-1500,4900],[500,4950],[2500,5300],[4300,5180]]},
- {n:'Lung Cheung Road',w:[[-3800,-1700],[-1800,-1650],[200,-1750],[2200,-1300]]},
-];
-for(const r of ROADS){r.c=[0];for(let i=1;i<r.w.length;i++)r.c.push(r.c[i-1]+Math.hypot(r.w[i][0]-r.w[i-1][0],r.w[i][1]-r.w[i-1][1]));r.L=r.c[r.c.length-1]}
-function roadPoint(r,s){s=((s%r.L)+r.L)%r.L;let i=1;while(i<r.c.length-1&&r.c[i]<s)i++;const t=(s-r.c[i-1])/(r.c[i]-r.c[i-1]);const a=r.w[i-1],b=r.w[i];return [lerp(a[0],b[0],t),lerp(a[1],b[1],t),Math.atan2(b[0]-a[0],-(b[1]-a[1]))]}
-function distToRoads(x,z){let m=1e9;for(const r of ROADS)for(let i=1;i<r.w.length;i++){const a=r.w[i-1],b=r.w[i];const dx=b[0]-a[0],dz=b[1]-a[1];const t=clamp(((x-a[0])*dx+(z-a[1])*dz)/(dx*dx+dz*dz),0,1);const d=Math.hypot(x-a[0]-t*dx,z-a[1]-t*dz);if(d<m)m=d}return m}
+let ROADS=[];
+function prepRoads(){ROADS=[];for(const w of GEO.roads){if(w.length<2)continue;const c=[0];for(let i=1;i<w.length;i++)c.push(c[i-1]+Math.hypot(w[i][0]-w[i-1][0],w[i][1]-w[i-1][1]));const L=c[c.length-1];
+  const m=w[Math.floor(w.length/2)];if(L<300||inAirport(m[0],m[1]))continue;ROADS.push({w,c,L})}}
+function roadPoint(r,s){s=((s%r.L)+r.L)%r.L;let i=1;while(i<r.c.length-1&&r.c[i]<s)i++;const t=(s-r.c[i-1])/Math.max(1e-6,r.c[i]-r.c[i-1]);const a=r.w[i-1],b=r.w[i];return [lerp(a[0],b[0],t),lerp(a[1],b[1],t),Math.atan2(b[0]-a[0],-(b[1]-a[1]))]}
 let cars=[],carMesh,busMesh,carLights;
 function buildRoads(){
-  const mat=new THREE.MeshLambertMaterial({color:0x3b3c3e,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-3});
-  for(const r of ROADS){
-    const pos=[],idx=[];const step=40;let n=0;
-    for(let s=0;s<=r.L;s+=step){const p=roadPoint(r,Math.min(s,r.L-.01));const nx=Math.cos(p[2]),nz=Math.sin(p[2]);
-      for(const sd of[-1,1]){const x=p[0]+nx*11*sd,z=p[1]+nz*11*sd;pos.push(x,Math.max(terrainAt(x,z),.6)+.6,z)}
-      if(n>0){const a=(n-1)*2;idx.push(a,a+2,a+1,a+1,a+2,a+3)}n++}
-    const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setIndex(idx);g.computeVertexNormals();
-    const m=new THREE.Mesh(g,mat);scene.add(m);
-  }
-  const NC=520,NB=70;
+  prepRoads();const total=ROADS.reduce((a,r)=>a+r.L,0);
+  const NC=900,NB=110;
   carMesh=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1).translate(0,.5,0),new THREE.MeshLambertMaterial(),NC);
   busMesh=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1).translate(0,.5,0),new THREE.MeshLambertMaterial(),NB);
-  const carCols=[0xc8232c,0xc8232c,0xc8232c,0xeeeeea,0xb9bcc0,0x2b2f34,0x3c8c4a,0x1f3a6e];const busCols=[0xe6dcc0,0xd13a2f,0xe9c33a];
-  const tc=new THREE.Color();
-  for(let i=0;i<NC+NB;i++){const r=ROADS[i%ROADS.length];const bus=i>=NC;
+  const carCols=[0xc8232c,0xc8232c,0xc8232c,0xeeeeea,0xb9bcc0,0x2b2f34,0x3c8c4a,0x1f3a6e];const busCols=[0xe6dcc0,0xd13a2f,0xe9c33a,0xdedede];
+  const tc=new THREE.Color();const pickRoad=()=>{let t=rnd()*total;for(const r of ROADS){t-=r.L;if(t<=0)return r}return ROADS[0]};
+  for(let i=0;i<NC+NB;i++){const bus=i>=NC;const r=pickRoad();
     cars.push({r,s:rnd()*r.L,dir:rnd()<.5?1:-1,v:rr(9,17)*(bus?.7:1),bus,k:bus?i-NC:i});
     tc.setHex(bus?pick(busCols):pick(carCols));(bus?busMesh:carMesh).setColorAt(bus?i-NC:i,tc)}
   scene.add(carMesh,busMesh);
@@ -537,69 +502,72 @@ function buildRoads(){
 const _m4=new THREE.Matrix4(),_q=new THREE.Quaternion(),_v=new THREE.Vector3(),_s=new THREE.Vector3(),_e=new THREE.Euler();
 function updateTraffic(dt,night){
   const lp=carLights.geometry.attributes.position,lc=carLights.geometry.attributes.color;
-  for(let i=0;i<cars.length;i++){const c=cars[i];c.s+=c.v*c.dir*dt;const p=roadPoint(c.r,c.s);const off=(c.dir>0?4:-4);const nx=Math.cos(p[2]),nz=Math.sin(p[2]);
-    const x=p[0]+nx*off,z=p[1]+nz*off;const y=Math.max(terrainAt(x,z),.6)+.7;const hd=p[2]+(c.dir<0?Math.PI:0);
+  for(let i=0;i<cars.length;i++){const c=cars[i];c.s+=c.v*c.dir*dt;const p=roadPoint(c.r,c.s);const off=(c.dir>0?3.5:-3.5);const nx=Math.cos(p[2]),nz=Math.sin(p[2]);
+    const x=p[0]+nx*off,z=p[1]+nz*off;const y=Math.max(terrainAt(x,z),.6)+.5;const hd=p[2]+(c.dir<0?Math.PI:0);
     _q.setFromEuler(_e.set(0,-hd,0));_s.set(c.bus?2.5:1.75,c.bus?4.3:1.5,c.bus?11.5:4.4);_m4.compose(_v.set(x,y,z),_q,_s);
     (c.bus?busMesh:carMesh).setMatrixAt(c.k,_m4);
     const fx=Math.sin(hd),fz=-Math.cos(hd),L=c.bus?5.8:2.3;
     lp.setXYZ(i*2,x+fx*L,y+1,z+fz*L);lp.setXYZ(i*2+1,x-fx*L,y+1,z-fz*L);
-    lc.setXYZ(i*2,1,.95,.8);lc.setXYZ(i*2+1,1,.12,.08);
+    if(!lc._init){lc.setXYZ(i*2,1,.95,.8);lc.setXYZ(i*2+1,1,.12,.08)}
   }
   carMesh.instanceMatrix.needsUpdate=true;busMesh.instanceMatrix.needsUpdate=true;lp.needsUpdate=true;if(!lc._init){lc.needsUpdate=true;lc._init=1}
   carLights.visible=night;
 }
 
-/* ---------------- buildings ---------------- */
+/* ---------------- buildings (real footprints, 1998 heights estimated by district) ---------------- */
 const BGRID=new Map(),BCELL=250;
 function addCollider(x0,x1,z0,z1,top,name){const b={x0,x1,z0,z1,top,name};for(let i=Math.floor(x0/BCELL);i<=Math.floor(x1/BCELL);i++)for(let j=Math.floor(z0/BCELL);j<=Math.floor(z1/BCELL);j++){const k=i+','+j;if(!BGRID.has(k))BGRID.set(k,[]);BGRID.get(k).push(b)}}
 function buildingAt(x,z,pad){const a=BGRID.get(Math.floor(x/BCELL)+','+Math.floor(z/BCELL));if(!a)return null;let best=null;for(const b of a){if(x>b.x0-pad&&x<b.x1+pad&&z>b.z0-pad&&z<b.z1+pad){if(!best||b.top>best.top)best=b}}return best}
-const ZONES=[
- {n:'Kowloon City',x0:-1900,x1:700,z0:-1850,z1:-120,c:900,h:[16,48],f:[14,30]},
- {n:'Wong Tai Sin',x0:-1200,x1:2000,z0:-2400,z1:-1350,c:450,h:[28,95],f:[18,34]},
- {n:'Mong Kok',x0:-3300,x1:-1800,z0:-1400,z1:1700,c:800,h:[30,85],f:[14,30]},
- {n:'Sham Shui Po',x0:-5600,x1:-3300,z0:-1700,z1:1600,c:800,h:[25,70],f:[14,30]},
- {n:'Tsim Sha Tsui',x0:-3600,x1:-1600,z0:1600,z1:3550,c:520,h:[30,115],f:[18,40]},
- {n:'To Kwa Wan',x0:-1800,x1:300,z0:-200,z1:2700,c:560,h:[22,70],f:[14,28]},
- {n:'Kwun Tong',x0:1400,x1:4700,z0:-1500,z1:2600,c:560,h:[25,90],f:[18,36]},
- {n:'Central',x0:-6500,x1:-3000,z0:4700,z1:5700,c:560,h:[45,170],f:[20,42]},
- {n:'Wan Chai',x0:-3000,x1:-500,z0:4650,z1:5600,c:520,h:[40,150],f:[18,38]},
- {n:'Causeway Bay',x0:-500,x1:2500,z0:4750,z1:5700,c:520,h:[35,130],f:[18,36]},
- {n:'North Point',x0:2500,x1:4700,z0:5000,z1:5900,c:360,h:[35,120],f:[18,34]},
- {n:'Mid-Levels',x0:-6000,x1:-1500,z0:5600,z1:6300,c:380,h:[40,140],f:[18,34],hill:true},
- {n:'Kwai Chung',x0:-14000,x1:-7600,z0:-4600,z1:-2400,c:460,h:[30,95],f:[18,40]},
- {n:'Tsuen Wan',x0:-16000,x1:-12500,z0:-5200,z1:-3600,c:300,h:[30,110],f:[18,36]},
+const DISTRICTS=[
+ {n:'Kowloon City',x0:-1600,x1:1300,z0:-2100,z1:400,h:[16,45]},
+ {n:'Wong Tai Sin',x0:-2600,x1:2600,z0:-3800,z1:-2100,h:[40,110]},
+ {n:'Kwun Tong',x0:1300,x1:6500,z0:-2800,z1:3400,h:[25,95]},
+ {n:'Hung Hom',x0:-1700,x1:1300,z0:400,z1:3300,h:[22,70]},
+ {n:'Tsim Sha Tsui',x0:-3300,x1:-1700,z0:1900,z1:3900,h:[30,85]},
+ {n:'Mong Kok',x0:-3300,x1:-1600,z0:-2100,z1:1900,h:[25,65]},
+ {n:'Sham Shui Po',x0:-6200,x1:-3300,z0:-2800,z1:1500,h:[25,65]},
+ {n:'Sheung Wan',x0:-6800,x1:-4300,z0:3900,z1:6200,h:[40,130]},
+ {n:'Central',x0:-4300,x1:-2700,z0:3900,z1:6000,h:[60,190]},
+ {n:'Wan Chai',x0:-2700,x1:-600,z0:3900,z1:6200,h:[45,160]},
+ {n:'Causeway Bay',x0:-600,x1:1900,z0:3900,z1:6600,h:[40,140]},
+ {n:'North Point',x0:1900,x1:7000,z0:4200,z1:7200,h:[35,120]},
+ {n:'Kwai Chung',x0:-11500,x1:-6200,z0:-6500,z1:-1200,h:[30,100]},
+ {n:'Tsuen Wan',x0:-18000,x1:-11500,z0:-6500,z1:-800,h:[30,110]},
 ];
-const WALLED={x:-60,z:-560,w:210,d:125};
+function districtAt(x,z){for(const d of DISTRICTS)if(x>d.x0&&x<d.x1&&z>d.z0&&z<d.z1)return d;return {n:'Kowloon',h:[20,60]}}
+const WALLED={x:-229,z:-721,w:210,d:125};
+const LANDMARK_CLEAR=[];
 function clearanceCap(x,z){const i=pathNearestGlobal(x,z);const p=PATH.pts[i];if(p.d<-60)return 999;const lat=Math.abs(pathLateral(i,x,z));return (p.alt-38)+Math.max(0,lat-240)*.55}
+function skipFootprint(x,z){
+  const s=rwS(x,z),l=rwL(x,z);if(s>-80&&s<RWY.len+200&&l>-900&&l<200)return true;        // Kai Tak airport (modern development there)
+  if(x>-4400&&x<-2750&&z>500&&z<3150)return true;                                        // West Kowloon: 1998 reclamation, not yet built on
+  for(const w of WATER1998)if(x>w[0]&&x<w[1]&&z>w[2]&&z<w[3])return true;
+  if(Math.abs(x-WALLED.x)<WALLED.w/2+25&&Math.abs(z-WALLED.z)<WALLED.d/2+25)return true;
+  for(const c of LANDMARK_CLEAR)if(Math.hypot(x-c[0],z-c[1])<c[2])return true;
+  if(Math.hypot(x-(-2380),z-(-170))<120)return false;
+  return false;
+}
 let bldMesh,cityMat,signs=[],streetLights;
 function buildCity(){
-  cityMat=cityMaterial();
-  const recs=[];
+  cityMat=cityMaterial();const B=GEO.B,recs=[];
   const pal=[0xe9e4d8,0xddd6c6,0xcfc8b6,0xd9c7b5,0xe6d3c9,0xbfc8c4,0xc9d3d0,0xb7b2a6,0xd8cfae,0xa9a59b,0xe0dcd2,0xc4b49f];
-  for(const Z of ZONES){let placed=0,tries=0;
-    while(placed<Z.c&&tries<Z.c*8){tries++;
-      const x=rr(Z.x0,Z.x1),z=rr(Z.z0,Z.z1);
-      if(!landAt(x,z)||inAirport(x,z))continue;
-      const th=terrainAt(x,z);if(th<2.5)continue;if(!Z.hill&&th-3.5>45)continue;if(Z.hill&&th>260)continue;
-      if(coastDist(x,z)<25)continue;
-      if(Math.hypot(x-CHK.x,z-CHK.z)<380)continue;
-      if(Math.abs(x-WALLED.x)<WALLED.w/2+30&&Math.abs(z-WALLED.z)<WALLED.d/2+30)continue;
-      if(distToRoads(x,z)<20)continue;
-      let h=lerp(Z.h[0],Z.h[1],Math.pow(rnd(),1.6));const cap=clearanceCap(x,z)-(th-3.5);h=Math.min(h,cap);if(h<10)continue;
-      const w=rr(Z.f[0],Z.f[1]),d=rr(Z.f[0],Z.f[1]);
-      recs.push({x,z,y:th-1,w,d,h:h+1,c:pick(pal),n:Z.n});placed++;}
-  }
-  // Kai Tak terminal + parking structure handled in airport
+  for(let i=0;i<GEO.nb;i++){const x=B[i*6],z=B[i*6+1],w=B[i*6+2]/10,d=B[i*6+3]/10,ph=B[i*6+4]/1000,area=B[i*6+5];
+    if(w<3||d<3||skipFootprint(x,z))continue;const th=terrainAt(x,z);if(th<0.5)continue;
+    const D=districtAt(x,z);let lo=D.h[0],hi=D.h[1];
+    if(z>3900&&th>45){lo=60;hi=150}                       // Mid-Levels residential towers
+    let h=lerp(lo,hi,Math.pow(rnd(),1.5));
+    if(area<130)h*=.45;else if(area<300)h*=.75;else if(area>3000&&rnd()<.55)h=rr(12,28);
+    const cap=clearanceCap(x,z)-(th-3.5);h=Math.min(h,cap);if(h<7)continue;
+    recs.push({x,z,y:th-1.5,w,d,ph,h:h+1.5,c:pick(pal),n:D.n})}
   bldMesh=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1).translate(0,.5,0),cityMat,recs.length);
   const tc=new THREE.Color();
-  recs.forEach((r,i)=>{_m4.compose(_v.set(r.x,r.y,r.z),_q.identity(),_s.set(r.w,r.h,r.d));bldMesh.setMatrixAt(i,_m4);tc.setHex(r.c);const sh=.9+rnd()*.14;tc.multiplyScalar(sh);bldMesh.setColorAt(i,tc);
-    addCollider(r.x-r.w/2,r.x+r.w/2,r.z-r.d/2,r.z+r.d/2,r.y+r.h,r.n)});
+  recs.forEach((r,i)=>{_q.setFromEuler(_e.set(0,-r.ph,0));_m4.compose(_v.set(r.x,r.y,r.z),_q,_s.set(r.w,r.h,r.d));bldMesh.setMatrixAt(i,_m4);tc.setHex(r.c);tc.multiplyScalar(.9+rnd()*.14);bldMesh.setColorAt(i,tc);
+    const c=Math.abs(Math.cos(r.ph)),s=Math.abs(Math.sin(r.ph));const ex=c*r.w/2+s*r.d/2,ez=s*r.w/2+c*r.d/2;addCollider(r.x-ex,r.x+ex,r.z-ez,r.z+ez,r.y+r.h,r.n)});
   scene.add(bldMesh);
-  // street lights (sodium) across urban land
+  // street lights along the main roads, plus scattered estate lighting
   const L=[];
-  for(let i=0;i<9000;i++){const r=recs[Math.floor(rnd()*recs.length)];const x=r.x+rr(-60,60),z=r.z+rr(-60,60);if(!landAt(x,z)||inAirport(x,z))continue;const h=terrainAt(x,z);if(h<1)continue;
-    const w=rnd();L.push(x,h+9,z,1,w<.8?.62:.92,w<.8?.28:.85,2.6,-1)}
-  for(const rd of ROADS)for(let s=0;s<rd.L;s+=45){const p=roadPoint(rd,s);for(const sd of[-1,1]){const x=p[0]+Math.cos(p[2])*12*sd,z=p[1]+Math.sin(p[2])*12*sd;L.push(x,Math.max(terrainAt(x,z),.6)+10,z,1,.66,.3,3,-1)}}
+  for(const rd of ROADS)for(let s=0;s<rd.L;s+=42){const p=roadPoint(rd,s);for(const sd of[-1,1]){const x=p[0]+Math.cos(p[2])*11*sd,z=p[1]+Math.sin(p[2])*11*sd;L.push(x,Math.max(terrainAt(x,z),.6)+10,z,1,.66,.3,3,-1)}}
+  for(let i=0;i<7000&&recs.length;i++){const r=recs[Math.floor(rnd()*recs.length)];const x=r.x+rr(-40,40),z=r.z+rr(-40,40);if(!landAt(x,z)||inAirport(x,z))continue;const w=rnd();L.push(x,terrainAt(x,z)+8,z,1,w<.8?.62:.92,w<.8?.28:.85,2.4,-1)}
   streetLights=makeLights(L);scene.add(streetLights);
   buildSigns(recs);
   return recs;
@@ -609,84 +577,101 @@ function buildSigns(recs){
   const neon=['#ff3b6b','#3bf0ff','#ffd23b','#7dff5a','#ff7b2e','#c46bff','#ff4fd8'];
   const texs=words.map((w,i)=>canvasTex(128,256,(g,W,H)=>{const c=neon[i%neon.length];g.fillStyle='#120d10';g.fillRect(0,0,W,H);g.strokeStyle=c;g.lineWidth=6;g.shadowColor=c;g.shadowBlur=14;g.strokeRect(10,10,W-20,H-20);
      g.fillStyle=c;g.font='900 '+(w.length>2?60:84)+'px "Noto Serif TC","PMingLiU","SimSun",serif';g.textAlign='center';g.textBaseline='middle';const step=(H-40)/w.length;for(let k=0;k<w.length;k++)g.fillText(w[k],W/2,30+step*(k+.5));}));
-  const kowloon=recs.filter(r=>['Mong Kok','Tsim Sha Tsui','Sham Shui Po','Kowloon City','To Kwa Wan'].includes(r.n)&&r.h>18);
+  const kowloon=recs.filter(r=>['Mong Kok','Tsim Sha Tsui','Sham Shui Po','Kowloon City','Hung Hom','Wan Chai','Causeway Bay'].includes(r.n)&&r.h>18&&r.w>8);
   const geo=new THREE.PlaneGeometry(1,1);
-  for(let i=0;i<150&&kowloon.length;i++){const r=kowloon[Math.floor(rnd()*kowloon.length)];const k=Math.floor(rnd()*texs.length);
-    const m=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({map:texs[k],side:THREE.DoubleSide,fog:true}));
-    const side=Math.floor(rnd()*4);const sw=rr(5,8),sh=sw*2;m.scale.set(sw,sh,1);
-    const y=r.y+clamp(rr(8,r.h-sh/2),sh/2+4,r.h);
-    if(side===0){m.position.set(r.x+r.w/2+sw/2+.5,y,r.z+rr(-r.d/3,r.d/3));m.rotation.y=0}
-    else if(side===1){m.position.set(r.x-r.w/2-sw/2-.5,y,r.z+rr(-r.d/3,r.d/3));m.rotation.y=0}
-    else if(side===2){m.position.set(r.x+rr(-r.w/3,r.w/3),y,r.z+r.d/2+sw/2+.5);m.rotation.y=Math.PI/2}
-    else {m.position.set(r.x+rr(-r.w/3,r.w/3),y,r.z-r.d/2-sw/2-.5);m.rotation.y=Math.PI/2}
+  for(let i=0;i<260&&kowloon.length;i++){const r=kowloon[Math.floor(rnd()*kowloon.length)];const k=Math.floor(rnd()*texs.length);
+    const m=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({map:texs[k],side:THREE.DoubleSide}));
+    const sw=rr(4,7),sh=sw*2;m.scale.set(sw,sh,1);const y=r.y+clamp(rr(8,r.h-sh/2),sh/2+4,r.h);
+    const side=rnd()<.5?1:-1,face=rnd()<.5;const c=Math.cos(r.ph),s=Math.sin(r.ph);
+    // stick out from a face, perpendicular to it (like Hong Kong's projecting signs)
+    const ax=face?[c,s]:[-s,c],half=face?r.w/2:r.d/2;
+    m.position.set(r.x+ax[0]*(half+sw/2+.4)*side,y,r.z+ax[1]*(half+sw/2+.4)*side);m.rotation.y=-Math.atan2(ax[1],ax[0]);
     scene.add(m);signs.push(m)}
 }
 
-/* ---------------- landmarks ---------------- */
+/* ---------------- landmarks (positions from real coordinates) ---------------- */
 const glassMat=(c)=>cityMaterial({color:c});
 let walledGroup,parkGroup,landmarkLights=[];
 function box(w,h,d,mat,x,y,z,ry){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d).translate(0,h/2,0),mat);m.position.set(x,y,z);if(ry)m.rotation.y=ry;scene.add(m);return m}
 function towerCollider(x,z,w,d,top,name){addCollider(x-w/2,x+w/2,z-d/2,z+d/2,top,name)}
+const LM={boc:[-3206,5120],hsbc:[-3433,4999],lippo:[-2938,5109],jardine:[-3392,4688],exch:[-3546,4578],ifc1:[-3484,4379],center:[-3917,4500],
+  plaza:[-1960,5010],hopewell:[-2125,5629],fefc:[-2845,5043],hkcec:[-2050,4610],clock:[-2400,3505],culture:[-2300,3440],peninsula:[-2119,3368],
+  coliseum:[-1109,2593],peak:[-4420,6005],cenPier:[-3150,4600]};
+for(const [k,p] of Object.entries(LM))LANDMARK_CLEAR.push([p[0],p[1],k==='hkcec'?170:k==='exch'?90:k==='culture'?110:60]);
+const gAt=(p)=>Math.max(terrainAt(p[0],p[1]),3.5);
 function buildLandmarks(){
   const L=[];
-  // Bank of China Tower (1990): quartered triangular prisms stepping up, twin masts
-  {const x=-3700,z=5150,base=terrainAt(x,z),s=52;const g=new THREE.Group();g.position.set(x,base,z);g.rotation.y=.12;
+  // Bank of China Tower (1990): four triangular shafts stepping up, white cross-bracing, twin masts
+  {const [x,z]=LM.boc,base=gAt(LM.boc),s=52;const g=new THREE.Group();g.position.set(x,base,z);g.rotation.y=.18;
    const tri=(h,rot)=>{const sh=new THREE.Shape();sh.moveTo(0,0);sh.lineTo(s/2,0);sh.lineTo(0,s/2);sh.lineTo(0,0);const eg=new THREE.ExtrudeGeometry(sh,{depth:h,bevelEnabled:false});eg.rotateX(-Math.PI/2);const m=new THREE.Mesh(eg,glassMat(0x6f8394));m.rotation.y=rot;g.add(m)};
    tri(315,0);tri(250,Math.PI/2);tri(190,Math.PI);tri(130,-Math.PI/2);
-   const sq=new THREE.Mesh(new THREE.BoxGeometry(s,70,s).translate(0,35,0),glassMat(0x6f8394));g.add(sq);
+   g.add(new THREE.Mesh(new THREE.BoxGeometry(s,70,s).translate(0,35,0),glassMat(0x6f8394)));
+   const xm=new THREE.LineBasicMaterial({color:0xf2f2f2});const xs=[];for(let k=0;k<4;k++){const y0=k*60+10,y1=y0+60;for(const sd of[-1,1]){xs.push(-s/2-.3,y0,sd*(s/2+.3),s/2+.3,y1,sd*(s/2+.3),s/2+.3,y0,sd*(s/2+.3),-s/2-.3,y1,sd*(s/2+.3));xs.push(sd*(s/2+.3),y0,-s/2-.3,sd*(s/2+.3),y1,s/2+.3,sd*(s/2+.3),y0,s/2+.3,sd*(s/2+.3),y1,-s/2-.3)}}
+   const xg=new THREE.BufferGeometry();xg.setAttribute('position',new THREE.Float32BufferAttribute(xs,3));g.add(new THREE.LineSegments(xg,xm));
    for(const o of[[-3,2],[3,-2]]){const mm=new THREE.Mesh(new THREE.CylinderGeometry(.5,.8,55,6).translate(0,27,0),new THREE.MeshLambertMaterial({color:0xbfc4c8}));mm.position.set(o[0],315,o[1]);g.add(mm)}
    scene.add(g);towerCollider(x,z,s,s,370,'Bank of China Tower');L.push(x,base+372,z,1,.1,.1,4,.3);}
-  // Central Plaza (1992): triangular, chamfered, glowing crown + mast
-  {const x=-2350,z=4980,b=terrainAt(x,z),r=34;const g=new THREE.Group();g.position.set(x,b,z);
-   const shaft=new THREE.Mesh(new THREE.CylinderGeometry(r,r,300,3).translate(0,150,0),glassMat(0xb69a5e));shaft.rotation.y=.3;g.add(shaft);
-   const crown=new THREE.Mesh(new THREE.ConeGeometry(r*.85,22,3).translate(0,311,0),new THREE.MeshLambertMaterial({color:0xd8b86a,emissive:0x000000}));crown.rotation.y=.3;crown.userData.neon=0xffd36b;g.add(crown);
-   const mast=new THREE.Mesh(new THREE.CylinderGeometry(.6,1,60,6).translate(0,330,0),new THREE.MeshLambertMaterial({color:0xcccccc}));g.add(mast);
+  // Central Plaza (1992): gold triangular tower, glass pyramid crown, mast
+  {const [x,z]=LM.plaza,b=gAt(LM.plaza),r=34;const g=new THREE.Group();g.position.set(x,b,z);
+   const shaft=new THREE.Mesh(new THREE.CylinderGeometry(r,r,300,3).translate(0,150,0),glassMat(0xc2a462));shaft.rotation.y=.3;g.add(shaft);
+   const crown=new THREE.Mesh(new THREE.ConeGeometry(r*.85,26,3).translate(0,313,0),new THREE.MeshLambertMaterial({color:0xd8c9a0}));crown.rotation.y=.3;crown.userData.neon=0xffd36b;g.add(crown);
+   g.add(new THREE.Mesh(new THREE.CylinderGeometry(.6,1,60,6).translate(0,330,0),new THREE.MeshLambertMaterial({color:0xcccccc})));
    scene.add(g);towerCollider(x,z,60,60,374,'Central Plaza');L.push(x,b+376,z,1,.1,.1,4,.6);landmarkLights.push(crown)}
-  // The Center (1998): stepped square with neon bands
-  {const x=-4350,z=4960,b=terrainAt(x,z);const g=new THREE.Group();g.position.set(x,b,z);g.rotation.y=Math.PI/4;
-   const t=new THREE.Mesh(new THREE.BoxGeometry(40,280,40).translate(0,140,0),glassMat(0x55606b));g.add(t);
+  // The Center (1998): stepped crown with neon bands
+  {const [x,z]=LM.center,b=gAt(LM.center);const g=new THREE.Group();g.position.set(x,b,z);g.rotation.y=Math.PI/4;
+   g.add(new THREE.Mesh(new THREE.BoxGeometry(40,280,40).translate(0,140,0),glassMat(0x55606b)));
    for(let i=0;i<5;i++){const band=new THREE.Mesh(new THREE.BoxGeometry(42-i*4,3,42-i*4).translate(0,240+i*10,0),new THREE.MeshLambertMaterial({color:0x777777}));band.userData.neon=[0xff3b6b,0x3bf0ff,0xffd23b,0x7dff5a,0xc46bff][i];g.add(band);landmarkLights.push(band);
-     const top=new THREE.Mesh(new THREE.BoxGeometry(40-i*4,10,40-i*4).translate(0,245+i*10,0),glassMat(0x55606b));g.add(top)}
-   const mast=new THREE.Mesh(new THREE.CylinderGeometry(.5,.8,46,6).translate(0,300,0),new THREE.MeshLambertMaterial({color:0xcccccc}));g.add(mast);
+     g.add(new THREE.Mesh(new THREE.BoxGeometry(40-i*4,10,40-i*4).translate(0,245+i*10,0),glassMat(0x55606b)))}
+   g.add(new THREE.Mesh(new THREE.CylinderGeometry(.5,.8,46,6).translate(0,300,0),new THREE.MeshLambertMaterial({color:0xcccccc})));
    scene.add(g);towerCollider(x,z,56,56,346,'The Center');L.push(x,b+348,z,1,.1,.1,4,.1)}
-  // HSBC Main Building (1985)
-  {const x=-3880,z=5235,b=terrainAt(x,z);box(72,180,55,glassMat(0x9ea6aa),x,b,z,.12);towerCollider(x,z,72,72,180,'HSBC Building')}
-  // Jardine House (1973) — waterfront
-  {const x=-3800,z=4800,b=terrainAt(x,z);box(44,178,44,glassMat(0xd7d6cf),x,b,z,.1);towerCollider(x,z,48,48,178,'Jardine House')}
-  // Exchange Square, IFC One (1998)
-  {const b=terrainAt(-4100,4840);box(44,188,44,glassMat(0x9aa5ad),-4150,b,4870,.1);box(44,188,44,glassMat(0x9aa5ad),-4060,b,4900,.1);towerCollider(-4105,4885,110,90,188,'Exchange Square');
-   box(48,210,48,glassMat(0x8396a8),-4330,b,4790,.1);towerCollider(-4330,4790,52,52,210,'One IFC')}
-  // Lippo Centre twin towers
-  {const b=terrainAt(-3480,5120);box(30,186,30,glassMat(0x55728a),-3500,b,5110,.3);box(30,172,30,glassMat(0x55728a),-3440,b,5150,.3);towerCollider(-3470,5130,90,90,186,'Lippo Centre')}
-  // Hopewell Centre — cylinder with revolving restaurant
-  {const x=-2700,z=5320,b=terrainAt(x,z);const t=new THREE.Mesh(new THREE.CylinderGeometry(22,22,216,24).translate(0,108,0),glassMat(0xd9d7cf));t.position.set(x,b,z);scene.add(t);
+  // HSBC Main Building (1985): grey steel, stepped masses
+  {const [x,z]=LM.hsbc,b=gAt(LM.hsbc);box(72,180,40,glassMat(0x9ea6aa),x,b,z,.15);box(72,140,14,glassMat(0x8f979b),x+3,b,z+24,.15);towerCollider(x,z,72,72,180,'HSBC Building')}
+  // Jardine House (1973): white with round windows
+  {const [x,z]=LM.jardine,b=gAt(LM.jardine);const m=box(44,178,44,new THREE.MeshLambertMaterial({color:0xe8e6dc}),x,b,z,.1);
+   const ct=canvasTex(64,64,(g)=>{g.fillStyle='#e8e6dc';g.fillRect(0,0,64,64);g.fillStyle='#3a4248';g.beginPath();g.arc(32,32,16,0,7);g.fill()},true);ct.repeat.set(12,48);m.material.map=ct;m.material.needsUpdate=true;
+   towerCollider(x,z,48,48,178,'Jardine House')}
+  // Exchange Square (1985) & One IFC (1998)
+  {const b=gAt(LM.exch);box(44,188,44,glassMat(0x9aa5ad),LM.exch[0]-45,b,LM.exch[1]-20,.1);box(44,188,44,glassMat(0x9aa5ad),LM.exch[0]+40,b,LM.exch[1]+15,.1);towerCollider(LM.exch[0],LM.exch[1],140,100,188,'Exchange Square');
+   box(48,210,48,glassMat(0x8396a8),LM.ifc1[0],gAt(LM.ifc1),LM.ifc1[1],.1);towerCollider(LM.ifc1[0],LM.ifc1[1],52,52,210,'One IFC')}
+  // Lippo Centre (1988): twin towers with stepped bands
+  {const [x,z]=LM.lippo,b=gAt(LM.lippo);for(const [dx,dz,h] of[[-22,-12,186],[22,12,172]]){box(30,h,30,glassMat(0x55728a),x+dx,b,z+dz,.3);for(let y=40;y<h-10;y+=28)box(34,5,34,new THREE.MeshLambertMaterial({color:0x3f5566}),x+dx,b+y,z+dz,.3)}towerCollider(x,z,90,90,186,'Lippo Centre')}
+  // Far East Finance Centre (1982): gold glass
+  {const [x,z]=LM.fefc,b=gAt(LM.fefc);box(36,170,30,glassMat(0xb88a3a),x,b,z,.2);towerCollider(x,z,40,40,170,'Far East Finance Centre')}
+  // Hopewell Centre: cylinder with revolving restaurant
+  {const [x,z]=LM.hopewell,b=gAt(LM.hopewell);const t=new THREE.Mesh(new THREE.CylinderGeometry(22,22,216,24).translate(0,108,0),glassMat(0xd9d7cf));t.position.set(x,b,z);scene.add(t);
    const ring=new THREE.Mesh(new THREE.CylinderGeometry(26,26,7,24).translate(0,200,0),new THREE.MeshLambertMaterial({color:0x8a7a50}));ring.position.set(x,b,z);ring.userData.neon=0xffe49a;scene.add(ring);landmarkLights.push(ring);towerCollider(x,z,48,48,216,'Hopewell Centre')}
-  // Convention & Exhibition Centre extension (1997)
-  {const x=-2350,z=4700,b=3.5;const g=new THREE.Group();g.position.set(x,b,z);
-   const body=new THREE.Mesh(new THREE.BoxGeometry(220,24,120).translate(0,12,0),new THREE.MeshLambertMaterial({color:0x9fb2b8}));g.add(body);
-   const roof=new THREE.Mesh(new THREE.CylinderGeometry(120,120,220,24,1,false,0,Math.PI*0.5).rotateZ(Math.PI/2).translate(0,-62,0),new THREE.MeshLambertMaterial({color:0xc9cfd1,side:THREE.DoubleSide}));roof.rotation.y=0;roof.position.set(0,24,-60);g.add(roof);
-   scene.add(g);towerCollider(x,z,220,130,40,'the Convention Centre')}
-  // Tsim Sha Tsui: clock tower, Cultural Centre, Ocean Terminal, Peninsula
-  {const b=terrainAt(-2400,3460);box(7,40,7,new THREE.MeshLambertMaterial({color:0xb5643c}),-2400,b,3460);const sp=new THREE.Mesh(new THREE.ConeGeometry(3.4,8,4),new THREE.MeshLambertMaterial({color:0xb5643c}));sp.position.set(-2400,b+44,3460);sp.rotation.y=Math.PI/4;scene.add(sp);towerCollider(-2400,3460,8,8,52,'the Clock Tower');
-   const cc=new THREE.Mesh(new THREE.CylinderGeometry(25,90,40,4,1).translate(0,20,0),new THREE.MeshLambertMaterial({color:0xd6b9a6}));cc.position.set(-2240,3.5,3420);cc.rotation.y=Math.PI/4+.3;cc.scale.set(1.6,1,.8);scene.add(cc);
-   box(60,14,380,new THREE.MeshLambertMaterial({color:0xcfcbc0}),-2930,0,3720,.18);towerCollider(-2930,3720,70,380,14,'Ocean Terminal');
-   box(70,30,60,glassMat(0xe7dfcd),-2560,terrainAt(-2560,3220),3220);box(26,95,26,glassMat(0xe7dfcd),-2560,terrainAt(-2560,3220),3240)}
+  // Convention & Exhibition Centre extension (1997): curved wing roof over the harbour
+  {const [x,z]=LM.hkcec,b=3.5;const g=new THREE.Group();g.position.set(x,b,z);g.rotation.y=-.12;
+   g.add(new THREE.Mesh(new THREE.BoxGeometry(250,26,150).translate(0,13,0),glassMat(0x9fb2b8)));
+   const roofGeo=new THREE.PlaneGeometry(290,190,24,12);const rp=roofGeo.attributes.position;for(let i=0;i<rp.count;i++){const u=rp.getX(i)/145,v=rp.getY(i)/95;rp.setZ(i,10*(1-u*u)+6*Math.sin(v*1.4))}roofGeo.computeVertexNormals();roofGeo.rotateX(-Math.PI/2);
+   const roof=new THREE.Mesh(roofGeo,new THREE.MeshLambertMaterial({color:0xcfd4d6,side:THREE.DoubleSide}));roof.position.y=30;g.add(roof);
+   scene.add(g);towerCollider(x,z,260,170,46,'the Convention Centre')}
+  // Tsim Sha Tsui: Clock Tower, Cultural Centre, Space Museum, Peninsula
+  {const b=gAt(LM.clock);box(7,40,7,new THREE.MeshLambertMaterial({color:0xb5643c}),LM.clock[0],b,LM.clock[1]);const sp=new THREE.Mesh(new THREE.ConeGeometry(3.4,8,4),new THREE.MeshLambertMaterial({color:0xb5643c}));sp.position.set(LM.clock[0],b+44,LM.clock[1]);sp.rotation.y=Math.PI/4;scene.add(sp);towerCollider(LM.clock[0],LM.clock[1],8,8,b+52,'the Clock Tower');
+   const cc=new THREE.Mesh(new THREE.CylinderGeometry(25,90,40,4,1).translate(0,20,0),new THREE.MeshLambertMaterial({color:0xd6b9a6}));cc.position.set(LM.culture[0],gAt(LM.culture),LM.culture[1]);cc.rotation.y=Math.PI/4+.3;cc.scale.set(1.6,1,.8);scene.add(cc);
+   const dome=new THREE.Mesh(new THREE.SphereGeometry(22,20,10,0,Math.PI*2,0,Math.PI/2),new THREE.MeshLambertMaterial({color:0xe9e6dc}));dome.position.set(LM.culture[0]+70,gAt(LM.culture),LM.culture[1]-10);scene.add(dome);
+   const pb=gAt(LM.peninsula);box(70,30,60,glassMat(0xe7dfcd),LM.peninsula[0],pb,LM.peninsula[1]);box(26,95,26,glassMat(0xe7dfcd),LM.peninsula[0],pb,LM.peninsula[1]+20);towerCollider(LM.peninsula[0],LM.peninsula[1],70,70,pb+95,'The Peninsula')}
   // Hung Hom Coliseum (inverted pyramid)
-  {const x=-1450,z=2550,b=terrainAt(x,z);const c=new THREE.Mesh(new THREE.CylinderGeometry(70,32,30,4,1).translate(0,24,0),new THREE.MeshLambertMaterial({color:0x8b8f93}));c.position.set(x,b,z);c.rotation.y=Math.PI/4;scene.add(c);towerCollider(x,z,100,100,40,'Hung Hom')}
+  {const [x,z]=LM.coliseum,b=gAt(LM.coliseum);const c=new THREE.Mesh(new THREE.CylinderGeometry(70,32,30,4,1).translate(0,24,0),new THREE.MeshLambertMaterial({color:0x8b8f93}));c.position.set(x,b,z);c.rotation.y=Math.PI/4;scene.add(c);towerCollider(x,z,100,100,b+40,'the Hung Hom Coliseum')}
+  // Peak Tower (1997): the bowl on the ridge
+  {const [x,z]=LM.peak,b=gAt(LM.peak);const g=new THREE.Group();g.position.set(x,b,z);
+   g.add(new THREE.Mesh(new THREE.CylinderGeometry(9,14,22,12).translate(0,11,0),new THREE.MeshLambertMaterial({color:0xb7b2a6})));
+   const bowl=new THREE.Mesh(new THREE.CylinderGeometry(34,16,14,24,1,true).translate(0,30,0),new THREE.MeshLambertMaterial({color:0x8a8a86,side:THREE.DoubleSide}));g.add(bowl);
+   scene.add(g);towerCollider(x,z,70,70,b+40,'the Peak Tower');L.push(x,b+40,z,1,.9,.7,4,-1)}
+  // Central Star Ferry pier, Edinburgh Place (1998 shoreline)
+  {box(26,9,110,new THREE.MeshLambertMaterial({color:0xd8d2c0}),LM.cenPier[0],0,LM.cenPier[1]-40);box(30,4,30,new THREE.MeshLambertMaterial({color:0x2f6b3e}),LM.cenPier[0],9,LM.cenPier[1]-80)}
   landmarkLights.lightPoints=makeLights(L);scene.add(landmarkLights.lightPoints);
   buildCheckerboard();buildWalledCity();
 }
 function buildCheckerboard(){
   const tex=canvasTex(512,384,(g,w,h)=>{const nx=8,ny=6;for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){g.fillStyle=(i+j)%2?'#f3efe6':'#e8571f';g.fillRect(i*w/nx,j*h/ny,w/nx+1,h/ny+1)}});
-  // conform a grid to the west face of the hill
-  const nu=24,nv=16,pos=[],uv=[],idx=[];
-  for(let j=0;j<=nv;j++)for(let i=0;i<=nu;i++){const along=lerp(-48,48,i/nu);const r=lerp(240,105,j/nv);const x=CHK.x-r,z=CHK.z+along;pos.push(x,3.6+chkH(x,z)+1.2,z);uv.push(i/nu,j/nv)}
+  // conform a grid to the west face of the Kowloon Tsai hill, facing the IGS approach
+  const nu=24,nv=16,pos=[],uv=[],idx=[];const cx=CHK.x-150,cz=CHK.z+30;
+  for(let j=0;j<=nv;j++)for(let i=0;i<=nu;i++){const along=lerp(-50,50,i/nu);const r=lerp(-75,75,j/nv);const x=cx+r,z=cz+along;pos.push(x,terrainAt(x,z)+1.5,z);uv.push(i/nu,j/nv)}
   for(let j=0;j<nv;j++)for(let i=0;i<nu;i++){const a=j*(nu+1)+i,b=a+1,c=a+nu+1,d=c+1;idx.push(a,b,c,b,d,c)}
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();
   const m=new THREE.Mesh(g,new THREE.MeshLambertMaterial({map:tex,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-4,emissive:0x000000}));
-  m.userData.isChecker=true;scene.add(m);buildCheckerboard.mesh=m;
-  // floodlights for the board at night
-  const L=[];for(let i=0;i<6;i++){const x=CHK.x-250,z=CHK.z+lerp(-50,50,i/5);L.push(x,terrainAt(x,z)+4,z,1,.92,.75,3,-1)}
+  scene.add(m);buildCheckerboard.mesh=m;
+  const L=[];for(let i=0;i<6;i++){const x=cx-110,z=cz+lerp(-50,50,i/5);L.push(x,terrainAt(x,z)+4,z,1,.92,.75,3,-1)}
   const fl=makeLights(L);scene.add(fl);buildCheckerboard.flood=fl;
 }
 function buildWalledCity(){
@@ -697,14 +682,10 @@ function buildWalledCity(){
   for(let i=0;i<n;i++){const x=WALLED.x+rr(-WALLED.w/2,WALLED.w/2),z=WALLED.z+rr(-WALLED.d/2,WALLED.d/2);const w=rr(6,16),d=rr(6,16);const edge=Math.min(WALLED.w/2-Math.abs(x-WALLED.x),WALLED.d/2-Math.abs(z-WALLED.z));const h=edge<8?rr(18,34):rr(33,44);
     _m4.compose(_v.set(x,base-1,z),_q.identity(),_s.set(w,h+1,d));mesh.setMatrixAt(i,_m4);tc.setHex(pick(cols));mesh.setColorAt(i,tc)}
   walledGroup.add(mesh);
-  // rooftop antenna clutter
   const ap=[];for(let i=0;i<260;i++){const x=WALLED.x+rr(-WALLED.w/2,WALLED.w/2),z=WALLED.z+rr(-WALLED.d/2,WALLED.d/2);const y=base+rr(40,44);ap.push(x,y,z,x+rr(-1,1),y+rr(3,7),z+rr(-1,1))}
   const ag=new THREE.BufferGeometry();ag.setAttribute('position',new THREE.Float32BufferAttribute(ap,3));walledGroup.add(new THREE.LineSegments(ag,new THREE.LineBasicMaterial({color:0x2a2a2a})));
-  // 1998: Kowloon Walled City Park
-  const lawn=new THREE.Mesh(new THREE.PlaneGeometry(WALLED.w,WALLED.d).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({color:0x5f7f45,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-3}));lawn.position.set(WALLED.x,base+.4,WALLED.z);parkGroup.add(lawn);
   const yamen=new THREE.Mesh(new THREE.BoxGeometry(24,7,14).translate(0,3.5,0),new THREE.MeshLambertMaterial({color:0x9a8f80}));yamen.position.set(WALLED.x,base,WALLED.z);parkGroup.add(yamen);
   const roof=new THREE.Mesh(new THREE.ConeGeometry(17,5,4).translate(0,9.5,0),new THREE.MeshLambertMaterial({color:0x3d3a35}));roof.rotation.y=Math.PI/4;roof.scale.set(1,1,.6);roof.position.set(WALLED.x,base,WALLED.z);parkGroup.add(roof);
-  for(let i=0;i<70;i++){const t=new THREE.Mesh(new THREE.SphereGeometry(rr(3,6),6,4),new THREE.MeshLambertMaterial({color:0x3f6a35}));t.position.set(WALLED.x+rr(-WALLED.w/2,WALLED.w/2),base+5,WALLED.z+rr(-WALLED.d/2,WALLED.d/2));parkGroup.add(t)}
   WALLED.col={x0:WALLED.x-WALLED.w/2,x1:WALLED.x+WALLED.w/2,z0:WALLED.z-WALLED.d/2,z1:WALLED.z+WALLED.d/2,top:base+44,name:'Kowloon Walled City'};addCollider(WALLED.col.x0,WALLED.col.x1,WALLED.col.z0,WALLED.col.z1,base+44,'Kowloon Walled City');
   for(const a of BGRID.values())for(const b of a)if(b.name==='Kowloon Walled City')WALLED.ref=b;
   scene.add(walledGroup,parkGroup);
@@ -719,11 +700,11 @@ function buildAirport(){
   // reclaimed strip & apron (boxes down to the seabed)
   const strip=new THREE.Mesh(new THREE.BoxGeometry(280,22,RWY.len+170).translate(0,-11+RWY.elev,0),new THREE.MeshLambertMaterial({color:0x7b8a62}));placeAlong(strip,RWY.len/2-10,-10,0);
   const sea=new THREE.Mesh(new THREE.BoxGeometry(284,1.2,RWY.len+174).translate(0,RWY.elev-1,0),new THREE.MeshLambertMaterial({color:0x8d8a80}));placeAlong(sea,RWY.len/2-10,-10,0);
-  const apron=new THREE.Mesh(new THREE.BoxGeometry(590,22,1580).translate(0,-11+RWY.elev+.02,0),new THREE.MeshLambertMaterial({color:0xa6a49b}));placeAlong(apron,910,425,0);
+  const apron=new THREE.Mesh(new THREE.BoxGeometry(730,22,960).translate(0,-11+RWY.elev+.02,0),new THREE.MeshLambertMaterial({color:0xa6a49b}));placeAlong(apron,420,-495,0);
   // runway, shoulders, taxiway
   const asph=new THREE.MeshLambertMaterial({color:0x3e3f42,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1});
   const rw=new THREE.Mesh(new THREE.PlaneGeometry(RWY.wid+14,RWY.len+40).rotateX(-Math.PI/2),asph);placeAlong(rw,RWY.len/2,0,RWY.elev+.05);
-  const tw=new THREE.Mesh(new THREE.PlaneGeometry(26,RWY.len-200).rotateX(-Math.PI/2),asph);placeAlong(tw,RWY.len/2+60,96,RWY.elev+.05);
+  const tw=new THREE.Mesh(new THREE.PlaneGeometry(26,RWY.len-200).rotateX(-Math.PI/2),asph);placeAlong(tw,RWY.len/2+60,-96,RWY.elev+.05);
   // markings
   const mk=new THREE.MeshBasicMaterial({color:0xe9e9e4,polygonOffset:true,polygonOffsetFactor:-6,polygonOffsetUnits:-6,transparent:true});
   const mkEnd=(num,s,flip)=>{
@@ -741,18 +722,18 @@ function buildAirport(){
   for(const l of[-30,30]){const e=new THREE.Mesh(new THREE.PlaneGeometry(.9,RWY.len-800).rotateX(-Math.PI/2),mk);placeAlong(e,RWY.len/2,l,RWY.elev+.08)}
   scene.add(grp);
   // terminal, tower, hangars
-  const term=new THREE.Mesh(new THREE.BoxGeometry(70,22,330).translate(0,11,0),cityMaterial({color:0xd9d5c8}));placeAlong(term,900,640,RWY.elev);
-  {const p=rwP(900,640);addCollider(p[0]-150,p[0]+150,p[1]-150,p[1]+150,26,'the Kai Tak terminal')}
-  const roofT=new THREE.Mesh(new THREE.BoxGeometry(76,3,336).translate(0,23,0),new THREE.MeshLambertMaterial({color:0x8d8b84}));placeAlong(roofT,900,640,RWY.elev);
-  for(let i=0;i<3;i++){const hg=new THREE.Mesh(new THREE.BoxGeometry(90,26,80).translate(0,13,0),new THREE.MeshLambertMaterial({color:0xb5b9b7}));placeAlong(hg,1350+i*110,560,RWY.elev)}
-  const TW=rwP(520,560);ST.tower=[TW[0],RWY.elev+50,TW[1]];
+  const term=new THREE.Mesh(new THREE.BoxGeometry(70,22,330).translate(0,11,0),cityMaterial({color:0xd9d5c8}));placeAlong(term,380,-760,RWY.elev);
+  {const p=rwP(380,-760);addCollider(p[0]-150,p[0]+150,p[1]-150,p[1]+150,26,'the Kai Tak terminal')}
+  const roofT=new THREE.Mesh(new THREE.BoxGeometry(76,3,336).translate(0,23,0),new THREE.MeshLambertMaterial({color:0x8d8b84}));placeAlong(roofT,380,-760,RWY.elev);
+  for(let i=0;i<3;i++){const hg=new THREE.Mesh(new THREE.BoxGeometry(90,26,80).translate(0,13,0),new THREE.MeshLambertMaterial({color:0xb5b9b7}));placeAlong(hg,780,-300-i*120,RWY.elev)}
+  const TW=rwP(620,-470);ST.tower=[TW[0],RWY.elev+50,TW[1]];
   const shaft=new THREE.Mesh(new THREE.CylinderGeometry(4,5,44,8).translate(0,22,0),new THREE.MeshLambertMaterial({color:0xd9d5c8}));shaft.position.set(TW[0],RWY.elev,TW[1]);scene.add(shaft);
   const cab=new THREE.Mesh(new THREE.CylinderGeometry(8,6,6,8).translate(0,47,0),new THREE.MeshLambertMaterial({color:0x2c3b44,emissive:0x0}));cab.position.set(TW[0],RWY.elev,TW[1]);cab.userData.neon=0x5c7f78;landmarkLights.push(cab);scene.add(cab);
   const cabRoof=new THREE.Mesh(new THREE.CylinderGeometry(9,9,1.4,8).translate(0,50.6,0),new THREE.MeshLambertMaterial({color:0xcfcac0}));cabRoof.position.set(TW[0],RWY.elev,TW[1]);scene.add(cabRoof);
   addCollider(TW[0]-9,TW[0]+9,TW[1]-9,TW[1]+9,52,'the control tower');
   // parked aircraft at the terminal
   const types=['b744','a333','b772','b744','a343','a333'];
-  for(let i=0;i<6;i++){const m=buildAircraftModel(AC[types[i]],{tail:[0x1d6f6a,0xb53a2c,0x23406e,0x6a1f2f,0x1d6f6a,0x3a5f2e][i],gear:true});const p=rwP(640+i*95,560);m.position.set(p[0],RWY.elev,p[1]);m.rotation.y=-(RWY.hdg-90)*D2R;m.scale.setScalar(1);scene.add(m);parked.push(m)}
+  for(let i=0;i<6;i++){const m=buildAircraftModel(AC[types[i]],{tail:[0x1d6f6a,0xb53a2c,0x23406e,0x6a1f2f,0x1d6f6a,0x3a5f2e][i],gear:true});const p=rwP(120+i*85,-560);m.position.set(p[0],RWY.elev,p[1]);m.rotation.y=-(RWY.hdg-90)*D2R;m.scale.setScalar(1);scene.add(m);parked.push(m)}
   // lights
   const Lr=[];
   for(let s=0;s<=RWY.len;s+=60)for(const l of[-33,33]){const yel=s>RWY.len-600;Lr.push(...rwP3(s,l,1.0),1,yel?.85:1,yel?.45:.95,3,-1)}
@@ -785,47 +766,77 @@ function buildHoops(){
 
 /* ---------------- harbour traffic ---------------- */
 const SHIPS=[];
+function starFerry(){
+  // double-ended Star Ferry: dark green hull, green band, white upper deck with lifebuoys, black-and-white funnel, a mast at each end
+  const g=new THREE.Group();const L=(c)=>new THREE.MeshLambertMaterial({color:c});
+  const hull=new THREE.Mesh(new THREE.CylinderGeometry(5.2,4.2,3.4,16,1).rotateZ(Math.PI/2).scale(1,1,1),L(0x23452d));hull.scale.set(1,1,1);
+  const hg=new THREE.BoxGeometry(38,3.4,10.4);const hm=new THREE.Mesh(hg,L(0x23452d));hm.position.y=.5;g.add(hm);
+  for(const e of[-1,1]){const tip=new THREE.Mesh(new THREE.CylinderGeometry(5.2,5.2,3.4,12,1,false,0,Math.PI),L(0x23452d));tip.position.set(e*19,.5,0);tip.rotation.y=e>0?0:Math.PI;g.add(tip)}
+  g.add(box2(38.5,2.6,10.6,L(0x2f7a45),0,2.2,0));
+  const deck=box2(32,2.8,10.2,L(0xf2f0e8),0,4.8,0);g.add(deck);
+  const buoyT=canvasTex(128,16,(c,w,h)=>{c.fillStyle='#f2f0e8';c.fillRect(0,0,w,h);c.strokeStyle='#d9d4c4';c.lineWidth=3;for(let i=0;i<8;i++){c.beginPath();c.arc(8+i*16,8,5,0,7);c.stroke()}},true);buoyT.repeat.set(2,1);
+  for(const sd of[-1,1]){const b=new THREE.Mesh(new THREE.PlaneGeometry(28,1.6),new THREE.MeshLambertMaterial({map:buoyT,side:THREE.DoubleSide}));b.position.set(0,6.4,sd*5.15);g.add(b)}
+  g.add(box2(30,.4,10.6,L(0xe6e3d8),0,7.6,0));
+  const fun=new THREE.Mesh(new THREE.CylinderGeometry(1.1,1.1,3.2,10),L(0x1a1a1a));fun.position.set(0,9.6,0);g.add(fun);
+  const band=new THREE.Mesh(new THREE.CylinderGeometry(1.15,1.15,.8,10),L(0xf2f0e8));band.position.set(0,9.4,0);g.add(band);
+  for(const e of[-1,1]){const m=new THREE.Mesh(new THREE.CylinderGeometry(.12,.15,9,5),L(0xe8e6de));m.position.set(e*13,12,0);g.add(m)}
+  g.userData.len=40;g.userData.lights=[[0,12,0,1,.95,.8],[15,6,5,1,.92,.7],[-15,6,-5,1,.92,.7],[5,6,5,1,.92,.7],[-5,6,-5,1,.92,.7]];return g;
+}
+function liner(kind){
+  const g=new THREE.Group();const L=(c)=>new THREE.MeshLambertMaterial({color:c});const len=kind?290:250,bw=len*.11;
+  g.add(box2(len,13,bw,L(kind?0x1f2433:0xf2f2ee),0,-3,0));g.add(box2(len*.96,1.2,bw*1.01,L(kind?0xb5302a:0x2f6db5),0,-3,0));
+  g.add(box2(len*.7,9,bw*.9,L(0xf4f4f0),-len*.03,10,0));g.add(box2(len*.5,7,bw*.8,L(0xf4f4f0),-len*.05,19,0));
+  const f=new THREE.Mesh(new THREE.CylinderGeometry(4,5,14,12),L(kind?0xc8361f:0xd8b45a));f.scale.set(1.6,1,1);f.position.set(-len*.08,32,0);g.add(f);
+  const cap=new THREE.Mesh(new THREE.CylinderGeometry(4.05,4.05,3,12),L(0x111111));cap.scale.set(1.6,1,1);cap.position.set(-len*.08,38,0);if(kind)g.add(cap);
+  g.userData.len=len;g.userData.lights=[];for(let i=-6;i<=6;i++)g.userData.lights.push([i*len/14,16,bw/2,1,.92,.7],[i*len/14,16,-bw/2,1,.92,.7]);g.userData.lights.push([-len*.08,44,0,1,.2,.1]);
+  return g;
+}
 function shipModel(kind){
+  if(kind==='ferry')return starFerry();
   const g=new THREE.Group();const L=(c)=>new THREE.MeshLambertMaterial({color:c});
   if(kind==='container'){const len=rr(150,230),bw=len*.14;g.add(box2(len,9,bw,L(pick([0x5b1f1f,0x1f2b3d,0x24342a])),0,-2,0));
     const cc=[0xb5402e,0x2f5c8a,0x3d7a46,0xc9a23a,0x8a8a8a,0xd8d2c2,0x7a3d6b];for(let x=-len*.4;x<len*.3;x+=13)for(let y=0;y<rr(2,5);y++)g.add(box2(12,2.6,bw*.9,L(pick(cc)),x,7+y*2.6,0));
     g.add(box2(14,18,bw*.85,L(0xeeeeea),len*.38,7,0));g.userData.len=len;g.userData.lights=[[len*.38,26,0,1,1,.9],[-len*.48,10,0,1,.2,.1],[len*.49,12,0,1,1,1]]}
-  else if(kind==='ferry'){g.add(box2(36,3.5,10,L(0x2f6b3e),0,-1,0));g.add(box2(30,3,9.5,L(0xf0eee6),0,2.5,0));g.add(box2(26,2.6,9,L(0x2f6b3e),0,5.5,0));g.add(box2(2,4,2,L(0x2a2a2a),0,8,0));g.userData.len=36;g.userData.lights=[[0,8.5,0,1,.95,.8],[12,4,4,1,.9,.7],[-12,4,-4,1,.9,.7]]}
-  else if(kind==='junk'){g.add(box2(24,4,7,L(0x6b4426),0,-1,0));const sail=L(0xb8452a);sail.side=THREE.DoubleSide;
+  else if(kind==='junk'){g.add(box2(24,4,7,L(0x5a3a22),0,-1,0));const sail=L(0x8a3a24);sail.side=THREE.DoubleSide;
     for(const [x,h] of[[6,15],[-2,19],[-9,12]]){const m=new THREE.Mesh(new THREE.PlaneGeometry(9,h),sail);m.position.set(x,3+h/2,0);m.rotation.y=Math.PI/2+.3;g.add(m)}g.userData.len=24;g.userData.lights=[[0,6,0,1,.8,.5]]}
   else if(kind==='tug'){g.add(box2(26,5,9,L(0x222222),0,-1,0));g.add(box2(10,6,7,L(0xd9d4c8),2,3,0));g.add(box2(2,4,2,L(0xc93a2a),2,9,0));g.userData.len=26;g.userData.lights=[[2,12,0,1,.9,.8]]}
-  else {g.add(box2(90,7,16,L(0xe4e2dc),0,-1,0));g.add(box2(60,8,14,L(0xf5f3ee),-5,6,0));g.add(box2(30,6,12,L(0x3a6a8a),-5,14,0));g.userData.len=90;g.userData.lights=[[0,20,0,1,.95,.8],[-30,10,7,1,.9,.7],[20,10,-7,1,.9,.7]]}
-  const wake=new THREE.Mesh(new THREE.PlaneGeometry(g.userData.len*.35,g.userData.len*2.4).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.22,depthWrite:false}));
-  wake.rotation.y=Math.PI/2;wake.position.set(-g.userData.len*1.6,.3,0);g.add(wake);
+  else {g.add(box2(60,6,12,L(0xe4e2dc),0,-1,0));g.add(box2(40,6,10,L(0xf5f3ee),-5,5,0));g.userData.len=60;g.userData.lights=[[0,12,0,1,.95,.8]]}
   return g;
 }
+function addWake(g){const wake=new THREE.Mesh(new THREE.PlaneGeometry(g.userData.len*.35,g.userData.len*2.4).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.22,depthWrite:false}));
+  wake.rotation.y=Math.PI/2;wake.position.set(-g.userData.len*1.6,.3,0);g.add(wake);g.userData.wake=wake}
 function box2(w,h,d,m,x,y,z){const b=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);b.position.set(x,y+h/2,z);return b}
 let shipLights;
 function buildShips(){
   const lanes=[
-    {k:'container',p:[[-14000,4300],[-3000,4150],[1000,4150],[3500,4500],[5600,4700],[10000,4600]],v:6,n:4},
-    {k:'container',p:[[-16000,2500],[-9000,2900],[-6000,3700],[-3000,4250]],v:5,n:2},
-    {k:'ferry',p:[[-2440,3600],[-3880,4610]],v:7,n:2},
-    {k:'ferry',p:[[-2380,3620],[-2300,4560]],v:6.5,n:1},
-    {k:'ferry',p:[[-1600,3300],[-200,4600],[1600,4650]],v:8,n:1},
-    {k:'junk',p:[[-3200,4300],[-1500,3900],[200,4200],[-1200,4400]],v:2.5,n:3},
-    {k:'junk',p:[[1200,600],[2200,2000],[1600,3200],[800,1800]],v:2,n:2},
-    {k:'tug',p:[[-6000,2500],[-2600,3900],[1200,3800],[2600,3000]],v:5,n:3},
-    {k:'cruise',p:[[-2960,3880],[-2960,3881]],v:0,n:1},
-    {k:'tug',p:[[2300,-200],[2900,1200],[3200,2600]],v:4,n:1},
+    {k:'container',p:[[-9000,3800],[-6500,3300],[-4600,3500],[-3000,3850],[-1500,4000],[0,3600],[2500,3400],[4000,3750],[4500,4300],[5000,4812],[6000,5000],[7000,4825]],v:6,n:4},
+    {k:'ferry',p:[[-2540,3600],[-3150,4520]],v:7,n:2,stop:true},
+    {k:'ferry',p:[[-2470,3610],[-1820,4520]],v:6.5,n:1,stop:true},
+    {k:'ferry',p:[[-1400,3700],[0,4300],[1200,4500]],v:8,n:1},
+    {k:'junk',p:[[-3600,3900],[-1600,3850],[-400,3900],[-1800,4150]],v:2.5,n:3},
+    {k:'junk',p:[[1500,2700],[3000,2700],[3300,3000],[800,3000]],v:2,n:2},
+    {k:'tug',p:[[-6000,3200],[-3000,3700],[-500,3700],[2500,3100]],v:5,n:3},
+    {k:'launch',p:[[-4200,3900],[-2800,3700],[-1000,3950]],v:9,n:2},
   ];
   for(const ln of lanes){ln.c=[0];for(let i=1;i<ln.p.length;i++)ln.c.push(ln.c[i-1]+Math.hypot(ln.p[i][0]-ln.p[i-1][0],ln.p[i][1]-ln.p[i-1][1]));ln.L=ln.c[ln.c.length-1];
-    for(let i=0;i<ln.n;i++){const m=shipModel(ln.k);scene.add(m);SHIPS.push({ln,m,s:ln.L*(i/ln.n)+rr(0,ln.L*.2),dir:i%2?-1:1})}}
+    for(let i=0;i<ln.n;i++){const m=shipModel(ln.k);addWake(m);scene.add(m);SHIPS.push({ln,m,s:ln.L*(i/ln.n)+rr(0,ln.L*.2),dir:i%2?-1:1,wait:0})}}
+  // two classic liners berthed either side of Ocean Terminal (as in March 1997)
+  const ot0=[-2560,3345],ot1=[-2990,3425];const ang=Math.atan2(ot1[1]-ot0[1],ot1[0]-ot0[0]);const nx=-Math.sin(ang),nz=Math.cos(ang);const mid=[(ot0[0]+ot1[0])/2,(ot0[1]+ot1[1])/2];
+  for(const [k,sd] of[[1,1],[0,-1]]){const m=liner(k);m.position.set(mid[0]+nx*48*sd,0,mid[1]+nz*48*sd);m.rotation.y=-ang;scene.add(m);SHIPS.push({ln:{v:0,static:true},m,s:0,dir:1})}
   const arr=[];for(const s of SHIPS)for(const l of s.m.userData.lights)arr.push(0,0,0,l[3],l[4],l[5],3.2,-1);
   shipLights=makeLights(arr);scene.add(shipLights);
 }
 function updateShips(dt,t){
   const lp=shipLights.geometry.attributes.position;let li=0;
-  for(const S of SHIPS){const ln=S.ln;if(ln.v>0){S.s+=ln.v*S.dir*dt;if(S.s>ln.L){S.s=ln.L;S.dir=-1}if(S.s<0){S.s=0;S.dir=1}}
-    let i=1;while(i<ln.c.length-1&&ln.c[i]<S.s)i++;const t2=(S.s-ln.c[i-1])/Math.max(1,ln.c[i]-ln.c[i-1]);const a=ln.p[i-1],b=ln.p[i];
-    const x=lerp(a[0],b[0],t2),z=lerp(a[1],b[1],t2);let hd=Math.atan2(b[1]-a[1],b[0]-a[0]);if(S.dir<0)hd+=Math.PI;
-    S.m.position.set(x,Math.sin(t*.8+x)*.25,z);S.m.rotation.y=-hd;S.m.rotation.z=Math.sin(t*.6+z)*.012;
-    S.m.children[S.m.children.length-1].visible=ln.v>0;
+  for(const S of SHIPS){const ln=S.ln;
+    if(!ln.static){
+      if(S.wait>0)S.wait-=dt;else{S.s+=ln.v*S.dir*dt;if(S.s>ln.L){S.s=ln.L;S.dir=-1;if(ln.stop)S.wait=rr(20,40)}if(S.s<0){S.s=0;S.dir=1;if(ln.stop)S.wait=rr(20,40)}}
+      let i=1;while(i<ln.c.length-1&&ln.c[i]<S.s)i++;const t2=(S.s-ln.c[i-1])/Math.max(1,ln.c[i]-ln.c[i-1]);const a=ln.p[i-1],b=ln.p[i];
+      const x=lerp(a[0],b[0],t2),z=lerp(a[1],b[1],t2);let hd=Math.atan2(b[1]-a[1],b[0]-a[0]);if(S.dir<0)hd+=Math.PI;
+      if(S.m.userData.len===40&&S.dir<0)hd-=Math.PI; // Star Ferries are double-ended: they never turn round
+      S.m.position.set(x,Math.sin(t*.8+x)*.25,z);S.m.rotation.y=-hd;S.m.rotation.z=Math.sin(t*.6+z)*.012;
+      if(S.m.userData.wake){S.m.userData.wake.visible=S.wait<=0;S.m.userData.wake.position.x=(S.m.userData.len===40&&S.dir<0?1:-1)*S.m.userData.len*1.6}}
+    S.m.updateMatrix();
     for(const l of S.m.userData.lights){_v.set(l[0],l[1],l[2]).applyEuler(S.m.rotation).add(S.m.position);lp.setXYZ(li++,_v.x,_v.y,_v.z)}}
   lp.needsUpdate=true;
 }
@@ -1004,7 +1015,7 @@ function checkAirborne(){
   if(s.V<45*KT&&s.y>40)return crash('Stalled and fell','Airspeed fell to '+Math.round(s.V/KT)+' kt. The wing could no longer hold the aircraft up.');
 }
 function bName(b){return b.name.startsWith('the ')||/Tower|Plaza|Center|Building|House|Square|IFC|Centre|Walled/.test(b.name)?b.name:'buildings in '+b.name}
-function waterName(x,z){return z<3600&&x>-600?'Ditched in Kowloon Bay':'Ditched in Victoria Harbour'}
+function waterName(x,z){return x>-300&&x<4500&&z<3300?'Ditched in Kowloon Bay':'Ditched in Victoria Harbour'}
 function fmtFt(m){return Math.round(m/FT).toLocaleString('en')+' ft'}
 function touchdown(){
   const s=ST,a=s.ac;const sr=rwS(s.x,s.z),lr=rwL(s.x,s.z);
@@ -1149,7 +1160,8 @@ function applyEnvironment(){
     CITY_U.uNight.value=1;LIGHT_U.uI.value=1;stars.visible=!over&&CFG.wx!=='fog'}
   skyMat.uniforms.top.value.setHex(top);skyMat.uniforms.hor.value.setHex(hor);skyMat.uniforms.bot.value.setHex(bot);scene.fog.color.setHex(fog);
   ENV.fogBase=fog;ENV.dens=dens;
-  water.material.color.setHex(n?0x0c1a1e:over?0x2a4448:0x1e4a52);
+  water.material.color.setHex(n?0x0a1518:over?0x2a4448:0x24474d);
+  for(const m of TERRAIN_MATS)m.color.setScalar(n?.11:over?.72:CFG.wx==='fog'?.8:1);
   streetLights.visible=n;carLights&&(carLights.visible=n);shipLights.visible=true;
   for(const m of signs)m.material.color.setScalar(n?1:.5);
   for(const m of landmarkLights)if(m.material)m.material.emissive.setHex(n?(m.userData.neon||0):0);
@@ -1215,9 +1227,9 @@ function updateCamera(dt){
 }
 let attractT=0;
 function attractCamera(dt){
-  attractT+=dt*.035;const cx=-1100,cz=-700;const r=2600;
+  attractT+=dt*.035;const cx=-500,cz=-500;const r=2600;
   camera.position.set(cx+Math.cos(attractT)*r,520+Math.sin(attractT*.7)*80,cz+Math.sin(attractT)*r);
-  camera.lookAt(-300,60,-500);camera.fov=55;camera.updateProjectionMatrix();
+  camera.lookAt(-400,40,-700);camera.fov=55;camera.updateProjectionMatrix();
 }
 
 /* =====================================================================
@@ -1317,16 +1329,16 @@ function tape(x,cy,w,h,val,step,pxPer,fmt,bug,unit,left){
   txt(String(fmt(val)),x+w/2,cy+6,16*Math.max(.8,k),COL.ph,'center',700);txt(unit,x+w/2,cy-h/2-6,10*Math.max(.8,k),COL.dim,'center');
 }
 function drawMap(){
-  if(mapC.hidden)return;const W=336,s=ST;mc.setTransform(1,0,0,1,0,0);mc.clearRect(0,0,W,W);
-  const sc=W/12000;const ox=s.x,oz=s.z;const X=x=>(x-ox)*sc+W/2,Z=z=>(z-oz)*sc+W/2;
-  mc.fillStyle='rgba(120,130,110,.35)';for(const L of LAND){mc.beginPath();L.p.forEach((p,i)=>i?mc.lineTo(X(p[0]),Z(p[1])):mc.moveTo(X(p[0]),Z(p[1])));mc.closePath();mc.fill()}
-  mc.strokeStyle='#ff5ad9';mc.lineWidth=2;mc.beginPath();PATH.pts.forEach((p,i)=>{if(i%8)return;i?mc.lineTo(X(p.x),Z(p.z)):mc.moveTo(X(p.x),Z(p.z))});mc.stroke();
-  mc.strokeStyle='#e9eee8';mc.lineWidth=5;const a=rwP(0,0),b=rwP(RWY.len,0);mc.beginPath();mc.moveTo(X(a[0]),Z(a[1]));mc.lineTo(X(b[0]),Z(b[1]));mc.stroke();
-  mc.fillStyle='#ef6a2c';mc.fillRect(X(CHK.x)-5,Z(CHK.z)-5,10,10);
-  mc.save();mc.translate(W/2,W/2);mc.rotate(s.psi);mc.fillStyle='#8ff5a8';mc.beginPath();mc.moveTo(0,-14);mc.lineTo(9,10);mc.lineTo(0,5);mc.lineTo(-9,10);mc.closePath();mc.fill();mc.restore();
-  mc.fillStyle='#93a6a2';mc.font='20px "B612 Mono",monospace';mc.fillText('N↑  6 km',10,W-12);
+  if(mapC.hidden)return;const W=336,s=ST;mc.setTransform(1,0,0,1,0,0);mc.fillStyle='#24474d';mc.fillRect(0,0,W,W);
+  const span=12000,sc=W/span;const ox=s.x,oz=s.z;const X=x=>(x-ox)*sc+W/2,Z=z=>(z-oz)*sc+W/2;
+  const img=TEX.outer&&TEX.outer.image;if(img){const R=GEO.outer;const kx=img.width/(R.x1-R.x0),kz=img.height/(R.z1-R.z0);
+    mc.globalAlpha=CFG.night?.45:.85;mc.drawImage(img,(ox-span/2-R.x0)*kx,(oz-span/2-R.z0)*kz,span*kx,span*kz,0,0,W,W);mc.globalAlpha=1}
+  mc.strokeStyle='#ff5ad9';mc.lineWidth=2.5;mc.beginPath();PATH.pts.forEach((p,i)=>{if(i%8)return;i?mc.lineTo(X(p.x),Z(p.z)):mc.moveTo(X(p.x),Z(p.z))});mc.stroke();
+  mc.strokeStyle='#ffffff';mc.lineWidth=5;const a=rwP(0,0),b=rwP(RWY.len,0);mc.beginPath();mc.moveTo(X(a[0]),Z(a[1]));mc.lineTo(X(b[0]),Z(b[1]));mc.stroke();
+  mc.fillStyle='#ef6a2c';mc.fillRect(X(CHK.x-150)-5,Z(CHK.z)-5,10,10);
+  mc.save();mc.translate(W/2,W/2);mc.rotate(s.psi);mc.fillStyle='#8ff5a8';mc.strokeStyle='#05090b';mc.lineWidth=2;mc.beginPath();mc.moveTo(0,-14);mc.lineTo(9,10);mc.lineTo(0,5);mc.lineTo(-9,10);mc.closePath();mc.stroke();mc.fill();mc.restore();
+  mc.fillStyle='rgba(5,9,11,.7)';mc.fillRect(0,W-34,W,34);mc.fillStyle='#c9d4d0';mc.font='18px "B612 Mono",monospace';mc.fillText('N↑  6 km',10,W-11);
 }
-
 /* ---------------- GPWS & callouts ---------------- */
 function gpws(dt){
   const s=ST,a=s.ac;if(s.onGround||s.ended){s.warn='';return}
@@ -1449,7 +1461,7 @@ function startFlight(){
   toast(CFG.ap?'Autopilot engaged. Pick a view or a cabin seat.':'Established on the IGS, 3,100 ft. You have control.');
 }
 function showResult(){
-  const s=ST,e=s.ended;mode='ended';const card=document.getElementById('resCard');card.classList.toggle('crash',!!e.crash);
+  const s=ST,e=s.ended;if(!e)return;mode='ended';const card=document.getElementById('resCard');card.classList.toggle('crash',!!e.crash);
   document.getElementById('ctl').hidden=true;
   const st=document.getElementById('resStats');st.innerHTML='';const row=(a,b)=>{st.insertAdjacentHTML('beforeend',`<dt>${a}</dt><dd>${b}</dd>`)};
   if(e.landed){const g=gradeLanding(s.td);document.getElementById('resEyebrow').textContent='Landed · Runway 13';document.getElementById('resTitle').textContent='Welcome to Hong Kong';document.getElementById('resGrade').textContent=g.g;
@@ -1475,7 +1487,6 @@ function frame(now){
   if(mode==='fly'&&!paused)gpws(dt);
   const t=now/1000;LIGHT_U.uTime.value=t;
   if(!paused){updateTraffic(dt,CFG.night);updateShips(dt,t);updateFX(dt)}
-  waterNormal.offset.x=t*.004;waterNormal.offset.y=t*.0025;
   updateAircraftVisual();
   if(mode==='attract'){attractCamera(dt)}else updateCamera(dt);
   sky.position.copy(camera.position);stars.position.copy(camera.position);
@@ -1498,9 +1509,12 @@ function frame(now){
 /* =====================================================================
    BOOT
    ===================================================================== */
-function boot(){
-  buildTerrainField();buildTerrain();buildRoads();buildCity();buildLandmarks();buildAirport();buildShips();buildRain();
-  resize();showSetup();document.getElementById('loading').hidden=true;
+async function boot(){
+  const ld=document.getElementById('loading');
+  try{await loadGeo(t=>ld.textContent=t)}catch(e){ld.textContent='COULD NOT LOAD MAP DATA. OPEN THIS PAGE FROM A WEB SERVER, NOT A FILE.';console.error(e);return}
+  ld.textContent='BUILDING HONG KONG…';await new Promise(r=>setTimeout(r,20));
+  buildTerrain();buildRoads();buildLandmarks();buildCity();buildAirport();buildShips();buildRain();
+  resize();showSetup();ld.hidden=true;
   requestAnimationFrame(frame);
 }
 const fontsReady=document.fonts&&document.fonts.ready?Promise.race([document.fonts.ready,new Promise(r=>setTimeout(r,1500))]):Promise.resolve();
