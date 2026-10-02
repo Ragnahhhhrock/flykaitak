@@ -189,7 +189,7 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
       <button class="btn" id="seatSide" type="button">Left</button>
     </div>
     <select id="viewSel" aria-label="Camera view">
-      <option value="cockpit">Cockpit</option><option value="chase">Exterior</option><option value="tower">Tower</option><option value="street">Spectator: Kowloon City street</option><option value="ped">Spectator: Prince Edward Road</option><option value="carpark">Spectator: car park roof</option><option value="boat">Spectator: boat in the harbour</option><option value="cabin">Cabin seat</option>
+      <option value="cockpit">Cockpit</option><option value="chase">Exterior</option><option value="tower">Tower</option><option value="street">Spectator: Kowloon City street</option><option value="ped">Spectator: Prince Edward Road</option><option value="carpark">Spectator: car park roof</option><option value="boat">Spectator: boat in the harbour</option><option value="checker">Spectator: top of Checkerboard Hill</option><option value="cabin">Cabin seat</option>
     </select>
     <select id="zoomSel" aria-label="Zoom"><option value="1">Zoom 1×</option><option value="2">2×</option><option value="4">4×</option><option value="8">8×</option><option value="16">16×</option></select>
     <select id="tsSel" aria-label="Time speed"><option value="1">Time 1×</option><option value="2">2×</option><option value="4">4×</option><option value="8">8×</option></select>
@@ -933,11 +933,12 @@ function buildCheckerboard(){
   {const mx=cx+6,mz=cz-40,my=terrainAt(mx,mz);for(let i=0;i<8;i++){const seg=new THREE.Mesh(new THREE.CylinderGeometry(.55,.7,4,6).translate(0,2+i*4,0),new THREE.MeshLambertMaterial({color:i%2?0xf2efe8:0xc3262b}));seg.position.set(mx,my,mz);grp.add(seg)}
    const stays=[];for(const [dx,dz] of[[8,6],[8,-6],[-8,0]])stays.push(mx,my+30,mz,mx+dx,my,mz+dz);const sg=new THREE.BufferGeometry();sg.setAttribute('position',new THREE.Float32BufferAttribute(stays,3));grp.add(new THREE.LineSegments(sg,new THREE.LineBasicMaterial({color:0x777777})));
    addCollider(mx-2,mx+2,mz-2,mz+2,my+33,'the Checkerboard Hill mast');buildCheckerboard.mastTop=[mx,my+33,mz]}
-  scene.add(grp);
+  scene.add(grp);grp.updateMatrixWorld(true);
   // IGS lamp housings along the top of the wall (red boxes) and floodlights for the board at night
   const L=[];const top=main.localToWorld(new THREE.Vector3(0,27/2+2.6,1));
   for(let i=0;i<3;i++){const p=main.localToWorld(new THREE.Vector3(-20+i*20,27/2+2.6,1.2));const bx=new THREE.Mesh(new THREE.BoxGeometry(2.2,2.2,2.2),new THREE.MeshLambertMaterial({color:0xd43a1f}));bx.position.copy(p).add(new THREE.Vector3(0,1.1,0));scene.add(bx);L.push(p.x-1.2,p.y+1.1,p.z,1,.95,.9,5,.92+i*.02)}
   L.push(buildCheckerboard.mastTop[0],buildCheckerboard.mastTop[1]+.5,buildCheckerboard.mastTop[2],1,.08,.05,5,-1);
+  {const e=main.localToWorld(new THREE.Vector3(-8,27/2+2.6+1.7,0));SPOTS.checker=[e.x,e.y,e.z]}  // standing on the top walkway, beside the lamp housings
   scene.add(makeLights(L));
   const F=[];for(let i=0;i<6;i++){const x=cx-90,z=cz+lerp(-40,60,i/5);F.push(x,terrainAt(x,z)+4,z,1,.92,.75,3,-1)}
   const fl=makeLights(F);scene.add(fl);buildCheckerboard.flood=fl;
@@ -1890,9 +1891,9 @@ function updateCamera(dt){
     camera.lookAt(tx,ty,tz);camera.fov=58;
   } else if(SPOTS[V]){
     const sp=SPOTS[V];camera.position.set(sp[0],sp[1]+(V==='boat'?Math.sin(performance.now()/900)*.35:0),sp[2]);_v.set(s.x,s.y+a.cy,s.z);
-    const d=camera.position.distanceTo(_v);if(d>2600&&V!=='boat'){const P=PATH.pts;const j=V==='street'?PATH.iA:PATH.iB;_v.set(P[j].x,P[j].alt,P[j].z)}else if(d>4500){const q=rwP(-300,0);_v.set(q[0],60,q[1])}
+    const d=camera.position.distanceTo(_v);if(d>2600&&V!=='boat'){const P=PATH.pts;const j=V==='checker'?Math.max(0,PATH.iA-120):V==='street'?PATH.iA:PATH.iB;_v.set(P[j].x,P[j].alt,P[j].z)}else if(d>4500){const q=rwP(-300,0);_v.set(q[0],60,q[1])}
     camera.lookAt(_v);camera.rotateY(look.yaw*.6);camera.rotateX(look.pitch*.6);if(V==='boat')camera.rotateZ(Math.sin(performance.now()/1300)*.02);
-    camera.fov=(V==='carpark'||V==='boat'?clamp(2*Math.atan(a.span*1.5/Math.max(d,1))*R2D,18,70):78)/look.dist;
+    camera.fov=(V==='carpark'||V==='boat'||V==='checker'?clamp(2*Math.atan(a.span*1.5/Math.max(d,1))*R2D,18,70):78)/look.dist;
   } else if(V==='tower'){
     camera.position.set(s0.tower[0],s0.tower[1],s0.tower[2]);camera.lookAt(s.x,s.y+a.cy,s.z);
     const dist=camera.position.distanceTo(_v.set(s.x,s.y,s.z));camera.fov=clamp(2*Math.atan(a.span*2.6/dist)*R2D/look.dist,3,60);
@@ -2048,7 +2049,7 @@ window.addEventListener('keydown',e=>{
   keys[e.code]=true;const s=ST;VIA='key';
   switch(e.code){
     case 'KeyG':toggleGear();break;case 'KeyF':setFlaps(1);break;case 'KeyV':setFlaps(-1);break;
-    case 'KeyC':{const o=CFG.game==='watch'?['carpark','ped','street','boat','tower','chase']:['cockpit','chase','tower','street','ped','carpark','boat','cabin'];setView(o[(o.indexOf(CFG.view)+1)%o.length]);break}
+    case 'KeyC':{const o=CFG.game==='watch'?['carpark','ped','street','boat','checker','tower','chase']:['cockpit','chase','tower','street','ped','carpark','boat','checker','cabin'];setView(o[(o.indexOf(CFG.view)+1)%o.length]);break}
     case 'KeyZ':toggleAP();break;case 'BracketLeft':timeJump(-10);break;case 'BracketRight':timeJump(10);break;
     case 'KeyT':setTs(CFG.ts>=8?1:CFG.ts*2);break;case 'KeyI':setZoom(Math.min(16,CFG.zoom*2));break;case 'KeyO':setZoom(Math.max(1,CFG.zoom/2));break;case 'KeyK':toggleDeck();break;case 'KeyN':toggleNight();break;case 'KeyU':setClouds_on(!CFG.clouds);break;case 'KeyP':togglePause();break;
   }
@@ -2152,7 +2153,7 @@ for(const b of document.querySelectorAll('#bar button,#ctl button'))b.addEventLi
 function showSetup(){flightEnd('quit');mode='attract';paused=false;for(const id of['bar','ctl','map','result','cabin'])document.getElementById(id).hidden=true;document.getElementById('setup').hidden=false;sfx.stopAll();if(synth)synth.cancel();
   clearFX();CFG.ap=true;resetFlight();ST.ap=true;spawnAircraftModel();buildAI();CFG.view='chase';applyEnvironment();setWalled(document.getElementById('optWalled').checked)}
 function startFlight(){
-  readSetup();flightEnd('restart');clearFX();mode='fly';paused=false;SEED=1998+Math.floor(Math.random()*1000);
+  readSetup();flightEnd('restart');clearFX();mode='fly';paused=false;SEED=window.__capture?1998:1998+Math.floor(Math.random()*1000);
   for(const id of['setup','result'])document.getElementById(id).hidden=true;for(const id of['bar','ctl','map'])document.getElementById(id).hidden=false;
   resetFlight();ST.attempted=false;flightBegin();HIST.length=0;spawnAircraftModel();FOCUS=null;
   if(CFG.game==='watch')buildAISchedule(0,true);else if(CFG.game==='free')buildAISchedule(-100,false);else buildAI();
@@ -2184,8 +2185,8 @@ function showResult(){
    MAIN LOOP
    ===================================================================== */
 let last=performance.now(),acc=0;
-function frame(now){
-  requestAnimationFrame(frame);
+function frame(now,manual){
+  if(manual!==true)requestAnimationFrame(frame);if(window.__capture&&manual!==true)return;
   let dt=Math.min(.05,(now-last)/1000);last=now;if(mode==='loading')return;
   const running=(mode==='fly'||mode==='attract')&&!paused;
   if(mode==='fly'&&!paused&&FLT&&!FLT.done)FLT.active+=dt;
@@ -2201,6 +2202,7 @@ function frame(now){
   updateAircraftVisual();if(hoops)hoops.visible=CFG.guide&&!SPOTS[CFG.view]&&CFG.view!=='tower';
   if(deckGroup&&deckGroup.visible){drawDisplays(dt);animateDeck()}
   if(mode==='attract'){attractCamera(dt)}else updateCamera(dt);
+  if(window.__camFn)window.__camFn(camera,ST,acModel,THREE);
   if(window.__kt&&window.__kt.freeCam){const f=window.__kt.freeCam;camera.position.set(f[0],f[1],f[2]);camera.lookAt(f[3],f[4],f[5]);camera.fov=60;camera.updateProjectionMatrix()}
   sky.position.copy(camera.position);stars.position.copy(camera.position);
   // cloud drift
@@ -2211,6 +2213,7 @@ function frame(now){
   if(dens>ENV.dens*1.5)scene.fog.color.setHex(CFG.night?0x241e1a:0xb9bfc2);else scene.fog.color.setHex(ENV.fogBase);
   // lightning
   if((w.light||CFG.lightning)&&!paused){lightningT-=dt;if(lightningT<0){lightningT=rr(3,11);flash=1;if(mode==='fly')sfx.thunder(rr(.4,2.5))}}
+  if(window.__flashNow){flash=1;window.__flashNow=false}
   flash=Math.max(0,flash-dt*3.2);const fl=flash>0?(Math.sin(flash*40)>0?flash:flash*.3):0;amb.intensity=fl*2.2;skyMat.uniforms.flash.value=fl*.7;
   updateRain(dt,mode==='attract'?w.rain*.4:w.rain,ST.wind||[0,0,0],camera.position);
   // PAPI colours
@@ -2243,7 +2246,7 @@ fontsReady.then(()=>setTimeout(boot,30));
 /* test hooks */
 window.__kt={CFG,ST,PATH,AC,start:(o={})=>{Object.assign(CFG,o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.game}]`).checked=true;document.querySelector(`input[name=tod][value=${CFG.night?'night':'day'}]`).checked=true;startFlight()},
   run:(sec)=>{if(CFG.game==='watch'){ST.t+=sec;return {t:ST.t}}const h=1/120;for(let i=0;i<sec*120&&!ST.ended;i++){physStep(h);if(i%60===0)recordHistory()}return {ended:ST.ended,td:ST.td,t:ST.t,x:ST.x,y:ST.y,z:ST.z,V:ST.V/KT,d:PATH.pts[ST.pi].d}},
-  get mode(){return mode},step:()=>physStep(1/120),rwS,setZoom:z=>{CFG.zoom=z},get AI(){return AI},get shipLights(){return shipLights},get SHIPS(){return SHIPS},get DISP(){return DISP},get deck(){return deckGroup},get streetCam(){return STREET_CAM},get water(){return water},get camera(){return camera},get nStreets(){return STREETS.length},drawDisplays,look,setView,terrainAt,buildingAt,groundInfo};
+  get mode(){return mode},get CFG(){return CFG},frame:(now)=>frame(now,true),get FOCUS(){return FOCUS},step:()=>physStep(1/120),rwS,setZoom:z=>{CFG.zoom=z},get AI(){return AI},get shipLights(){return shipLights},get SHIPS(){return SHIPS},get DISP(){return DISP},get deck(){return deckGroup},get streetCam(){return STREET_CAM},get water(){return water},get camera(){return camera},get nStreets(){return STREETS.length},drawDisplays,look,setView,terrainAt,buildingAt,groundInfo};
 })();
 </script>
 <!--/FRAG:BODY-->
