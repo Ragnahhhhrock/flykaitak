@@ -18,7 +18,7 @@ Data: © Lands Department, HKSAR Government (CSDI). Elevation: SRTM via AWS Terr
 - Aircraft: 747-400, 777-200, A330-300, A340-300, each with its own flight model (mass, wing area, thrust, Vref, roll rate, flap labels and limits)
 - Day / night: lit windows, street lights, neon signs, runway, approach and lead-in strobe lights, PAPI
 - Weather: clear, rain, typhoon, storm, low cloud, fog, plus a lightning toggle. Wind, gusts and turbulence affect the flight
-- Landmarks: the checkerboard, Kowloon Walled City (pre-1994, or the 1998 park), Bank of China Tower, Central Plaza, The Center, HSBC, Jardine House, Exchange Square, One IFC, Lippo Centre, Hopewell Centre, the Convention Centre extension, the TST Clock Tower, the Cultural Centre, Ocean Terminal, the Hung Hom Coliseum, and the Kai Tak terminal and tower
+- Landmarks: the checkerboard (red and white on two concrete retaining walls, with the striped mast and IGS lamp housings, from period photos), Kowloon Walled City (pre-1994, or the 1998 park), Bank of China Tower, Central Plaza, The Center, HSBC, Jardine House, Exchange Square, One IFC, Lippo Centre, Hopewell Centre, the Convention Centre extension, the TST Clock Tower, the Cultural Centre, Ocean Terminal, the Hung Hom Coliseum, and the Kai Tak terminal and tower
 - Traffic: about 6,900 vehicles on the real main roads and the Kowloon City streets: red Crown Comfort-style taxis with silver roofs (and green New Territories taxis), cream minibuses, double-decker buses, lorries and cars. In the harbour: container ships, Star Ferries, junks, tugs, and two liners at Ocean Terminal
 - Kowloon City street scene: shop signs from period photos (新澧傢俬, 鳳香園, 金輝粥麵專家, 珍珍珠寶金行, 君皇酒樓, 黃珍珍 and more), signs hung across the streets, rooftop billboard frames, air-conditioners, laundry poles, bamboo scaffolding, and Nathan Road neon. Corporate logos are left out
 - Spectator views: a Kowloon City street (the aircraft passes just overhead), Prince Edward Road beside the threshold, the roof of the Kai Tak car park with the plane-spotters, and a junk moored in the harbour off the runway
@@ -28,9 +28,15 @@ Data: © Lands Department, HKSAR Government (CSDI). Elevation: SRTM via AWS Terr
 - Views: cockpit, exterior, control tower, four spectator spots, cabin seat
 - Sound: engines, wind, rain, a touchdown thud with tyre chirp, brake squeal, reverser roar, gear hydraulics with a lock clunk, flap motor, gear-down rumble, thunder, GPWS
 - Autopilot and autothrottle that fly the full approach and autoland
+- Moving control surfaces: ailerons and elevators follow the controls, flaps follow the flap setting, spoilers deploy on touchdown (on the AI traffic too)
 - Other airliners: a 747 landing two minutes ahead of you, an A340 following you in on the IGS, departures taxiing out and climbing over Kowloon Bay, two aircraft in the hold west of the harbour, and apron movements
 - Zoom 1×, 2×, 4×, 8×, 16× (I / O); time 1×, 2×, 4×, 8× (T); jump back or forward 10 seconds ([ / ]), including back from a crash
 - GPWS callouts and warnings, engine, wind, rain and thunder sound
+
+## Modes
+- **IGS 13 approach**: the original game. Start on the IGS at 3,100 ft and land.
+- **Free flight**: start lined up on Runway 13. Take off over Kowloon Bay and fly anywhere; landings are graded but the flight carries on (touch-and-go with full thrust). The autopilot holds heading, altitude and speed once airborne.
+- **Spectator**: no flying. A continuous schedule of arrivals every 100 s with departures in between, plus aircraft in the hold. Watch from the car park roof, Prince Edward Road, a Kowloon City street, a harbour junk or the tower, or follow the active jet.
 
 ## Controls
 | Key | Action |

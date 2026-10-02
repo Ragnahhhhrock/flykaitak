@@ -238,6 +238,15 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
         <p>You start the descent over Tsing Yi at about 3,000 ft, established on the instrument guidance system, heading 088. Follow it toward the orange-and-white checkerboard on the hill, then make the 47° right turn low over Kowloon City and line up with a runway that ends in Kowloon Bay.</p>
       </div>
       <fieldset>
+        <legend>Mode</legend>
+        <div class="chips" id="modeChips">
+          <label class="chip"><input type="radio" name="game" value="approach" checked><span>IGS 13 approach</span></label>
+          <label class="chip"><input type="radio" name="game" value="free"><span>Free flight</span></label>
+          <label class="chip"><input type="radio" name="game" value="watch"><span>Spectator</span></label>
+        </div>
+        <p id="modeNote" style="font-size:12.5px">Start on the IGS at 3,100 ft and land on Runway 13.</p>
+      </fieldset>
+      <fieldset>
         <legend>Aircraft</legend>
         <div class="cards" id="acCards"></div>
       </fieldset>
@@ -262,7 +271,7 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
           <label class="tog"><input type="checkbox" id="optWalled" checked><span>Kowloon Walled City as it stood before 1994<small>It was demolished in 1993–94. Untick to see the 1998 park instead.</small></span></label>
         </div>
       </fieldset>
-      <button class="go" id="btnGo" type="button"><span>Begin descent</span><span class="k">ENTER</span></button>
+      <button class="go" id="btnGo" type="button"><span id="goLabel">Begin descent</span><span class="k">ENTER</span></button>
       <details>
         <summary>Controls</summary>
         <div class="keys">
@@ -421,7 +430,7 @@ const WX={
 };
 
 /* ---------------- state & settings ---------------- */
-const CFG={zoom:1,ts:1,deck:false,hud:true,ac:'b744',night:false,wx:'clear',lightning:false,clouds:true,guide:true,ap:false,walled:true,view:'cockpit',sound:true,seatRow:34,seatLeft:true};
+const CFG={game:'approach',zoom:1,ts:1,deck:false,hud:true,ac:'b744',night:false,wx:'clear',lightning:false,clouds:true,guide:true,ap:false,walled:true,view:'cockpit',sound:true,seatRow:34,seatLeft:true};
 const ST={};let mode='loading'; // loading | attract | fly | ended
 let paused=false;
 
@@ -900,17 +909,37 @@ function buildLandmarks(){
   landmarkLights.lightPoints=makeLights(L);scene.add(landmarkLights.lightPoints);
   buildCheckerboard();buildWalledCity();
 }
+function checkerTex(nx,ny){return canvasTex(nx*48,ny*48,(g,w,h)=>{for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){g.fillStyle=(i+j)%2?'#efebe2':'#c3262b';g.fillRect(i*48,j*48,49,49)}
+  // weathering: concrete showing through, rain streaks
+  const im=g.getImageData(0,0,w,h);for(let k=0;k<im.data.length;k+=4){const n=(Math.random()-.5)*26;im.data[k]+=n;im.data[k+1]+=n;im.data[k+2]+=n}g.putImageData(im,0,0);
+  g.globalAlpha=.12;g.fillStyle='#5a5148';for(let s=0;s<60;s++){const x=Math.random()*w;g.fillRect(x,Math.random()*h*.3,1.5,h*(.3+Math.random()*.6))}g.globalAlpha=1})}
 function buildCheckerboard(){
-  const tex=canvasTex(512,384,(g,w,h)=>{const nx=8,ny=6;for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){g.fillStyle=(i+j)%2?'#f3efe6':'#e8571f';g.fillRect(i*w/nx,j*h/ny,w/nx+1,h/ny+1)}});
-  // conform a grid to the west face of the Kowloon Tsai hill, facing the IGS approach
-  const nu=24,nv=16,pos=[],uv=[],idx=[];const cx=CHK.x-150,cz=CHK.z+30;
-  for(let j=0;j<=nv;j++)for(let i=0;i<=nu;i++){const along=lerp(-50,50,i/nu);const r=lerp(-75,75,j/nv);const x=cx+r,z=cz+along;pos.push(x,terrainAt(x,z)+1.5,z);uv.push(i/nu,j/nv)}
-  for(let j=0;j<nv;j++)for(let i=0;i<nu;i++){const a=j*(nu+1)+i,b=a+1,c=a+nu+1,d=c+1;idx.push(a,b,c,b,d,c)}
-  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();
-  const m=new THREE.Mesh(g,new THREE.MeshLambertMaterial({map:tex,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-4,emissive:0x000000}));
-  scene.add(m);buildCheckerboard.mesh=m;
-  const L=[];for(let i=0;i<6;i++){const x=cx-110,z=cz+lerp(-50,50,i/5);L.push(x,terrainAt(x,z)+4,z,1,.92,.75,3,-1)}
-  const fl=makeLights(L);scene.add(fl);buildCheckerboard.flood=fl;
+  // Checkerboard Hill, Kowloon Tsai: red-and-white checks painted on two steep concrete retaining walls cut into the hill,
+  // a red-and-white mast beside them and the IGS lamp housings along the top, facing aircraft on the 088 course.
+  const grp=new THREE.Group();const cx=CHK.x-150,cz=CHK.z+30;const g0=terrainAt(cx,cz);
+  const wall=(w,h,nx,ny,x,y,z,yaw,tilt)=>{const o=new THREE.Group();o.position.set(x,y,z);o.rotation.set(-tilt,-Math.PI/2+yaw,0,'YXZ');grp.add(o);
+    const back=new THREE.Mesh(new THREE.BoxGeometry(w+6,h+4,3).translate(0,0,-1.6),new THREE.MeshLambertMaterial({color:0x8d8479}));o.add(back);
+    const face=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshLambertMaterial({map:checkerTex(nx,ny),emissive:0x000000,polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-4}));face.position.z=.05;o.add(face);
+    // walkway ledge and railing along the top
+    const ledge=new THREE.Mesh(new THREE.BoxGeometry(w+6,.6,2.4).translate(0,h/2+2,0),new THREE.MeshLambertMaterial({color:0x9c958a}));o.add(ledge);
+    const rail=[];for(let u=-w/2-3;u<=w/2+3;u+=2.5)rail.push(u,h/2+2.3,.6,u,h/2+3.4,.6);rail.push(-w/2-3,h/2+3.4,.6,w/2+3,h/2+3.4,.6);
+    const rg=new THREE.BufferGeometry();rg.setAttribute('position',new THREE.Float32BufferAttribute(rail,3));o.add(new THREE.LineSegments(rg,new THREE.LineBasicMaterial({color:0x5a6a5a})));
+    o.userData.face=face;return o};
+  const main=wall(66,27,14,6,cx-4,g0+16,cz,0,32*D2R);
+  const lower=wall(42,18,9,4,cx-38,g0-6,cz+52,24*D2R,30*D2R);
+  buildCheckerboard.faces=[main.userData.face,lower.userData.face];buildCheckerboard.mesh=main.userData.face;
+  // red-and-white mast at the north end of the main wall
+  {const mx=cx+6,mz=cz-40,my=terrainAt(mx,mz);for(let i=0;i<8;i++){const seg=new THREE.Mesh(new THREE.CylinderGeometry(.55,.7,4,6).translate(0,2+i*4,0),new THREE.MeshLambertMaterial({color:i%2?0xf2efe8:0xc3262b}));seg.position.set(mx,my,mz);grp.add(seg)}
+   const stays=[];for(const [dx,dz] of[[8,6],[8,-6],[-8,0]])stays.push(mx,my+30,mz,mx+dx,my,mz+dz);const sg=new THREE.BufferGeometry();sg.setAttribute('position',new THREE.Float32BufferAttribute(stays,3));grp.add(new THREE.LineSegments(sg,new THREE.LineBasicMaterial({color:0x777777})));
+   addCollider(mx-2,mx+2,mz-2,mz+2,my+33,'the Checkerboard Hill mast');buildCheckerboard.mastTop=[mx,my+33,mz]}
+  scene.add(grp);
+  // IGS lamp housings along the top of the wall (red boxes) and floodlights for the board at night
+  const L=[];const top=main.localToWorld(new THREE.Vector3(0,27/2+2.6,1));
+  for(let i=0;i<3;i++){const p=main.localToWorld(new THREE.Vector3(-20+i*20,27/2+2.6,1.2));const bx=new THREE.Mesh(new THREE.BoxGeometry(2.2,2.2,2.2),new THREE.MeshLambertMaterial({color:0xd43a1f}));bx.position.copy(p).add(new THREE.Vector3(0,1.1,0));scene.add(bx);L.push(p.x-1.2,p.y+1.1,p.z,1,.95,.9,5,.92+i*.02)}
+  L.push(buildCheckerboard.mastTop[0],buildCheckerboard.mastTop[1]+.5,buildCheckerboard.mastTop[2],1,.08,.05,5,-1);
+  scene.add(makeLights(L));
+  const F=[];for(let i=0;i<6;i++){const x=cx-90,z=cz+lerp(-40,60,i/5);F.push(x,terrainAt(x,z)+4,z,1,.92,.75,3,-1)}
+  const fl=makeLights(F);scene.add(fl);buildCheckerboard.flood=fl;
 }
 function buildWalledCity(){
   walledGroup=new THREE.Group();parkGroup=new THREE.Group();
@@ -1182,7 +1211,15 @@ function buildAircraftModel(a,opt={}){
   const cr=L*.2,ct=cr*.24,semi=a.span/2,sweep=Math.tan(36*D2R),zle=-L*.08;
   const wingGeo=(semi,cr,ct,zle,thick)=>{const sh=new THREE.Shape();sh.moveTo(0,zle);sh.lineTo(semi,zle+semi*sweep);sh.lineTo(semi,zle+semi*sweep+ct);sh.lineTo(0,zle+cr);sh.lineTo(0,zle);
     const eg=new THREE.ExtrudeGeometry(sh,{depth:thick,bevelEnabled:false});eg.rotateX(Math.PI/2);return eg};
+  const surf={ail:[],elev:[],flap:[],spl:[]};const surfM=new THREE.MeshLambertMaterial({color:0xb5b9bc,side:THREE.DoubleSide});
+  // a hinged surface on a wing-shaped mesh: hinge line along the trailing edge, deflection about the hinge
+  const hinged=(parent,semi_,cr_,ct_,zle_,sweep_,x0,len,ch,top,thick)=>{const k=(semi_*sweep_+ct_-cr_)/semi_;const zte=zle_+cr_+x0*k;
+    const piv=new THREE.Group();piv.position.set(x0,top?.02:-thick/2,top?zte-ch*2.2:zte-ch);piv.rotation.y=-Math.atan(k);parent.add(piv);
+    const h=new THREE.Group();piv.add(h);const m=new THREE.Mesh(new THREE.BoxGeometry(len/Math.cos(Math.atan(k)),top?.12:thick*.8,ch).translate(len/Math.cos(Math.atan(k))/2,top?.06:0,ch/2),surfM);h.add(m);return h};
   for(const sd of[-1,1]){const w=new THREE.Mesh(wingGeo(semi,cr,ct,zle,.9),wingM);w.scale.x=sd;w.position.y=cy-R*.45;w.rotation.z=sd*5*D2R;g.add(w);
+    surf.ail.push({h:hinged(w,semi,cr,ct,zle,sweep,semi*.7,semi*.22,ct*.38,false,.9),sd});
+    surf.flap.push({h:hinged(w,semi,cr,ct,zle,sweep,R*1.05,semi*.58-R,cr*.16,false,.9),sd});
+    surf.spl.push({h:hinged(w,semi,cr,ct,zle,sweep,R*1.3,semi*.42,cr*.11,true,.9),sd});
     if(a.winglet){const wl=new THREE.Mesh(new THREE.BoxGeometry(.25,a.winglet==='cant'?3.6:2.8,ct*.8),tailC);wl.position.set(sd*(semi+.1),cy-R*.45+semi*Math.tan(5*D2R)+1.4,zle+semi*sweep+ct*.5);wl.rotation.z=sd*(a.winglet==='cant'?-.5:-.15);g.add(wl)}
     // engines
     for(const ex of a.engX){const ez=zle+ex*sweep-a.engR*2.6;const ey=cy-R*.45+ex*Math.tan(5*D2R)-a.engR-.6;
@@ -1190,7 +1227,9 @@ function buildAircraftModel(a,opt={}){
       const inlet=new THREE.Mesh(new THREE.CircleGeometry(a.engR*.9,18),dark);inlet.position.set(sd*ex,ey,ez-a.engR*2.31);inlet.rotation.y=Math.PI;g.add(inlet);
       const py=new THREE.Mesh(new THREE.BoxGeometry(.5,1,a.engR*3),grey);py.position.set(sd*ex,ey+a.engR+.3,ez+a.engR*.8);g.add(py)}
     // stabiliser
-    const hs=new THREE.Mesh(wingGeo(a.span*.17,L*.1,L*.035,L*.36,.4),wingM);hs.scale.x=sd;hs.position.y=cy+R*.25;hs.rotation.z=sd*7*D2R;g.add(hs)}
+    const hs=new THREE.Mesh(wingGeo(a.span*.17,L*.1,L*.035,L*.36,.4),wingM);hs.scale.x=sd;hs.position.y=cy+R*.25;hs.rotation.z=sd*7*D2R;g.add(hs);
+    surf.elev.push({h:hinged(hs,a.span*.17,L*.1,L*.035,L*.36,sweep,R*.5,a.span*.17*.85-R*.5,L*.028,false,.4),sd})}
+  g.userData.surf=surf;
   // fin
   {const sh=new THREE.Shape();const fh=a.tail,fc=L*.14;sh.moveTo(0,0);sh.lineTo(fc,0);sh.lineTo(fc+fh*.95,fh);sh.lineTo(fc*.45+fh*.95,fh);sh.lineTo(0,0);
    const eg=new THREE.ExtrudeGeometry(sh,{depth:.5,bevelEnabled:false});eg.rotateY(-Math.PI/2);const fin=new THREE.Mesh(eg,tailC);fin.position.set(.25,cy+R*.55,L*.3);g.add(fin);
@@ -1237,6 +1276,8 @@ function resetFlight(){
   const D=q*a.S*(CD0+CDFS[2]+KI*CL*CL);const T=D+a.mass*G*Math.sin(ST.gamma);ST.thrust=Math.max(T,.03*a.thr);ST.throttle=ST.thrust/a.thr;
   // initial wind correction
   const w=windAt(ST.y,0);ST.vx=ST.V*Math.sin(ST.psi)+w[0];ST.vz=-ST.V*Math.cos(ST.psi)+w[2];
+  if(CFG.game!=='approach'){const q0=rwP(40,0);Object.assign(ST,{x:q0[0],z:q0[1],y:RWY.elev,V:0,Gs:0,gamma:0,theta:0,phi:0,psi:RWY.hdg*D2R,psiG:RWY.hdg*D2R,onGround:true,
+    flapIdx:2,flapPos:2,gearDown:true,gearPos:1,throttle:0,thrust:.035*a.thr,vx:0,vz:0,vy:0,ap:false,ra:0});ST.pi=pathNearestGlobal(ST.x,ST.z)}
 }
 function aero(a,s){
   const fp=s.flapPos,i0=Math.min(3,Math.floor(fp)),ft=fp-i0;
@@ -1247,7 +1288,7 @@ function aero(a,s){
 }
 function physStep(dt){
   const s=ST,a=s.ac;if(s.ended)return;
-  if(s.ap&&!s.onGround)apUpdate(dt);else if(!s.ap){s.cmdPitchRate=s.inPitch*4*D2R;s.cmdRollRate=s.inRoll*a.roll*D2R}
+  if(s.ap&&!s.onGround)(CFG.game==='free'?apHold(dt):apUpdate(dt));else if(!s.ap){s.cmdPitchRate=s.inPitch*4*D2R;s.cmdRollRate=s.inRoll*a.roll*D2R}
   s.flapPos+=clamp(s.flapIdx-s.flapPos,-.28*dt,.28*dt);
   s.gearPos+=clamp((s.gearDown?1:0)-s.gearPos,-dt/8,dt/8);
   const tc=Math.max(.035,s.throttle)*a.thr;s.thrust+=(tc-s.thrust)*Math.min(1,dt/(tc>s.thrust?3.2:2.2));
@@ -1289,8 +1330,8 @@ function checkAirborne(){
       const h=nearestHill(s.x,s.z);return crash(g.h>80&&h?'Flew into '+h.n:'Hit the ground short of the runway','Impact at '+fmtFt(g.h)+' elevation.')}
     return touchdown();
   }
-  if(s.y>4000)return endMissed('Climbed away','You left the approach above 13,000 ft.');
-  const sr=rwS(s.x,s.z);if(sr>RWY.len+300)return endMissed('Missed approach','You overflew the runway and went around over Kowloon Bay. Pilots did this often at Kai Tak.');
+  if(CFG.game==='approach'&&s.y>4000)return endMissed('Climbed away','You left the approach above 13,000 ft.');
+  const sr=rwS(s.x,s.z);if(CFG.game==='approach'&&sr>RWY.len+300)return endMissed('Missed approach','You overflew the runway and went around over Kowloon Bay. Pilots did this often at Kai Tak.');
   if(s.V<45*KT&&s.y>40)return crash('Stalled and fell','Airspeed fell to '+Math.round(s.V/KT)+' kt. The wing could no longer hold the aircraft up.');
 }
 function bName(b){return b.name.startsWith('the ')||/Tower|Plaza|Center|Building|House|Square|IFC|Centre|Walled/.test(b.name)?b.name:'buildings in '+b.name}
@@ -1304,25 +1345,33 @@ function touchdown(){
   if(vs<-4.8)return crash('Hard landing: main gear collapsed','Touchdown at '+Math.round(-vs/FT*60)+' feet per minute. The gear is certified to about 600.');
   if(bank>a.strike)return crash('Wing and engine strike on touchdown','Bank was '+(bank*R2D).toFixed(1)+'° at touchdown. The '+a.short+' scrapes an engine or wingtip beyond about '+(a.strike*R2D).toFixed(0)+'°.');
   s.tailstrike=s.theta>a.tailMax;
-  s.onGround=true;s.td={vs,s:sr,l:lr,bank:bank*R2D,ias:s.V/KT,pitch:s.theta*R2D,crab:angDiff(s.psi,RWY.hdg*D2R)*R2D};
+  s.stopNoted=0;s.onGround=true;s.td={vs,s:sr,l:lr,bank:bank*R2D,ias:s.V/KT,pitch:s.theta*R2D,crab:angDiff(s.psi,RWY.hdg*D2R)*R2D};
   s.Gs=Math.hypot(s.vx,s.vz);s.psiG=Math.atan2(s.vx,-s.vz);s.y=RWY.elev;s.vy=0;
   say(s.td.vs<-3?'Firm touchdown':'',true);
   sfx.thump(clamp(-vs/3,0.35,1));sfx.screech(clamp(.5+(s.Gs-60)/40,.4,1));
 }
 function groundRoll(dt){
   const s=ST,a=s.ac;s.y=RWY.elev;s.vy=0;s.gamma=0;
-  s.theta=Math.max(0,s.theta-(s.Gs>40&&s.inPitch>.3&&!s.ap?0:2.2*D2R*dt));s.phi*=Math.max(0,1-4*dt);
+  if(!s.td&&s.Gs>35&&s.inPitch>.2)s.theta=Math.min(12*D2R,s.theta+s.inPitch*3*D2R*dt);else s.theta=Math.max(0,s.theta-(s.Gs>40&&s.inPitch>.3&&!s.ap?0:2.2*D2R*dt));s.phi*=Math.max(0,1-4*dt);
   const lr=rwL(s.x,s.z),sr=rwS(s.x,s.z);const rh=RWY.hdg*D2R;
   let steer;if(s.ap)steer=clamp(-lr*.004-angDiff(s.psiG,rh)*1.2,-3*D2R,3*D2R);else steer=s.inRoll*3*D2R-angDiff(s.psiG,rh)*.25;
   s.psiG+=steer*dt;s.psi=s.psiG;
   const q=.5*RHO*s.Gs*s.Gs;const drag=q*a.S*(CD0+CDFS[4]+CDG+.08)/a.mass;
-  const rev=s.throttle<.12?.5:0;const brake=s.Gs>1.5?1.5:0;const thr=s.throttle>.12?s.thrust/a.mass:0;
+  const rev=s.td&&s.throttle<.12?.5:0;const brake=s.td?(s.throttle<.3&&s.Gs>1.5?1.5:0):(s.throttle<.05&&s.Gs>.5?1.2:0);const thr=(s.td?s.throttle>.12:true)?s.thrust/a.mass:0;
   s.Gs=Math.max(0,s.Gs+(thr-drag-rev-brake-.15)*dt);s.V=s.Gs;
   s.vx=s.Gs*Math.sin(s.psiG);s.vz=-s.Gs*Math.cos(s.psiG);s.x+=s.vx*dt;s.z+=s.vz*dt;s.ra=0;
   if(Math.abs(lr)>45&&s.Gs>3)return crash('Runway excursion','The aircraft ran off the side of the runway into Kowloon Bay. The strip is only a few hundred metres wide, with water on both sides.');
   if(sr>RWY.len+40&&s.Gs>2)return crash('Overran into Kowloon Bay','The aircraft could not stop before the end of the runway. In 1993 a China Airlines 747 did exactly this.');
-  if(s.Gs<3*KT){s.Gs=0;return landed()}
+  if(s.td&&s.Gs<3*KT){s.Gs=0;if(CFG.game==='free'){if(!s.stopNoted){s.stopNoted=1;const g=gradeLanding(s.td);toast('Landed: grade '+g.g+', '+Math.round(g.fpm)+' fpm. Add thrust to go again.');track('landing',{grade:g.g,score:Math.max(0,g.pts),touchdown_fpm:Math.round(g.fpm),mode:'free'})}if(s.throttle>.3){s.td=null;s.stopNoted=0}return}return landed()}
+  if(s.td&&CFG.game==='free'&&s.throttle>.6&&s.Gs>20){s.td=null;s.stopNoted=0}  // touch-and-go
+  // liftoff
+  if(!s.td){const fp=s.flapPos,i0=Math.min(3,Math.floor(fp)),ft=fp-i0;const CL=lerp(CL0S[i0],CL0S[i0+1],ft)+CLA*s.theta;
+    if(.5*RHO*s.Gs*s.Gs*a.S*CL>a.mass*G*1.01&&s.Gs>30){s.onGround=false;s.V=s.Gs;s.gamma=.5*D2R;s.psi=s.psiG;s.vy=0;s.y=RWY.elev+.05;s.liftoffT=s.t;toast('Rotate… positive climb. Gear up (G).');track('takeoff',{})}}
 }
+function apHold(dt){const s=ST,a=s.ac;if(s.apT===undefined||s.apT===null){s.apT={alt:Math.max(s.y,RWY.elev+460),hdg:Math.atan2(s.vx,-s.vz),v:Math.max(s.V,(a.vref+30)*KT)}}
+  const T=s.apT;const trk=Math.atan2(s.vx,-s.vz);const bankCmd=clamp(angDiff(T.hdg,trk)*2,-25*D2R,25*D2R);s.cmdRollRate=clamp((bankCmd-s.phi)*1.8,-6*D2R,6*D2R);
+  const gC=clamp((T.alt-s.y)*.002,-.06,.08);s.cmdPitchRate=clamp(.55*(gC-s.gamma)-1.0*s.gdot,-3*D2R,3*D2R);
+  const err=(T.v-s.V)/KT;s.apI=clamp(s.apI+err*.006*dt,-.3,.5);s.throttle=clamp(.4+.035*err+s.apI,0,1)}
 function apUpdate(dt){
   const s=ST,a=s.ac,P=PATH.pts;const p=P[s.pi];
   const gs=Math.max(40,Math.hypot(s.vx,s.vz));const look=clamp(gs*6.5,420,1300);
@@ -1483,7 +1532,7 @@ function applyEnvironment(){
   streetLights.visible=n;carLights&&(carLights.visible=n);shipLights.visible=true;
   if(signMat)signMat.color.setScalar(n?1:over?.6:.8);
   for(const m of landmarkLights)if(m.material)m.material.emissive.setHex(n?(m.userData.neon||0):0);
-  buildCheckerboard.flood.visible=n;buildCheckerboard.mesh.material.emissive.setHex(n?0x2a1a12:0);
+  buildCheckerboard.flood.visible=n;for(const fc of buildCheckerboard.faces)fc.material.emissive.setHex(n?0x2a1a1a:0);
   if(acModel)acModel.userData.cabinMat.emissive.setHex(n?0xffd79a:0x000000);
   for(const p of parked)p.userData.cabinMat.emissive.setHex(n?0x7a6440:0);
   setClouds(w);applyInteriorLight();
@@ -1680,16 +1729,16 @@ function polyPose(pts,t){ // pts: [[s,l,tArrive],…] ground taxi along runway c
   for(let i=1;i<pts.length;i++){if(t<=pts[i][2]){const a=pts[i-1],b=pts[i];const u=clamp((t-a[2])/Math.max(.01,b[2]-a[2]),0,1);const s=lerp(a[0],b[0],u),l=lerp(a[1],b[1],u);const q=rwP(s,l);
     const d=rwP(b[0]-a[0],b[1]-a[1]);return {x:q[0],z:q[1],y:RWY.elev,psi:Math.atan2(d[0],-d[1]),theta:0,phi:0,gear:1,moving:u<1}}}
   const a=pts[pts.length-2]||pts[0],b=pts[pts.length-1];const q=rwP(b[0],b[1]);const d=rwP(b[0]-a[0],b[1]-a[1]);return {x:q[0],z:q[1],y:RWY.elev,psi:Math.atan2(d[0],-d[1]),theta:0,phi:0,gear:1,moving:false}}
-function arrivalPose(t,c0){
+function arrivalPose(t,c0,gateS){gateS=gateS||300;
   const v=76,thr=PATH.pts.find(p=>p.d<=0).c;const tdC=thr+300;const tTD=(tdC-c0)/v;
   if(t<0)return null;
   if(t<tTD){const c=c0+v*t;const p=pathAtC(c);const p2=pathAtC(c+v*3);let phi=-Math.atan(v*v*(p2.k||0)/G);
     const flare=clamp((t-(tTD-5))/5,0,1);return {x:p.x,z:p.z,y:p.alt+flare*-.5,psi:p.h,theta:(2+flare*3)*D2R,phi,gear:c>thr-9000?1:0,lights:true}}
   const dt=t-tTD,a=2.0,vT=10;const tDec=(v-vT)/a;let s;
   if(dt<tDec)s=300+v*dt-.5*a*dt*dt;else s=300+(v*v-vT*vT)/(2*a)+vT*(dt-tDec);
-  if(s<1800){const q=rwP(s,0);return {x:q[0],z:q[1],y:RWY.elev,psi:RWY.hdg*D2R,theta:dt<4?(4-dt)*D2R:0,phi:0,gear:1,lights:true}}
+  if(s<1800){const q=rwP(s,0);return {x:q[0],z:q[1],y:RWY.elev,psi:RWY.hdg*D2R,theta:dt<4?(4-dt)*D2R:0,phi:0,gear:1,lights:true,spl:dt<tDec}}
   const t0=tTD+tDec+(1800-300-(v*v-vT*vT)/(2*a))/vT;
-  return polyPose([[1800,0,t0],[1900,-96,t0+16],[1780,-96,t0+28],[600,-96,t0+146],[420,-300,t0+174],[300,-470,t0+198]],t);
+  return polyPose([[1800,0,t0],[1900,-96,t0+16],[1780,-96,t0+28],[600,-96,t0+146],[420,-300,t0+174],[gateS,-470,t0+174+Math.abs(gateS-420)/8+12]],t);
 }
 function departurePose(t,gate){
   const taxi=[[gate,-560,0],[gate,-300,25],[gate-40,-96,48],[40,-96,48+(gate-80)/9],[0,-40,60+(gate-80)/9],[0,0,68+(gate-80)/9]];
@@ -1720,11 +1769,35 @@ function buildAI(){
   mk('b744',AI_LIVERIES[6],t=>departurePose(t-330,600));
   mk('a333',AI_LIVERIES[7],t=>polyPose([[700,-200,0],[700,-110,20],[1500,-110,105],[1500,-200,125]],(t%260)));  // repositioning on the apron
 }
+function animateSurfaces(m,ail,elev,flap,spl){const S=m.userData.surf;if(!S)return;
+  for(const o of S.ail)o.h.rotation.x=-o.sd*clamp(ail,-1,1)*20*D2R;
+  for(const o of S.elev)o.h.rotation.x=-clamp(elev,-1,1)*22*D2R;
+  for(const o of S.flap)o.h.rotation.x=clamp(flap,0,1)*34*D2R;
+  for(const o of S.spl)o.h.rotation.x=-clamp(spl,0,1)*50*D2R}
+function buildAISchedule(phase,wrapNeg){
+  for(const a of AI){scene.remove(a.m)}AI.length=0;
+  const mk=(type,tail,fn,role)=>{const m=buildAircraftModel(AC[type],{tail,cheat:tail,gear:true});m.rotation.order='YXZ';scene.add(m);
+    const L=[];for(const p of m.userData.navPts)L.push(p[0],p[1],p[2],p[3],p[4],p[5],2.4,-1);for(const p of m.userData.strobePts)L.push(p[0],p[1],p[2],1,1,1,4,.37);
+    const ll=makeLights([0,AC[type].cy-1,-AC[type].len*.48,1,.97,.9,9,-1]);m.add(makeLights(L),ll);AI.push({m,fn,ll,type,role})};
+  const P=600,thrC=PATH.pts.find(p=>p.d<=0).c,c0=thrC+300-8000;
+  const loc=(t,off)=>{let k=t+phase-off;if(k<0&&!wrapNeg)return -1;return ((k%P)+P)%P};
+  const types=['b744','a333','b772','a343','b744','a333'];const gatesA=[150,250,350,450,550,650],gatesD=[430,515,600,680,360,250];
+  for(let i=0;i<6;i++){const off=i*100;mk(types[i],AI_LIVERIES[i],t=>{const k=loc(t,off);return k<0?null:arrivalPose(k,c0,gatesA[i])},'arrival')}
+  for(let i=0;i<6;i++){const g=gatesD[i];const tLine=68+(g-80)/9+12;const off=145+i*100-tLine;
+    mk(types[(i+3)%6],AI_LIVERIES[(i+2)%8],t=>{const k=loc(t,off);return k<0?departurePose(0,g):departurePose(k,g)},'departure')}
+  mk('b744',AI_LIVERIES[4],t=>holdingPose(t,-11000,5200,1850,2600,0),'holding');
+  mk('a343',AI_LIVERIES[5],t=>holdingPose(t,-11000,5200,2150,2600,Math.PI),'holding');
+}
+function aiPhase(a){const p=a.p;if(!p)return'';if(a.role==='holding')return'holding';if(p.y>RWY.elev+3)return a.role==='arrival'?'on approach':'climbing out';if((a.v||0)>25)return a.role==='arrival'?'landing':'taking off';if((a.v||0)>.5)return'taxiing';return'at the gate'}
 function updateAI(){
   const t=ST.t||0;
   for(const a of AI){const p=a.fn(t);if(!p||Math.hypot(p.x,p.z)>30000){a.m.visible=false;continue}
     a.m.visible=true;a.m.position.set(p.x,p.y,p.z);a.m.rotation.set(p.theta||0,-p.psi,-(p.phi||0),'YXZ');
-    const gr=a.m.userData.gear;gr.visible=p.gear>.5;a.ll.visible=!!p.lights}
+    const gr=a.m.userData.gear;gr.visible=p.gear>.5;a.ll.visible=!!p.lights;
+    const dt=Math.max(1e-3,t-(a.pt??t-.016));const dphi=a.pp?angDiff(p.phi||0,a.pp.phi||0)/dt:0,dth=a.pp?((p.theta||0)-(a.pp.theta||0))/dt:0;
+    if(a.pp){a.v=Math.hypot(p.x-a.pp.x,p.z-a.pp.z,p.y-a.pp.y)/dt}a.pp={x:p.x,y:p.y,z:p.z,phi:p.phi||0,theta:p.theta||0};a.pt=t;a.p=p;
+    a.ail=lerp(a.ail||0,clamp(dphi/(8*D2R),-1,1),.1);a.el=lerp(a.el||0,clamp(dth/(3*D2R),-1,1),.1);
+    animateSurfaces(a.m,a.ail,a.el,p.gear>.5?(p.y>RWY.elev+.5?.85:p.spl?.85:.35):(p.y<900?.2:0),p.spl?1:0)}
 }
 
 /* =====================================================================
@@ -1751,7 +1824,9 @@ function updateAircraftVisual(){
   const s=ST,a=s.ac;if(!acModel)return;
   acModel.position.set(s.x,s.y,s.z);acModel.rotation.set(s.theta,-s.psi,-s.phi,'YXZ');
   const gr=acModel.userData.gear;gr.visible=s.gearPos>.03;gr.scale.y=Math.max(.05,s.gearPos);gr.position.y=(1-s.gearPos)*a.belly*.8;
-  if(!s.ended)acModel.visible=CFG.view!=='cockpit';
+  if(!s.ended)acModel.visible=CFG.view!=='cockpit'&&CFG.game!=='watch';
+  {const ail=s.ap?clamp(s.cmdRollRate/(a.roll*D2R),-1,1):s.inRoll,el=s.ap?clamp((s.cmdPitchRate||0)/(3*D2R),-1,1):s.inPitch;
+   animateSurfaces(acModel,ail,el,s.flapPos/4,s.onGround&&s.td?1:0)}
   const inCab=CFG.view==='cabin';acModel.traverse(o=>{if(o.userData.winStrip)o.visible=!inCab});
   for(const G of[deckGroup,cabinGroup])if(G){G.position.copy(acModel.position);G.rotation.copy(acModel.rotation)}
   if(deckGroup)deckGroup.visible=CFG.view==='cockpit'&&CFG.deck&&!s.ended&&mode!=='attract';if(cabinGroup)cabinGroup.visible=inCab&&!s.ended&&mode!=='attract';
@@ -1759,15 +1834,27 @@ function updateAircraftVisual(){
   const night=CFG.night;landingLight.intensity=night&&s.gearDown?2.2:0;
   _v.set(0,a.cy-1,-a.len*.2).applyQuaternion(acModel.quaternion).add(acModel.position);landingLight.position.copy(_v);
   _s.set(0,-.18,-1).applyQuaternion(acModel.quaternion).multiplyScalar(300).add(_v);landingLight.target.position.copy(_s);
-  const g=groundInfo(s.x,s.z);const hgt=s.y-g.h;shadow.visible=!night&&hgt<300&&!s.ended&&CFG.wx!=='fog';
+  const g=groundInfo(s.x,s.z);const hgt=s.y-g.h;shadow.visible=!night&&hgt<300&&!s.ended&&CFG.wx!=='fog'&&CFG.game!=='watch';
   shadow.position.set(s.x+hgt*.4,g.h+.15,s.z+hgt*.3);shadow.scale.set(a.span*.3,1,a.len*.38);shadow.rotation.y=-s.psi;shadow.material.opacity=.2*(1-hgt/300);
 }
+let FOCUS=null;
+function pickFocus(){
+  // spectator mode: the most interesting aircraft, preferring ones on short final, rolling or climbing out near the runway
+  let best=null,bs=1e18;const mid=rwP(RWY.len*.3,0);
+  for(const a of AI){if(!a.m.visible||!a.p||a.role==='holding')continue;const p=a.p;const d=Math.hypot(p.x-mid[0],p.z-mid[1]);const moving=(a.v||0)>2;if(!moving)continue;
+    const sc=d+(p.y>2000?8000:0);if(sc<bs){bs=sc;best=a}}
+  if(best&&FOCUS&&FOCUS!==best&&FOCUS.m.visible&&(FOCUS.v||0)>2&&FOCUS.p&&Math.hypot(FOCUS.p.x-mid[0],FOCUS.p.z-mid[1])<bs+1500)best=FOCUS; // stick with the current one a while
+  FOCUS=best;return best}
+function focusTarget(){
+  if(CFG.game!=='watch'){const s=ST,a=s.ac;return {x:s.x,y:s.y,z:s.z,psi:s.psi,cy:a.cy,span:a.span,len:a.len}}
+  const f=pickFocus();if(!f){const q=rwP(-300,0);return {x:q[0],y:120,z:q[1],psi:RWY.hdg*D2R,cy:5,span:60,len:70,none:true}}
+  const A=AC[f.type];return {x:f.p.x,y:f.p.y,z:f.p.z,psi:f.p.psi,cy:A.cy,span:A.span,len:A.len,ai:f}}
 function updateCamera(dt){
-  const s=ST,a=s.ac;const V=CFG.view;
+  const s0=ST;const T=focusTarget();const s={x:T.x,y:T.y,z:T.z,psi:T.psi},a={cy:T.cy,span:T.span,len:T.len};const V=CFG.view;const A=s0.ac;
   if(mode==='attract'||!acModel){return}
   camera.near=(V==='cockpit'||V==='cabin')?.05:1;
   if(V==='cockpit'){
-    const E=eyeOf(a);_v.set(E.x,E.y,E.z).applyQuaternion(acModel.quaternion).add(acModel.position);camera.position.copy(_v);
+    const E=eyeOf(A);_v.set(E.x,E.y,E.z).applyQuaternion(acModel.quaternion).add(acModel.position);camera.position.copy(_v);
     _ea.set(look.pitch-6*D2R,look.yaw,0,'YXZ');_qa.setFromEuler(_ea);camera.quaternion.copy(acModel.quaternion).multiply(_qa);camera.fov=66;
   } else if(V==='cabin'){
     const U=cabinGroup.userData,C=U.C,side=CFG.seatLeft?-1:1;const r=clamp(CFG.seatRow-4,0,U.rows-1);
@@ -1778,7 +1865,7 @@ function updateCamera(dt){
     _v.set(side<0?U.xs[0]:U.xs[U.xs.length-1],C.floor+1.13,U.rowZ(r)+.03).applyQuaternion(acModel.quaternion).add(acModel.position);camera.position.copy(_v);
     _ea.set(-8*D2R+look.pitch,side*(-72*D2R)+look.yaw,0,'YXZ');_qa.setFromEuler(_ea);camera.quaternion.copy(acModel.quaternion).multiply(_qa);camera.fov=60;
   } else if(V==='chase'){
-    const d=a.len*1.9*look.dist;
+    const d=a.len*1.9*look.dist*(CFG.game==='watch'?1.4:1);
     const tx=s.x,ty=s.y+a.cy,tz=s.z;const cp=look.orbitPitch;
     const want=_v;const fx=Math.sin(s.psi-look.orbitYaw),fz=-Math.cos(s.psi-look.orbitYaw);want.set(tx-fx*d*Math.cos(cp),ty+d*Math.sin(cp),tz-fz*d*Math.cos(cp));
     const gy=groundInfo(want.x,want.z).h+3;if(want.y<gy)want.y=gy;
@@ -1790,7 +1877,7 @@ function updateCamera(dt){
     camera.lookAt(_v);camera.rotateY(look.yaw*.6);camera.rotateX(look.pitch*.6);if(V==='boat')camera.rotateZ(Math.sin(performance.now()/1300)*.02);
     camera.fov=(V==='carpark'||V==='boat'?clamp(2*Math.atan(a.span*1.5/Math.max(d,1))*R2D,18,70):78)/look.dist;
   } else if(V==='tower'){
-    camera.position.set(ST.tower[0],ST.tower[1],ST.tower[2]);camera.lookAt(s.x,s.y+a.cy,s.z);
+    camera.position.set(s0.tower[0],s0.tower[1],s0.tower[2]);camera.lookAt(s.x,s.y+a.cy,s.z);
     const dist=camera.position.distanceTo(_v.set(s.x,s.y,s.z));camera.fov=clamp(2*Math.atan(a.span*2.6/dist)*R2D/look.dist,3,60);
   }
   if(CFG.zoom>1)camera.fov=2*Math.atan(Math.tan(camera.fov*D2R/2)/CFG.zoom)*R2D;
@@ -1822,6 +1909,13 @@ function drawHUD(){
   hc.setTransform(HDPR,0,0,HDPR,0,0);hc.clearRect(0,0,HW,HH);
   if(mode!=='fly')return;
   const s=ST,a=s.ac,V=CFG.view,k=clamp(Math.min(HW/1100,HH/760),.62,1.15);
+  if(CFG.game==='watch'){hc.shadowColor='rgba(0,0,0,.85)';hc.shadowBlur=4;const F=FOCUS;const y0=Math.max(70,HH*.1);
+    if(F&&F.p){txt(AC[F.type].name+' · '+aiPhase(F),HW/2,y0,16*k,COL.txt,'center',700);
+      txt(Math.round(Math.max(0,F.p.y-RWY.elev)/FT).toLocaleString('en')+' ft   '+Math.round((F.v||0)/KT)+' kt',HW/2,y0+22*k,14*k,COL.ph,'center')}
+    else txt('Waiting for the next movement…',HW/2,y0,15*k,COL.txt,'center');
+    const arr=AI.filter(x=>x.role==='arrival'&&x.p&&x.p.y>RWY.elev+3).length,dep=AI.filter(x=>x.role==='departure'&&x.p&&(x.v||0)>.5).length;
+    txt('SPECTATOR · '+arr+' inbound · '+dep+' outbound · time '+CFG.ts+'×',HW/2,HH-28,12*k,COL.dim,'center');
+    if(paused){hc.font=`700 ${30*k}px "B612",sans-serif`;hc.textAlign='center';hc.fillStyle=COL.txt;hc.fillText('PAUSED',HW/2,HH*.32)}hc.shadowBlur=0;return}
   const P=PATH.pts,p=P[s.pi];
   const ias=s.V/KT,alt=(s.y)/FT,vs=s.vy/FT*60,ra=Math.max(0,s.ra/FT),hdg=((s.psi*R2D)%360+360)%360;
   hc.lineWidth=1.6;hc.shadowColor='rgba(0,0,0,.85)';hc.shadowBlur=4;
@@ -1845,7 +1939,7 @@ function drawHUD(){
   if((V==='cockpit'&&CFG.hud)||V==='chase'){
   if(V==='chase'){lx=16;rxp=HW-16-tW}
   tape(lx,cy,tW,tH,ias,10,4.2*k,v=>Math.round(v),a.vref+5,'kt',true);
-  tape(rxp,cy,tW,tH,alt,100,.42*k,v=>Math.round(v/10)*10,p.alt/FT,'ft',false);
+  tape(rxp,cy,tW,tH,alt,100,.42*k,v=>Math.round(v/10)*10,CFG.game==='approach'?p.alt/FT:null,'ft',false);
   // heading
   hc.strokeStyle=COL.ph;hc.fillStyle=COL.ph;const hy=Math.max(54,HH*.1)+(V==='cockpit'?0:6);
   for(let d=-30;d<=30;d+=5){const hv=Math.round(hdg/5)*5+d;const xx=cx+(hv-hdg)*6*k;if(Math.abs(xx-cx)>190*k)continue;hc.beginPath();hc.moveTo(xx,hy);hc.lineTo(xx,hy+(hv%10===0?9:5));hc.stroke();if(hv%10===0)txt(String(((hv%360)+360)%360/10|0).padStart(2,'0'),xx,hy-4,11*k,COL.ph,'center')}
@@ -1855,7 +1949,7 @@ function drawHUD(){
   if(ra<2500)txt('RA '+Math.round(ra),rxp+tW/2,cy+tH/2+40*k,13*k,ra<500?COL.amb:COL.ph,'center',700);
   txt('GS '+Math.round(Math.hypot(s.vx,s.vz)/KT),lx+tW/2,cy+tH/2+22*k,12*k,COL.dim,'center');
   // IGS deviation
-  if(p.d>0&&!s.onGround){const dev=(s.y-p.alt);const dotV=Math.max(12,p.d*Math.tan(.35*D2R));const gv=clamp(dev/dotV,-2.5,2.5);
+  if(CFG.game==='approach'&&p.d>0&&!s.onGround){const dev=(s.y-p.alt);const dotV=Math.max(12,p.d*Math.tan(.35*D2R));const gv=clamp(dev/dotV,-2.5,2.5);
     const gx=rxp-22*k;hc.strokeStyle=COL.ph;for(let i=-2;i<=2;i++){if(!i)continue;hc.beginPath();hc.arc(gx,cy+i*22*k,3*k,0,Math.PI*2);hc.stroke()}
     hc.beginPath();hc.moveTo(gx-8*k,cy);hc.lineTo(gx+8*k,cy);hc.stroke();
     diamond(gx,cy-gv*22*k,7*k,COL.mag);
@@ -1868,7 +1962,7 @@ function drawHUD(){
   const by=HH-24-(ctlVisible()?(HW<820?150:0):0);
   const flapsL=a.flaps[Math.round(s.flapIdx)];const flapMoving=Math.abs(s.flapPos-s.flapIdx)>.02;
   const items=[['THR',Math.round(s.throttle*100)+'%',COL.ph],['FLAPS',flapsL+(flapMoving?'…':''),s.flapPos>0&&s.V/KT>a.flapV[Math.ceil(s.flapPos-0.01)]+3?COL.amb:COL.ph],['GEAR',s.gearPos>.99?'DOWN':s.gearPos<.01?'UP':'TRANSIT',s.gearPos>.99?COL.ph:s.gearPos<.01?COL.txt:COL.amb],
-    ['DIST',p.d>0?(p.d/1852).toFixed(1)+' nm':'—',COL.ph],['WIND',windStr(),COL.ph],['A/P',s.ap?'ON':'OFF',s.ap?COL.mag:COL.dim]];
+    ['DIST',CFG.game==='approach'&&p.d>0?(p.d/1852).toFixed(1)+' nm':'—',COL.ph],['WIND',windStr(),COL.ph],['A/P',s.ap?'ON':'OFF',s.ap?COL.mag:COL.dim]];
   const iw=Math.min(120*k,(HW-32)/items.length);let ix=cx-iw*items.length/2;
   for(const it of items){txt(it[0],ix+iw/2,by-16*k,10*k,COL.dim,'center');txt(it[1],ix+iw/2,by,13*k,it[2],'center',700);ix+=iw}
   // ---- warnings ----
@@ -1915,14 +2009,14 @@ function gpws(dt){
   else if(raFt<1000&&vs<-1700)w='SINK RATE';
   else if(raFt<500&&!s.gearDown&&s.V/KT<200)w='TOO LOW · GEAR';
   else if(raFt<250&&s.flapIdx<3&&p.d<2500)w='TOO LOW · FLAPS';
-  else if(p.d>0&&raFt<900&&(s.y-p.alt)<-Math.max(12,p.d*Math.tan(.35*D2R))*1.4)w='GLIDESLOPE';
+  else if(CFG.game==='approach'&&p.d>0&&raFt<900&&(s.y-p.alt)<-Math.max(12,p.d*Math.tan(.35*D2R))*1.4)w='GLIDESLOPE';
   else if(Math.abs(s.phi)>35*D2R)w='BANK ANGLE';
   if(w&&w!==s.warn){speak(w==='PULL UP'?'Terrain, terrain. Pull up.':w==='TOO LOW · GEAR'?'Too low, gear':w==='TOO LOW · FLAPS'?'Too low, flaps':w.toLowerCase(),true);s.lastGPWS=s.t}
   else if(w&&s.t-s.lastGPWS>4){speak(w==='PULL UP'?'Pull up':w==='TOO LOW · GEAR'?'Too low, gear':w==='TOO LOW · FLAPS'?'Too low, flaps':w.toLowerCase(),false);s.lastGPWS=s.t}
   s.warn=w;
   // radio altitude callouts over the runway environment
   if(p.d<3000){for(const c of[1000,500,100,50,40,30,20,10]){if(raFt<c&&!s.callouts[c]&&s.vy<0){s.callouts[c]=1;if(c===1000||c===500||raFt>c-30)speak(c===1000?'One thousand':c===500?'Five hundred':c===100?'One hundred':String(c),false)}}}
-  if(p.d<PATH.turnD+250&&p.d>PATH.turnD-100&&!s.callouts.turn){s.callouts.turn=1;toast('Checkerboard ahead. Start the right turn now.')}
+  if(CFG.game==='approach'&&p.d<PATH.turnD+250&&p.d>PATH.turnD-100&&!s.callouts.turn){s.callouts.turn=1;toast('Checkerboard ahead. Start the right turn now.')}
 }
 
 /* =====================================================================
@@ -1937,7 +2031,7 @@ window.addEventListener('keydown',e=>{
   keys[e.code]=true;const s=ST;
   switch(e.code){
     case 'KeyG':toggleGear();break;case 'KeyF':setFlaps(1);break;case 'KeyV':setFlaps(-1);break;
-    case 'KeyC':{const o=['cockpit','chase','tower','street','ped','carpark','boat','cabin'];setView(o[(o.indexOf(CFG.view)+1)%o.length]);break}
+    case 'KeyC':{const o=CFG.game==='watch'?['carpark','ped','street','boat','tower','chase']:['cockpit','chase','tower','street','ped','carpark','boat','cabin'];setView(o[(o.indexOf(CFG.view)+1)%o.length]);break}
     case 'KeyZ':toggleAP();break;case 'BracketLeft':timeJump(-10);break;case 'BracketRight':timeJump(10);break;
     case 'KeyT':setTs(CFG.ts>=8?1:CFG.ts*2);break;case 'KeyI':setZoom(Math.min(16,CFG.zoom*2));break;case 'KeyO':setZoom(Math.max(1,CFG.zoom/2));break;case 'KeyK':CFG.deck=!CFG.deck;syncButtons();break;case 'KeyN':CFG.night=!CFG.night;applyEnvironment();break;case 'KeyU':setClouds_on(!CFG.clouds);break;case 'KeyP':togglePause();break;
   }
@@ -1972,13 +2066,13 @@ function readInputs(dt){
 }
 function toggleGear(){if(ST.ap){toggleAP(false)}ST.gearDown=!ST.gearDown;syncButtons()}
 function setFlaps(d){if(ST.ap)toggleAP(false);ST.flapIdx=clamp(ST.flapIdx+d,0,4);syncButtons();toast('Flaps '+ST.ac.flaps[ST.flapIdx])}
-function toggleAP(on){ST.ap=on===undefined?!ST.ap:on;if(mode==='fly')track('autopilot',{on:ST.ap});if(ST.ap){ST.apI=0;toast('Autopilot and autothrottle engaged')}else toast('Autopilot off: you have control');syncButtons()}
+function toggleAP(on){ST.ap=on===undefined?!ST.ap:on;ST.apT=null;if(ST.ap&&ST.onGround&&CFG.game!=='approach'){ST.ap=false;toast('Autopilot engages once you are airborne');syncButtons();return}if(mode==='fly')track('autopilot',{on:ST.ap});if(ST.ap){ST.apI=0;toast('Autopilot and autothrottle engaged')}else toast('Autopilot off: you have control');syncButtons()}
 function setClouds_on(on){CFG.clouds=on;for(const c of cloudLayers)c.visible=on;syncButtons();toast('Clouds '+(on?'on':'off'))}
 function togglePause(){paused=!paused;syncButtons()}
-function setView(v){if(mode==='fly'&&v!==CFG.view)track('view_change',{view:v});CFG.view=v;document.getElementById('viewSel').value=v;look.yaw=look.pitch=0;look.dist=1;camera.userData.snap=true;
+function setView(v){if(CFG.game==='watch'&&(v==='cockpit'||v==='cabin'))v='carpark';if(mode==='fly'&&v!==CFG.view)track('view_change',{view:v});CFG.view=v;document.getElementById('viewSel').value=v;look.yaw=look.pitch=0;look.dist=1;camera.userData.snap=true;
   document.getElementById('cabin').hidden=v!=='cabin';document.getElementById('seatbox').hidden=v!=='cabin';
-  if(mode==='fly'){document.getElementById('map').hidden=v==='cabin';document.getElementById('ctl').hidden=v==='cabin'||!!ST.ended}
-  if(v==='cabin'&&!ST.ap&&!ST.onGround&&mode==='fly'){toggleAP(true);toast('The computer is flying. Enjoy the view from your seat.')}
+  if(mode==='fly'){const W=CFG.game==='watch';document.getElementById('map').hidden=W||v==='cabin';document.getElementById('ctl').hidden=W||v==='cabin'||!!ST.ended}
+  if(v==='cabin'&&!ST.ap&&!ST.onGround&&mode==='fly'&&CFG.game==='approach'){toggleAP(true);toast('The computer is flying. Enjoy the view from your seat.')}
   updateSeatTag();syncButtons()}
 function updateSeatTag(){const letters=CFG.seatLeft?'A':'K';document.getElementById('seattag').textContent='ROW '+CFG.seatRow+' · SEAT '+letters;document.getElementById('seatSide').textContent=CFG.seatLeft?'Left':'Right'}
 function syncButtons(){
@@ -1996,7 +2090,10 @@ const acCards=document.getElementById('acCards');
 for(const k in AC){const a=AC[k];const l=document.createElement('label');l.className='card';l.innerHTML=`<input type="radio" name="ac" value="${k}" ${k===CFG.ac?'checked':''}><b>${a.name}</b><span>${a.note}<br>Vref ${a.vref} kt · span ${a.span} m</span>`;acCards.appendChild(l)}
 const wxChips=document.getElementById('wxChips'),wxSel=document.getElementById('wxSel');
 for(const k in WX){const l=document.createElement('label');l.className='chip';l.innerHTML=`<input type="radio" name="wx" value="${k}" ${k===CFG.wx?'checked':''}><span>${WX[k].label}</span>`;wxChips.appendChild(l);const o=document.createElement('option');o.value=k;o.textContent=WX[k].label;wxSel.appendChild(o)}
-function readSetup(){CFG.ac=document.querySelector('input[name=ac]:checked').value;CFG.night=document.querySelector('input[name=tod]:checked').value==='night';CFG.wx=document.querySelector('input[name=wx]:checked').value;
+const MODE_TXT={approach:['Begin descent','Start on the IGS at 3,100 ft and land on Runway 13.'],free:['Line up on Runway 13','Start lined up on Runway 13. Full thrust, pull back at about 150 kt, then fly anywhere. Landings are graded but the flight carries on.'],
+  watch:['Watch the airport','No flying. Arrivals land every couple of minutes and departures roll in between. Pick a spectator spot, follow a jet, or speed up time.']};
+for(const r of document.querySelectorAll('input[name=game]'))r.addEventListener('change',()=>{const m=document.querySelector('input[name=game]:checked').value;document.getElementById('goLabel').textContent=MODE_TXT[m][0];document.getElementById('modeNote').textContent=MODE_TXT[m][1]});
+function readSetup(){CFG.game=document.querySelector('input[name=game]:checked').value;CFG.ac=document.querySelector('input[name=ac]:checked').value;CFG.night=document.querySelector('input[name=tod]:checked').value==='night';CFG.wx=document.querySelector('input[name=wx]:checked').value;
   CFG.lightning=document.getElementById('optLightning').checked;CFG.clouds=document.getElementById('optClouds').checked;CFG.guide=document.getElementById('optGuide').checked;CFG.ap=document.getElementById('optAP').checked;CFG.walled=document.getElementById('optWalled').checked}
 document.getElementById('btnGo').addEventListener('click',startFlight);
 document.getElementById('btnAgain').addEventListener('click',startFlight);
@@ -2031,12 +2128,18 @@ function showSetup(){mode='attract';paused=false;for(const id of['bar','ctl','ma
 function startFlight(){
   readSetup();clearFX();mode='fly';paused=false;SEED=1998+Math.floor(Math.random()*1000);
   for(const id of['setup','result'])document.getElementById(id).hidden=true;for(const id of['bar','ctl','map'])document.getElementById(id).hidden=false;
-  resetFlight();HIST.length=0;spawnAircraftModel();buildAI();applyEnvironment();setWalled(CFG.walled);hoops.visible=CFG.guide;wxSel.value=CFG.wx;
-  document.getElementById('flightid').textContent=ST.ac.short.toUpperCase()+' · IGS 13 · '+(CFG.night?'NIGHT':'DAY')+' · '+WX[CFG.wx].label.toUpperCase();
-  setView(CFG.ap?'chase':'cockpit');
+  resetFlight();HIST.length=0;spawnAircraftModel();FOCUS=null;
+  if(CFG.game==='watch')buildAISchedule(0,true);else if(CFG.game==='free')buildAISchedule(-100,false);else buildAI();
+  applyEnvironment();setWalled(CFG.walled);hoops.visible=CFG.guide&&CFG.game==='approach';wxSel.value=CFG.wx;
+  const W=CFG.game==='watch';
+  document.getElementById('flightid').textContent=(W?'SPECTATOR · KAI TAK':ST.ac.short.toUpperCase()+' · '+(CFG.game==='free'?'FREE FLIGHT':'IGS 13'))+' · '+(CFG.night?'NIGHT':'DAY')+' · '+WX[CFG.wx].label.toUpperCase();
+  for(const o of document.querySelectorAll('#viewSel option'))o.hidden=W&&(o.value==='cockpit'||o.value==='cabin');
+  for(const id of['btnAP','btnHud','btnGuide','btnDeck'])document.getElementById(id).hidden=W;
+  if(W){for(const id of['ctl','map'])document.getElementById(id).hidden=true}
+  setView(W?'carpark':CFG.game==='free'?'chase':CFG.ap?'chase':'cockpit');
   syncButtons();sfx.start();sfx.mute(CFG.sound);lightningT=rr(4,9);
-  track('game_start',{autopilot:CFG.ap,guide:CFG.guide,walled_city:CFG.walled,lightning:CFG.lightning});
-  toast(CFG.ap?'Autopilot engaged. Pick a view or a cabin seat.':'Established on the IGS, 3,100 ft. You have control.');
+  track('game_start',{game_mode:CFG.game,autopilot:CFG.ap,guide:CFG.guide,walled_city:CFG.walled,lightning:CFG.lightning});
+  toast(W?'Spectator mode. Pick a spot from the view menu, or Exterior to follow the jet. T speeds up time.':CFG.game==='free'?'Lined up on Runway 13. Full thrust (E), pull back at about 150 kt.':CFG.ap?'Autopilot engaged. Pick a view or a cabin seat.':'Established on the IGS, 3,100 ft. You have control.');
 }
 function showResult(){
   const s=ST,e=s.ended;if(!e||mode!=='fly')return;mode='ended';const card=document.getElementById('resCard');card.classList.toggle('crash',!!e.crash);
@@ -2059,10 +2162,11 @@ function frame(now){
   requestAnimationFrame(frame);
   let dt=Math.min(.05,(now-last)/1000);last=now;if(mode==='loading')return;
   const running=(mode==='fly'||mode==='attract')&&!paused;
-  if(mode==='fly'&&!paused)readInputs(dt);
-  if(running&&!ST.ended){acc+=dt*(mode==='fly'?CFG.ts:1);const h=1/120;let n=0;while(acc>=h&&n<1200){physStep(h);acc-=h;n++}if(mode==='fly')recordHistory()}
+  if(mode==='fly'&&!paused&&CFG.game!=='watch')readInputs(dt);
+  if(running&&mode==='fly'&&CFG.game==='watch'){ST.t+=dt*CFG.ts;recordHistory()}
+  else if(running&&!ST.ended){acc+=dt*(mode==='fly'?CFG.ts:1);const h=1/120;let n=0;while(acc>=h&&n<1200){physStep(h);acc-=h;n++}if(mode==='fly')recordHistory()}
   if(mode==='attract'&&ST.ended){resetFlight();ST.ap=true;}
-  if(mode==='fly'&&!paused)gpws(dt);
+  if(mode==='fly'&&!paused&&CFG.game!=='watch')gpws(dt);
   const t=now/1000;LIGHT_U.uTime.value=t;WATER_U.uTime.value=t;
   const sdt=dt*(mode==='fly'?CFG.ts:1);
   if(!paused){updateTraffic(sdt,CFG.night);updateShips(sdt,t);updateFX(dt)}
@@ -2084,7 +2188,9 @@ function frame(now){
   updateRain(dt,mode==='attract'?w.rain*.4:w.rain,ST.wind||[0,0,0],camera.position);
   // PAPI colours
   if(papi){const c=papi.geometry.attributes.color;const pp=papi.geometry.attributes.position;for(let i=0;i<4;i++){const dx=camera.position.x-pp.getX(i),dz=camera.position.z-pp.getZ(i);const ang=Math.atan2(camera.position.y-pp.getY(i),Math.hypot(dx,dz))*R2D;const thr=[3.6,3.27,2.93,2.6][i];const white=ang>thr;c.setXYZ(i,1,white?1:.12,white?1:.1)}c.needsUpdate=true}
-  if(mode==='fly'){const s=ST,on=s.onGround&&!s.ended;const rev=on&&s.throttle<.12&&s.Gs>30*KT;
+  if(mode==='fly'&&CFG.game==='watch'){const F=FOCUS;let thr=0;if(F&&F.p){const d=camera.position.distanceTo(_v.set(F.p.x,F.p.y,F.p.z));thr=clamp(1.3-d/1400,0,1)*((F.v||0)>3?1:0)}
+    sfx.update(thr,0,w.rain,false,{rev:F&&F.p&&F.p.spl&&thr>.2})}
+  else if(mode==='fly'){const s=ST,on=s.onGround&&!s.ended;const rev=on&&s.throttle<.12&&s.Gs>30*KT;
     const gm=s.gearPos>.01&&s.gearPos<.99;if(s._gp!==undefined&&((s._gp<.99&&s.gearPos>=.99)||(s._gp>.01&&s.gearPos<=.01)))sfx.clunk();s._gp=s.gearPos;
     sfx.update(s.ended?0:(s.thrust/s.ac.thr+(rev?.35:0)),s.V,w.rain,CFG.view==='cockpit'||CFG.view==='cabin',
       {rev,brake:on&&s.Gs>6?clamp(s.Gs/70,.05,.4)*.22:0,gearMove:gm&&!s.ended,flapMove:Math.abs(s.flapPos-s.flapIdx)>.01&&!s.ended,gearDrag:s.ended?0:s.gearPos*clamp(s.V/90,0,1)})}
@@ -2108,9 +2214,9 @@ const fontsReady=document.fonts&&document.fonts.ready?Promise.race([document.fon
 fontsReady.then(()=>setTimeout(boot,30));
 
 /* test hooks */
-window.__kt={CFG,ST,PATH,AC,start:(o={})=>{Object.assign(CFG,o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=tod][value=${CFG.night?'night':'day'}]`).checked=true;startFlight()},
-  run:(sec)=>{const h=1/120;for(let i=0;i<sec*120&&!ST.ended;i++){physStep(h);if(i%60===0)recordHistory()}return {ended:ST.ended,td:ST.td,t:ST.t,x:ST.x,y:ST.y,z:ST.z,V:ST.V/KT,d:PATH.pts[ST.pi].d}},
-  get mode(){return mode},get AI(){return AI},get shipLights(){return shipLights},get SHIPS(){return SHIPS},get DISP(){return DISP},get deck(){return deckGroup},get streetCam(){return STREET_CAM},get water(){return water},get camera(){return camera},get nStreets(){return STREETS.length},drawDisplays,look,setView,terrainAt,buildingAt,groundInfo};
+window.__kt={CFG,ST,PATH,AC,start:(o={})=>{Object.assign(CFG,o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.game}]`).checked=true;document.querySelector(`input[name=tod][value=${CFG.night?'night':'day'}]`).checked=true;startFlight()},
+  run:(sec)=>{if(CFG.game==='watch'){ST.t+=sec;return {t:ST.t}}const h=1/120;for(let i=0;i<sec*120&&!ST.ended;i++){physStep(h);if(i%60===0)recordHistory()}return {ended:ST.ended,td:ST.td,t:ST.t,x:ST.x,y:ST.y,z:ST.z,V:ST.V/KT,d:PATH.pts[ST.pi].d}},
+  get mode(){return mode},step:()=>physStep(1/120),rwS,setZoom:z=>{CFG.zoom=z},get AI(){return AI},get shipLights(){return shipLights},get SHIPS(){return SHIPS},get DISP(){return DISP},get deck(){return deckGroup},get streetCam(){return STREET_CAM},get water(){return water},get camera(){return camera},get nStreets(){return STREETS.length},drawDisplays,look,setView,terrainAt,buildingAt,groundInfo};
 })();
 </script>
 <!--/FRAG:BODY-->
