@@ -51,6 +51,14 @@ Data: © Lands Department, HKSAR Government (CSDI). Elevation: SRTM via AWS Terr
 
 On touch screens, use the on-screen yoke, thrust lever and gear/flap buttons.
 
+## Shipping and water
+- About 134 vessels: Star Ferries on four routes, freighters, container ships, moving and berthed ocean liners, junks, yachts, marine police launches, tugs, walla-walla launches, and ships at anchor. All carry navigation lights (masthead, stern, red port, green starboard), and police launches flash blue
+- Water shader: wind-driven waves and whitecaps (calm on clear days, white-streaked in a typhoon), deep and shallow colour from distance to shore, surf on the sea walls, sky reflection with sun glitter, and city glow at night. V-shaped wakes
+- Red obstruction lights on the rooftops of tall buildings, some flashing under the approach
+
+## Analytics
+Google Analytics 4 with game events. See docs/analytics.md.
+
 ## Roadmap
 - ATC radio: Kai Tak approach and tower instructions, other crews on frequency
 - More aircraft: 747-200/300, 767-300, MD-11, A300-600, A320, 737-300, L-1011, DC-10
