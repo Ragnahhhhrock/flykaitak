@@ -1,6 +1,6 @@
 """Build Fly Kai Tak geo assets from cached tiles (run fetch.py first).
 Outputs in ../assets:
-  aerial_outer.jpg  aerial_inner.jpg  terrain.bin  buildings.bin  roads.json
+  aerial_outer.jpg  aerial_inner.jpg  terrain.json  buildings.json  roads.json (binary grids as base64)
 """
 import os,sys,json,math,struct
 import numpy as np
@@ -55,10 +55,10 @@ def heights(R,nx,nz,use16):
     return h.astype(np.float32),water
 ho,_=heights(OUTER,421,311,False)
 hi,wi=heights(INNER,513,513,True)
-with open(f'{OUT}/terrain.bin','wb') as f:
-    f.write(struct.pack('<4i',421,311,513,513))
-    f.write(np.round(ho*10).astype('<i2').tobytes());f.write(np.round(hi*10).astype('<i2').tobytes())
-print('terrain.bin',os.path.getsize(f'{OUT}/terrain.bin')//1024,'KB', 'outer h range',ho.min(),ho.max())
+import base64
+def b64json(name,data): json.dump({'b64':base64.b64encode(data).decode()},open(f'{OUT}/{name}.json','w'))
+b64json('terrain',struct.pack('<4i',421,311,513,513)+np.round(ho*10).astype('<i2').tobytes()+np.round(hi*10).astype('<i2').tobytes())
+print('terrain.json','outer h range',ho.min(),ho.max())
 
 # ---------- building footprints ----------
 r,g,b=b16[:,:,0].astype(int),b16[:,:,1].astype(int),b16[:,:,2].astype(int)
@@ -78,8 +78,8 @@ for p in props:
     a=min(a,160);bb=min(bb,160)
     rows.append((round(x),round(z),round(a*10),round(bb*10),round(phi*1000),min(int(area),32767)))
 B=np.array(rows,dtype='<i2')
-open(f'{OUT}/buildings.bin','wb').write(struct.pack('<i',len(B))+B.tobytes())
-print('buildings',len(B),os.path.getsize(f'{OUT}/buildings.bin')//1024,'KB')
+b64json('buildings',struct.pack('<i',len(B))+B.tobytes())
+print('buildings',len(B))
 
 # ---------- main roads ----------
 rm=((r==255)&(abs(g-225)<6)&(abs(b-169)<8))|((r==255)&(abs(g-211)<6)&(abs(b-127)<8))|((r==255)&(abs(g-176)<6)&(b<40))

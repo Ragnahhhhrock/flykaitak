@@ -335,10 +335,10 @@ const APRON=(s,l)=>s>-60&&s<900&&l<=-130&&l>-860;
 function inAirport(x,z){const s=rwS(x,z),l=rwL(x,z);return (s>-90&&s<RWY.len+70&&l>-150&&l<130)||APRON(s,l)}
 const TEX={};
 async function loadGeo(progress){
-  const get=async(u,t)=>{const r=await fetch(u);if(!r.ok)throw new Error(u+' '+r.status);return t==='json'?r.json():r.arrayBuffer()};
+  const get=async(u,t)=>{const r=await fetch(u);if(!r.ok)throw new Error(u+' '+r.status);const j=await r.json();if(t==='json')return j;const s=atob(j.b64);const u8=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u8[i]=s.charCodeAt(i);return u8.buffer};
   const tl=new THREE.TextureLoader();const tex=u=>new Promise((res,rej)=>tl.load(u,res,undefined,()=>rej(new Error(u))));
   progress('LOADING TERRAIN');
-  const [tb,bb,roads,to,ti]=await Promise.all([get('assets/terrain.bin'),get('assets/buildings.bin'),get('assets/roads.json','json'),tex('assets/aerial_outer.jpg'),tex('assets/aerial_inner.jpg')]);
+  const [tb,bb,roads,to,ti]=await Promise.all([get('assets/terrain.json'),get('assets/buildings.json'),get('assets/roads.json','json'),tex('assets/aerial_outer.jpg'),tex('assets/aerial_inner.jpg')]);
   const hd=new Int32Array(tb,0,4);const nO=hd[0]*hd[1],nI=hd[2]*hd[3];
   const hO=new Int16Array(tb,16,nO),hI=new Int16Array(tb,16+nO*2,nI);
   const mk=(R,nx,nz,src)=>{const h=new Float32Array(src.length);for(let i=0;i<src.length;i++)h[i]=src[i]/10;return {x0:R.x0,z0:R.z0,nx,nz,d:(R.x1-R.x0)/(nx-1),h}};
