@@ -10,7 +10,8 @@ shots.json is a list of shots:
   {"name": "night", "start": {"ac": "b744", "ap": true, "game": "approach", "wx": "clear", "night": true, "deck": true},
    "run": 175, "view": "cockpit", "frames": 14, "js": "window.__kt.drawDisplays()"}
 
-  start   settings passed to __kt.start (ac: b744|b772|a333|a343, game: approach|free|watch,
+  start   settings passed to __kt.start. The cockpit (deck) is OFF by default for screenshots; set "deck": true
+          only for a shot that is meant to show the cockpit. (ac: b744|b772|a333|a343, game: approach|free|watch,
           wx: clear|rain|typhoon|storm|lowcloud|fog, night, deck, lightning, ap ...)
   run     seconds of simulation to advance first (the approach turn is at about 190 s,
           the Kowloon City street camera sees the jet overhead at about 204 s)
@@ -70,7 +71,8 @@ def main():
         pg.wait_for_function("window.__kt!==undefined", timeout=60000)
         pg.wait_for_timeout(8000)  # map data and fonts
         for s in shots:
-            pg.evaluate("s=>window.__kt.start(s)", s["start"])
+            start = {"deck": False, **s["start"]}  # rule: cockpit off for screenshots unless a shot sets deck true
+            pg.evaluate("s=>window.__kt.start(s)", start)
             if s.get("run"):
                 pg.evaluate("s=>window.__kt.run(s)", s["run"])
             if s.get("view"):

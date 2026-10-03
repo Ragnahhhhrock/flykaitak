@@ -5,6 +5,9 @@ Static pages at https://flykaitak.com/blog/, built by `tools/blog.py` from `blog
 ## Rule
 Every new feature or bug fix gets a blog post, written in the same change and pushed to `main` with the code.
 
+## Screenshot rule
+When flying routes to create screenshots, toggle the cockpit off. `tools/screenshot.py` sets `deck: false` by default; only a shot that is meant to show the cockpit sets `"deck": true`.
+
 ## Add a post
 1. Take screenshots: write a `shots.json` (see the docstring in `tools/screenshot.py`) and run `python3 tools/screenshot.py shots.json`. JPGs land in `assets/blog/shots/`.
 2. Write the body as an HTML fragment in `blog/src/<slug>.html` (h2, p, ul, `<figure class="wide">`, `.readouts`, `.callout`; copy an existing post).
