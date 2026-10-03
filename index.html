@@ -3567,7 +3567,12 @@ document.getElementById('btnLang').addEventListener('click',e=>{LANG=LANG==='zh'
 applyLang();
 function readSetup(){const gv=document.querySelector('input[name=game]:checked').value;CFG.lesson=gv==='learn';CFG.game=gv==='approach31'?'approach':gv==='free31'?'free':gv==='watch31'?'watch':CFG.lesson?'free':gv;CFG.rwy=gv==='approach31'||gv==='free31'||gv==='watch31'?'31':'13';CFG.ac=document.querySelector('input[name=ac]:checked').value;CFG.night=document.querySelector('input[name=tod]:checked').value==='night';CFG.wx=document.querySelector('input[name=wx]:checked').value;
   CFG.lightning=document.getElementById('optLightning').checked;CFG.clouds=document.getElementById('optClouds').checked;CFG.guide=document.getElementById('optGuide').checked;CFG.ap=document.getElementById('optAP').checked;CFG.walled=document.getElementById('optWalled').checked}
+// Home screen: Day/Night, Weather, Clouds and Lightning change the live sim rendering behind the menu straight away.
+function applyHomeEnv(){if(mode!=='attract')return;const q=n=>document.querySelector('input[name='+n+']:checked');const td=q('tod'),wx=q('wx');
+  if(td)CFG.night=td.value==='night';if(wx&&WX[wx.value])CFG.wx=wx.value;CFG.clouds=document.getElementById('optClouds').checked;CFG.lightning=document.getElementById('optLightning').checked;
+  wxSel.value=CFG.wx;applyEnvironment();if(CFG.lightning||WX[CFG.wx].light)lightningT=Math.min(lightningT,.4)}
 document.getElementById('setup').addEventListener('change',e=>{const t=e.target;if(!t||t.tagName!=='INPUT')return;
+  if(t.name==='tod'||t.name==='wx'||t.id==='optClouds'||t.id==='optLightning')applyHomeEnv();
   if(t.name==='ac')track('aircraft_select',{aircraft:t.value});
   else track('setup_option',{option:t.name||t.id,value:t.type==='checkbox'?(t.checked?'on':'off'):t.value})});
 document.getElementById('btnGo').addEventListener('click',startFlight);
@@ -3635,7 +3640,7 @@ const reducedMotion=()=>!!(window.matchMedia&&matchMedia('(prefers-reduced-motio
 if(reducedMotion())reel.removeAttribute('autoplay');
 function reelShow(on){if(!reelOK)return;if(on&&!reducedMotion())reel.play().catch(()=>{});else reel.pause()}
 function showSetup(){hsRenderHome();setMore(false);try{if(screen.orientation&&screen.orientation.unlock)screen.orientation.unlock()}catch(e){}reelShow(true);flightEnd('quit');mode='attract';paused=false;for(const id of['bar','ctl','map','result','cabin'])document.getElementById(id).hidden=true;document.getElementById('setup').hidden=false;sfx.stopAll();if(synth)synth.cancel();radioClear();coachHide();syncMode();
-  clearFX();CFG.ap=true;setRunway('13');resetFlight();ST.ap=true;spawnAircraftModel();buildAI();CFG.view='chase';applyEnvironment();setWalled(document.getElementById('optWalled').checked)}
+  clearFX();CFG.ap=true;setRunway('13');resetFlight();ST.ap=true;spawnAircraftModel();buildAI();CFG.view='chase';applyHomeEnv();setWalled(document.getElementById('optWalled').checked)}
 function startFlight(){
   setMore(false);reelShow(false);readSetup();setRunway(CFG.lesson?'13':CFG.rwy==='31'?'31':'13');flightEnd('restart');clearFX();mode='fly';paused=false;SEED=window.__capture?1998:1998+Math.floor(Math.random()*1000);
   for(const id of['setup','result'])document.getElementById(id).hidden=true;for(const id of['bar','ctl','map'])document.getElementById(id).hidden=false;
