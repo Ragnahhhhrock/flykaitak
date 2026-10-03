@@ -208,6 +208,15 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
 .res-actions{display:flex;gap:8px;flex-wrap:wrap}
 .res-actions .go{flex:1;justify-content:center}
 .res-actions .btn{padding:13px 14px}
+.res-share{border-top:1px solid var(--line);padding-top:14px;display:grid;gap:10px}
+.res-share h3{margin:0;font-family:var(--f-num);font-weight:400;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
+.res-share ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.res-share li[hidden]{display:none}
+.res-share a,.res-share button{display:inline-flex;align-items:center;justify-content:center;gap:7px;box-sizing:border-box;height:40px;min-height:40px;margin:0;line-height:1;padding:0 12px;border:1px solid var(--line-2);border-radius:3px;background:var(--panel-2);color:var(--text);text-decoration:none;font-family:var(--f-num);font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+.res-share a:hover,.res-share button:hover{border-color:var(--paper)}
+.res-share a:focus-visible,.res-share button:focus-visible{outline:2px solid var(--checker);outline-offset:2px}
+.res-share svg{width:15px;height:15px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.res-share .done{border-color:var(--jade-bright);color:var(--phosphor)}
 
 #loading{position:fixed;inset:0;display:grid;place-items:center;background:var(--ink);font-family:var(--f-num);font-size:12px;letter-spacing:.2em;color:var(--muted)}
 #loading[hidden]{display:none!important}
@@ -445,6 +454,20 @@ html,body{overscroll-behavior:none;touch-action:manipulation}
         <button class="btn" id="btnRewind" type="button">Rewind 10 s</button>
         <button class="btn" id="btnSetup" type="button">Change setup</button>
       </div>
+      <section class="res-share" id="resShare" aria-label="Share your result">
+        <h3 id="resShareH">Share your report card</h3>
+        <ul>
+          <li><a data-m="x" id="shX" target="_blank" rel="noopener noreferrer">X</a></li>
+          <li><a data-m="facebook" id="shFb" target="_blank" rel="noopener noreferrer">Facebook</a></li>
+          <li><a data-m="reddit" id="shRd" target="_blank" rel="noopener noreferrer">Reddit</a></li>
+          <li><a data-m="whatsapp" id="shWa" target="_blank" rel="noopener noreferrer">WhatsApp</a></li>
+          <li><a data-m="threads" id="shTh" target="_blank" rel="noopener noreferrer">Threads</a></li>
+          <li><a data-m="email" id="shMail"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="m22 6-10 7L2 6"/></svg>Email</a></li>
+          <li><button type="button" id="shImg"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v3h16v-3"/></svg><span>Save image</span></button></li>
+          <li><button type="button" id="shCopy"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><span>Copy</span></button></li>
+          <li hidden id="shNatLi"><button type="button" id="shNat"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg><span>Share&hellip;</span></button></li>
+        </ul>
+      </section>
     </div>
   </div>
 </div>
@@ -2907,15 +2930,82 @@ function startFlight(){
 function showResult(){
   const s=ST,e=s.ended;if(!e||mode!=='fly')return;mode='ended';const card=document.getElementById('resCard');card.classList.toggle('crash',!!e.crash);
   document.getElementById('ctl').hidden=true;
-  const st=document.getElementById('resStats');st.innerHTML='';const row=(a,b)=>{st.insertAdjacentHTML('beforeend',`<dt>${a}</dt><dd>${b}</dd>`)};
+  const st=document.getElementById('resStats');st.innerHTML='';const rows=[];const row=(a,b)=>{rows.push([a,b]);st.insertAdjacentHTML('beforeend',`<dt>${a}</dt><dd>${b}</dd>`)};
   if(e.landed){const g=gradeLanding(s.td);trackLanding({grade:g.g,score:Math.max(0,g.pts),touchdown_fpm:Math.round(g.fpm),touchdown_m:Math.round(s.td.s),sim_seconds:Math.round(e.t),autopilot_used:!!s.ap,mode:CFG.game});flightEnd('landed');document.getElementById('resEyebrow').textContent='Landed · Runway 13';document.getElementById('resTitle').textContent='Welcome to Hong Kong';document.getElementById('resGrade').textContent=g.g;
     document.getElementById('resWhy').textContent=g.feel+(s.tailstrike?' Tail strike on touchdown: the aft fuselage touched the runway.':'')+' Score '+Math.max(0,g.pts)+'/100.';
     row('Touchdown rate',Math.round(g.fpm)+' fpm');row('Touchdown past threshold',Math.round(s.td.s)+' m');row('Off centreline',Math.abs(s.td.l).toFixed(1)+' m '+(s.td.l>0?'right':'left'));
     row('Bank at touchdown',s.td.bank.toFixed(1)+'°');row('Airspeed',Math.round(s.td.ias)+' kt (target '+(s.ac.vref+5)+')');row('Stopped with runway left',Math.round(RWY.len-rwS(s.x,s.z))+' m');hsShowResult(g,s);}
   else{document.getElementById('resHs').hidden=true;HS_ENTRY=null;if(CFG.game==='approach'||(s.gearDown&&!s.onGround))attemptStart(e.crash?'crash':'missed');trackFail(e.crash?'crash':'missed_approach',{cause:e.title,sim_seconds:Math.round(e.t),distance_nm:+(PATH.pts[s.pi].d/1852).toFixed(2)});flightEnd(e.crash?'crash':'missed_approach');document.getElementById('resEyebrow').textContent=e.crash?'Accident':'Approach abandoned';document.getElementById('resTitle').textContent=e.title;document.getElementById('resGrade').textContent=e.crash?'✕':'↺';
     document.getElementById('resWhy').textContent=e.why;const p=PATH.pts[s.pi];row('Distance to threshold',p.d>0?(p.d/1852).toFixed(2)+' nm':'past threshold');row('Altitude',fmtFt(s.y));row('Airspeed',Math.round(s.V/KT)+' kt');row('Time flown',Math.floor(e.t/60)+':'+String(Math.floor(e.t%60)).padStart(2,'0'))}
+  RES={kind:e.landed?'landed':e.crash?'crash':'missed',grade:document.getElementById('resGrade').textContent,pts:e.landed?Math.max(0,gradeLanding(s.td).pts):null,
+    eyebrow:document.getElementById('resEyebrow').textContent,title:document.getElementById('resTitle').textContent,rows,ac:s.ac.short,fpm:e.landed?Math.round(gradeLanding(s.td).fpm):null,
+    ctx:document.getElementById('flightid').textContent};
+  updateShare();
   document.getElementById('result').hidden=false;document.getElementById('btnAgain').focus();
 }
+
+/* ---------- share the result: score text, links and a 1200x630 report-card image ---------- */
+let RES=null;
+const SHARE_URL='https://flykaitak.com/';
+const shareLink=m=>SHARE_URL+'?utm_source='+m+'&utm_medium=social&utm_campaign=report_card';
+function shareText(){const r=RES;if(!r)return'Fly Kai Tak: land a jet on Runway 13 at Kai Tak, Hong Kong, 1998.';
+  if(LANG==='zh'){
+    if(r.kind==='landed')return`我喺啟德機場 13 號跑道降落咗一架 ${r.ac}：評級 ${r.grade}，${r.pts}/100 分，接地速率 ${r.fpm} fpm。你夠唔夠我叻？`;
+    return r.kind==='crash'?`我喺啟德進場撞機：${r.title}。你可以做得更好嗎？`:`我放棄咗啟德嘅進場。你可以成功降落嗎？`}
+  if(r.kind==='landed')return`I landed a ${r.ac} on Runway 13 at Kai Tak: grade ${r.grade}, ${r.pts}/100, ${r.fpm} fpm touchdown. Can you beat it?`;
+  return r.kind==='crash'?`I crashed on the Kai Tak approach: ${r.title}. Can you do better?`:`I abandoned the Kai Tak approach. Can you land it?`}
+function shareTrack(m){try{track('share',{method:m,content_type:'report_card',result:RES?RES.kind:'',grade:RES?RES.grade:''})}catch(e){}}
+function updateShare(){
+  const T=shareText(),q=encodeURIComponent,U=m=>q(shareLink(m)),zh=LANG==='zh';
+  const set=(id,h)=>{document.getElementById(id).href=h};
+  set('shX','https://twitter.com/intent/tweet?text='+q(T)+'&url='+U('x'));
+  set('shFb','https://www.facebook.com/sharer/sharer.php?u='+U('facebook')+'&quote='+q(T));
+  set('shRd','https://www.reddit.com/submit?url='+U('reddit')+'&title='+q(T));
+  set('shWa','https://wa.me/?text='+q(T+' '+shareLink('whatsapp')));
+  set('shTh','https://www.threads.net/intent/post?text='+q(T+' '+shareLink('threads')));
+  set('shMail','mailto:?subject='+q('Fly Kai Tak report card')+'&body='+q(T+'\n\n'+shareLink('email')));
+  document.getElementById('resShareH').textContent=zh?'分享你嘅成績表':'Share your report card';
+  document.querySelector('#shImg span').textContent=zh?'儲存圖片':'Save image';
+  document.querySelector('#shCopy span').textContent=zh?'複製':'Copy';
+  document.querySelector('#shNat span').textContent=zh?'分享…':'Share…';
+  document.getElementById('shNatLi').hidden=!navigator.share}
+async function reportCard(){
+  const r=RES,W=1200,H=630,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+  try{await Promise.all([document.fonts.load('700 56px "B612"'),document.fonts.load('400 22px "B612 Mono"'),document.fonts.load('700 120px "B612 Mono"')])}catch(e){}
+  const bad=r.kind==='crash',acc=bad?'#ff5b4f':r.kind==='missed'?'#ffb94a':'#8ff5a8',SANS='"B612",ui-sans-serif,system-ui,sans-serif',MONO='"B612 Mono",ui-monospace,Menlo,Consolas,monospace';
+  x.fillStyle='#0a1115';x.fillRect(0,0,W,H);
+  const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,'#12202a');g.addColorStop(1,'#0a1115');x.fillStyle=g;x.fillRect(0,0,W,H);
+  for(let i=0;i<W/24;i++)for(let j=0;j<2;j++){x.fillStyle=(i+j)%2?'#f5efe3':'#e8571f';x.fillRect(i*24,j*24,24,24)}
+  x.strokeStyle='#3a5058';x.lineWidth=2;x.strokeRect(1,1,W-2,H-2);
+  const T=(t,px,py,sz,col,w,font,al)=>{x.font=`${w} ${sz}px ${font}`;x.fillStyle=col;x.textAlign=al||'left';x.fillText(t,px,py)};
+  T('FLY KAI TAK · HONG KONG · 1998',60,104,22,'#93a6a2',400,MONO);
+  T(r.eyebrow.toUpperCase(),60,152,24,acc,400,MONO);
+  // title, wrapped to two lines
+  x.font=`700 54px ${SANS}`;const words=r.title.split(' '),lines=[''];for(const w of words){const t=(lines[lines.length-1]+' '+w).trim();if(x.measureText(t).width>700&&lines.length<2&&lines[lines.length-1])lines.push(w);else lines[lines.length-1]=t}
+  lines.forEach((l,i)=>T(l,60,222+i*62,54,'#e9eee8',700,SANS));
+  // grade and score
+  T(r.grade,W-150,262,190,acc,700,MONO,'center');
+  if(r.pts!==null)T(r.pts+' / 100',W-150,322,36,'#e9eee8',400,MONO,'center');
+  // stats, two columns
+  const sy=lines.length>1?330:290,rs=r.rows.slice(0,6);
+  rs.forEach((p,i)=>{const col=i%2,rw=Math.floor(i/2),px=60+col*520,py=sy+rw*62;
+    x.font=`400 19px ${MONO}`;T(p[0].toUpperCase(),px,py,19,'#93a6a2',400,MONO);T(String(p[1]),px,py+30,26,'#e9eee8',400,MONO)});
+  x.fillStyle='#27373e';x.fillRect(60,H-90,W-120,2);
+  T(r.ctx.toUpperCase(),60,H-42,18,'#93a6a2',400,MONO);
+  T('flykaitak.com',W-60,H-42,26,'#e8571f',700,SANS,'right');
+  return new Promise(res=>c.toBlob(res,'image/png'))}
+async function shareImageFile(){const b=await reportCard();return b?new File([b],'fly-kai-tak-report-card.png',{type:'image/png'}):null}
+document.getElementById('resShare').addEventListener('click',async e=>{
+  const a=e.target.closest('a[data-m]');if(a){shareTrack(a.dataset.m);return}
+  const b=e.target.closest('button');if(!b||!RES)return;
+  const zh=LANG==='zh',flash=(btn,t)=>{const s=btn.querySelector('span'),o=s.textContent;s.textContent=t;btn.classList.add('done');setTimeout(()=>{s.textContent=o;btn.classList.remove('done')},2200)};
+  if(b.id==='shImg'){const f=await shareImageFile();if(!f)return;const u=URL.createObjectURL(f),l=document.createElement('a');l.href=u;l.download=f.name;document.body.appendChild(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);shareTrack('save_image');flash(b,zh?'已儲存':'Saved')}
+  else if(b.id==='shCopy'){const t=shareText()+' '+shareLink('copy');
+    try{await navigator.clipboard.writeText(t);shareTrack('copy');flash(b,zh?'已複製':'Copied')}catch(_){window.prompt(zh?'複製呢段文字':'Copy this text',t)}}
+  else if(b.id==='shNat'){const f=await shareImageFile();const d={title:'Fly Kai Tak',text:shareText(),url:shareLink('native')};
+    if(f&&navigator.canShare&&navigator.canShare({files:[f]}))d.files=[f];
+    try{await navigator.share(d);shareTrack('native')}catch(_){}}
+  b.blur()});
 
 /* =====================================================================
    MAIN LOOP
