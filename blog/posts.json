@@ -1,5 +1,36 @@
 [
   {
+    "slug": "bot-aircraft-bank-direction-fixed",
+    "title": "Other aircraft now bank the right way",
+    "dek": "Arriving and departing jets were drawn rolling away from their turns. They now dip the wing on the inside of the turn.",
+    "description": "Fly Kai Tak fix: other aircraft were drawn banking the wrong way in turns. Arrivals and departures now dip the inside wing, as real jets do.",
+    "date": "2026-10-03",
+    "tag": "Fix",
+    "keywords": [
+      "Kai Tak",
+      "flight simulator",
+      "bank angle",
+      "aircraft traffic",
+      "bug fix",
+      "Hong Kong 1998"
+    ],
+    "hero": "bot-bank-fixed",
+    "hero_alt": "A 747 seen from behind in a right turn over Kowloon City, with its right wing lower than the left.",
+    "hero_caption": "An arrival in its right turn, with the right wing down.",
+    "card_kicker": "VHHH · FIX · 1998",
+    "card_title": "Banking the right way",
+    "card_sub": "Other aircraft now roll into their turns",
+    "card_image": "bot-bank-fixed",
+    "card_focus": 50,
+    "zh": {
+      "title": "其他飛機而家向啱嘅方向傾側",
+      "dek": "進場同離場嘅客機之前轉彎時向反方向傾側，而家會將轉彎內側嗰邊機翼向下。",
+      "description": "Fly Kai Tak 修正：其他飛機轉彎時傾側方向反咗，進場同離場客機而家會將內側機翼向下，同真正客機一樣。",
+      "hero_alt": "由後面望住一架 747 喺九龍城上空右轉，右翼比左翼低。",
+      "hero_caption": "一架進場飛機喺右轉中，右翼向下。"
+    }
+  },
+  {
     "slug": "blog-in-cantonese",
     "title": "Read the Fly Kai Tak blog in Cantonese",
     "dek": "Every blog page now has an EN / 粵 button that switches the whole post between English and Cantonese, and shares your choice with the home screen.",

@@ -2107,7 +2107,7 @@ function polyPose(pts,t){ // pts: [[s,l,tArrive],…] ground taxi along runway c
 function arrivalPose(t,c0,gateS){gateS=gateS||300;
   const v=76,thr=PATH.pts.find(p=>p.d<=0).c;const tdC=thr+300;const tTD=(tdC-c0)/v;
   if(t<0)return null;
-  if(t<tTD){const c=c0+v*t;const p=pathAtC(c);const p2=pathAtC(c+v*3);let phi=-Math.atan(v*v*(p2.k||0)/G);
+  if(t<tTD){const c=c0+v*t;const p=pathAtC(c);const p2=pathAtC(c+v*3);let phi=Math.atan(v*v*(p2.k||0)/G);
     const flare=clamp((t-(tTD-5))/5,0,1);return {x:p.x,z:p.z,y:p.alt+flare*-.5,psi:p.h,theta:(2+flare*3)*D2R,phi,gear:c>thr-9000?1:0,lights:true}}
   const dt=t-tTD,a=2.0,vT=10;const tDec=(v-vT)/a;let s;
   if(dt<tDec)s=300+v*dt-.5*a*dt*dt;else s=300+(v*v-vT*vT)/(2*a)+vT*(dt-tDec);
@@ -2125,7 +2125,7 @@ function departurePose(t,gate){
   let psi=RWY.hdg*D2R,x,z;const turnStart=60;
   if(tc<turnStart){const q=rwP(s,0);x=q[0];z=q[1]}else{const q=rwP(sR+vR*turnStart+.6*625,0);const R=3200;const ang=Math.min((tc-turnStart)*v/R,1.0);psi=RWY.hdg*D2R+ang;
     const c=[q[0]+R*Math.cos(RWY.hdg*D2R),q[1]+R*Math.sin(RWY.hdg*D2R)];x=c[0]-R*Math.cos(psi);z=c[1]-R*Math.sin(psi);const extra=Math.max(0,(tc-turnStart)*v-R);x+=Math.sin(psi)*extra;z-=Math.cos(psi)*extra}
-  return {x,z,y:Math.min(alt+(tc>turnStart?(tc-turnStart)*6:0),2400),psi,theta:tc<4?tc*2.5*D2R:9*D2R,phi:tc>turnStart&&tc<turnStart+40?-18*D2R:0,gear:tc<6?1:0,lights:tc<90}
+  return {x,z,y:Math.min(alt+(tc>turnStart?(tc-turnStart)*6:0),2400),psi,theta:tc<4?tc*2.5*D2R:9*D2R,phi:tc>turnStart&&tc<turnStart+40?18*D2R:0,gear:tc<6?1:0,lights:tc<90}
 }
 function holdingPose(t,cx,cz,alt,R,ph){const v=105,w=v/R;const a=t*w+ph;return {x:cx+Math.cos(a)*R,z:cz+Math.sin(a)*R,y:alt,psi:a+Math.PI,theta:2*D2R,phi:Math.atan(v*v/(G*R)),gear:0}}
 const AI_LIVERIES=[0x7a1f24,0x23406e,0x3a5f2e,0xc9a23a,0x5b2a6b,0x2b2f34,0x1f6f8a,0x8a5a2b];
