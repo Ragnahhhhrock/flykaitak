@@ -35,7 +35,12 @@ Data: © Lands Department, HKSAR Government (CSDI). Elevation: SRTM via AWS Terr
 - GPWS callouts and warnings, engine, wind, rain and thunder sound
 
 ## Background reel
-The home screen plays a 58-second muted loop (`assets/video/reel.mp4`, with a WebM fallback and a poster). It's rendered from the sim itself: a 747 at night, an A330 breaking out of low cloud, gear and flaps deploying, the turn at the checkerboard, ailerons over Kowloon City, a 747 low over a Kowloon City street, a 777 crabbing in a typhoon, an A340 in a lightning storm, and touchdowns in rain and at night. It's paused during play and skipped for reduced-motion users.
+The home screen opens on a checkerboard screenshot (`assets/home/checkerboard.jpg`), then plays a 58-second muted reel once (`assets/video/reel.mp4`, with a WebM fallback), then settles on an aerial view of the airport (`assets/home/aerial-kai-tak.jpg`). The stills are screenshots of the sim. The reel is rendered from the sim itself: a 747 at night, an A330 breaking out of low cloud, gear and flaps deploying, the turn at the checkerboard, ailerons over Kowloon City, a 747 low over a Kowloon City street, a 777 crabbing in a typhoon, an A340 in a lightning storm, and touchdowns in rain and at night. It's paused during play. Reduced-motion users get the checkerboard still only.
+
+## Site
+- Contact: contact@flykaitak.com
+- "Another Mal Gordon project" links to https://malgordon.com
+- The "Buy me a coffee" button ($5 USD) stays hidden until a Stripe Payment Link is pasted into `STRIPE_LINK` in `index.html`
 
 ## Modes
 - **IGS 13 approach**: the original game. Start on the IGS at 3,100 ft and land.
