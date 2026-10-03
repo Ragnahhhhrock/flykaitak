@@ -32,6 +32,7 @@ Data: © Lands Department, HKSAR Government (CSDI). Elevation: SRTM via AWS Terr
 - Autopilot and autothrottle that fly the full approach and autoland
 - High score table: every hand-flown IGS 13 landing is scored out of 100 and ranked by score: Captain (90+), First Officer (76+), Second Officer (60+), Flight Engineer (45+), Cadet. Saved in the browser with a callsign; an optional Cloudflare Worker + D1 database in `server/` shares one table (see `docs/highscores.md`)
 - Moving control surfaces: ailerons and elevators follow the controls, flaps follow the flap setting, spoilers deploy on touchdown (on the AI traffic too)
+- Airport ground vehicles: buses at the parked aircraft's doors, catering trucks whose boxes lift to the door, baggage tractors towing loaded carts under the wing, container and box freight trucks around a cargo shed, a lorry on the service road, and a fire station with crash tenders and a rescue vehicle. They run on the sim clock, so rewind and fast-forward work. At night they show headlights, tail lamps and beacons
 - Other airliners: a 747 landing two minutes ahead of you, an A340 following you in on the IGS, departures taxiing out and climbing over Kowloon Bay, two aircraft in the hold west of the harbour, and apron movements
 - Zoom 1×, 2×, 4×, 8×, 16× (I / O); time 1×, 2×, 4×, 8× (T); jump back or forward 10 seconds ([ / ]), including back from a crash
 - GPWS callouts and warnings, engine, wind, rain and thunder sound

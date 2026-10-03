@@ -1,5 +1,37 @@
 [
   {
+    "slug": "airport-ground-vehicles",
+    "title": "New: ground vehicles on the Kai Tak apron",
+    "dek": "Buses, catering trucks, baggage trains, freight trucks and a fire station now work around the parked aircraft.",
+    "description": "Fly Kai Tak adds airport ground vehicles: buses, catering trucks that lift to the door, baggage tractors with loaded carts, container and box freight trucks, and fire tenders at a fire station.",
+    "date": "2026-10-03",
+    "tag": "New",
+    "keywords": [
+      "Kai Tak",
+      "apron",
+      "ground vehicles",
+      "buses",
+      "catering",
+      "baggage",
+      "fire"
+    ],
+    "hero": "gse-stand",
+    "hero_alt": "A bus and a catering truck with its box raised at the front door of a parked 747.",
+    "hero_caption": "A bus and a catering truck at a stand.",
+    "card_kicker": "APRON · NEW",
+    "card_title": "Ground vehicles",
+    "card_sub": "Buses, catering, baggage, freight, fire",
+    "card_image": "gse-stand",
+    "card_focus": 50,
+    "zh": {
+      "title": "新增：啟德停機坪地勤車輛",
+      "dek": "巴士、餐飲車、行李車隊、貨車同消防局而家喺停泊嘅飛機附近工作。",
+      "description": "Fly Kai Tak 新增機場地勤車輛：巴士、可升降到機門嘅餐飲車、拖住行李車嘅拖車、貨櫃同箱式貨車，以及消防局嘅消防車。",
+      "hero_alt": "一架停泊嘅 747 前門旁邊有一部巴士同一部升起車箱嘅餐飲車。",
+      "hero_caption": "停機位上嘅巴士同餐飲車。"
+    }
+  },
+  {
     "slug": "runway-31-easterly-approach-lei-yue-mun",
     "title": "New: easterly approach to Runway 31",
     "dek": "Fly in from the east through the Lei Yue Mun gap, by day or at night.",

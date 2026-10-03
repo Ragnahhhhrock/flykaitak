@@ -2538,6 +2538,139 @@ function updateAI(){
 }
 
 /* =====================================================================
+   AIRPORT GROUND VEHICLES — apron buses, catering trucks, baggage trains, freight trucks, fire tenders.
+   Like the AI aircraft they are pure functions of sim time, so rewind and fast-forward just work.
+   Everything is in runway coordinates (s along the runway from the threshold, l toward the apron, which is negative).
+   ===================================================================== */
+const GSE=[],GSEK={};let gseLamps=null,gseBeacons=null;
+const GSE_STANDS=[120,205,290,375,460,545];   // the six parked aircraft, nose toward the terminal (centre line l = -560)
+const GL=0x23282d;                              // dark glass
+function gseWheels(hw,zs,r,w){const o=[];for(const z of zs)for(const sx of[-1,1])o.push([w,2*r,2*r,sx*(hw-w/2),0,z,0x1b1c1e]);return o}
+function gseBags(seed){ // a cart load: two rows of four cases, some stacked, in a fixed pattern per seed
+  let s=seed;const r=()=>(s=(s*16807)%2147483647)/2147483647,cols=[0x2b2b2e,0x5a3a26,0x1f3a6e,0x7a1f24,0x3c5a3a,0x8a8f94,0xb08a4f,0x30343a],o=[];
+  for(const z of[-1.15,-.38,.38,1.15])for(const x of[-.44,.44]){if(r()<.12)continue;const h=.32+r()*.22,w=.62+r()*.12,l=.55+r()*.18;
+    o.push([w,h,l,x+(r()-.5)*.08,.68,z+(r()-.5)*.1,cols[Math.floor(r()*cols.length)]]);
+    if(r()<.45)o.push([w*.9,.28+r()*.16,l*.85,x,.68+h,z,cols[Math.floor(r()*cols.length)]])}
+  return o}
+const gseCart=seed=>[[1.8,.18,3.3,0,.5,0,'body'],[1.2,.14,3.3,0,.34,0,0x3a3d41],[.14,.14,1.4,0,.4,-2.3,0x3a3d41],...gseWheels(.9,[-1.1,1.1],.3,.22),...gseBags(seed)];
+function gseFire(L){const z0=-L/2; // a crash tender: red cab and body, white stripe, roof turret, blue light bar
+  return [[2.5,.6,L,0,.6,0,0x5a5e62],[2.5,1.9,2.7,0,1.2,z0+1.35,0xc8102e],[2.3,.8,.1,0,1.95,z0+.02,GL],[2.5,1.9,L-3.0,0,1.2,1.35,0xc8102e],[2.52,.3,L-3.0,0,1.9,1.35,0xf2f0ea],
+    [1.9,.5,L-3.6,0,3.1,1.5,0xb3101f],[.35,.4,.35,0,3.1,z0+2.6,0x777b80],[.2,.2,1.5,0,3.45,z0+1.9,0x777b80],[1.7,.2,.45,0,3.1,z0+1.0,0x2a3a8a],
+    [.06,1.0,L-4.2,-1.26,1.3,1.6,0xb0b3b6],[.06,1.0,L-4.2,1.26,1.3,1.6,0xb0b3b6],...gseWheels(1.2,[z0+1.6,L/2-3.6,L/2-1.5],.6,.4)]}
+// part: [w,h,l, x,y,z, colour | 'body' | 'alt', group]; the vehicle faces -z. Groups: fix, body, alt (tinted per vehicle), lfix/lbody (lifted), scis (scissor lift, scaled)
+const GSE_KINDS={
+  bus:{len:11.8,parts:[[2.5,2.6,11.8,0,.5,0,'body'],[2.52,.5,11.8,0,.9,0,'alt'],[2.53,.9,10.8,0,1.85,.1,GL],[2.2,1.1,.1,0,1.8,-5.92,GL],[2.4,.2,11.4,0,3.1,0,0xd9dcdf],[1.4,.3,3.0,0,3.3,.5,0xb9bcc0],...gseWheels(1.25,[-3.7,3.5],.5,.35)],
+    cols:[0xeeece4,0xe8e0c8,0xe2e8ea],alts:[0x2f5c8a,0x2b6e57,0x8a2f2f]},
+  cater:{len:7.6,lift:2.7,sBase:1.45,parts:[[2.3,1.9,2.3,0,.85,-2.9,'alt'],[2.2,.8,.12,0,1.55,-4.07,GL],[2.2,.45,7.4,0,.5,.2,0x45484c],[2.3,.5,4.8,0,.95,1.2,0xb6babd],
+      ...gseWheels(1.1,[-2.9,2.0,3.2],.5,.34),[.2,1,.2,-.9,0,-.6,0x6d7378,'scis'],[.2,1,.2,.9,0,-.6,0x6d7378,'scis'],[.2,1,.2,-.9,0,3.0,0x6d7378,'scis'],[.2,1,.2,.9,0,3.0,0x6d7378,'scis'],
+      [2.45,2.5,4.6,0,1.45,1.2,'body','lbody'],[2.2,.12,1.1,0,1.45,-1.35,0xb6babd,'lfix']],
+    cols:[0xeeeeea,0xe6e2d4],alts:[0xc9372c,0x2f5c8a,0x3d7a46,0xd88a2a]},
+  tug:{len:3.1,parts:[[1.5,.4,3.1,0,.3,0,'body'],[1.4,.55,1.2,0,.7,-.95,'body'],[1.3,.3,1.0,0,.7,.75,0x2a2d31],[1.4,.8,.06,0,.95,-.32,GL],[1.5,.1,1.6,0,2.05,.4,'alt'],
+      [.08,1.2,.08,-.7,.85,-.3,0x3a3d41],[.08,1.2,.08,.7,.85,-.3,0x3a3d41],[.08,1.2,.08,-.7,.85,1.1,0x3a3d41],[.08,1.2,.08,.7,.85,1.1,0x3a3d41],...gseWheels(.85,[-.95,.9],.36,.28)],
+    cols:[0xd9a21f,0xe6e2d4,0xc9372c],alts:[0x2a2d31,0x3a3d41]},
+  cartA:{len:3.3,parts:gseCart(11),cols:[0x8a8f94,0xc9a23a,0x2f5c8a]},
+  cartB:{len:3.3,parts:gseCart(23),cols:[0x8a8f94,0xc9a23a,0x2f5c8a]},
+  cartC:{len:3.3,parts:gseCart(37),cols:[0x8a8f94,0xc9a23a,0x2f5c8a]},
+  cont:{len:15.7,parts:[[2.4,2.2,2.6,0,1.0,-6.2,'alt'],[2.3,.9,.12,0,1.8,-7.52,GL],[2.3,.5,14.6,0,.55,-.2,0x45484c],[2.5,2.6,12.2,0,1.1,2.0,'body'],[2.52,.12,12.2,0,1.5,2.0,0x2a2d31],[2.52,.12,12.2,0,3.0,2.0,0x2a2d31],
+      ...gseWheels(1.15,[-6.3],.5,.34),...gseWheels(1.15,[5.4,6.8],.5,.34)],
+    cols:[0x3a6ea5,0xb5482a,0x2f7a4d,0xd9d6cc,0xe1b73a],alts:[0xe9e6dc,0x2a2d31,0xc93a2a]},
+  lorry:{len:9.2,parts:[[2.3,2.1,2.3,0,.95,-3.4,'alt'],[2.2,.85,.12,0,1.6,-4.57,GL],[2.3,.4,8.6,0,.55,0,0x45484c],[2.5,2.6,6.0,0,1.0,1.1,'body'],...gseWheels(1.15,[-3.2,2.2,3.5],.5,.34)],
+    cols:[0xeeeeea,0x2f5c8a,0xd8d2c0,0x3d7a46],alts:[0x9aa0a6,0xd88a2a,0xc93a2a]},
+  tender:{len:11.4,parts:gseFire(11.4)},
+  rescue:{len:8.0,parts:gseFire(8.0)},
+};
+// ---- routes: a closed loop of runway-coordinate points, corners rounded, with the distance of every point along it
+function gseRoute(pts,R){
+  const V=pts.map(q=>rwP(q[0],q[1])),n=V.length,Q=[],vi=[];
+  for(let i=0;i<n;i++){const P=V[i],A=V[(i+n-1)%n],B=V[(i+1)%n],ix=P[0]-A[0],iz=P[1]-A[1],ox=B[0]-P[0],oz=B[1]-P[1],li=Math.hypot(ix,iz),lo=Math.hypot(ox,oz),ux=ix/li,uz=iz/li,vx=ox/lo,vz=oz/lo;
+    if(ux*vx+uz*vz<.9995){const d=Math.min(R,.45*li,.45*lo),ax=P[0]-ux*d,az=P[1]-uz*d,bx=P[0]+vx*d,bz=P[1]+vz*d;
+      for(let m=0;m<=10;m++){const u=m/10,w0=(1-u)*(1-u),w1=2*u*(1-u),w2=u*u;if(m===5)vi[i]=Q.length;Q.push([w0*ax+w1*P[0]+w2*bx,w0*az+w1*P[1]+w2*bz])}}
+    else{vi[i]=Q.length;Q.push([P[0],P[1]])}}
+  Q.push([Q[0][0],Q[0][1]]);const D=[0];for(let i=1;i<Q.length;i++)D.push(D[i-1]+Math.hypot(Q[i][0]-Q[i-1][0],Q[i][1]-Q[i-1][1]));
+  return {Q,D,L:D[D.length-1],vd:vi.map(k=>D[k])}}
+function gseAt(R,d){d=((d%R.L)+R.L)%R.L;const D=R.D;let lo=0,hi=D.length-1;while(hi-lo>1){const m=(lo+hi)>>1;if(D[m]<=d)lo=m;else hi=m}
+  const f=(d-D[lo])/Math.max(1e-6,D[hi]-D[lo]);return[lerp(R.Q[lo][0],R.Q[hi][0],f),lerp(R.Q[lo][1],R.Q[hi][1],f)]}
+function gsePose(R,d){const p=gseAt(R,d),a=gseAt(R,d-1.5),b=gseAt(R,d+1.5);return {x:p[0],z:p[1],psi:Math.atan2(b[0]-a[0],-(b[1]-a[1]))}}
+// ---- timing: accelerate, cruise, brake, dwell at each stop, repeat
+const GSE_ACC=1.6;
+function gseTrapT(len,v){const da=v*v/(2*GSE_ACC);return len>2*da?2*v/GSE_ACC+(len-2*da)/v:2*Math.sqrt(len/GSE_ACC)}
+function gseTrapD(len,v,t){const a=GSE_ACC,da=v*v/(2*a);let vm=v,ta=v/a;if(len<=2*da){vm=Math.sqrt(a*len);ta=vm/a}
+  const tc=len>2*da?(len-2*da)/v:0,T=2*ta+tc;if(t<=0)return 0;if(t>=T)return len;if(t<ta)return .5*a*t*t;if(t<ta+tc)return .5*a*ta*ta+vm*(t-ta);const u=T-t;return len-.5*a*u*u}
+function gseSched(R,stops,v){ // stops: [{i: point index, dw: dwell seconds, tag}]
+  const S=stops.map(s=>({d:R.vd[s.i],dw:s.dw,tag:s.tag})).sort((a,b)=>a.d-b.d),segs=[];let P=0;
+  for(let k=0;k<S.length;k++){const a=S[k],b=S[(k+1)%S.length];let len=b.d-a.d;if(len<=0)len+=R.L;const T=gseTrapT(len,v);segs.push({d0:a.d,len,T,dw:b.dw,tag:b.tag});P+=T+b.dw}
+  return {segs,P,v}}
+function gseState(sc,t){let u=((t%sc.P)+sc.P)%sc.P;for(const g of sc.segs){if(u<g.T)return {d:g.d0+gseTrapD(g.len,sc.v,u),w:-1};u-=g.T;if(u<g.dw)return {d:g.d0+g.len,w:u,dw:g.dw,tag:g.tag};u-=g.dw}return {d:sc.segs[0].d0,w:-1}}
+// a vehicle serving a parked aircraft: depot -> beside the fuselage (stop) -> past the tail -> back down the gap between wingtips
+function gseStandLoop(S,sg,lDep,lStop){const x=d=>S+sg*d;return [[x(22),lDep],[x(6.2),lDep],[x(6.2),lStop],[x(6.2),-512],[x(38.5),-512],[x(38.5),lDep]]}
+let gseSeed=77;const gseR=()=>(gseSeed=(gseSeed*16807)%2147483647)/2147483647;
+function gseAdd(kind,o){const K=GSE_KINDS[kind],e=Object.assign({kind,off:0,ph:0,lamp:false,beacon:null,lift:0},o);GSEK[kind]=GSEK[kind]||{list:[]};
+  e.body=K.cols?K.cols[Math.floor(gseR()*K.cols.length)]:0xffffff;e.alt=K.alts?K.alts[Math.floor(gseR()*K.alts.length)]:0xffffff;GSEK[kind].list.push(e);GSE.push(e);return e}
+function gseRun(kind,pts,R,stops,v,ph,o){const route=gseRoute(pts,R),sc=gseSched(route,stops,v);return gseAdd(kind,Object.assign({route,sc,ph,lamp:true},o))}
+function buildGSE(){
+  const place=(m,s,l,y)=>{const p=rwP(s,l);m.position.set(p[0],y,p[1]);m.rotation.y=-RWY.hdg*D2R;scene.add(m);return m};
+  const box=(wl,h,ws,mat)=>new THREE.Mesh(new THREE.BoxGeometry(wl,h,ws).translate(0,h/2,0),mat);
+  const rect=(s0,s1,l0,l1,top,name)=>{const c=[rwP(s0,l0),rwP(s0,l1),rwP(s1,l0),rwP(s1,l1)];addCollider(Math.min(...c.map(p=>p[0])),Math.max(...c.map(p=>p[0])),Math.min(...c.map(p=>p[1])),Math.max(...c.map(p=>p[1])),top,name)};
+  const dark=new THREE.MeshLambertMaterial({color:0x2d3236}),Y=RWY.elev;
+  // fire station: four bays facing the apron, and a cargo shed with roller doors on its north face
+  place(box(22,9,60,cityMaterial({color:0xd9d5c8})),60,-205,Y);place(box(24,.8,62,new THREE.MeshLambertMaterial({color:0x8d8b84})),60,-205,Y+9);
+  for(const s of[40,53,66,79])place(box(.4,5.4,9.5,new THREE.MeshLambertMaterial({color:0xc8102e})),s,-194,Y);
+  rect(30,90,-217,-193,Y+10,'the fire station');
+  place(box(50,10,100,cityMaterial({color:0xbfc3bd})),660,-790,Y);place(box(52,.8,102,new THREE.MeshLambertMaterial({color:0x7b7f82})),660,-790,Y+10);
+  for(let s=625;s<=700;s+=15)place(box(.4,4.4,8,dark),s,-765,Y);
+  rect(610,710,-815,-765,Y+11,'the cargo shed');
+  // routes
+  const stand=(k,sg,lDep,lStop,dwS,dwD,v,ph,kind,o)=>gseRun(kind,gseStandLoop(GSE_STANDS[k],sg,lDep,lStop),12,[{i:0,dw:dwD,tag:'depot'},{i:2,dw:dwS,tag:'stand'}],v,ph,o);
+  [[3,0],[4,57],[5,121]].forEach(([k,ph],j)=>stand(k,-1,-709,-586,50+j*12,28,7.5,ph+20,'bus',{}));                         // airside coaches, terminal kerb <-> aircraft door
+  [[2,0],[3,71],[4,139]].forEach(([k,ph],j)=>stand(k,1,-690,-586,95,45,6,ph+10,'cater',{}));                                // catering trucks lift to the door
+  [[0,0],[1,83],[5,167]].forEach(([k,ph],j)=>{                                                                              // baggage tractors, each towing three loaded carts
+    const t=stand(k,1,-700,-540,110,30,5.5,ph+40,'tug',{beacon:[1,.65,.1]});['cartA','cartB','cartC'].forEach((c,n)=>gseAdd(c,{lead:t,off:4.6+4.7*n}))});
+  gseRun('cont',[[570,-748],[640,-748],[745,-748],[745,-835],[570,-835]],16,[{i:1,dw:75,tag:'dock'}],5.5,0,{});                                          // clockwise, docks at the shed
+  gseRun('cont',[[738,-755],[690,-755],[577,-755],[577,-828],[738,-828]],16,[{i:1,dw:75,tag:'dock'}],5.5,170,{});                // anticlockwise, inside lane
+  gseRun('lorry',[[80,-646],[120,-646],[660,-646],[700,-646],[700,-662],[660,-662],[120,-662],[80,-662]],6,[{i:1,dw:40,tag:'bay'},{i:2,dw:40,tag:'bay'}],7,60,{});
+  // fire service: three crash tenders and a rescue vehicle outside the bays; one tender runs out to stand by now and then
+  const fpsi=(RWY.hdg+90)*D2R;
+  for(const [k,s] of[['tender',44],['tender',58],['rescue',72]]){const p=rwP(s,-186);gseAdd(k,{stat:{x:p[0],z:p[1],psi:fpsi},beacon:[.25,.45,1]})}
+  gseRun('tender',[[100,-200],[100,-186],[100,-170],[165,-170],[180,-170],[180,-200]],10,[{i:1,dw:90,tag:'home'},{i:3,dw:40,tag:'standby'}],8,0,{beacon:[.25,.45,1]});
+  // instanced meshes: one per kind and colour group, with vertex colours for the fixed parts
+  const tc=new THREE.Color(),mats={};
+  for(const kind in GSEK){const K=Object.assign(GSE_KINDS[kind],GSEK[kind]),groups={};K.meshes=[];
+    for(const p of K.parts){const g=p[7]||(typeof p[6]==='number'?'fix':p[6]);(groups[g]=groups[g]||[]).push(p)}
+    for(const g in groups){const P=[],N=[],C=[],I=[];let off=0;
+      for(const p of groups[g]){const bg=new THREE.BoxGeometry(p[0],g==='scis'?1:p[1],p[2]).translate(p[3],g==='scis'?.5:p[4]+p[1]/2,p[5]);
+        const col=tc.setHex(typeof p[6]==='number'?p[6]:0xffffff),pa=bg.attributes.position,na=bg.attributes.normal;
+        for(let i=0;i<pa.count;i++){P.push(pa.getX(i),pa.getY(i),pa.getZ(i));N.push(na.getX(i),na.getY(i),na.getZ(i));C.push(col.r,col.g,col.b)}
+        for(const x of bg.index.array)I.push(x+off);off+=pa.count}
+      const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(P,3));geo.setAttribute('normal',new THREE.Float32BufferAttribute(N,3));geo.setAttribute('color',new THREE.Float32BufferAttribute(C,3));geo.setIndex(I);
+      const m=new THREE.InstancedMesh(geo,new THREE.MeshLambertMaterial({vertexColors:true}),K.list.length);m.frustumCulled=false;m.userData.g=g;
+      K.list.forEach((e,i)=>{e.i=i;tc.setHex(g==='body'||g==='lbody'?e.body:g==='alt'?e.alt:0xffffff);m.setColorAt(i,tc)});
+      scene.add(m);K.meshes.push(m)}}
+  // lamps (head and tail, night only) and flashing beacons
+  const lamps=[],beac=[];let li=0,bi=0;
+  for(const e of GSE){if(e.lamp){e.li=li++;lamps.push(0,0,0,1,.95,.8,1.6,-1,0,0,0,1,.12,.08,1.6,-1)}if(e.beacon){e.bi=bi++;beac.push(0,0,0,e.beacon[0],e.beacon[1],e.beacon[2],3.2,(.1*e.bi)%.5)}}
+  gseLamps=makeLights(lamps);scene.add(gseLamps);gseBeacons=makeLights(beac);scene.add(gseBeacons);
+}
+const _gq=new THREE.Quaternion(),_ge=new THREE.Euler(),_gv=new THREE.Vector3(),_gs=new THREE.Vector3(),_gm=new THREE.Matrix4();
+function updateGSE(){
+  const t=ST.t||0,Y=RWY.elev+.05,lp=gseLamps.geometry.attributes.position,bp=gseBeacons.geometry.attributes.position;
+  for(const e of GSE){let p,st;
+    if(e.stat){p=e.stat;e.lift=0}
+    else{const L=e.lead||e;if(e.lead){st=L.st}else{st=e.st=gseState(e.sc,t+e.ph)}
+      p=gsePose(L.route,st.d-e.off);e.lift=st.w>=0&&st.tag==='stand'?sstep(0,7,st.w)*(1-sstep(st.dw-7,st.dw,st.w)):0}
+    e.p=p}
+  for(const kind in GSEK){const K=GSE_KINDS[kind];
+    for(const m of K.meshes){const g=m.userData.g;
+      for(const e of K.list){const p=e.p;_gq.setFromEuler(_ge.set(0,-p.psi,0));const up=g==='lfix'||g==='lbody'?e.lift*K.lift:0;
+        if(g==='scis')_gm.compose(_gv.set(p.x,Y+K.sBase,p.z),_gq,_gs.set(1,Math.max(.001,e.lift*K.lift),1));else _gm.compose(_gv.set(p.x,Y+up,p.z),_gq,_gs.set(1,1,1));
+        m.setMatrixAt(e.i,_gm)}
+      m.instanceMatrix.needsUpdate=true}}
+  for(const e of GSE){const p=e.p,K=GSE_KINDS[e.kind],fx=Math.sin(p.psi),fz=-Math.cos(p.psi),h=K.len/2;
+    if(e.lamp){lp.setXYZ(e.li*2,p.x+fx*h,Y+.9,p.z+fz*h);lp.setXYZ(e.li*2+1,p.x-fx*h,Y+.9,p.z-fz*h)}
+    if(e.beacon)bp.setXYZ(e.bi,p.x+fx*h*.2,Y+(e.kind==='tug'?2.3:3.8),p.z+fz*h*.2)}
+  lp.needsUpdate=true;bp.needsUpdate=true;gseLamps.visible=CFG.night;
+}
+
+/* =====================================================================
    VIEWS & CAMERA
    ===================================================================== */
 let acModel=null,navLights=null,strobeLights=null,landingLight=null,shadow=null,deckGroup=null,cabinGroup=null;
@@ -3108,7 +3241,7 @@ function frame(now,manual){
   const t=now/1000;LIGHT_U.uTime.value=t;WATER_U.uTime.value=t;
   const sdt=dt*(mode==='fly'?CFG.ts:1);
   if(!paused){updateTraffic(sdt,CFG.night);updateShips(sdt,t);updateFX(dt)}
-  updateAI();
+  updateAI();if(gseLamps)updateGSE();
   updateAircraftVisual();if(hoops)hoops.visible=CFG.guide&&!SPOTS[CFG.view]&&CFG.view!=='tower';
   if(deckGroup&&deckGroup.visible){drawDisplays(dt);animateDeck()}
   if(mode==='attract'){attractCamera(dt)}else updateCamera(dt);
@@ -3148,7 +3281,7 @@ async function boot(){
   const ld=document.getElementById('loading');
   try{await loadGeo(t=>ld.textContent=t)}catch(e){ld.textContent='COULD NOT LOAD MAP DATA. OPEN THIS PAGE FROM A WEB SERVER, NOT A FILE.';console.error(e);return}
   ld.textContent='BUILDING HONG KONG…';await new Promise(r=>setTimeout(r,20));
-  buildTerrain();buildRoads();buildLandmarks();buildCity();buildHappyValley();buildOceanPark();buildPeak();buildStreetScene();buildBillboards();buildAirport();buildShips();buildRain();
+  buildTerrain();buildRoads();buildLandmarks();buildCity();buildHappyValley();buildOceanPark();buildPeak();buildStreetScene();buildBillboards();buildAirport();buildGSE();buildShips();buildRain();
   resize();showSetup();ld.hidden=true;
   requestAnimationFrame(frame);
 }
@@ -3158,7 +3291,7 @@ fontsReady.then(()=>setTimeout(boot,30));
 /* test hooks */
 window.__kt={CFG,ST,get PATH(){return PATH},LND,setRunway,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,{rwy:'13'},o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.game==='approach'&&CFG.rwy==='31'?'approach31':CFG.game}]`).checked=true;document.querySelector(`input[name=tod][value=${CFG.night?'night':'day'}]`).checked=true;startFlight()},
   run:(sec)=>{if(CFG.game==='watch'){ST.t+=sec;return {t:ST.t}}const h=1/120;for(let i=0;i<sec*120&&!ST.ended;i++){physStep(h);if(i%60===0)recordHistory()}return {ended:ST.ended,td:ST.td,t:ST.t,x:ST.x,y:ST.y,z:ST.z,V:ST.V/KT,d:PATH.pts[ST.pi].d}},
-  get mode(){return mode},get CFG(){return CFG},frame:(now)=>frame(now,true),get FOCUS(){return FOCUS},step:()=>physStep(1/120),rwS,setZoom:z=>{CFG.zoom=z},get AI(){return AI},get shipLights(){return shipLights},get SHIPS(){return SHIPS},get DISP(){return DISP},get deck(){return deckGroup},get streetCam(){return STREET_CAM},get BB(){return BB},get water(){return water},get camera(){return camera},get nStreets(){return STREETS.length},drawDisplays,look,setView,terrainAt,buildingAt,groundInfo};
+  get mode(){return mode},get CFG(){return CFG},frame:(now)=>frame(now,true),get FOCUS(){return FOCUS},step:()=>physStep(1/120),rwS,setZoom:z=>{CFG.zoom=z},get AI(){return AI},get GSE(){return GSE},get parked(){return parked},gseAt:(t)=>{ST.t=t;updateGSE();return GSE.map(e=>({k:e.kind,x:e.p.x,z:e.p.z,psi:e.p.psi,lift:e.lift}))},get shipLights(){return shipLights},get SHIPS(){return SHIPS},get DISP(){return DISP},get deck(){return deckGroup},get streetCam(){return STREET_CAM},get BB(){return BB},get water(){return water},get camera(){return camera},get nStreets(){return STREETS.length},drawDisplays,look,setView,terrainAt,buildingAt,groundInfo};
 })();
 </script>
 <!--/FRAG:BODY-->
