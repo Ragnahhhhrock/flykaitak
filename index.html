@@ -789,12 +789,12 @@ function buildSignAtlas(){
   SIGNS.forEach((sg,i)=>{const x=(i%16)*128,y=Math.floor(i/16)*512;const [bg,fg,ac]=SSTY[sg.s];const neon=sg.s.startsWith('neon');
     g.fillStyle=bg;g.fillRect(x,y,128,512);g.strokeStyle=ac;g.lineWidth=neon?5:6;if(neon){g.shadowColor=fg;g.shadowBlur=14}g.strokeRect(x+8,y+8,112,496);
     g.fillStyle=fg;const n=sg.t.length;const fs=Math.min(96,440/n*.92);g.font=`900 ${fs}px ${han}`;g.textAlign='center';g.textBaseline='middle';
-    for(let k=0;k<n;k++)g.fillText(sg.t[k],x+64,y+256+(k-(n-1)/2)*(440/n));g.shadowBlur=0;cells.v.push([x/W,1-(y+512)/W,128/W,512/W])});
+    for(let k=0;k<n;k++)g.fillText(sg.t[k],x+64,y+256+(k-(n-1)/2)*(440/n));g.shadowBlur=0;cells.v.push(Object.assign([x/W,1-(y+512)/W,128/W,512/W],{neon,rgb:hex2rgb(fg)}))});
   SIGNS_H.forEach((sg,i)=>{const x=(i%4)*512,y=1024+Math.floor(i/4)*128+(i>=32?0:0);const [bg,fg,ac]=SSTY[sg.s];const neon=sg.s.startsWith('neon');
     g.fillStyle=bg;g.fillRect(x,y,512,128);g.strokeStyle=ac;g.lineWidth=5;if(neon){g.shadowColor=fg;g.shadowBlur=14}g.strokeRect(x+6,y+6,500,116);
     g.fillStyle=fg;g.textAlign='center';g.textBaseline='middle';const n=sg.t.length;g.font=`900 ${sg.e?64:84}px ${han}`;
     const step=Math.min(84,470/n);for(let k=0;k<n;k++)g.fillText(sg.t[k],x+256+(k-(n-1)/2)*step,y+(sg.e?50:64));
-    if(sg.e){g.fillStyle=ac===fg?fg:ac;g.font='bold 22px Arial, sans-serif';g.fillText(sg.e,x+256,y+104)}g.shadowBlur=0;cells.h.push([x/W,1-(y+128)/W,512/W,128/W])});
+    if(sg.e){g.fillStyle=ac===fg?fg:ac;g.font='bold 22px Arial, sans-serif';g.fillText(sg.e,x+256,y+104)}g.shadowBlur=0;cells.h.push(Object.assign([x/W,1-(y+128)/W,512/W,128/W],{neon,rgb:hex2rgb(fg)}))});
   // rooftop billboard faces (generic, no brands)
   const ads=[['電器','#f6f2e8','#c41e1e'],['海鮮酒家','#c41e1e','#f6f2e8'],['珠寶金行','#121212','#f2c14e'],['地產','#1f4fa0','#f6f2e8'],['酒樓','#123d2a','#f2c14e'],['鐘錶','#f2c14e','#121212']];
   cells.b=[];ads.forEach((a,i)=>{const x=(i%4)*512,y=1536+Math.floor(i/4)*256;g.fillStyle=a[1];g.fillRect(x,y,512,256);g.fillStyle=a[2];g.font=`900 ${Math.min(170,440/a[0].length)}px ${han}`;g.textAlign='center';g.textBaseline='middle';
@@ -807,19 +807,20 @@ function quadBuilder(){const P=[],U=[],I=[];return {P,U,I,add(cx,cy,cz,ax,az,w,h
 let STREET_CAM=null,signMesh,signMat;const SPOTS={};
 function nearApproach(x,z){const i=pathNearestGlobal(x,z);const p=PATH.pts[i];return {d:p.d,lat:Math.abs(pathLateral(i,x,z))}}
 function buildStreetScene(){
-  buildSignAtlas();const Q=quadBuilder(),A=signAtlas.cells;
+  buildSignAtlas();NEONGLOW=glowBuilder();const Q=quadBuilder(),A=signAtlas.cells;
+  const NEONV=A.v.filter(c=>c.neon),NEONH=A.h.filter(c=>c.neon);
   const frames=[];// steel for gantries, billboard frames, poles: line segments
-  const putSigns=(r,step,edge,density,crossP)=>{for(let s=rr(0,step);s<r.L;s+=rr(step*.6,step*1.4)){if(rnd()>density)continue;const p=roadPoint(r,s);const dx=Math.sin(p[2]),dz=-Math.cos(p[2]);const nx=Math.cos(p[2]),nz=Math.sin(p[2]);
+  const putSigns=(r,step,edge,density,crossP,neonPref)=>{for(let s=rr(0,step);s<r.L;s+=rr(step*.6,step*1.4)){if(rnd()>density)continue;const p=roadPoint(r,s);const dx=Math.sin(p[2]),dz=-Math.cos(p[2]);const nx=Math.cos(p[2]),nz=Math.sin(p[2]);
       const side=rnd()<.5?1:-1;const ex=p[0]+nx*edge*side,ez=p[1]+nz*edge*side;const b=buildingAt(ex+nx*side*6,ez+nz*side*6,6);if(!b)continue;const gy=Math.max(terrainAt(ex,ez),.6);
       if(rnd()<crossP){ // sign hung across the street from a steel arm
-        const cell=A.h[Math.floor(rnd()*A.h.length)];const w=rr(7,12),h=w/4;const reach=rr(3,edge+2);const cx=ex-nx*side*reach,cz=ez-nz*side*reach;const cy=gy+rr(5.5,9);
-        Q.add(cx,cy,cz,nx,nz,w,h,cell);frames.push(ex,cy+h/2+.3,ez,cx-nx*side*w/2,cy+h/2+.3,cz-nz*side*w/2)}
-      else{const cell=A.v[Math.floor(rnd()*A.v.length)];const h=rr(3.5,9),w=h/4*rr(.9,1.3);const out=w/2+.6;const cx=ex-nx*side*out,cz=ez-nz*side*out;const cy=gy+rr(4.5,Math.max(5,Math.min(b.top-gy-h/2-1,16)))+h/2;
-        Q.add(cx,cy,cz,nx,nz,w,h,cell);frames.push(ex,cy-h/2,ez,cx,cy-h/2,cz)}}};
+        const cell=neonPref&&rnd()<.8?NEONH[Math.floor(rnd()*NEONH.length)]:A.h[Math.floor(rnd()*A.h.length)];const w=rr(7,12)*(neonPref?1.5:1),h=w/4;const reach=rr(3,edge+2);const cx=ex-nx*side*reach,cz=ez-nz*side*reach;const cy=gy+rr(5.5,9);
+        Q.add(cx,cy,cz,nx,nz,w,h,cell);if(cell.neon)NEONGLOW.add(cx,cy,cz,nx,nz,w*1.5,h*2.4,cell.rgb,.5);frames.push(ex,cy+h/2+.3,ez,cx-nx*side*w/2,cy+h/2+.3,cz-nz*side*w/2)}
+      else{const cell=neonPref&&rnd()<.75?NEONV[Math.floor(rnd()*NEONV.length)]:A.v[Math.floor(rnd()*A.v.length)];const h=rr(3.5,9)*(neonPref?1.7:1),w=h/4*rr(.9,1.3);const out=w/2+.6;const cx=ex-nx*side*out,cz=ez-nz*side*out;const cy=gy+rr(4.5,Math.max(5,Math.min(b.top-gy-h/2-1,16)))+h/2;
+        Q.add(cx,cy,cz,nx,nz,w,h,cell);if(cell.neon)NEONGLOW.add(cx,cy,cz,nx,nz,w*2.3,h*1.35,cell.rgb,.5);frames.push(ex,cy-h/2,ez,cx,cy-h/2,cz)}}};
   // Kowloon City / San Po Kong streets under the approach: dense, with cross-street signs
   for(const r of STREETS){const m=r.w[Math.floor(r.w.length/2)];const n=nearApproach(m[0],m[1]);if(n.d<-50||n.d>4200||n.lat>900)continue;putSigns(r,14,5.5,.85,.32)}
   // Nathan Road, Mong Kok and the busy main roads: projecting neon
-  for(const r of ROADS){const m=r.w[Math.floor(r.w.length/2)];const D=districtAt(m[0],m[1]).n;if(!['Mong Kok','Tsim Sha Tsui','Sham Shui Po','Kowloon City','Hung Hom','Wan Chai','Causeway Bay','North Point','Kwun Tong'].includes(D))continue;putSigns(r,22,12,.7,.12)}
+  for(const r of ROADS){const m=r.w[Math.floor(r.w.length/2)];const D=districtAt(m[0],m[1]).n;if(!['Mong Kok','Tsim Sha Tsui','Sham Shui Po','Kowloon City','Hung Hom','Wan Chai','Causeway Bay','North Point','Kwun Tong'].includes(D))continue;putSigns(r,22,12,.7,.12,true)}
   // rooftop billboard frames near the approach (as seen in the street photos)
   const recs=[];for(const a of BGRID.values())for(const b of a)recs.push(b);
   let nb=0;for(const b of recs){if(nb>150)break;const cx=(b.x0+b.x1)/2,cz=(b.z0+b.z1)/2;const w=b.x1-b.x0;if(w<12||b.top-terrainAt(cx,cz)<12||rnd()>.35)continue;const n=nearApproach(cx,cz);if(n.d<200||n.d>3000||n.lat>500)continue;
@@ -859,6 +860,162 @@ function buildStreetScene(){
   {const x=-2990,z=-1209,gy=terrainAt(x,z);const mast=new THREE.Mesh(new THREE.CylinderGeometry(.25,.6,24,6).translate(0,12,0),new THREE.MeshLambertMaterial({color:0xc93a2a}));mast.position.set(x,gy,z);scene.add(mast);
    const bands=[];for(let y=0;y<24;y+=6){const b=new THREE.Mesh(new THREE.CylinderGeometry(.62,.62,3,6).translate(0,y+1.5,0),new THREE.MeshLambertMaterial({color:0xf2f0ea}));b.position.set(x,gy,z);scene.add(b)}
    const L=[];for(const [dx,dy,dz] of[[0,25,0],[1.5,18,0],[-1.5,18,0],[0,12,1.5]])L.push(x+dx,gy+dy,z+dz,1,.08,.05,6,-1);scene.add(makeLights(L));addCollider(x-2,x+2,z-2,z+2,gy+25,'the Garden Hill beacon')}
+}
+
+/* ---------------- 1990s billboards and giant neon (invented brands; real logos are deliberately left out) ---------------- */
+// Hong Kong's rooftops and roadsides carried huge floodlit hoardings and building-sized neon signs. The brands here are made up
+// (an electronics maker, a soft drink, a whisky, western-style jeans, colour film, a car, a watch, a night club) in the era's styles.
+let NEONGLOW=null;const BB={};
+const hex2rgb=h=>{const c=new THREE.Color(h);return [c.r,c.g,c.b]};
+function glowBuilder(){const P=[],U=[],C=[],I=[];
+  return {add(cx,cy,cz,ax,az,w,h,rgb,k){const n=P.length/3;for(const [u,v] of[[0,0],[1,0],[1,1],[0,1]]){P.push(cx+ax*(u-.5)*w,cy+(v-.5)*h,cz+az*(u-.5)*w);U.push(u,v);C.push(rgb[0]*k,rgb[1]*k,rgb[2]*k)}I.push(n,n+1,n+2,n,n+2,n+3)},
+   mesh(mat){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(P,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(U,2));g.setAttribute('color',new THREE.Float32BufferAttribute(C,3));g.setIndex(I);g.computeBoundingSphere();return new THREE.Mesh(g,mat)}}}
+function glowTex(){return canvasTex(128,128,(g,W,H)=>{const im=g.createImageData(W,H);for(let y=0;y<H;y++)for(let x=0;x<W;x++){const u=(x+.5)/W*2-1,v=(y+.5)/H*2-1;const r=Math.pow(Math.pow(Math.abs(u),4)+Math.pow(Math.abs(v),4),.25);const a=Math.pow(Math.max(0,1-r),1.7);const i=(y*W+x)*4;im.data[i]=im.data[i+1]=im.data[i+2]=255;im.data[i+3]=Math.round(a*255)}g.putImageData(im,0,0)})}
+const BB_SANS='"Arial Black","Arial",Helvetica,sans-serif',BB_HAN='"Noto Serif TC","PMingLiU","MingLiU","SimSun","Songti TC",serif';
+function bbRect(g,x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.lineTo(x+w-r,y);g.quadraticCurveTo(x+w,y,x+w,y+r);g.lineTo(x+w,y+h-r);g.quadraticCurveTo(x+w,y+h,x+w-r,y+h);g.lineTo(x+r,y+h);g.quadraticCurveTo(x,y+h,x,y+h-r);g.lineTo(x,y+r);g.quadraticCurveTo(x,y,x+r,y)}
+function bbText(g,t,x,y,font,fill,align,stroke,lw){g.font=font;g.textAlign=align||'left';g.textBaseline='alphabetic';if(stroke){g.lineJoin='round';g.strokeStyle=stroke;g.lineWidth=lw||8;g.strokeText(t,x,y)}g.fillStyle=fill;g.fillText(t,x,y)}
+// neon tube helpers: by day the tubes are pale unlit glass; at night they glow with a white-hot core
+function neonPath(g,night,col,lw,fn){g.save();g.lineJoin=g.lineCap='round';
+  if(night){g.shadowColor=col;g.shadowBlur=26;g.strokeStyle=col;g.lineWidth=lw;fn();g.stroke();g.shadowBlur=6;g.strokeStyle='#fff';g.globalAlpha=.7;g.lineWidth=Math.max(2,lw*.32);fn();g.stroke()}
+  else{g.strokeStyle='#aab1b8';g.lineWidth=lw;fn();g.stroke()}g.restore()}
+function neonWord(g,night,t,x,y,font,col,align,lw){g.save();g.font=font;g.textAlign=align||'left';g.textBaseline='alphabetic';g.lineJoin='round';
+  if(night){g.shadowColor=col;g.shadowBlur=26;g.strokeStyle=col;g.lineWidth=lw||7;g.strokeText(t,x,y);g.shadowBlur=6;g.strokeStyle='#fff';g.globalAlpha=.7;g.lineWidth=Math.max(2,(lw||7)*.32);g.strokeText(t,x,y)}
+  else{g.strokeStyle='#aab1b8';g.lineWidth=lw||7;g.strokeText(t,x,y)}g.restore()}
+const BB_PAINT=[
+ // 0 KORIN: electronics
+ g=>{g.fillStyle='#f4f1ea';g.fillRect(0,0,1024,341);g.fillStyle='#16409a';g.fillRect(0,282,1024,59);
+  g.fillStyle='#d4202a';g.beginPath();g.moveTo(0,268);g.lineTo(1024,246);g.lineTo(1024,284);g.lineTo(0,284);g.fill();
+  bbText(g,'KORIN',36,178,'italic 900 150px '+BB_SANS,'#d4202a');g.fillStyle='#16409a';g.fillRect(36,194,540,10);
+  bbText(g,'光輪電器',36,258,'900 62px '+BB_HAN,'#16409a');
+  g.fillStyle='#2b2f36';bbRect(g,660,30,320,214,18);g.fill();
+  ['#ffffff','#ffe600','#00c8c8','#22b14c','#e91e8c','#e11d1d','#1d3fe1'].forEach((c,i)=>{g.fillStyle=c;g.fillRect(684+i*38.8,52,38.8,150)});
+  g.fillStyle='#2b2f36';g.fillRect(780,244,80,14);bbText(g,'Quality that lasts   ·   品質卓越  歷久常新',36,322,'bold 30px '+BB_SANS,'#fff')},
+ // 1 FIZZ: soft drink
+ g=>{const bg=g.createLinearGradient(0,0,0,341);bg.addColorStop(0,'#0a3d9c');bg.addColorStop(1,'#12a8ea');g.fillStyle=bg;g.fillRect(0,0,1024,341);
+  g.strokeStyle='rgba(255,255,255,.55)';g.lineWidth=3;for(let i=0;i<46;i++){const x=(i*397)%1024,y=(i*181)%341,r=6+(i*13)%26;g.beginPath();g.arc(x,y,r,0,7);g.stroke()}
+  g.save();g.translate(40,235);g.rotate(-.05);bbText(g,'FIZZ',0,0,'italic 900 200px '+BB_SANS,'#ffffff','left','#ffe600',16);g.restore();
+  bbText(g,'冰涼一刻',54,312,'900 62px '+BB_HAN,'#ffe600');bbText(g,'Taste the sparkle!',440,120,'italic bold 30px '+BB_SANS,'#ffffff');
+  g.fillStyle='#8be04e';g.beginPath();g.arc(690,262,58,0,7);g.fill();g.fillStyle='#d6f7a0';g.beginPath();g.arc(690,262,46,0,7);g.fill();g.strokeStyle='#8be04e';g.lineWidth=4;for(let k=0;k<8;k++){g.beginPath();g.moveTo(690,262);g.lineTo(690+Math.cos(k*.785)*46,262+Math.sin(k*.785)*46);g.stroke()}
+  g.fillStyle='#2e9b45';g.beginPath();g.moveTo(838,22);g.lineTo(892,22);g.lineTo(892,100);g.bezierCurveTo(960,128,968,168,968,206);g.lineTo(968,318);g.quadraticCurveTo(968,332,954,332);g.lineTo(776,332);g.quadraticCurveTo(762,332,762,318);g.lineTo(762,206);g.bezierCurveTo(762,168,770,128,838,100);g.closePath();g.fill();
+  g.fillStyle='#ffe600';g.fillRect(832,12,66,16);g.fillStyle='#ff7a00';g.fillRect(764,176,202,100);bbText(g,'FIZZ',865,247,'italic 900 64px '+BB_SANS,'#fff','center');g.fillStyle='rgba(255,255,255,.35)';g.fillRect(780,110,10,190)},
+ // 2 HIGHLAND: whisky
+ g=>{const bg=g.createRadialGradient(780,170,10,780,170,620);bg.addColorStop(0,'#3a2810');bg.addColorStop(1,'#0a0a0b');g.fillStyle=bg;g.fillRect(0,0,1024,341);
+  g.strokeStyle='#c9a24a';g.lineWidth=4;g.strokeRect(12,12,1000,317);g.lineWidth=1.5;g.strokeRect(22,22,980,297);
+  const gold=g.createLinearGradient(0,50,0,160);gold.addColorStop(0,'#f6dd8a');gold.addColorStop(1,'#a97a1c');
+  bbText(g,'HIGHLAND',48,152,'bold 122px Georgia,"Times New Roman",serif',gold);bbText(g,'RESERVE  ·  AGED 12 YEARS',52,200,'600 30px Georgia,serif','#d8b35a');
+  bbText(g,'高地珍藏威士忌',52,284,'900 58px '+BB_HAN,'#e9c870');
+  g.fillStyle='#5a3a10';g.beginPath();g.moveTo(850,40);g.lineTo(890,40);g.lineTo(890,100);g.bezierCurveTo(960,120,972,180,972,230);g.lineTo(972,300);g.lineTo(768,300);g.lineTo(768,230);g.bezierCurveTo(768,180,780,120,850,100);g.closePath();g.fill();
+  const amb=g.createLinearGradient(0,150,0,300);amb.addColorStop(0,'#d98a1c');amb.addColorStop(1,'#7a3f0a');g.fillStyle=amb;g.fillRect(776,170,188,128);
+  g.fillStyle='#d8b35a';g.fillRect(842,24,56,22);g.fillStyle='#e9d9a8';bbRect(g,792,208,150,80,6);g.fill();g.fillStyle='#14110c';g.font='bold 22px Georgia,serif';g.textAlign='center';g.fillText('HIGHLAND',867,254);
+  g.fillStyle='rgba(255,255,255,.22)';g.fillRect(784,130,8,160)},
+ // 3 BIG SKY: western jeans and boots
+ g=>{const sk=g.createLinearGradient(0,0,0,300);sk.addColorStop(0,'#2b1b4a');sk.addColorStop(.55,'#e8553a');sk.addColorStop(1,'#ffb347');g.fillStyle=sk;g.fillRect(0,0,1024,341);
+  const sun=g.createRadialGradient(660,250,10,660,250,150);sun.addColorStop(0,'#fff0b0');sun.addColorStop(.35,'#ffd36b');sun.addColorStop(1,'rgba(255,170,60,0)');g.fillStyle=sun;g.fillRect(480,80,360,260);
+  g.fillStyle='#6a2230';g.beginPath();g.moveTo(420,300);g.lineTo(470,235);g.lineTo(560,235);g.lineTo(590,300);g.fill();g.beginPath();g.moveTo(700,300);g.lineTo(740,215);g.lineTo(840,215);g.lineTo(880,300);g.fill();
+  g.fillStyle='#2a0e18';g.fillRect(0,296,1024,45);g.fillRect(935,150,16,150);g.fillRect(905,185,12,60);g.fillRect(905,230,42,12);g.fillRect(969,170,12,70);g.fillRect(945,225,36,12);
+  bbText(g,'BIG SKY',40,168,'900 150px Impact,"Arial Black",sans-serif','#fff6e6','left','#b3141c',10);
+  bbText(g,'牛仔天地',46,252,'900 60px '+BB_HAN,'#ffe9c2');bbText(g,'COUNTRY JEANS & BOOTS',46,326,'bold 30px '+BB_SANS,'#ffb347')},
+ // 4 SOLARIS: colour film
+ g=>{g.fillStyle='#ffc21a';g.fillRect(0,0,1024,341);g.fillStyle='#ff7a1a';for(let k=0;k<20;k++){g.beginPath();g.moveTo(170,170);g.arc(170,170,900,k*.314,k*.314+.157);g.closePath();g.fill()}
+  g.fillStyle='#101014';g.beginPath();g.arc(170,170,128,0,7);g.fill();g.fillStyle='#2b2b36';g.beginPath();g.arc(170,170,100,0,7);g.fill();g.fillStyle='#0a0a0e';g.beginPath();g.arc(170,170,76,0,7);g.fill();
+  g.fillStyle='#1d3d72';g.beginPath();g.arc(170,170,52,0,7);g.fill();g.fillStyle='rgba(255,255,255,.7)';g.beginPath();g.arc(148,148,14,0,7);g.fill();
+  bbText(g,'SOLARIS',330,170,'italic 900 124px '+BB_SANS,'#fff','left','#b3141c',14);bbText(g,'菲林  ·  COLOUR FILM',334,228,'900 44px '+BB_HAN,'#161616','left','#fff',6);
+  bbText(g,'捕捉每個精彩瞬間',334,298,'900 48px '+BB_HAN,'#b3141c','left','#fff',6)},
+ // 5 VELOCE: cars
+ g=>{const bg=g.createLinearGradient(0,0,0,341);bg.addColorStop(0,'#1a2744');bg.addColorStop(.7,'#6c7da3');bg.addColorStop(1,'#c3c8d4');g.fillStyle=bg;g.fillRect(0,0,1024,341);
+  g.fillStyle='#23262d';g.fillRect(0,290,1024,51);g.fillStyle='#e8e8e8';for(let x=10;x<1024;x+=110)g.fillRect(x,312,60,6);
+  g.strokeStyle='rgba(255,255,255,.5)';g.lineWidth=3;for(let i=0;i<14;i++){const y=60+i*17;g.beginPath();g.moveTo(470+(i*53)%160,y);g.lineTo(640+(i*91)%140,y);g.stroke()}
+  g.fillStyle='#c9ced6';g.beginPath();g.moveTo(640,262);g.lineTo(660,218);g.bezierCurveTo(700,200,740,170,800,156);g.lineTo(880,156);g.bezierCurveTo(920,176,950,206,990,214);g.lineTo(1000,262);g.closePath();g.fill();
+  g.fillStyle='#2c3441';g.beginPath();g.moveTo(742,200);g.lineTo(804,168);g.lineTo(872,168);g.lineTo(912,204);g.closePath();g.fill();g.fillStyle='#d4202a';g.fillRect(646,240,354,8);
+  g.fillStyle='#111';g.beginPath();g.arc(720,264,32,0,7);g.arc(940,264,32,0,7);g.fill();g.fillStyle='#b8bcc4';g.beginPath();g.arc(720,264,16,0,7);g.arc(940,264,16,0,7);g.fill();
+  bbText(g,'VELOCE',36,150,'italic 900 134px '+BB_SANS,'#fff','left','#d4202a',10);bbText(g,'駕馭  ·  無限',40,236,'900 56px '+BB_HAN,'#fff');bbText(g,'MOTORS',44,282,'bold 34px '+BB_SANS,'#ffd23b')}
+];
+// neon designs: [night, day] via one function with a night flag (cells 6-8 night, 9-11 day)
+const BB_NEON=[
+ // CHRONOS: a giant watch face and name in gold, white and red tubes
+ (g,n)=>{g.fillStyle=n?'#07080c':'#30343a';g.fillRect(0,0,1024,341);
+  neonPath(g,n,'#ffc23a',9,()=>{g.beginPath();g.arc(170,180,132,0,7)});neonPath(g,n,'#ffc23a',6,()=>{g.beginPath();g.arc(170,180,112,0,7)});neonPath(g,n,'#ffc23a',8,()=>{g.beginPath();g.rect(150,18,40,22)});
+  for(let k=0;k<12;k++){const a=k*Math.PI/6;neonPath(g,n,'#ffffff',6,()=>{g.beginPath();g.moveTo(170+Math.sin(a)*90,180-Math.cos(a)*90);g.lineTo(170+Math.sin(a)*104,180-Math.cos(a)*104)})}
+  neonPath(g,n,'#5fe8ff',8,()=>{g.beginPath();g.moveTo(170,180);g.lineTo(170,106)});neonPath(g,n,'#5fe8ff',8,()=>{g.beginPath();g.moveTo(170,180);g.lineTo(224,214)});
+  neonWord(g,n,'CHRONOS',330,170,'bold 112px '+BB_SANS,'#5fe8ff','left',8);neonPath(g,n,'#ff3b4a',8,()=>{g.beginPath();g.moveTo(336,204);g.lineTo(930,204)});
+  neonWord(g,n,'鐘錶',340,300,'900 96px '+BB_HAN,'#ffc23a','left',7);neonWord(g,n,'SWISS STYLE · QUARTZ',560,288,'bold 34px '+BB_SANS,'#ffffff','left',4)},
+ // KORIN: red neon letters like the big electronics signs on Nathan Road
+ (g,n)=>{g.fillStyle=n?'#0a0709':'#30343a';g.fillRect(0,0,1024,341);
+  neonPath(g,n,'#ff2a3a',12,()=>{bbRect(g,16,16,992,309,26)});
+  g.save();g.font='italic 900 188px '+BB_SANS;g.textAlign='center';g.textBaseline='alphabetic';g.lineJoin='round';
+  if(n){g.shadowColor='#ff2a3a';g.shadowBlur=34;g.fillStyle='#ff2a3a';g.fillText('KORIN',512,226);g.shadowBlur=6;g.strokeStyle='#ffe0e0';g.lineWidth=5;g.strokeText('KORIN',512,226)}
+  else{g.fillStyle='#6b2a2e';g.fillText('KORIN',512,226);g.strokeStyle='#aab1b8';g.lineWidth=5;g.strokeText('KORIN',512,226)}g.restore();
+  neonWord(g,n,'光輪電器',512,300,'900 62px '+BB_HAN,'#ffd23b','center',6)},
+ // GOLDEN DRAGON: restaurant and night club
+ (g,n)=>{g.fillStyle=n?'#08060b':'#30343a';g.fillRect(0,0,1024,341);
+  neonPath(g,n,'#ff4fd8',9,()=>{bbRect(g,14,14,996,313,30)});neonPath(g,n,'#3bf0ff',5,()=>{bbRect(g,30,30,964,281,22)});
+  neonWord(g,n,'金龍',54,252,'900 232px '+BB_HAN,'#ffd23b','left',9);
+  neonWord(g,n,'GOLDEN DRAGON',520,124,'bold 50px '+BB_SANS,'#3bf0ff','left',5);neonWord(g,n,'酒家 · 夜總會',520,224,'900 72px '+BB_HAN,'#ff4fd8','left',6);
+  neonPath(g,n,'#5aff7a',8,()=>{g.beginPath();g.moveTo(520,290);g.bezierCurveTo(600,250,640,320,720,284);g.bezierCurveTo(800,248,840,316,920,282);g.lineTo(956,262)});
+  [[500,50],[980,50],[500,300],[985,298]].forEach(p=>neonPath(g,n,'#ffffff',4,()=>{g.beginPath();g.moveTo(p[0]-10,p[1]);g.lineTo(p[0]+10,p[1]);g.moveTo(p[0],p[1]-10);g.lineTo(p[0],p[1]+10)}))}
+];
+const BB_NEONCOL=[[1,.76,.25],[1,.16,.22],[1,.35,.85]];
+const bbCell=i=>{const x=(i%2)*1024,y=Math.floor(i/2)*341;return {x,y,uv:[x/2048,1-(y+341)/2048,1024/2048,341/2048]}};
+function buildBillboardAtlas(){
+  const c=document.createElement('canvas');c.width=c.height=2048;const g=c.getContext('2d');
+  const run=(i,fn)=>{const q=bbCell(i);g.save();g.translate(q.x,q.y);g.beginPath();g.rect(0,0,1024,341);g.clip();fn(g);g.restore()};
+  BB_PAINT.forEach((fn,i)=>run(i,fn));
+  BB_NEON.forEach((fn,i)=>{run(6+i,gg=>fn(gg,true));run(9+i,gg=>fn(gg,false))});
+  const tex=new THREE.CanvasTexture(c);tex.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());BB.tex=tex;BB.canvas=c;
+}
+function buildBillboards(){
+  buildBillboardAtlas();
+  let sd=19980;const R=()=>{sd=(sd*16807)%2147483647;return (sd-1)/2147483646},rb=(a,b)=>a+(b-a)*R();   // own random stream: the rest of the world is unchanged
+  const pq=quadBuilder(),dq=quadBuilder(),nq=quadBuilder();const fr=[],L=[];
+  const backCell=(()=>{const q=bbCell(9);return [(q.x+6)/2048,1-(q.y+16)/2048,10/2048,10/2048]})();
+  const placed=[];const clear=(x,z)=>{for(const p of placed)if(Math.hypot(p[0]-x,p[1]-z)<75)return false;return true};
+  // place one hoarding: face centred over (cx,cz), its front looking along (nx,nz), standing on baseY with the face legs metres above it
+  const place=(cx,cz,baseY,nx,nz,w,h,design,legs)=>{
+    const ax=nz,az=-nx,y0=baseY+legs,cy=y0+h/2,neon=design>=6;
+    if(neon){const k=design-6,qn=bbCell(6+k).uv,qd=bbCell(9+k).uv;nq.add(cx+nx*.5,cy,cz+nz*.5,ax,az,w,h,qn);dq.add(cx+nx*.5,cy,cz+nz*.5,ax,az,w,h,qd);
+      NEONGLOW.add(cx+nx*1.2,cy,cz+nz*1.2,ax,az,w*1.45,h*1.9,BB_NEONCOL[k],.6);
+      for(const s of[-1,1])L.push(cx+ax*s*w*.5+nx*.8,y0+h+.6,cz+az*s*w*.5+nz*.8,BB_NEONCOL[k][0],BB_NEONCOL[k][1],BB_NEONCOL[k][2],5.2,-1)}
+    else pq.add(cx+nx*.5,cy,cz+nz*.5,ax,az,w,h,bbCell(design).uv);
+    pq.add(cx-nx*.5,cy,cz-nz*.5,-ax,-az,w,h,backCell);
+    // steel frame, legs, catwalk, and floodlights on arms along the top edge
+    const P=(u,y,o)=>[cx+ax*u*w+nx*o,y,cz+az*u*w+nz*o];const seg=(a,b)=>fr.push(a[0],a[1],a[2],b[0],b[1],b[2]);
+    seg(P(-.5,y0,.5),P(.5,y0,.5));seg(P(-.5,y0+h,.5),P(.5,y0+h,.5));seg(P(-.5,y0,.5),P(-.5,y0+h,.5));seg(P(.5,y0,.5),P(.5,y0+h,.5));
+    seg(P(-.5,y0-.5,1.4),P(.5,y0-.5,1.4));seg(P(-.5,y0-.5,1.4),P(-.5,y0,.5));seg(P(.5,y0-.5,1.4),P(.5,y0,.5));
+    const nl=Math.max(2,Math.round(w/7)),us=[];for(let k=0;k<nl;k++)us.push(-.42+.84*k/(nl-1));
+    for(const u of us){seg(P(u,baseY,-1.2),P(u,y0+h*.9,-.4));seg(P(u,y0,.3),P(u,y0+h,.3))}
+    for(let k=0;k<us.length-1;k++){seg(P(us[k],baseY,-1.2),P(us[k+1],y0+h*.5,-.8));seg(P(us[k+1],baseY,-1.2),P(us[k],y0+h*.5,-.8))}
+    if(!neon)for(let k=0;k<nl;k++){const u=-.45+.9*(k+.5)/nl;const t=P(u,y0+h+.1,.5),l=P(u,y0+h+.9,2.6);seg(t,l);L.push(l[0],l[1],l[2],1,.93,.78,3.4,-1)}
+    placed.push([cx,cz])};
+  const pickDesign=(dn)=>{const nr=(dn==='Mong Kok'||dn==='Tsim Sha Tsui'||dn==='Sham Shui Po')?.55:.28;return R()<nr?6+Math.floor(R()*3):Math.floor(R()*6)};
+  // road samples around the airport road network (Prince Edward Road, Kowloon City, Kowloon Bay and Kwun Tong Road)
+  const rs=[],RH=new Map();for(const r of ROADS)for(let s=0;s<r.L;s+=60){const p=roadPoint(r,s);const S=rwS(p[0],p[1]),Lt=rwL(p[0],p[1]);if(S>-2200&&S<5400&&Lt>-2800&&Lt<2200){rs.push([p[0],p[1],p[2]]);const k=Math.floor(p[0]/200)+','+Math.floor(p[1]/200);if(!RH.has(k))RH.set(k,[]);RH.get(k).push(rs[rs.length-1])}}
+  const nearRoad=(x,z,d)=>{let best=null,bd=d*d;const i0=Math.floor(x/200),j0=Math.floor(z/200);for(let i=i0-1;i<=i0+1;i++)for(let j=j0-1;j<=j0+1;j++){const a=RH.get(i+','+j);if(a)for(const p of a){const dd=(p[0]-x)**2+(p[1]-z)**2;if(dd<bd){bd=dd;best=p}}}return best};
+  const seen=new Set(),recs=[];for(const a of BGRID.values())for(const b of a)if(!seen.has(b)){seen.add(b);recs.push(b)}
+  for(let i=recs.length-1;i>0;i--){const j=Math.floor(R()*(i+1));const t=recs[i];recs[i]=recs[j];recs[j]=t}
+  const DN=new Set(DISTRICTS.map(d=>d.n));DN.add('Kowloon');
+  let nApp=0,nRoad=0;const MAXAPP=130,MAXROAD=70;
+  for(const b of recs){if(nApp>=MAXAPP&&nRoad>=MAXROAD)break;if(!DN.has(b.name))continue;
+    const cx=(b.x0+b.x1)/2,cz=(b.z0+b.z1)/2,wx=b.x1-b.x0,wz=b.z1-b.z0,gy=terrainAt(cx,cz);if(b.top-gy<14||Math.max(wx,wz)<13||gy<.5||!clear(cx,cz))continue;
+    const n=nearApproach(cx,cz);const inApp=n.d>-100&&n.d<8500&&n.lat<(n.d<5400?650:950),rd=nearRoad(cx,cz,75);
+    let nx,nz,zone;
+    if(rd&&nRoad<MAXROAD){zone='road';const dx=rd[0]-cx,dz=rd[1]-cz,l=Math.hypot(dx,dz)||1;nx=dx/l;nz=dz/l}
+    else if(inApp&&nApp<MAXAPP&&R()<.45){zone='app';const i0=pathNearestGlobal(cx,cz);const j=Math.max(0,i0-Math.round(rb(500,1500)/25));const t=PATH.pts[j];const dx=t.x-cx,dz=t.z-cz,l=Math.hypot(dx,dz)||1;const a=Math.atan2(dz,dx)+rb(-.35,.35);nx=Math.cos(a);nz=Math.sin(a);if(l<1)continue}
+    else continue;
+    let w=Math.min(rb(34,58),Math.max(wx,wz)*1.7+10),legs=2.6;w=Math.max(w,26);let h=w/3;
+    const cap=clearanceCap(cx,cz)+3.5-3;if(b.top+legs+h>cap){h=cap-b.top-legs;if(h<6)continue;w=h*3}
+    place(cx,cz,b.top,nx,nz,w,h,pickDesign(b.name),legs);if(zone==='road')nRoad++;else nApp++}
+  // free-standing roadside hoardings on poles where there is open ground beside the airport road
+  let nPole=0;for(let k=rs.length-1;k>0&&nPole<18;k-=1+Math.floor(R()*6)){const p=rs[k];const nx=Math.cos(p[2]),nz=Math.sin(p[2]);const side=R()<.5?1:-1;const x=p[0]+nx*26*side,z=p[1]+nz*26*side;
+    const gy=Math.max(terrainAt(x,z),.6);if(!landAt(x,z)||inAirport(x,z)||buildingAt(x,z,22)||!clear(x,z))continue;
+    let w=rb(36,54),h=w/3,legs=10;const cap=clearanceCap(x,z)+3.5-3;if(gy+legs+h>cap){legs=Math.max(4,cap-gy-h);if(gy+legs+h>cap)continue}
+    place(x,z,gy,-nx*side,-nz*side,w,h,pickDesign('Kowloon'),legs);nPole++}
+  BB.paintMat=new THREE.MeshBasicMaterial({map:BB.tex});BB.neonMat=new THREE.MeshBasicMaterial({map:BB.tex});
+  BB.paint=pq.mesh(BB.paintMat);BB.neonDay=dq.mesh(BB.neonMat);BB.neonNight=nq.mesh(BB.neonMat);
+  for(const m of[BB.paint,BB.neonDay,BB.neonNight])scene.add(m);
+  BB.frameMat=new THREE.LineBasicMaterial({color:0x5a5f64});const fg=new THREE.BufferGeometry();fg.setAttribute('position',new THREE.Float32BufferAttribute(fr,3));BB.frames=new THREE.LineSegments(fg,BB.frameMat);scene.add(BB.frames);
+  BB.lamps=makeLights(L);scene.add(BB.lamps);
+  BB.glowMat=new THREE.MeshBasicMaterial({map:glowTex(),vertexColors:true,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide});
+  BB.glow=NEONGLOW.mesh(BB.glowMat);BB.glow.renderOrder=4;scene.add(BB.glow);BB.count=placed.length;
 }
 
 /* ---------------- buildings (real footprints, 1998 heights estimated by district) ---------------- */
@@ -1937,6 +2094,7 @@ function applyEnvironment(){
   for(const m of TERRAIN_MATS){const k=n?.11:over?.72:CFG.wx==='fog'?.8:1;if(m.userData.street)m.color.setHex(m.userData.base||(m.userData.base=m.color.getHex())).multiplyScalar(n?.25:k);else m.color.setScalar(k)}
   streetLights.visible=n;carLights&&(carLights.visible=n);shipLights.visible=true;
   if(signMat)signMat.color.setScalar(n?1:over?.6:.8);
+  if(BB.paint){BB.paintMat.color.setScalar(n?.85:over?.62:.9);BB.neonMat.color.setScalar(n?1:over?.62:.9);BB.neonDay.visible=!n;BB.neonNight.visible=n;BB.glow.visible=n;BB.lamps.visible=n;BB.frameMat.color.setHex(n?0x1a1c1e:over?0x44484c:0x5a5f64)}
   for(const m of landmarkLights)if(m.material)m.material.emissive.setHex(n?(m.userData.neon||0):0);
   buildCheckerboard.flood.visible=n;for(const fc of buildCheckerboard.faces)fc.material.emissive.setHex(n?0x2a1a1a:0);
   if(acModel)acModel.userData.cabinMat.emissive.setHex(n?0xffd79a:0x000000);
@@ -2750,7 +2908,7 @@ async function boot(){
   const ld=document.getElementById('loading');
   try{await loadGeo(t=>ld.textContent=t)}catch(e){ld.textContent='COULD NOT LOAD MAP DATA. OPEN THIS PAGE FROM A WEB SERVER, NOT A FILE.';console.error(e);return}
   ld.textContent='BUILDING HONG KONG…';await new Promise(r=>setTimeout(r,20));
-  buildTerrain();buildRoads();buildLandmarks();buildCity();buildHappyValley();buildOceanPark();buildPeak();buildStreetScene();buildAirport();buildShips();buildRain();
+  buildTerrain();buildRoads();buildLandmarks();buildCity();buildHappyValley();buildOceanPark();buildPeak();buildStreetScene();buildBillboards();buildAirport();buildShips();buildRain();
   resize();showSetup();ld.hidden=true;
   requestAnimationFrame(frame);
 }
@@ -2760,7 +2918,7 @@ fontsReady.then(()=>setTimeout(boot,30));
 /* test hooks */
 window.__kt={CFG,ST,PATH,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.game}]`).checked=true;document.querySelector(`input[name=tod][value=${CFG.night?'night':'day'}]`).checked=true;startFlight()},
   run:(sec)=>{if(CFG.game==='watch'){ST.t+=sec;return {t:ST.t}}const h=1/120;for(let i=0;i<sec*120&&!ST.ended;i++){physStep(h);if(i%60===0)recordHistory()}return {ended:ST.ended,td:ST.td,t:ST.t,x:ST.x,y:ST.y,z:ST.z,V:ST.V/KT,d:PATH.pts[ST.pi].d}},
-  get mode(){return mode},get CFG(){return CFG},frame:(now)=>frame(now,true),get FOCUS(){return FOCUS},step:()=>physStep(1/120),rwS,setZoom:z=>{CFG.zoom=z},get AI(){return AI},get shipLights(){return shipLights},get SHIPS(){return SHIPS},get DISP(){return DISP},get deck(){return deckGroup},get streetCam(){return STREET_CAM},get water(){return water},get camera(){return camera},get nStreets(){return STREETS.length},drawDisplays,look,setView,terrainAt,buildingAt,groundInfo};
+  get mode(){return mode},get CFG(){return CFG},frame:(now)=>frame(now,true),get FOCUS(){return FOCUS},step:()=>physStep(1/120),rwS,setZoom:z=>{CFG.zoom=z},get AI(){return AI},get shipLights(){return shipLights},get SHIPS(){return SHIPS},get DISP(){return DISP},get deck(){return deckGroup},get streetCam(){return STREET_CAM},get BB(){return BB},get water(){return water},get camera(){return camera},get nStreets(){return STREETS.length},drawDisplays,look,setView,terrainAt,buildingAt,groundInfo};
 })();
 </script>
 <!--/FRAG:BODY-->

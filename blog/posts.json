@@ -1,5 +1,36 @@
 [
   {
+    "slug": "giant-billboards-and-neon-over-kowloon",
+    "title": "New: giant billboards and neon over Kowloon",
+    "dek": "Floodlit hoardings on the airport road and glowing neon signs, visible from the IGS at night.",
+    "description": "Fly Kai Tak now has 1990s-style giant floodlit billboards on Kowloon rooftops and roadsides, plus glowing neon signs. Brands are invented; no real logos.",
+    "date": "2026-10-03",
+    "tag": "Feature",
+    "keywords": [
+      "Kai Tak",
+      "billboards",
+      "neon",
+      "Kowloon",
+      "night flying",
+      "1990s Hong Kong"
+    ],
+    "hero": "billboards-night-approach",
+    "hero_alt": "Night view down the IGS approach over Kowloon with floodlit billboards and red and magenta neon signs on the rooftops.",
+    "hero_caption": "Floodlit hoardings and neon on the rooftops, from the IGS at night.",
+    "card_kicker": "SCENERY · NEW",
+    "card_title": "Billboards and neon",
+    "card_sub": "Lit up under the approach",
+    "card_image": "billboards-neon-low",
+    "card_focus": 50,
+    "zh": {
+      "title": "新增：九龍巨型廣告牌同霓虹",
+      "dek": "機場路上嘅泛光燈廣告牌，同發光嘅霓虹招牌，夜間 IGS 進場睇得到。",
+      "description": "Fly Kai Tak 而家有九十年代風格嘅巨型泛光燈廣告牌，企喺九龍天台同路邊，仲有發光霓虹招牌。品牌係虛構，冇真實商標。",
+      "hero_alt": "夜間沿 IGS 進場望落九龍，天台上有泛光燈廣告牌同紅色、洋紅色霓虹招牌。",
+      "hero_caption": "夜間喺 IGS 進場睇到天台上嘅泛光燈廣告牌同霓虹。"
+    }
+  },
+  {
     "slug": "plane-spotter-viewpoints-car-park-roof-and-the-peak",
     "title": "Plane spotter viewpoints: the car park roof and the Peak",
     "dek": "Where Kai Tak's spotters stood: the airport car park roof and the Peak, with a little history and how to watch from both in the sim.",
