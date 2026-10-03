@@ -317,7 +317,7 @@ html,body{overscroll-behavior:none;touch-action:manipulation}
 </div>
 
 <div id="ctl" hidden>
-  <div id="stick" aria-label="Control column: drag to pitch and roll"><div id="knob"></div><div class="lbl">Yoke</div></div>
+  <div id="stick" aria-label="Control column: drag down to pull the nose up, drag up to push it down, sideways to roll"><div id="knob"></div><div class="lbl">Yoke</div></div>
   <div class="rightctl">
     <div class="cfg">
       <button class="btn" id="btnGear" type="button">Gear ↑</button>
@@ -389,7 +389,7 @@ html,body{overscroll-behavior:none;touch-action:manipulation}
       <details>
         <summary>Controls</summary>
         <div class="keys">
-          <span><kbd>↑</kbd> <kbd>↓</kbd> / <kbd>W</kbd> <kbd>S</kbd></span><span>Pitch: up arrow pushes the nose down, down arrow pulls it up</span>
+          <span><kbd>↑</kbd> <kbd>↓</kbd> / <kbd>W</kbd> <kbd>S</kbd></span><span>Pitch: up arrow pushes the nose down, down arrow pulls it up. The on-screen yoke works the same way with touch or mouse: drag down to pull up, drag up to push down</span>
           <span><kbd>←</kbd> <kbd>→</kbd> / <kbd>A</kbd> <kbd>D</kbd></span><span>Roll (nosewheel steering on the runway)</span>
           <span><kbd>E</kbd> <kbd>Q</kbd> / <kbd>=</kbd> <kbd>−</kbd></span><span>Thrust up / down</span>
           <span><kbd>G</kbd></span><span>Landing gear</span>
@@ -2350,7 +2350,7 @@ thrEl.addEventListener('input',()=>{if(ST.ap)toggleAP(false);ST.throttle=thrEl.v
 function readInputs(dt){
   const s=ST;let p=0,r=0;
   if(keys.ArrowDown||keys.KeyS)p+=1;if(keys.ArrowUp||keys.KeyW)p-=1;if(keys.ArrowLeft||keys.KeyA)r-=1;if(keys.ArrowRight||keys.KeyD)r+=1;
-  p+=-stickV[1];r+=stickV[0];p=clamp(p,-1,1);r=clamp(r,-1,1);
+  p+=stickV[1];r+=stickV[0];  // yoke: drag down = pull back = nose up, drag up = push = nose downp=clamp(p,-1,1);r=clamp(r,-1,1);
   s.inPitch=lerp(s.inPitch||0,p,1-Math.exp(-dt*9));s.inRoll=lerp(s.inRoll||0,r,1-Math.exp(-dt*9));
   if(s.ap&&(Math.abs(p)>.15||Math.abs(r)>.15)&&!s.onGround){toggleAP(false);speak('Autopilot disconnect',true)}
   let t=0;if(keys.KeyE||keys.Equal||keys.NumpadAdd)t+=1;if(keys.KeyQ||keys.Minus||keys.NumpadSubtract)t-=1;

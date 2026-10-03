@@ -1,5 +1,31 @@
 [
   {
+    "slug": "inverted-yoke-touch-and-mouse",
+    "title": "An inverted yoke for touch and mouse: drag down to pull up",
+    "dek": "The on-screen yoke now works like a real control column: drag down to pull the nose up, drag up to push it down, with touch or a mouse.",
+    "description": "Fly Kai Tak's on-screen yoke is now inverted for touch and mouse: drag down to pull the nose up, drag up to push it down, matching the keyboard.",
+    "date": "2026-10-03",
+    "tag": "Feature",
+    "keywords": [
+      "Kai Tak",
+      "flight simulator",
+      "yoke",
+      "touch controls",
+      "mouse controls",
+      "inverted pitch",
+      "browser game",
+      "Hong Kong 1998"
+    ],
+    "hero": "yoke-inverted",
+    "hero_alt": "The 747 on the IGS approach, with the round on-screen yoke in the bottom left corner.",
+    "hero_caption": "The on-screen yoke, bottom left, works with touch or a mouse.",
+    "card_kicker": "VHHH · CONTROLS · 1998",
+    "card_title": "Inverted yoke",
+    "card_sub": "Drag down to pull up, with touch or mouse",
+    "card_image": "yoke-inverted",
+    "card_focus": 50
+  },
+  {
     "slug": "share-on-threads",
     "title": "Share Fly Kai Tak posts on Threads",
     "dek": "Every blog post now has a Threads share button alongside X, Facebook, Reddit, LinkedIn, WhatsApp, email and copy link.",
