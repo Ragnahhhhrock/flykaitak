@@ -422,6 +422,7 @@ html,body{overscroll-behavior:none;touch-action:manipulation}
           <label class="chip"><input type="radio" name="game" value="free"><span>Free flight</span></label>
           <label class="chip"><input type="radio" name="game" value="free31"><span>Runway 31 take-off</span></label>
           <label class="chip"><input type="radio" name="game" value="watch"><span>Plane Spotter</span></label>
+          <label class="chip"><input type="radio" name="game" value="watch31"><span>Spotter · Runway 31</span></label>
         </div>
         <p id="modeNote" style="font-size:12.5px">Start on the IGS at 3,100 ft and land on Runway 13.</p>
       </fieldset>
@@ -572,7 +573,7 @@ const LND={id:'13',hdg:RWY.hdg,dir:1};
 let PATH=PATH13;
 const lS=(x,z)=>LND.dir>0?rwS(x,z):RWY.len-rwS(x,z);   // metres past the landing threshold, along the landing direction
 const lL=(x,z)=>LND.dir>0?rwL(x,z):-rwL(x,z);            // metres right of the landing centreline
-const modeId=()=>CFG.lesson?'lesson':LND.id==='31'&&(CFG.game==='approach'||CFG.game==='free')?CFG.game+'31':CFG.game;
+const modeId=()=>CFG.lesson?'lesson':LND.id==='31'&&CFG.game!=='learn'?CFG.game+'31':CFG.game;
 function pathNearest(x,z,hint){
   const P=PATH.pts;let best=hint|0,bd=1e18;const a=Math.max(0,best-260),b=Math.min(P.length-1,best+260);
   for(let i=a;i<=b;i++){const dx=P[i].x-x,dz=P[i].z-z,d=dx*dx+dz*dz;if(d<bd){bd=d;best=i}}
@@ -2756,8 +2757,8 @@ function pickFocus(){
   // spectator mode: the most interesting aircraft, preferring ones on short final, rolling or climbing out near the runway
   let best=null,bs=1e18;const mid=rwP(RWY.len*.3,0);
   for(const a of AI){if(!a.m.visible||!a.p||a.role==='holding')continue;const p=a.p;const d=Math.hypot(p.x-mid[0],p.z-mid[1]);const moving=(a.v||0)>2;if(!moving)continue;
-    const sc=d+(p.y>2000?8000:0);if(sc<bs){bs=sc;best=a}}
-  if(best&&FOCUS&&FOCUS!==best&&FOCUS.m.visible&&(FOCUS.v||0)>2&&FOCUS.p&&Math.hypot(FOCUS.p.x-mid[0],FOCUS.p.z-mid[1])<bs+1500)best=FOCUS; // stick with the current one a while
+    const dl=CFG.view==='lym'&&SPOTS.lym?Math.hypot(p.x-SPOTS.lym[0],p.z-SPOTS.lym[2]):d;const sc=dl+(p.y>2000?8000:0);if(sc<bs){bs=sc;best=a}}
+  if(best&&CFG.view!=='lym'&&FOCUS&&FOCUS!==best&&FOCUS.m.visible&&(FOCUS.v||0)>2&&FOCUS.p&&Math.hypot(FOCUS.p.x-mid[0],FOCUS.p.z-mid[1])<bs+1500)best=FOCUS; // stick with the current one a while
   FOCUS=best;return best}
 function focusTarget(){
   if(CFG.game!=='watch'){const s=ST,a=s.ac;return {x:s.x,y:s.y,z:s.z,psi:s.psi,cy:a.cy,span:a.span,len:a.len}}
@@ -2946,7 +2947,7 @@ window.addEventListener('keydown',e=>{
   keys[e.code]=true;const s=ST;VIA='key';
   switch(e.code){
     case 'KeyG':toggleGear();break;case 'KeyF':setFlaps(1);break;case 'KeyV':setFlaps(-1);break;
-    case 'KeyC':{const o=CFG.game==='watch'?['carpark','ped','street','boat','checker','peak','tower','chase']:['cockpit','chase','tower','street','ped','carpark','boat','checker',...(LND.id==='31'?['lym']:[]),'peak','cabin'];setView(o[(o.indexOf(CFG.view)+1)%o.length]);break}
+    case 'KeyC':{const o=CFG.game==='watch'?['carpark','ped','street','boat','checker',...(LND.id==='31'?['lym']:[]),'peak','tower','chase']:['cockpit','chase','tower','street','ped','carpark','boat','checker',...(LND.id==='31'?['lym']:[]),'peak','cabin'];setView(o[(o.indexOf(CFG.view)+1)%o.length]);break}
     case 'KeyZ':toggleAP();break;case 'KeyR':toggleRadio();break;case 'BracketLeft':timeJump(-10);break;case 'BracketRight':timeJump(10);break;
     case 'KeyT':setTs(CFG.ts>=8?1:CFG.ts*2);break;case 'KeyI':setZoom(Math.min(16,CFG.zoom*2));break;case 'KeyO':setZoom(Math.max(1,CFG.zoom/2));break;case 'KeyK':toggleDeck();break;case 'KeyN':toggleNight();break;case 'KeyU':setClouds_on(!CFG.clouds);break;case 'KeyP':togglePause();break;
   }
@@ -3129,7 +3130,7 @@ for(const k in AC){const a=AC[k];const l=document.createElement('label');l.class
 const wxChips=document.getElementById('wxChips'),wxSel=document.getElementById('wxSel');
 for(const k in WX){const l=document.createElement('label');l.className='chip';l.innerHTML=`<input type="radio" name="wx" value="${k}" ${k===CFG.wx?'checked':''}><span>${WX[k].label}</span>`;wxChips.appendChild(l);const o=document.createElement('option');o.value=k;o.textContent=WX[k].label;wxSel.appendChild(o)}
 const MODE_TXT={learn:['Start the lesson','New to flying? A guided take-off on Runway 13, one step at a time: full power, stay straight, lift the nose, wheels up. No experience needed.'],approach:['Begin descent','Start on the IGS at 3,100 ft and land on Runway 13.'],approach31:['Begin descent','Start eight miles out over the sea at 2,700 ft, fly through the Lei Yue Mun gap and land on Runway 31.'],free31:['Line up on Runway 31','Start lined up on Runway 31, pointing at Kowloon City. Full thrust, pull back at about 150 kt, climb and turn left, then fly anywhere. Landings are graded but the flight carries on.'],free:['Line up on Runway 13','Start lined up on Runway 13. Full thrust, pull back at about 150 kt, then fly anywhere. Landings are graded but the flight carries on.'],
-  watch:['Watch the airport','No flying. Arrivals land every couple of minutes and departures roll in between. Pick a spectator spot, follow a jet, or speed up time.']};
+  watch31:['Watch the airport','No flying. Runway 31 is in use: arrivals come in over Lei Yue Mun and departures roll toward Kowloon City. Pick a spectator spot, follow a jet, or speed up time.'],watch:['Watch the airport','No flying. Arrivals land every couple of minutes and departures roll in between. Pick a spectator spot, follow a jet, or speed up time.']};
 const HERO13=['IGS approach · Runway 13','Hit the checkerboard, turn right, land before the harbour.',document.getElementById('heroText').textContent];
 const HERO31=['Easterly approach · Runway 31','Through the Lei Yue Mun gap, then down onto the runway in the bay.','You start the descent about eight nautical miles out over the sea east of Kowloon at 2,700 ft, heading 314 on the runway line. Fly through the narrow Lei Yue Mun channel between the hills, cross Kowloon Bay low over the water and land on Runway 31.'];
 function syncMode(){const m=document.querySelector('input[name=game]:checked').value;document.getElementById('goLabel').textContent=MODE_TXT[m][0];document.getElementById('modeNote').textContent=MODE_TXT[m][1];
@@ -3156,7 +3157,7 @@ const ZH={
 'You start the descent about eight nautical miles out over the sea east of Kowloon at 2,700 ft, heading 314 on the runway line. Fly through the narrow Lei Yue Mun channel between the hills, cross Kowloon Bay low over the water and land on Runway 31.':'你喺九龍以東海面、距離跑道約 8 海里、2,700 呎高度開始下降，航向 314，對正跑道。穿過兩邊山丘之間嘅鯉魚門海峽，低飛掠過九龍灣海面，然後降落 31 號跑道。',
 'Start eight miles out over the sea at 2,700 ft, fly through the Lei Yue Mun gap and land on Runway 31.':'喺海面 8 海里外、2,700 呎開始，飛過鯉魚門，然後降落 31 號跑道。',
 'Start on the IGS at 3,100 ft and land on Runway 13.':'喺 3,100 呎對正 IGS 開始，然後降落 13 號跑道。',
-'Line up on Runway 13':'對正 13 號跑道','Runway 31 take-off':'31 號跑道起飛','Line up on Runway 31':'對正 31 號跑道','Start lined up on Runway 31, pointing at Kowloon City. Full thrust, pull back at about 150 kt, climb and turn left, then fly anywhere. Landings are graded but the flight carries on.':'對正 31 號跑道，機頭向住九龍城。推滿油門，約 150 節拉機頭，爬升後向左轉，之後隨便飛。降落會評分，但飛行會繼續。',
+'Line up on Runway 13':'對正 13 號跑道','Runway 31 take-off':'31 號跑道起飛','Line up on Runway 31':'對正 31 號跑道','Spotter · Runway 31':'觀機 · 31 號跑道','No flying. Runway 31 is in use: arrivals come in over Lei Yue Mun and departures roll toward Kowloon City. Pick a spectator spot, follow a jet, or speed up time.':'唔使飛。而家用 31 號跑道：抵港航班經鯉魚門進場，離港航班向九龍城滑行起飛。揀個觀機位置、跟住一架飛機，或者加快時間。','Start lined up on Runway 31, pointing at Kowloon City. Full thrust, pull back at about 150 kt, climb and turn left, then fly anywhere. Landings are graded but the flight carries on.':'對正 31 號跑道，機頭向住九龍城。推滿油門，約 150 節拉機頭，爬升後向左轉，之後隨便飛。降落會評分，但飛行會繼續。',
 'Start lined up on Runway 13. Full thrust, pull back at about 150 kt, then fly anywhere. Landings are graded but the flight carries on.':'由 13 號跑道起步。推滿油門，約 150 節時拉桿，之後可以飛去任何地方。降落會被評分，但飛行會繼續。',
 'Watch the airport':'觀看機場',
 'No flying. Arrivals land every couple of minutes and departures roll in between. Pick a spectator spot, follow a jet, or speed up time.':'唔使駕駛。每隔幾分鐘就有航班降落，期間亦有航班起飛。揀個觀賞位置、跟住一架客機，或者加快時間。',
@@ -3216,7 +3217,7 @@ function applyLang(){
   for(const s of b.querySelectorAll('span'))s.classList.toggle('on',s.dataset.l===LANG)}
 document.getElementById('btnLang').addEventListener('click',e=>{LANG=LANG==='zh'?'en':'zh';try{localStorage.setItem('fkt-lang',LANG)}catch(_){}track('language_toggle',{language:LANG==='zh'?'cantonese':'english'});applyLang();e.currentTarget.blur()});
 applyLang();
-function readSetup(){const gv=document.querySelector('input[name=game]:checked').value;CFG.lesson=gv==='learn';CFG.game=gv==='approach31'?'approach':gv==='free31'?'free':CFG.lesson?'free':gv;CFG.rwy=gv==='approach31'||gv==='free31'?'31':'13';CFG.ac=document.querySelector('input[name=ac]:checked').value;CFG.night=document.querySelector('input[name=tod]:checked').value==='night';CFG.wx=document.querySelector('input[name=wx]:checked').value;
+function readSetup(){const gv=document.querySelector('input[name=game]:checked').value;CFG.lesson=gv==='learn';CFG.game=gv==='approach31'?'approach':gv==='free31'?'free':gv==='watch31'?'watch':CFG.lesson?'free':gv;CFG.rwy=gv==='approach31'||gv==='free31'||gv==='watch31'?'31':'13';CFG.ac=document.querySelector('input[name=ac]:checked').value;CFG.night=document.querySelector('input[name=tod]:checked').value==='night';CFG.wx=document.querySelector('input[name=wx]:checked').value;
   CFG.lightning=document.getElementById('optLightning').checked;CFG.clouds=document.getElementById('optClouds').checked;CFG.guide=document.getElementById('optGuide').checked;CFG.ap=document.getElementById('optAP').checked;CFG.walled=document.getElementById('optWalled').checked}
 document.getElementById('setup').addEventListener('change',e=>{const t=e.target;if(!t||t.tagName!=='INPUT')return;
   if(t.name==='ac')track('aircraft_select',{aircraft:t.value});
@@ -3288,14 +3289,14 @@ function reelShow(on){if(!reelOK)return;if(on&&!reducedMotion())reel.play().catc
 function showSetup(){hsRenderHome();setMore(false);try{if(screen.orientation&&screen.orientation.unlock)screen.orientation.unlock()}catch(e){}reelShow(true);flightEnd('quit');mode='attract';paused=false;for(const id of['bar','ctl','map','result','cabin'])document.getElementById(id).hidden=true;document.getElementById('setup').hidden=false;sfx.stopAll();if(synth)synth.cancel();radioClear();coachHide();syncMode();
   clearFX();CFG.ap=true;setRunway('13');resetFlight();ST.ap=true;spawnAircraftModel();buildAI();CFG.view='chase';applyEnvironment();setWalled(document.getElementById('optWalled').checked)}
 function startFlight(){
-  setMore(false);reelShow(false);readSetup();setRunway((CFG.game==='approach'||CFG.game==='free')&&CFG.rwy==='31'?'31':'13');flightEnd('restart');clearFX();mode='fly';paused=false;SEED=window.__capture?1998:1998+Math.floor(Math.random()*1000);
+  setMore(false);reelShow(false);readSetup();setRunway(CFG.lesson?'13':CFG.rwy==='31'?'31':'13');flightEnd('restart');clearFX();mode='fly';paused=false;SEED=window.__capture?1998:1998+Math.floor(Math.random()*1000);
   for(const id of['setup','result'])document.getElementById(id).hidden=true;for(const id of['bar','ctl','map'])document.getElementById(id).hidden=false;
   resetFlight();ST.attempted=false;flightBegin();radioReset();HIST.length=0;spawnAircraftModel();FOCUS=null;
   if(CFG.game==='watch')buildAISchedule(0,true);else if(CFG.game==='free')buildAISchedule(-100,false);else buildAI();
   applyEnvironment();setWalled(CFG.walled);hoops.visible=CFG.guide&&CFG.game==='approach';wxSel.value=CFG.wx;
   const W=CFG.game==='watch';
-  document.getElementById('flightid').textContent=(W?'PLANE SPOTTER · KAI TAK':ST.ac.short.toUpperCase()+' · '+(CFG.lesson?'TAKE-OFF LESSON':CFG.game==='free'?'FREE FLIGHT'+(LND.id==='31'?' · RWY 31':''):LND.id==='31'?'RWY 31':'IGS 13'))+' · '+(CFG.night?'NIGHT':'DAY')+' · '+WX[CFG.wx].label.toUpperCase();
-  for(const o of document.querySelectorAll('#viewSel option'))o.hidden=(W&&(o.value==='cockpit'||o.value==='cabin'))||(o.value==='lym'&&(W||LND.id!=='31'));
+  document.getElementById('flightid').textContent=(W?'PLANE SPOTTER · KAI TAK'+(LND.id==='31'?' · RWY 31':''):ST.ac.short.toUpperCase()+' · '+(CFG.lesson?'TAKE-OFF LESSON':CFG.game==='free'?'FREE FLIGHT'+(LND.id==='31'?' · RWY 31':''):LND.id==='31'?'RWY 31':'IGS 13'))+' · '+(CFG.night?'NIGHT':'DAY')+' · '+WX[CFG.wx].label.toUpperCase();
+  for(const o of document.querySelectorAll('#viewSel option'))o.hidden=(W&&(o.value==='cockpit'||o.value==='cabin'))||(o.value==='lym'&&LND.id!=='31');
   for(const id of['btnAP','btnHud','btnGuide','btnDeck'])document.getElementById(id).hidden=W;
   if(W){for(const id of['ctl','map'])document.getElementById(id).hidden=true}
   setView(W?'carpark':CFG.game==='free'?'chase':CFG.ap?'chase':'cockpit');
@@ -3454,7 +3455,7 @@ const fontsReady=document.fonts&&document.fonts.ready?Promise.race([document.fon
 fontsReady.then(()=>setTimeout(boot,30));
 
 /* test hooks */
-window.__kt={CFG,ST,COACH,LESSON,keys,coachUpdate,coachResync,coachGo,rwL,get PATH(){return PATH},LND,setRunway,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,{rwy:'13'},o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${(CFG.game==='approach'||CFG.game==='free')&&CFG.rwy==='31'?CFG.game+'31':CFG.game}]`).checked=true;document.querySelector(`input[name=tod][value=${CFG.night?'night':'day'}]`).checked=true;startFlight()},
+window.__kt={CFG,ST,COACH,LESSON,keys,coachUpdate,coachResync,coachGo,rwL,get PATH(){return PATH},LND,setRunway,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,{rwy:'13'},o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.rwy==='31'&&CFG.game!=='learn'?CFG.game+'31':CFG.game}]`).checked=true;document.querySelector(`input[name=tod][value=${CFG.night?'night':'day'}]`).checked=true;startFlight()},
   run:(sec)=>{if(CFG.game==='watch'){ST.t+=sec;return {t:ST.t}}const h=1/120;for(let i=0;i<sec*120&&!ST.ended;i++){physStep(h);if(i%60===0)recordHistory()}return {ended:ST.ended,td:ST.td,t:ST.t,x:ST.x,y:ST.y,z:ST.z,V:ST.V/KT,d:PATH.pts[ST.pi].d}},
   get mode(){return mode},get CFG(){return CFG},frame:(now)=>frame(now,true),get FOCUS(){return FOCUS},step:()=>physStep(1/120),rwS,setZoom:z=>{CFG.zoom=z},get AI(){return AI},get GSE(){return GSE},get parked(){return parked},gseAt:(t)=>{ST.t=t;updateGSE();return GSE.map(e=>({k:e.kind,x:e.p.x,z:e.p.z,psi:e.p.psi,lift:e.lift}))},get shipLights(){return shipLights},get SHIPS(){return SHIPS},get DISP(){return DISP},get deck(){return deckGroup},get streetCam(){return STREET_CAM},get BB(){return BB},get water(){return water},get camera(){return camera},get nStreets(){return STREETS.length},drawDisplays,look,setView,terrainAt,buildingAt,groundInfo};
 })();

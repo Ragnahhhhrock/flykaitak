@@ -1,5 +1,34 @@
 [
   {
+    "slug": "runway-31-plane-spotter",
+    "title": "New: Plane Spotter on Runway 31",
+    "dek": "Watch the easterly traffic from the spectator spots and the new Lei Yue Mun view.",
+    "description": "Fly Kai Tak Plane Spotter now has a Runway 31 mode: arrivals over Lei Yue Mun, departures toward Kowloon City, and a Lei Yue Mun spectator view.",
+    "date": "2026-10-03",
+    "tag": "Feature",
+    "keywords": [
+      "Kai Tak",
+      "Plane Spotter",
+      "Runway 31",
+      "Lei Yue Mun"
+    ],
+    "hero": "rwy31-spotter-lym",
+    "hero_alt": "Night view from Lei Yue Mun of a 747 on approach to Runway 31 with its landing lights on.",
+    "hero_caption": "An arrival seen from the Lei Yue Mun spot.",
+    "card_kicker": "PLANE SPOTTER · NEW",
+    "card_title": "Spotter on Runway 31",
+    "card_sub": "Watch from Lei Yue Mun",
+    "card_image": "rwy31-spotter-lym",
+    "card_focus": 50,
+    "zh": {
+      "title": "新功能：31 號跑道觀機",
+      "dek": "喺觀機位置同新增嘅鯉魚門視角睇東面進場嘅飛機。",
+      "description": "Fly Kai Tak 觀機模式而家有 31 號跑道：抵港航班經鯉魚門進場，離港航班向九龍城起飛，仲有鯉魚門觀機視角。",
+      "hero_alt": "夜晚喺鯉魚門望出去，一架開住降落燈嘅 747 正進場 31 號跑道。",
+      "hero_caption": "喺鯉魚門觀機位置睇抵港航班。"
+    }
+  },
+  {
     "slug": "runway-31-takeoff-free-flight",
     "title": "New: take off from Runway 31 in free flight",
     "dek": "Line up at the Kowloon Bay end, point at Kowloon City, then climb and turn left.",

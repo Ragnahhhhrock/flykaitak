@@ -76,6 +76,17 @@ TAKEOFF = """
 """
 
 
+SPOTTER = """
+(cfg) => {
+  window.__kt.start(cfg);
+  const K = window.__kt; let bad = 0, n = 0;
+  for (let t = 0; t < 900; t += 5) for (const a of K.AI) { const p = a.fn(t); if (!p) continue; n++;
+    if (![p.x, p.y, p.z, p.psi].every(Number.isFinite) || p.y < 3) bad++; }
+  return {bad, n};
+}
+"""
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--rwy", default="both")
@@ -114,6 +125,11 @@ def main():
             r = pg.evaluate(TAKEOFF, [{"game": "free", "rwy": rwy, "ac": "b744", "wx": "clear", "night": a.night, "deck": False, "ap": False}, 200])
             ok = r["kind"] == "airborne" and r["alt"] > 500
             print(f"RWY {rwy} take-off (free flight)    -> {r['kind']:8s} airborne at {r['air']}s, alt {r['alt']} m, {r['V']} kt {'' if ok else r['title']} {'' if ok else r['why']}", flush=True)
+            fails += 0 if ok else 1
+        for rwy in rwys:
+            r = pg.evaluate(SPOTTER, {"game": "watch", "rwy": rwy, "wx": "clear", "night": False, "deck": False})
+            ok = r["bad"] == 0 and r["n"] > 0
+            print(f"RWY {rwy} plane spotter traffic     -> {r['n']} poses, {r['bad']} bad", flush=True)
             fails += 0 if ok else 1
         b.close()
     srv.shutdown()
