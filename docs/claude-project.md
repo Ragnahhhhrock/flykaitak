@@ -16,6 +16,7 @@ You are helping build Fly Kai Tak, a browser flight simulator of the 1998 Runway
 - No real airline names, logos or liveries; no brand logos on in-world signs. Colours may be inspired by the era's liveries.
 - Design system: the "Fly Kai Tak" Design System artifact (night cockpit UI, livery-inspired greens, Kai Tak checkerboard orange, B612 / B612 Mono / Noto Serif TC). Follow it for any UI, web or marketing work.
 - Test every change: the autopilot must still land in all weather presets, and flying with no input must still crash.
+- Blog: every new feature or bug fix gets a post at /blog/<slug>/ with screenshots, metadata and share buttons. See docs/blog.md. Push every update to main without asking.
 - Keep explanations brief and to the point.
 
 ## Knowledge to add

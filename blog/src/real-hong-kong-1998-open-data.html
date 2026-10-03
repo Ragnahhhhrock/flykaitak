@@ -1,0 +1,49 @@
+<p>The streets under the Kai Tak approach are not made up. The coastline, the roads and the buildings you fly over come from Hong Kong's own open data, fitted to the real runway, then corrected to match 1998.</p>
+
+<div class="readouts" role="list">
+  <div class="readout" role="listitem"><b>24,000</b><span>Buildings<i>real footprints</i></span></div>
+  <div class="readout" role="listitem"><b>6,900</b><span>Vehicles<i>on real roads</i></span></div>
+  <div class="readout" role="listitem"><b>134</b><span>Vessels<i>in the harbour</i></span></div>
+  <div class="readout" role="listitem"><b>1998</b><span>Period<i>not today</i></span></div>
+</div>
+
+<h2>What is real</h2>
+<ul>
+  <li><strong>Imagery, coastline, roads and buildings.</strong> The aerial imagery, coastline, main roads and about 24,000 building footprints come from the Hong Kong Lands Department's open data.</li>
+  <li><strong>Terrain.</strong> Elevation is SRTM, with the building bumps filtered out so a tower block isn't mistaken for a hill.</li>
+  <li><strong>The runway.</strong> It is fitted to the old Kai Tak strip: threshold 13 at 22.3256°N 114.1926°E, true heading 134.08°.</li>
+</ul>
+
+<figure class="wide">
+  <img src="/assets/home/aerial-kai-tak.jpg" width="1920" height="1080" loading="lazy" alt="Aerial view of Kai Tak's runway, apron and the surrounding Kowloon neighbourhoods and harbour.">
+  <figcaption>Kai Tak from above: the runway pointing out into the harbour, with the streets of Kowloon City in front of it.</figcaption>
+</figure>
+
+<h2>Making it 1998</h2>
+<p>Open data shows Hong Kong as it is now, so we had to take things away. The sim removes the buildings on the Kai Tak site and on the West Kowloon reclamation, and the Central Reclamation Phase III waterfront is harbour again.</p>
+<p>The skyline is held to the period as well. There is no Two IFC (2003) and no Cheung Kong Center (1999).</p>
+
+<h3>The Walled City is an option</h3>
+<p>Kowloon Walled City was demolished in 1993&ndash;94. The sim shows it as it stood before 1994 by default, and you can untick the option to see the 1998 park instead.</p>
+
+<h2>Life under the approach</h2>
+<p>The traffic is built to look like Hong Kong, not just any city.</p>
+<ul>
+  <li><strong>On the road.</strong> About 6,900 vehicles drive the real main roads and the Kowloon City streets: red Crown Comfort-style taxis with silver roofs, green New Territories taxis, cream minibuses, double-decker buses, lorries and cars.</li>
+  <li><strong>On the water.</strong> About 134 vessels: Star Ferries on four routes, freighters, container ships, ocean liners, junks, yachts, marine police launches, tugs and ships at anchor, all with proper navigation lights.</li>
+  <li><strong>On the signs.</strong> The shop signs are drawn from period photos, in Chinese and English, and the neon along Nathan Road is there too. Real corporate logos are left out, and so are real airline names and liveries. The aircraft wear livery-inspired colours instead.</li>
+</ul>
+
+<figure class="wide">
+  <img src="/assets/blog/shots/spectator.jpg" width="1600" height="900" loading="lazy" alt="A 747 on the apron with Runway 13 stretching out into the harbour and the Hong Kong skyline beyond.">
+  <figcaption>The Kai Tak car park roof, one of the spectator spots. Harbour traffic, the apron and the skyline across the water are all live.</figcaption>
+</figure>
+
+<h2>Landmarks</h2>
+<p>Look for the Bank of China Tower, Central Plaza, The Center, HSBC, Jardine House, Exchange Square, the Convention Centre extension, the TST Clock Tower, the Cultural Centre, Ocean Terminal, the Hung Hom Coliseum, and the Kai Tak terminal and tower. There is also the Garden Hill obstacle beacon in Sham Shui Po.</p>
+
+<div class="callout">
+  <p class="eyebrow">Build the map yourself</p>
+  <p>The map data is rebuilt from the source with <code>python3 tools/fetch.py &amp;&amp; python3 tools/build.py</code> in the <a href="https://github.com/Ragnahhhhrock/flykaitak">GitHub repo</a>.</p>
+  <p>Data: &copy; Lands Department, HKSAR Government (CSDI). Elevation: SRTM via AWS Terrain Tiles.</p>
+</div>

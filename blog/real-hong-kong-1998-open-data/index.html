@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Real Hong Kong: building 1998 from open data | Fly Kai Tak</title>
+<meta name="description" content="How Fly Kai Tak builds Hong Kong from Lands Department open data and SRTM terrain, and the 1998 corrections: no Kai Tak redevelopment, no West Kowloon buildings, and the Walled City as an option.">
+<link rel="canonical" href="https://flykaitak.com/blog/real-hong-kong-1998-open-data/">
+<meta name="theme-color" content="#0a1115">
+<meta name="color-scheme" content="dark">
+<meta name="author" content="Fly Kai Tak">
+<meta name="keywords" content="Kai Tak, Hong Kong 1998, Lands Department, open data, Kowloon Walled City, flight simulator, SRTM terrain">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="icon" href="/assets/brand/mark.svg" type="image/svg+xml">
+<link rel="icon" href="/assets/brand/favicon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="alternate" type="application/rss+xml" title="Fly Kai Tak blog" href="/blog/feed.xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Fly Kai Tak">
+<meta property="og:title" content="Real Hong Kong: building 1998 from open data | Fly Kai Tak">
+<meta property="og:description" content="How Fly Kai Tak builds Hong Kong from Lands Department open data and SRTM terrain, and the 1998 corrections: no Kai Tak redevelopment, no West Kowloon buildings, and the Walled City as an option.">
+<meta property="og:url" content="https://flykaitak.com/blog/real-hong-kong-1998-open-data/">
+<meta property="og:image" content="https://flykaitak.com/assets/blog/og/real-hong-kong-1998-open-data.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="A 747 on the apron at Kai Tak with the runway running out into Victoria Harbour and the Hong Kong skyline behind.">
+<meta property="og:locale" content="en_GB">
+<meta property="article:published_time" content="2026-10-03">
+<meta property="article:modified_time" content="2026-10-03">
+<meta property="article:section" content="Behind the scenes">
+<meta property="article:author" content="Fly Kai Tak">
+<meta property="article:tag" content="Kai Tak">
+<meta property="article:tag" content="Hong Kong 1998">
+<meta property="article:tag" content="Lands Department">
+<meta property="article:tag" content="open data">
+<meta property="article:tag" content="Kowloon Walled City">
+<meta property="article:tag" content="flight simulator">
+<meta property="article:tag" content="SRTM terrain">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Real Hong Kong: building 1998 from open data | Fly Kai Tak">
+<meta name="twitter:description" content="How Fly Kai Tak builds Hong Kong from Lands Department open data and SRTM terrain, and the 1998 corrections: no Kai Tak redevelopment, no West Kowloon buildings, and the Walled City as an option.">
+<meta name="twitter:image" content="https://flykaitak.com/assets/blog/og/real-hong-kong-1998-open-data.jpg">
+<meta name="twitter:image:alt" content="A 747 on the apron at Kai Tak with the runway running out into Victoria Harbour and the Hong Kong skyline behind.">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Real Hong Kong: building 1998 from open data","description":"How Fly Kai Tak builds Hong Kong from Lands Department open data and SRTM terrain, and the 1998 corrections: no Kai Tak redevelopment, no West Kowloon buildings, and the Walled City as an option.","image":["https://flykaitak.com/assets/blog/og/real-hong-kong-1998-open-data.jpg","https://flykaitak.com/assets/blog/shots/spectator.jpg"],"datePublished":"2026-10-03","dateModified":"2026-10-03","author":{"@type":"Organization","name":"Fly Kai Tak","url":"https://flykaitak.com/"},"publisher":{"@type":"Organization","name":"Fly Kai Tak","url":"https://flykaitak.com/","logo":{"@type":"ImageObject","url":"https://flykaitak.com/assets/brand/icon-512.png"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://flykaitak.com/blog/real-hong-kong-1998-open-data/"},"keywords":"Kai Tak, Hong Kong 1998, Lands Department, open data, Kowloon Walled City, flight simulator, SRTM terrain","articleSection":"Behind the scenes","inLanguage":"en-GB","wordCount":484,"isPartOf":{"@type":"Blog","name":"Fly Kai Tak blog","url":"https://flykaitak.com/blog/"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Fly Kai Tak","item":"https://flykaitak.com/"},{"@type":"ListItem","position":2,"name":"Blog","item":"https://flykaitak.com/blog/"},{"@type":"ListItem","position":3,"name":"Real Hong Kong: building 1998 from open data","item":"https://flykaitak.com/blog/real-hong-kong-1998-open-data/"}]}</script>
+<script>
+window.FKT_ANALYTICS={id:'G-7MNP3SBEF8',src:'/metrics/',fallback:'https://www.googletagmanager.com/gtag/js',hosts:['flykaitak.com','www.flykaitak.com']};
+(function(c){window.dataLayer=window.dataLayer||[];window.gtag=function(){dataLayer.push(arguments)};
+  if(!/^G-[A-Z0-9]{6,}$/.test(c.id)||c.id==='G-XXXXXXXXXX'||c.hosts.indexOf(location.hostname)<0)return;
+  function load(u,f){var s=document.createElement('script');s.async=true;s.src=u+(u.indexOf('?')<0?'?':'&')+'id='+c.id;if(f)s.onerror=f;document.head.appendChild(s)}
+  load(c.src,function(){load(c.fallback)});
+  gtag('js',new Date());gtag('config',c.id,{anonymize_ip:true});})(window.FKT_ANALYTICS);
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=B612:wght@400;700&family=B612+Mono:wght@400;700&family=Noto+Serif+TC:wght@900&display=swap">
+<link rel="stylesheet" href="/assets/blog/blog.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="checkband" aria-hidden="true"></div>
+<header class="site"><div class="wrap">
+  <a class="brandlink" href="/" aria-label="Fly Kai Tak, play the simulator"><img src="/assets/brand/mark.svg" width="32" height="32" alt=""><span>Fly Kai Tak</span><span class="han" lang="zh-Hant" aria-hidden="true">啟德機場</span></a>
+  <nav aria-label="Main"><a href="/blog/" aria-current="page">Blog</a><a href="/">Play</a></nav>
+</div></header>
+<main id="main"><article>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Fly Kai Tak</a> / <a href="/blog/">Blog</a> / <span aria-current="page">Behind the scenes</span></nav>
+  <header class="post-head">
+    <p class="eyebrow">Behind the scenes</p>
+    <h1>Real Hong Kong: building 1998 from open data</h1>
+    <p class="dek">The coastline, roads and about 24,000 buildings under the Kai Tak approach come from official Hong Kong open data. Here is what is real, and what we changed to make it 1998.</p>
+    <div class="byline"><time datetime="2026-10-03">3 October 2026</time><span>3 min read</span><span>Fly Kai Tak</span></div>
+  </header>
+  <section class="share share--top" aria-label="Share this post" data-share data-url="https://flykaitak.com/blog/real-hong-kong-1998-open-data/" data-title="Real Hong Kong: building 1998 from open data" data-slug="real-hong-kong-1998-open-data"><h2>Share this post</h2><ul><li><a data-method="x" href="https://twitter.com/intent/tweet?text=Real%20Hong%20Kong%3A%20building%201998%20from%20open%20data%20%7C%20Fly%20Kai%20Tak&url=https%3A%2F%2Fflykaitak.com%2Fblog%2Freal-hong-kong-1998-open-data%2F" target="_blank" rel="noopener noreferrer">Post on X</a></li><li><a data-method="facebook" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fflykaitak.com%2Fblog%2Freal-hong-kong-1998-open-data%2F" target="_blank" rel="noopener noreferrer">Facebook</a></li><li><a data-method="reddit" href="https://www.reddit.com/submit?url=https%3A%2F%2Fflykaitak.com%2Fblog%2Freal-hong-kong-1998-open-data%2F&title=Real%20Hong%20Kong%3A%20building%201998%20from%20open%20data" target="_blank" rel="noopener noreferrer">Reddit</a></li><li><a data-method="linkedin" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fflykaitak.com%2Fblog%2Freal-hong-kong-1998-open-data%2F" target="_blank" rel="noopener noreferrer">LinkedIn</a></li><li><a data-method="whatsapp" href="https://wa.me/?text=Real%20Hong%20Kong%3A%20building%201998%20from%20open%20data%20%7C%20Fly%20Kai%20Tak%20https%3A%2F%2Fflykaitak.com%2Fblog%2Freal-hong-kong-1998-open-data%2F" target="_blank" rel="noopener noreferrer">WhatsApp</a></li><li><a data-method="email" href="mailto:?subject=Real%20Hong%20Kong%3A%20building%201998%20from%20open%20data&body=https%3A%2F%2Fflykaitak.com%2Fblog%2Freal-hong-kong-1998-open-data%2F"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="m22 6-10 7L2 6"/></svg>Email</a></li><li hidden><button type="button" data-copy><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><span>Copy link</span></button></li><li hidden><button type="button" data-native><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg><span>Share&hellip;</span></button></li></ul></section>
+  <figure class="hero">
+    <img src="/assets/blog/shots/spectator.jpg" width="1600" height="900" fetchpriority="high" alt="A 747 on the apron at Kai Tak with the runway running out into Victoria Harbour and the Hong Kong skyline behind.">
+    <figcaption>Spectator mode from the car park roof: the apron, Runway 13 running into the harbour, and the skyline across the water.</figcaption>
+  </figure>
+  <div class="prose">
+<p>The streets under the Kai Tak approach are not made up. The coastline, the roads and the buildings you fly over come from Hong Kong's own open data, fitted to the real runway, then corrected to match 1998.</p>
+
+<div class="readouts" role="list">
+  <div class="readout" role="listitem"><b>24,000</b><span>Buildings<i>real footprints</i></span></div>
+  <div class="readout" role="listitem"><b>6,900</b><span>Vehicles<i>on real roads</i></span></div>
+  <div class="readout" role="listitem"><b>134</b><span>Vessels<i>in the harbour</i></span></div>
+  <div class="readout" role="listitem"><b>1998</b><span>Period<i>not today</i></span></div>
+</div>
+
+<h2>What is real</h2>
+<ul>
+  <li><strong>Imagery, coastline, roads and buildings.</strong> The aerial imagery, coastline, main roads and about 24,000 building footprints come from the Hong Kong Lands Department's open data.</li>
+  <li><strong>Terrain.</strong> Elevation is SRTM, with the building bumps filtered out so a tower block isn't mistaken for a hill.</li>
+  <li><strong>The runway.</strong> It is fitted to the old Kai Tak strip: threshold 13 at 22.3256°N 114.1926°E, true heading 134.08°.</li>
+</ul>
+
+<figure class="wide">
+  <img src="/assets/home/aerial-kai-tak.jpg" width="1920" height="1080" loading="lazy" alt="Aerial view of Kai Tak's runway, apron and the surrounding Kowloon neighbourhoods and harbour.">
+  <figcaption>Kai Tak from above: the runway pointing out into the harbour, with the streets of Kowloon City in front of it.</figcaption>
+</figure>
+
+<h2>Making it 1998</h2>
+<p>Open data shows Hong Kong as it is now, so we had to take things away. The sim removes the buildings on the Kai Tak site and on the West Kowloon reclamation, and the Central Reclamation Phase III waterfront is harbour again.</p>
+<p>The skyline is held to the period as well. There is no Two IFC (2003) and no Cheung Kong Center (1999).</p>
+
+<h3>The Walled City is an option</h3>
+<p>Kowloon Walled City was demolished in 1993&ndash;94. The sim shows it as it stood before 1994 by default, and you can untick the option to see the 1998 park instead.</p>
+
+<h2>Life under the approach</h2>
+<p>The traffic is built to look like Hong Kong, not just any city.</p>
+<ul>
+  <li><strong>On the road.</strong> About 6,900 vehicles drive the real main roads and the Kowloon City streets: red Crown Comfort-style taxis with silver roofs, green New Territories taxis, cream minibuses, double-decker buses, lorries and cars.</li>
+  <li><strong>On the water.</strong> About 134 vessels: Star Ferries on four routes, freighters, container ships, ocean liners, junks, yachts, marine police launches, tugs and ships at anchor, all with proper navigation lights.</li>
+  <li><strong>On the signs.</strong> The shop signs are drawn from period photos, in Chinese and English, and the neon along Nathan Road is there too. Real corporate logos are left out, and so are real airline names and liveries. The aircraft wear livery-inspired colours instead.</li>
+</ul>
+
+<figure class="wide">
+  <img src="/assets/blog/shots/spectator.jpg" width="1600" height="900" loading="lazy" alt="A 747 on the apron with Runway 13 stretching out into the harbour and the Hong Kong skyline beyond.">
+  <figcaption>The Kai Tak car park roof, one of the spectator spots. Harbour traffic, the apron and the skyline across the water are all live.</figcaption>
+</figure>
+
+<h2>Landmarks</h2>
+<p>Look for the Bank of China Tower, Central Plaza, The Center, HSBC, Jardine House, Exchange Square, the Convention Centre extension, the TST Clock Tower, the Cultural Centre, Ocean Terminal, the Hung Hom Coliseum, and the Kai Tak terminal and tower. There is also the Garden Hill obstacle beacon in Sham Shui Po.</p>
+
+<div class="callout">
+  <p class="eyebrow">Build the map yourself</p>
+  <p>The map data is rebuilt from the source with <code>python3 tools/fetch.py &amp;&amp; python3 tools/build.py</code> in the <a href="https://github.com/Ragnahhhhrock/flykaitak">GitHub repo</a>.</p>
+  <p>Data: &copy; Lands Department, HKSAR Government (CSDI). Elevation: SRTM via AWS Terrain Tiles.</p>
+</div>
+  </div>
+  <section class="share" aria-label="Share this post" data-share data-url="https://flykaitak.com/blog/real-hong-kong-1998-open-data/" data-title="Real Hong Kong: building 1998 from open data" data-slug="real-hong-kong-1998-open-data"><h2>Share this post</h2><ul><li><a data-method="x" href="https://twitter.com/intent/tweet?text=Real%20Hong%20Kong%3A%20building%201998%20from%20open%20data%20%7C%20Fly%20Kai%20Tak&url=https%3A%2F%2Fflykaitak.com%2Fblog%2Freal-hong-kong-1998-open-data%2F" target="_blank" rel="noopener noreferrer">Post on X</a></li><li><a data-method="facebook" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fflykaitak.com%2Fblog%2Freal-hong-kong-1998-open-data%2F" target="_blank" rel="noopener noreferrer">Facebook</a></li><li><a data-method="reddit" href="https://www.reddit.com/submit?url=https%3A%2F%2Fflykaitak.com%2Fblog%2Freal-hong-kong-1998-open-data%2F&title=Real%20Hong%20Kong%3A%20building%201998%20from%20open%20data" target="_blank" rel="noopener noreferrer">Reddit</a></li><li><a data-method="linkedin" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fflykaitak.com%2Fblog%2Freal-hong-kong-1998-open-data%2F" target="_blank" rel="noopener noreferrer">LinkedIn</a></li><li><a data-method="whatsapp" href="https://wa.me/?text=Real%20Hong%20Kong%3A%20building%201998%20from%20open%20data%20%7C%20Fly%20Kai%20Tak%20https%3A%2F%2Fflykaitak.com%2Fblog%2Freal-hong-kong-1998-open-data%2F" target="_blank" rel="noopener noreferrer">WhatsApp</a></li><li><a data-method="email" href="mailto:?subject=Real%20Hong%20Kong%3A%20building%201998%20from%20open%20data&body=https%3A%2F%2Fflykaitak.com%2Fblog%2Freal-hong-kong-1998-open-data%2F"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="m22 6-10 7L2 6"/></svg>Email</a></li><li hidden><button type="button" data-copy><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><span>Copy link</span></button></li><li hidden><button type="button" data-native><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg><span>Share&hellip;</span></button></li></ul></section>
+  <aside class="cta" aria-label="Play Fly Kai Tak">
+    <span class="han" lang="zh-Hant" aria-hidden="true">啟德</span>
+    <strong>Fly the approach yourself</strong>
+    <p>It runs in your browser. Pick an aircraft, a time of day and the weather, then hit the checkerboard.</p>
+    <a class="btn go" href="/">Begin descent</a>
+  </aside>
+  <section class="more-posts"><h2 class="label" style="font-family:var(--f-num);font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);font-weight:400;margin:0 0 20px">More from the blog</h2><div class="cards">
+<a class="pcard" href="/blog/checkerboard-turn-igs-13-approach/">
+  <img src="/assets/blog/og/checkerboard-turn-igs-13-approach.jpg" width="1200" height="630" loading="lazy" alt="Cockpit view of a 747 banking right over Kowloon City with Kai Tak&#x27;s Runway 13 and the harbour ahead.">
+  <div class="body">
+    <div class="meta">Feature &middot; 3 October 2026</div>
+    <h3>The checkerboard turn: flying the IGS 13 approach</h3>
+    <p>How the famous Runway 13 IGS approach into Kai Tak works in Fly Kai Tak: the 088° course, the checkerboard on the hill, the 47° right turn over Kowloon City and the landing grade.</p>
+    <span class="more">Read the post &rarr;</span>
+  </div>
+</a>
+<a class="pcard" href="/blog/typhoons-fog-and-night-flying/">
+  <img src="/assets/blog/og/typhoons-fog-and-night-flying.jpg" width="1200" height="630" loading="lazy" alt="Cockpit view of a 777 on the IGS approach in a typhoon, with heavy rain and the city fading into grey.">
+  <div class="body">
+    <div class="meta">Feature &middot; 3 October 2026</div>
+    <h3>Typhoons, fog and city lights: weather and night at Kai Tak</h3>
+    <p>Weather and night flying in Fly Kai Tak: clear, rain, typhoon, storm, low cloud and fog presets, wind gusts and turbulence, lightning, and a lit-up Kowloon at night.</p>
+    <span class="more">Read the post &rarr;</span>
+  </div>
+</a>
+  </div></section>
+</div>
+</article></main>
+<footer class="foot"><div class="wrap">
+  <div class="row">
+    <span>&copy; Fly Kai Tak. <a href="https://malgordon.com" target="_blank" rel="noopener">Another Mal Gordon project</a></span>
+    <span><a href="mailto:contact@flykaitak.com">contact@flykaitak.com</a> &middot; <a href="/blog/feed.xml">RSS</a> &middot; <a href="https://github.com/Ragnahhhhrock/flykaitak" target="_blank" rel="noopener">GitHub</a></span>
+  </div>
+  <div>Map data &copy; Lands Department, HKSAR Government. Elevation: SRTM via AWS Terrain Tiles. Aircraft and liveries are not real airlines.</div>
+</div></footer>
+<script>
+(function(){
+  document.querySelectorAll('[data-share]').forEach(function(box){
+    var url=box.getAttribute('data-url'),title=box.getAttribute('data-title'),slug=box.getAttribute('data-slug');
+    function track(m){try{window.gtag&&gtag('event','share',{method:m,content_type:'article',item_id:slug})}catch(e){}}
+    box.querySelectorAll('a[data-method]').forEach(function(a){a.addEventListener('click',function(){track(a.getAttribute('data-method'))})});
+    var copy=box.querySelector('[data-copy]');
+    if(copy){copy.parentNode.hidden=false;copy.addEventListener('click',function(){
+      function ok(){var t=copy.querySelector('span');var o=t.textContent;t.textContent='Link copied';copy.classList.add('done');track('copy_link');
+        setTimeout(function(){t.textContent=o;copy.classList.remove('done')},2200)}
+      if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(url).then(ok,function(){window.prompt('Copy this link',url)})}
+      else{window.prompt('Copy this link',url)}})}
+    var nat=box.querySelector('[data-native]');
+    if(nat&&navigator.share){nat.parentNode.hidden=false;nat.addEventListener('click',function(){
+      navigator.share({title:title,url:url}).then(function(){track('native')}).catch(function(){})})}
+  });
+})();
+</script>
+</body>
+</html>

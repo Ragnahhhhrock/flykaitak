@@ -1,2 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://flykaitak.com/</loc><changefreq>weekly</changefreq></url></urlset>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<url><loc>https://flykaitak.com/</loc><changefreq>weekly</changefreq></url>
+<url><loc>https://flykaitak.com/blog/</loc><lastmod>2026-10-03</lastmod><changefreq>weekly</changefreq></url>
+<url><loc>https://flykaitak.com/blog/checkerboard-turn-igs-13-approach/</loc><lastmod>2026-10-03</lastmod><changefreq>monthly</changefreq></url>
+<url><loc>https://flykaitak.com/blog/real-hong-kong-1998-open-data/</loc><lastmod>2026-10-03</lastmod><changefreq>monthly</changefreq></url>
+<url><loc>https://flykaitak.com/blog/typhoons-fog-and-night-flying/</loc><lastmod>2026-10-03</lastmod><changefreq>monthly</changefreq></url>
+</urlset>

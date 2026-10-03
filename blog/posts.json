@@ -1,0 +1,53 @@
+[
+  {
+    "slug": "checkerboard-turn-igs-13-approach",
+    "title": "The checkerboard turn: flying the IGS 13 approach",
+    "dek": "Descend over Tsing Yi, aim at a checkerboard on a hill in Kowloon, then turn a 747 right by 47° over the rooftops. How the Runway 13 approach works in Fly Kai Tak.",
+    "description": "How the famous Runway 13 IGS approach into Kai Tak works in Fly Kai Tak: the 088° course, the checkerboard on the hill, the 47° right turn over Kowloon City and the landing grade.",
+    "date": "2026-10-03",
+    "tag": "Feature",
+    "keywords": ["Kai Tak", "IGS 13", "checkerboard hill", "47 degree turn", "flight simulator", "Hong Kong 1998", "Runway 13"],
+    "hero": "turn",
+    "hero_alt": "Cockpit view of a 747 banking right over Kowloon City with Kai Tak's Runway 13 and the harbour ahead.",
+    "hero_caption": "Mid-turn in the 747-400. The heading has swung from 088° to 102°, the artificial horizon is banked, and Runway 13 is in sight beyond the sports ground.",
+    "card_kicker": "VHHH · IGS 13 · 1998",
+    "card_title": "The checkerboard turn",
+    "card_sub": "Flying the IGS 13 approach",
+    "card_image": "street2",
+    "card_focus": 40
+  },
+  {
+    "slug": "real-hong-kong-1998-open-data",
+    "title": "Real Hong Kong: building 1998 from open data",
+    "dek": "The coastline, roads and about 24,000 buildings under the Kai Tak approach come from official Hong Kong open data. Here is what is real, and what we changed to make it 1998.",
+    "description": "How Fly Kai Tak builds Hong Kong from Lands Department open data and SRTM terrain, and the 1998 corrections: no Kai Tak redevelopment, no West Kowloon buildings, and the Walled City as an option.",
+    "date": "2026-10-03",
+    "tag": "Behind the scenes",
+    "keywords": ["Kai Tak", "Hong Kong 1998", "Lands Department", "open data", "Kowloon Walled City", "flight simulator", "SRTM terrain"],
+    "hero": "spectator",
+    "hero_alt": "A 747 on the apron at Kai Tak with the runway running out into Victoria Harbour and the Hong Kong skyline behind.",
+    "hero_caption": "Spectator mode from the car park roof: the apron, Runway 13 running into the harbour, and the skyline across the water.",
+    "card_kicker": "LANDS DEPT · SRTM · 1998",
+    "card_title": "Real Hong Kong",
+    "card_sub": "Building 1998 from open data",
+    "card_image": "spectator",
+    "card_focus": 55
+  },
+  {
+    "slug": "typhoons-fog-and-night-flying",
+    "title": "Typhoons, fog and city lights: weather and night at Kai Tak",
+    "dek": "Six weather presets, a lightning toggle, gusts that push the aircraft around and a night mode that lights up Kowloon. The same approach, very different flights.",
+    "description": "Weather and night flying in Fly Kai Tak: clear, rain, typhoon, storm, low cloud and fog presets, wind gusts and turbulence, lightning, and a lit-up Kowloon at night.",
+    "date": "2026-10-03",
+    "tag": "Feature",
+    "keywords": ["Kai Tak", "typhoon", "weather", "night flying", "flight simulator", "Hong Kong 1998", "IGS 13"],
+    "hero": "typhoon2",
+    "hero_alt": "Cockpit view of a 777 on the IGS approach in a typhoon, with heavy rain and the city fading into grey.",
+    "hero_caption": "The 777-200 on the IGS in a typhoon. The ATC call quotes the live QNH, and the wind readout shows 36 knots gusting 52.",
+    "card_kicker": "TYPHOON · FOG · NIGHT",
+    "card_title": "Weather and night",
+    "card_sub": "Typhoons, fog and city lights",
+    "card_image": "rain",
+    "card_focus": 50
+  }
+]
