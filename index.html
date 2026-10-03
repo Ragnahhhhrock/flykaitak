@@ -313,7 +313,7 @@ html,body{overscroll-behavior:none;touch-action:manipulation}
       <button class="btn" id="seatSide" type="button">Left</button>
     </div>
     <select id="viewSel" aria-label="Camera view">
-      <option value="cockpit">Cockpit</option><option value="chase">Exterior</option><option value="tower">Tower</option><option value="street">Plane Spotter: Kowloon City street</option><option value="ped">Plane Spotter: Prince Edward Road</option><option value="carpark">Plane Spotter: car park roof</option><option value="boat">Plane Spotter: boat in the harbour</option><option value="checker">Plane Spotter: top of Checkerboard Hill</option><option value="peak">Plane Spotter: The Peak</option><option value="cabin">Cabin seat</option>
+      <option value="cockpit">Cockpit</option><option value="chase">Exterior</option><option value="tower">Tower</option><option value="street">Plane Spotter: Kowloon City street</option><option value="ped">Plane Spotter: Prince Edward Road</option><option value="carpark">Plane Spotter: car park roof</option><option value="boat">Plane Spotter: boat in the harbour</option><option value="checker">Plane Spotter: top of Checkerboard Hill</option><option value="lym">Plane Spotter: Lei Yue Mun (Runway 31)</option><option value="peak">Plane Spotter: The Peak</option><option value="cabin">Cabin seat</option>
     </select>
     <select id="zoomSel" aria-label="Zoom"><option value="1">Zoom 1×</option><option value="2">2×</option><option value="4">4×</option><option value="8">8×</option><option value="16">16×</option></select>
     <select id="tsSel" aria-label="Time speed"><option value="1">Time 1×</option><option value="2">2×</option><option value="4">4×</option><option value="8">8×</option></select>
@@ -368,14 +368,15 @@ html,body{overscroll-behavior:none;touch-action:manipulation}
     <div class="checkband" aria-hidden="true"></div>
     <div class="sheet-body">
       <div>
-        <p class="eyebrow">IGS approach · Runway 13</p>
-        <h1>Hit the checkerboard, turn right, land before the harbour.</h1>
-        <p>You start the descent over Tsing Yi at about 3,000 ft, established on the instrument guidance system, heading 088. Follow it toward the orange-and-white checkerboard on the hill, then make the 47° right turn low over Kowloon City and line up with a runway that ends in Kowloon Bay.</p>
+        <p class="eyebrow" id="heroEye">IGS approach · Runway 13</p>
+        <h1 id="heroTitle">Hit the checkerboard, turn right, land before the harbour.</h1>
+        <p id="heroText">You start the descent over Tsing Yi at about 3,000 ft, established on the instrument guidance system, heading 088. Follow it toward the orange-and-white checkerboard on the hill, then make the 47° right turn low over Kowloon City and line up with a runway that ends in Kowloon Bay.</p>
       </div>
       <fieldset>
         <legend>Mode</legend>
         <div class="chips" id="modeChips">
           <label class="chip"><input type="radio" name="game" value="approach" checked><span>IGS 13 approach</span></label>
+          <label class="chip"><input type="radio" name="game" value="approach31"><span>Runway 31 approach</span></label>
           <label class="chip"><input type="radio" name="game" value="free"><span>Free flight</span></label>
           <label class="chip"><input type="radio" name="game" value="watch"><span>Plane Spotter</span></label>
         </div>
@@ -498,7 +499,7 @@ const rwS=(x,z)=>x*RWY.u[0]+z*RWY.u[1], rwL=(x,z)=>x*RWY.r[0]+z*RWY.r[1];
 const rwP=(s,l)=>[s*RWY.u[0]+l*RWY.r[0],s*RWY.u[1]+l*RWY.r[1]];
 const IGS_HDG=88, GP=3.1*D2R, VIGS=[Math.sin(IGS_HDG*D2R),-Math.cos(IGS_HDG*D2R)];
 
-const PATH=(()=>{
+const PATH13=(()=>{
   const sP=-1240, P=rwP(sP,0), Rt=1470, tl=Rt*Math.tan((RWY.hdg-IGS_HDG)/2*D2R);
   const A=[P[0]-tl*VIGS[0],P[1]-tl*VIGS[1]];
   const LEN1=15400, S=[A[0]-LEN1*VIGS[0],A[1]-LEN1*VIGS[1]];
@@ -515,6 +516,21 @@ const PATH=(()=>{
   for(const p of pts){p.d=thrC-p.c;p.alt=RWY.elev+Math.max(0,15+p.d*Math.tan(GP))}
   return {pts,A,P,C,S,Rt,iA:n1,iB,turnD:pts[n1].d};
 })();
+// Runway 31, the easterly approach: a straight-in final on the reciprocal of the runway heading, from 15 km out over the sea
+// east of Kowloon, through the Lei Yue Mun gap (about 3 km out) and across Kowloon Bay. Same 3.1 degree path. d is the distance
+// to the 31 threshold, so everything that reads PATH (autopilot, HUD, radio, AI traffic) works on either approach.
+const PATH31=(()=>{
+  const LEN=15000,n=Math.ceil((LEN+RWY.len)/25),h=(RWY.hdg+180)*D2R,pts=[];
+  for(let i=0;i<=n;i++){const d=LEN-(LEN+RWY.len)*i/n,q=rwP(RWY.len+d,0);pts.push({x:q[0],z:q[1],h,k:0,d,alt:RWY.elev+Math.max(0,15+d*Math.tan(GP))})}
+  let c=0;pts[0].c=0;for(let i=1;i<pts.length;i++){c+=Math.hypot(pts[i].x-pts[i-1].x,pts[i].z-pts[i-1].z);pts[i].c=c}
+  return {pts,iA:pts.findIndex(p=>p.d<=3000),iB:pts.findIndex(p=>p.d<=600),turnD:3400};
+})();
+// the runway being landed on: 13 (from the west, over the checkerboard) or 31 (from the east, over Lei Yue Mun)
+const LND={id:'13',hdg:RWY.hdg,dir:1};
+let PATH=PATH13;
+const lS=(x,z)=>LND.dir>0?rwS(x,z):RWY.len-rwS(x,z);   // metres past the landing threshold, along the landing direction
+const lL=(x,z)=>LND.dir>0?rwL(x,z):-rwL(x,z);            // metres right of the landing centreline
+const modeId=()=>CFG.game==='approach'&&LND.id==='31'?'approach31':CFG.game;
 function pathNearest(x,z,hint){
   const P=PATH.pts;let best=hint|0,bd=1e18;const a=Math.max(0,best-260),b=Math.min(P.length-1,best+260);
   for(let i=a;i<=b;i++){const dx=P[i].x-x,dz=P[i].z-z,d=dx*dx+dz*dz;if(d<bd){bd=d;best=i}}
@@ -581,7 +597,7 @@ const WX={
 };
 
 /* ---------------- state & settings ---------------- */
-const CFG={game:'approach',zoom:1,ts:1,deck:false,hud:true,ac:'b744',night:false,wx:'clear',lightning:false,clouds:true,guide:true,ap:false,walled:true,view:'cockpit',sound:true,radio:true,seatRow:34,seatLeft:true};
+const CFG={game:'approach',rwy:'13',zoom:1,ts:1,deck:false,hud:true,ac:'b744',night:false,wx:'clear',lightning:false,clouds:true,guide:true,ap:false,walled:true,view:'cockpit',sound:true,radio:true,seatRow:34,seatLeft:true};
 const ST={};let mode='loading'; // loading | attract | fly | ended
 let paused=false;
 
@@ -736,7 +752,7 @@ function waterMaterial(){
 }
 function setWater(){const w=WX[CFG.wx],n=CFG.night,over=w.cloud&&w.cloud.cov>.8;
   const ws=w.ws+w.gust*.5;WATER_U.uCaps.value=clamp((ws-6)/32,0,1);WATER_U.uChop.value=clamp(ws/30,.15,1.4);
-  const wr=w.wd*D2R;WATER_U.uWindDir.value.set(-Math.sin(wr),Math.cos(wr));WATER_U.uNight.value=n?1:0;WATER_U.uSunAmt.value=n?.0:over||CFG.wx==='fog'?.1:1;
+  const wr=wxDir()*D2R;WATER_U.uWindDir.value.set(-Math.sin(wr),Math.cos(wr));WATER_U.uNight.value=n?1:0;WATER_U.uSunAmt.value=n?.0:over||CFG.wx==='fog'?.1:1;
   if(n){WATER_U.uDeep.value.setHex(0x03090c);WATER_U.uShallow.value.setHex(0x0b1d20)}else if(over){WATER_U.uDeep.value.setHex(0x1e3436);WATER_U.uShallow.value.setHex(0x4a6a62)}else{WATER_U.uDeep.value.setHex(0x0f3a44);WATER_U.uShallow.value.setHex(0x3f7f78)}}
 
 /* ---------------- terrain ---------------- */
@@ -1423,7 +1439,7 @@ function buildWalledCity(){
 function setWalled(on){walledGroup.visible=on;parkGroup.visible=!on;WALLED.on=on;if(WALLED.ref)WALLED.ref.top=on?WALLED.col.top:-99}
 
 /* ---------------- airport ---------------- */
-let papi,rwyLights,leadIn,approachLights,hoops,parked=[];
+let papi,papi31,rwyLights,rwyLights31,leadIn,leadIn31,approachLights,approachLights31,hoops,hoops13,hoops31,parked=[];
 function buildAirport(){
   const grp=new THREE.Group();grp.position.set(0,0,0);
   const placeAlong=(m,s,l,y)=>{const p=rwP(s,l);m.position.set(p[0],y,p[1]);m.rotation.y=-RWY.hdg*D2R;grp.add(m);return m};
@@ -1477,34 +1493,53 @@ function buildAirport(){
   const types=['b744','a333','b772','b744','a343','a333'];
   for(let i=0;i<6;i++){const m=buildAircraftModel(AC[types[i]],{tail:[0x1d6f6a,0xb53a2c,0x23406e,0x6a1f2f,0x1d6f6a,0x3a5f2e][i],gear:true});const p=rwP(120+i*85,-560);m.position.set(p[0],RWY.elev,p[1]);m.rotation.y=-(RWY.hdg-90)*D2R;m.scale.setScalar(1);scene.add(m);parked.push(m)}
   // lights
-  const Lr=[];
-  for(let s=0;s<=RWY.len;s+=60)for(const l of[-33,33]){const yel=s>RWY.len-600;Lr.push(...rwP3(s,l,1.0),1,yel?.85:1,yel?.45:.95,3,-1)}
-  for(let l=-30;l<=30;l+=3){Lr.push(...rwP3(-2,l,1),.25,1,.35,3,-1);Lr.push(...rwP3(RWY.len+2,l,1),1,.15,.1,3,-1)}
-  rwyLights=makeLights(Lr);scene.add(rwyLights);
+  // edge lights turn amber over the last 600 m, and the landing threshold is green (red at the far end), for each direction
+  const mkRwyLights=dir=>{const Lr=[];
+    for(let s=0;s<=RWY.len;s+=60)for(const l of[-33,33]){const yel=dir>0?s>RWY.len-600:s<600;Lr.push(...rwP3(s,l,1.0),1,yel?.85:1,yel?.45:.95,3,-1)}
+    const thrS=dir>0?-2:RWY.len+2,endS=dir>0?RWY.len+2:-2;
+    for(let l=-30;l<=30;l+=3){Lr.push(...rwP3(thrS,l,1),.25,1,.35,3,-1);Lr.push(...rwP3(endS,l,1),1,.15,.1,3,-1)}
+    const o=makeLights(Lr);scene.add(o);return o};
+  rwyLights=mkRwyLights(1);rwyLights31=mkRwyLights(-1);
   // approach lights (straight-in from Kowloon City streets)
   const La=[];
   for(let s=-30;s>=-900;s-=30){const gy=Math.max(terrainAt(...rwP(s,0)),RWY.elev);const bar=s===-300?15:2;for(let l=-bar*1.5;l<=bar*1.5+.01;l+=3){const q=rwP(s,l);La.push(q[0],gy+3,q[1],1,.97,.88,3.4,-1)}}
   approachLights=makeLights(La);scene.add(approachLights);
+  // Runway 31: the approach lights run out over Kowloon Bay (a crossbar 300 m out)
+  const La31=[];for(let k=30;k<=900;k+=30){const bar=k===300?15:2;for(let l=-bar*1.5;l<=bar*1.5+.01;l+=3){const q=rwP(RWY.len+k,l);La31.push(q[0],RWY.elev+2.5,q[1],1,.97,.88,3.4,-1)}}
+  approachLights31=makeLights(La31);scene.add(approachLights31);
   // lead-in strobes over the rooftops along the curved approach (sequenced)
   const Ll=[];let ph=0;for(let i=0;i<PATH.pts.length;i+=5){const p=PATH.pts[i];if(p.d>4200||p.d<930)continue;const b=buildingAt(p.x,p.z,0);const gy=Math.max(terrainAt(p.x,p.z),b?b.top:0,RWY.elev)+3;Ll.push(p.x,gy,p.z,1,1,1,4.5,(1-p.d/4200)*1.0)}
   leadIn=makeLights(Ll);scene.add(leadIn);
+  // the same sequenced strobes lead you in over the water to Runway 31, through the Lei Yue Mun gap
+  const Ll31=[];for(let i=0;i<PATH31.pts.length;i+=5){const p=PATH31.pts[i];if(p.d>4200||p.d<930)continue;const b=buildingAt(p.x,p.z,0);const gy=Math.max(terrainAt(p.x,p.z),b?b.top:0,RWY.elev)+3;Ll31.push(p.x,gy,p.z,1,1,1,4.5,(1-p.d/4200)*1.0)}
+  leadIn31=makeLights(Ll31);scene.add(leadIn31);
   // PAPI, left side at the aiming point
   const Lp=[];for(let k=0;k<4;k++)Lp.push(...rwP3(310,-48-k*9,1.2),1,1,1,4,-1);
   papi=makeLights(Lp);scene.add(papi);
+  const Lp31=[];for(let k=0;k<4;k++)Lp31.push(...rwP3(RWY.len-310,48+k*9,1.2),1,1,1,4,-1);
+  papi31=makeLights(Lp31);scene.add(papi31);
+  // a spectator spot on the hillside north of the Lei Yue Mun gap, beside the Runway 31 approach
+  {const q=rwP(RWY.len+3000,-450);const b=buildingAt(q[0],q[1],0);SPOTS.lym=[q[0],Math.max(terrainAt(q[0],q[1]),b?b.top:0)+6,q[1]]}
   // approach guide gates
-  buildHoops();
+  hoops13=buildHoops(PATH13);hoops31=buildHoops(PATH31);hoops=hoops13;hoops31.visible=false;
+  updateRunwayScenery();
 }
+// switch the airfield furniture (lights, PAPI, guide gates) and the approach path to the runway being landed on
+function updateRunwayScenery(){const e=LND.id==='31';
+  if(rwyLights){rwyLights.visible=!e;rwyLights31.visible=e;approachLights.visible=!e;approachLights31.visible=e;leadIn.visible=!e;leadIn31.visible=e;papi.visible=!e;papi31.visible=e}
+  if(hoops13){hoops=e?hoops31:hoops13;(e?hoops13:hoops31).visible=false}}
+function setRunway(id){const e=id==='31';LND.id=e?'31':'13';LND.dir=e?-1:1;LND.hdg=e?RWY.hdg+180:RWY.hdg;PATH=e?PATH31:PATH13;updateRunwayScenery()}
 function rwP3__unused(){}
 function rwP3(s,l,y){const p=rwP(s,l);return [p[0],RWY.elev+y,p[1]]}
-function buildHoops(){
+function buildHoops(path){
   const pos=[],W=84,H=46,T=1.6;
-  for(let i=0;i<PATH.pts.length;i+=16){const p=PATH.pts[i];if(p.d<120)continue;const c=Math.cos(p.h),s=Math.sin(p.h);
+  for(let i=0;i<path.pts.length;i+=16){const p=path.pts[i];if(p.d<120)continue;const c=Math.cos(p.h),s=Math.sin(p.h);
     const rx=c,rz=s;const corners=(hw,hh)=>[[-hw,-hh],[hw,-hh],[hw,hh],[-hw,hh]];
     const o=corners(W/2,H/2),n=corners(W/2-T,H/2-T);
     const P=(a)=>[p.x+rx*a[0],p.alt+6+a[1],p.z+rz*a[0]];
     for(let k=0;k<4;k++){const a=P(o[k]),b=P(o[(k+1)%4]),c2=P(n[k]),d=P(n[(k+1)%4]);pos.push(...a,...b,...c2,...b,...d,...c2)}}
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
-  hoops=new THREE.Mesh(g,new THREE.MeshBasicMaterial({color:0xff5ad9,transparent:true,opacity:.55,side:THREE.DoubleSide,depthWrite:false,fog:true}));hoops.frustumCulled=false;scene.add(hoops);
+  const m=new THREE.Mesh(g,new THREE.MeshBasicMaterial({color:0xff5ad9,transparent:true,opacity:.55,side:THREE.DoubleSide,depthWrite:false,fog:true}));m.frustumCulled=false;scene.add(m);return m;
 }
 
 /* ---------------- harbour traffic ---------------- */
@@ -1766,7 +1801,7 @@ function buildAircraftModel(a,opt={}){
    FLIGHT MODEL
    ===================================================================== */
 function windAt(y,t){
-  const w=WX[CFG.wx];const hf=.62+.38*clamp(y/300,0,1);const wr=w.wd*D2R;
+  const w=WX[CFG.wx];const hf=.62+.38*clamp(y/300,0,1);const wr=wxDir()*D2R;
   const gust=w.gust*(.5*Math.sin(t*.37+ST.ph[0])+.3*Math.sin(t*1.13+ST.ph[1])+.2*Math.sin(t*2.71+ST.ph[2]));
   const sp=Math.max(0,(w.ws+gust)*KT*hf);const tb=w.turb*clamp(y/40,0.3,1);
   const tx=tb*(Math.sin(t*1.7+ST.ph[3])*.6+Math.sin(t*3.9+ST.ph[4])*.4),ty=tb*(Math.sin(t*1.3+ST.ph[5])*.5+Math.sin(t*4.7+ST.ph[1])*.3+Math.sin(t*9.1+ST.ph[2])*.2),tz=tb*(Math.sin(t*2.1+ST.ph[0])*.6+Math.sin(t*5.3+ST.ph[3])*.4);
@@ -1779,7 +1814,7 @@ function groundInfo(x,z){
 }
 function resetFlight(){
   const a=AC[CFG.ac];const P=PATH.pts;
-  Object.assign(ST,{ac:a,t:0,pi:0,x:P[0].x,z:P[0].z,y:P[0].alt,V:175*KT,gamma:-GP,psi:IGS_HDG*D2R,phi:0,flapIdx:2,flapPos:2,gearDown:false,gearPos:0,
+  Object.assign(ST,{ac:a,t:0,pi:0,x:P[0].x,z:P[0].z,y:P[0].alt,V:175*KT,gamma:-GP,psi:P[0].h,phi:0,flapIdx:2,flapPos:2,gearDown:false,gearPos:0,
     throttle:.1,thrust:0,onGround:false,ended:null,stall:false,gdot:0,apI:0,inPitch:0,inRoll:0,td:null,Gs:0,psiG:0,vx:0,vy:0,vz:0,ra:900,
     ph:[0,1,2,3,4,5].map(()=>rnd()*6.28),callouts:{},warnT:0,warn:'',ap:CFG.ap,crashT:0,lastGPWS:0,tailstrike:false,apUsed:false,rewound:false});
   // trim for the glidepath
@@ -1832,9 +1867,9 @@ function checkAirborne(){
   const half=a.span/2,cp=Math.cos(s.psi),sp=Math.sin(s.psi);const rx=cp,rz=sp;
   for(const sd of[-1,1]){const tx=s.x+rx*half*sd*Math.cos(s.phi),tz=s.z+rz*half*sd*Math.cos(s.phi),ty=s.y+a.cy-a.R*.45-half*sd*Math.sin(s.phi);
     const tg=groundInfo(tx,tz),tb=buildingAt(tx,tz,1);
-    if(tb&&ty<tb.top)return crash('Wing struck '+bName(tb),'The '+(sd<0?'left':'right')+' wing hit a building at '+fmtFt(ty)+'. Kowloon City rooftops sit only a few hundred feet below the approach path.');
+    if(tb&&ty<tb.top)return crash('Wing struck '+bName(tb),'The '+(sd<0?'left':'right')+' wing hit a building at '+fmtFt(ty)+'. '+(LND.id==='31'?'The hillsides either side of the Lei Yue Mun gap come close to the approach path.':'Kowloon City rooftops sit only a few hundred feet below the approach path.'));
     if(ty<tg.h-.3)return crash(tg.kind==='water'?'Wingtip caught the water':'Wingtip struck the ground','The aircraft was banked '+Math.abs(s.phi*R2D).toFixed(0)+'° this close to the surface.')}
-  if(b&&s.y<b.top-1)return crash('Struck '+bName(b),'The aircraft descended into a '+(b.top-RWY.elev>120?'tower':'building')+' '+fmtFt(b.top)+' tall. On the IGS approach the lowest safe height drops fast over Kowloon.');
+  if(b&&s.y<b.top-1)return crash('Struck '+bName(b),'The aircraft descended into a '+(b.top-RWY.elev>120?'tower':'building')+' '+fmtFt(b.top)+' tall. '+(LND.id==='31'?'Buildings and hills crowd the shoreline either side of the Lei Yue Mun gap.':'On the IGS approach the lowest safe height drops fast over Kowloon.'));
   if(s.y<=g.h){
     if(g.kind==='water')return crash(waterName(s.x,s.z),'The aircraft came down short of the runway.');
     if(g.kind==='land'){if(chkH(s.x,s.z)>8)return crash('Flew into Checkerboard Hill','The turn has to start before the checkerboard. Holding heading 088 runs straight into the hill at Kowloon Tsai.');
@@ -1842,21 +1877,21 @@ function checkAirborne(){
     return touchdown();
   }
   if(CFG.game==='approach'&&s.y>4000)return endMissed('Climbed away','You left the approach above 13,000 ft.');
-  const sr=rwS(s.x,s.z);if(CFG.game==='approach'&&sr>RWY.len+300)return endMissed('Missed approach','You overflew the runway and went around over Kowloon Bay. Pilots did this often at Kai Tak.');
+  const sr=lS(s.x,s.z);if(CFG.game==='approach'&&sr>RWY.len+300)return endMissed('Missed approach',LND.id==='31'?'You overflew the runway and went around over Kowloon City.':'You overflew the runway and went around over Kowloon Bay. Pilots did this often at Kai Tak.');
   if(s.V<45*KT&&s.y>40)return crash('Stalled and fell','Airspeed fell to '+Math.round(s.V/KT)+' kt. The wing could no longer hold the aircraft up.');
 }
 function bName(b){return b.name.startsWith('the ')||/Tower|Plaza|Center|Building|House|Square|IFC|Centre|Walled/.test(b.name)?b.name:'buildings in '+b.name}
-function waterName(x,z){return x>-300&&x<4500&&z<3300?'Ditched in Kowloon Bay':'Ditched in Victoria Harbour'}
+function waterName(x,z){if(LND.id==='31'){const d=-lS(x,z);return d<2200?'Ditched in Kowloon Bay':d<5500?'Ditched in the Lei Yue Mun channel':'Ditched in Tathong Channel'}return x>-300&&x<4500&&z<3300?'Ditched in Kowloon Bay':'Ditched in Victoria Harbour'}
 function fmtFt(m){return Math.round(m/FT).toLocaleString('en')+' ft'}
 function touchdown(){
-  const s=ST,a=s.ac;attemptStart('touchdown');const sr=rwS(s.x,s.z),lr=rwL(s.x,s.z);
+  const s=ST,a=s.ac;attemptStart('touchdown');const sr=lS(s.x,s.z),lr=lL(s.x,s.z);
   if(sr<-10||sr>RWY.len||Math.abs(lr)>38)return crash(sr<0?'Landed short of the runway':'Landed off the runway','The wheels touched '+(sr<0?Math.round(-sr)+' m before the threshold':Math.round(Math.abs(lr))+' m from the centreline')+'.');
   const vs=s.vy;const bank=Math.abs(s.phi);
   if(s.gearPos<.95)return crash('Gear-up landing','The landing gear was not down and locked. The aircraft slid down the runway on its engines and belly.');
   if(vs<-4.8)return crash('Hard landing: main gear collapsed','Touchdown at '+Math.round(-vs/FT*60)+' feet per minute. The gear is certified to about 600.');
   if(bank>a.strike)return crash('Wing and engine strike on touchdown','Bank was '+(bank*R2D).toFixed(1)+'° at touchdown. The '+a.short+' scrapes an engine or wingtip beyond about '+(a.strike*R2D).toFixed(0)+'°.');
   s.tailstrike=s.theta>a.tailMax;
-  s.stopNoted=0;s.onGround=true;s.td={vs,s:sr,l:lr,bank:bank*R2D,ias:s.V/KT,pitch:s.theta*R2D,crab:angDiff(s.psi,RWY.hdg*D2R)*R2D};
+  s.stopNoted=0;s.onGround=true;s.td={vs,s:sr,l:lr,bank:bank*R2D,ias:s.V/KT,pitch:s.theta*R2D,crab:angDiff(s.psi,LND.hdg*D2R)*R2D};
   s.Gs=Math.hypot(s.vx,s.vz);s.psiG=Math.atan2(s.vx,-s.vz);s.y=RWY.elev;s.vy=0;
   say(s.td.vs<-3?'Firm touchdown':'',true);
   sfx.thump(clamp(-vs/3,0.35,1));sfx.screech(clamp(.5+(s.Gs-60)/40,.4,1));
@@ -1864,7 +1899,7 @@ function touchdown(){
 function groundRoll(dt){
   const s=ST,a=s.ac;s.y=RWY.elev;s.vy=0;s.gamma=0;
   if(!s.td&&s.Gs>35&&s.inPitch>.2)s.theta=Math.min(12*D2R,s.theta+s.inPitch*3*D2R*dt);else s.theta=Math.max(0,s.theta-(s.Gs>40&&s.inPitch>.3&&!s.ap?0:2.2*D2R*dt));s.phi*=Math.max(0,1-4*dt);
-  const lr=rwL(s.x,s.z),sr=rwS(s.x,s.z);const rh=RWY.hdg*D2R;
+  const lr=lL(s.x,s.z),sr=lS(s.x,s.z);const rh=LND.hdg*D2R;
   let steer;if(s.ap)steer=clamp(-lr*.004-angDiff(s.psiG,rh)*1.2,-3*D2R,3*D2R);else steer=s.inRoll*3*D2R-angDiff(s.psiG,rh)*.25;
   s.psiG+=steer*dt;s.psi=s.psiG;
   const q=.5*RHO*s.Gs*s.Gs;const drag=q*a.S*(CD0+CDFS[4]+CDG+.08)/a.mass;
@@ -1872,7 +1907,7 @@ function groundRoll(dt){
   s.Gs=Math.max(0,s.Gs+(thr-drag-rev-brake-.15)*dt);s.V=s.Gs;
   s.vx=s.Gs*Math.sin(s.psiG);s.vz=-s.Gs*Math.cos(s.psiG);s.x+=s.vx*dt;s.z+=s.vz*dt;s.ra=0;
   if(Math.abs(lr)>45&&s.Gs>3)return crash('Runway excursion','The aircraft ran off the side of the runway into Kowloon Bay. The strip is only a few hundred metres wide, with water on both sides.');
-  if(sr>RWY.len+40&&s.Gs>2)return crash('Overran into Kowloon Bay','The aircraft could not stop before the end of the runway. In 1993 a China Airlines 747 did exactly this.');
+  if(sr>RWY.len+40&&s.Gs>2)return LND.id==='31'?crash('Overran toward Kowloon City','The aircraft could not stop before the end of Runway 31. Beyond it lies Kowloon City.'):crash('Overran into Kowloon Bay','The aircraft could not stop before the end of the runway. In 1993 a China Airlines 747 did exactly this.');
   if(s.td&&s.Gs<3*KT){s.Gs=0;if(CFG.game==='free'){if(!s.stopNoted){s.stopNoted=1;const g=gradeLanding(s.td);toast('Landed: grade '+g.g+', '+Math.round(g.fpm)+' fpm. Add thrust to go again.');trackLanding({grade:g.g,score:Math.max(0,g.pts),touchdown_fpm:Math.round(g.fpm),mode:'free'})}if(s.throttle>.3){s.td=null;s.stopNoted=0;s.attempted=false}return}return landed()}
   if(s.td&&CFG.game==='free'&&s.throttle>.6&&s.Gs>20){s.td=null;s.stopNoted=0;s.attempted=false}  // touch-and-go
   // liftoff
@@ -1917,7 +1952,7 @@ function track(name,params,beacon){try{if(window.gtag)gtag('event',name,Object.a
    flight_end, landing_attempt, landing, crash, missed_approach, control_toggle, aircraft_select, setup_option, session_summary */
 const SESS={flights:0,attempts:0,landings:0,crashes:0,missed:0,flightSec:0,t0:performance.now()};
 let FLT=null,VIA='button',sumSig='';
-function flightBegin(){FLT={n:++SESS.flights,active:0,banked:0,attempts:0,landings:0,toggles:0,done:false,ac:CFG.ac,game:CFG.game,wx:CFG.wx,tod:CFG.night?'night':'day'}}
+function flightBegin(){FLT={n:++SESS.flights,active:0,banked:0,attempts:0,landings:0,toggles:0,done:false,ac:CFG.ac,game:modeId(),wx:CFG.wx,tod:CFG.night?'night':'day'}}
 function flightEnd(outcome,beacon){const f=FLT;if(!f||f.done)return;f.done=true;SESS.flightSec+=f.active-f.banked;f.banked=f.active;
   track('flight_end',{outcome,game_mode:f.game,aircraft:f.ac,weather:f.wx,time_of_day:f.tod,flight_number:f.n,flight_seconds:Math.round(f.active),sim_seconds:Math.round(ST.t||0),landing_attempts:f.attempts,successful_landings:f.landings,controls_toggled:f.toggles},beacon)}
 function playSec(){return SESS.flightSec+(FLT&&!FLT.done?FLT.active-FLT.banked:0)}
@@ -2073,7 +2108,7 @@ const NUMW=['zero','one','two','three','four','five','six','seven','eight','nine
 const RV={APP:{p:.72,r:1.1,v:.9,l:'APP 119.1'},TWR:{p:.92,r:1.12,v:.9,l:'TWR 118.7'},YOU:{p:.62,r:1.08,v:.8,l:'YOU'},OTH:{p:1.18,r:1.18,v:.62,l:'CREW'}};
 function spokenize(t){return t.replace(/\d+(?:\.\d+)?/g,m=>m.split('').map(c=>c==='.'?'decimal':NUMW[+c]).join(' ')).replace(/\bQNH\b/g,'Q N H').replace(/\bIGS\b/g,'I G S').replace(/\bDME\b/g,'D M E')}
 function windText(){const w=WX[CFG.wx];if(w.ws<4)return 'wind variable at '+Math.max(1,Math.round(w.ws))+' knots';
-  return 'wind '+String(Math.round(w.wd/10)*10).padStart(3,'0')+' at '+Math.round(w.ws)+' knots'+(w.gust>=4?' gusting '+Math.round(w.ws+w.gust*.9):'')}
+  return 'wind '+String(Math.round(wxDir()/10)%36*10).padStart(3,'0')+' at '+Math.round(w.ws)+' knots'+(w.gust>=4?' gusting '+Math.round(w.ws+w.gust*.9):'')}
 function visText(){const w=WX[CFG.wx];return w.vis<5000?', visibility '+(Math.round(w.vis/100)*100)+' metres':''}
 function radioClear(){RAD.q.length=0;RAD.cur=null;RAD.gap=0;for(const l of RAD.lines)l.el.remove();RAD.lines.length=0;const el=document.getElementById('radio');if(el)el.hidden=true}
 function radioReset(){radioClear();RAD.flags={};RAD.next=28;RAD.lastChk=-99;RAD.nChk=0;RAD.call='Harbour '+(100+Math.floor(Math.random()*890))}
@@ -2097,8 +2132,9 @@ function radioPump(dt){
 }
 function chatter(freq){
   const oc=OTHERS[(Math.random()*OTHERS.length)|0],W=windText();
+  const E=CFG.game==='approach'&&LND.id==='31',R=E?'31':'13',sight=E?'Lei Yue Mun':'checkerboard';
   const A=[
-    [['APP',`${oc}, Hong Kong Approach, cleared IGS approach runway 13. Report checkerboard in sight.`],['OTH',`Cleared IGS 13, wilco, ${oc}.`]],
+    [['APP',E?`${oc}, Hong Kong Approach, cleared visual approach runway 31. Report Lei Yue Mun in sight.`:`${oc}, Hong Kong Approach, cleared IGS approach runway 13. Report checkerboard in sight.`],['OTH',E?`Cleared visual approach 31, wilco, ${oc}.`:`Cleared IGS 13, wilco, ${oc}.`]],
     [['APP',`${oc}, Hong Kong Approach, hold at waypoint Golf, minimum holding altitude 6000 feet. Expect further clearance in 5 minutes.`],['OTH',`Holding at Golf, ${oc}.`]],
     [['APP',`${oc}, contact Kai Tak Tower 118.7.`],['OTH',`118.7, ${oc}.`]]];
   const T=[
@@ -2107,8 +2143,8 @@ function chatter(freq){
     [['TWR',`${oc}, ${W}, runway 13 cleared for takeoff.`],['OTH',`Cleared for takeoff 13, ${oc}.`]],
     [['OTH',`Kai Tak Tower, ${oc}, checkerboard in sight.`],['TWR',`${oc}, ${W}, runway 13 cleared to land.`],['OTH',`Cleared to land 13, ${oc}.`]]];
   // when the player is on the runway or final, other crews are only told to continue behind
-  const S=[[['TWR',`${oc}, Kai Tak Tower, continue approach, number 2 for runway 13.`],['OTH',`Continue approach, number 2, ${oc}.`]],
-    [['OTH',`Kai Tak Tower, ${oc}, checkerboard in sight.`],['TWR',`${oc}, continue approach, I will call your landing clearance.`],['OTH',`Continue, ${oc}.`]]];
+  const S=[[['TWR',`${oc}, Kai Tak Tower, continue approach, number 2 for runway ${R}.`],['OTH',`Continue approach, number 2, ${oc}.`]],
+    [['OTH',`Kai Tak Tower, ${oc}, ${sight} in sight.`],['TWR',`${oc}, continue approach, I will call your landing clearance.`],['OTH',`Continue, ${oc}.`]]];
   const L=freq==='APP'?A:CFG.game==='watch'?T:S;for(const [who,t] of L[(Math.random()*L.length)|0])radioSay(who,t);
 }
 function atcUpdate(dt){
@@ -2123,10 +2159,12 @@ function atcUpdate(dt){
   let freq='APP';
   if(CFG.game==='watch'){RAD.next-=dt;if(RAD.next<=0&&!RAD.q.length&&!RAD.cur){chatter(Math.random()<.4?'APP':'TWR');RAD.next=14+Math.random()*16}return}
   if(CFG.game==='approach'){
-    const p=PATH.pts[s.pi],d=p.d,tD=PATH.turnD;
-    if(s.t>1.5&&once('init')){radioSay('APP',`${full}, Hong Kong Approach, radar contact. Cleared IGS approach runway 13, QNH ${q}. Report checkerboard in sight.`);radioSay('YOU',`Cleared IGS 13, QNH ${q}, will report checkerboard, ${call}.`)}
-    else if(d<tD+4500&&d>tD&&once('handoff')){radioSay('APP',`${call}, contact Kai Tak Tower 118.7.`);radioSay('YOU',`118.7, ${call}.`);radioSay('TWR',`${call}, Kai Tak Tower, ${W}. Report checkerboard in sight.`)}
-    else if(d<tD+1800&&d>tD-400&&once('checker')){radioSay('YOU',`Checkerboard in sight, ${call}.`);radioSay('TWR',`${call}, ${W}${visText()}${wet}, runway 13 cleared to land.`);radioSay('YOU',`Cleared to land 13, ${call}.`)}
+    const p=PATH.pts[s.pi],d=p.d,tD=PATH.turnD,E=LND.id==='31',sight=E?'Lei Yue Mun':'checkerboard';  // on 31, tD is the Lei Yue Mun gap
+    if(s.t>1.5&&once('init')){
+      if(E){radioSay('APP',`${full}, Hong Kong Approach, radar contact. Cleared visual approach runway 31, QNH ${q}. Report Lei Yue Mun in sight.`);radioSay('YOU',`Cleared visual approach 31, QNH ${q}, will report Lei Yue Mun in sight, ${call}.`)}
+      else{radioSay('APP',`${full}, Hong Kong Approach, radar contact. Cleared IGS approach runway 13, QNH ${q}. Report checkerboard in sight.`);radioSay('YOU',`Cleared IGS 13, QNH ${q}, will report checkerboard, ${call}.`)}}
+    else if(d<tD+4500&&d>tD&&once('handoff')){radioSay('APP',`${call}, contact Kai Tak Tower 118.7.`);radioSay('YOU',`118.7, ${call}.`);radioSay('TWR',`${call}, Kai Tak Tower, ${W}. Report ${sight} in sight.`)}
+    else if(d<tD+1800&&d>tD-400&&once('checker')){radioSay('YOU',`${E?'Lei Yue Mun':'Checkerboard'} in sight, ${call}.`);radioSay('TWR',`${call}, ${W}${visText()}${wet}, runway ${LND.id} cleared to land.`);radioSay('YOU',`Cleared to land ${LND.id}, ${call}.`)}
     freq=RAD.flags.handoff!==undefined?'TWR':'APP';
     if(RAD.flags.init!==undefined&&s.t>25&&d>tD+800&&s.t-RAD.lastChk>45&&RAD.nChk<2&&!s.onGround){
       const dv=s.y-p.alt;
@@ -2188,10 +2226,12 @@ function applyEnvironment(){
   for(const p of parked)p.userData.cabinMat.emissive.setHex(n?0x7a6440:0);
   setClouds(w);applyInteriorLight();
   for(const c of cloudLayers)c.material.color.setHex(n?(over?0x3b3028:0x2a2e38):(over?0xbfc4c6:0xffffff));
-  rwyLights.visible=true;
+  updateRunwayScenery();
   document.getElementById('btnNight').setAttribute('aria-pressed',String(n));
 }
 const ENV={fogBase:0xc9d4dc,dens:.00006};
+// the weather presets blow from the east (the Runway 13 days); for the Runway 31 approach the wind comes from the opposite quarter, as a headwind
+function wxDir(){const d=WX[CFG.wx].wd;return LND.id==='31'?(d+180)%360:d}
 
 /* =====================================================================
    FLIGHT DECK (per type) & PASSENGER CABIN
@@ -2296,7 +2336,7 @@ function drawDisplays(dt){
    g.fillStyle='#3bf0ff';g.fillRect((CHK.x-150-s.x)*sc-3,(CHK.z-s.z)*sc-3,6,6);g.restore();
    g.strokeStyle='#ffd23b';g.lineWidth=2;g.beginPath();g.moveTo(128,192);g.lineTo(122,206);g.moveTo(128,192);g.lineTo(134,206);g.moveTo(128,192);g.lineTo(128,212);g.stroke();
    g.fillStyle='#7af59a';g.font='10px monospace';g.fillText('GS'+Math.round(Math.hypot(s.vx,s.vz)/KT)+' TAS'+Math.round(ias),6,14);g.fillStyle='#fff';g.fillText('HDG '+String(Math.round(hdg)).padStart(3,'0'),96,14);
-   g.fillStyle='#3bf0ff';g.fillText(p.d>0?'RW13 '+(p.d/1852).toFixed(1)+'NM':'RW13',170,14);g.fillStyle='#7af59a';g.fillText(windStr(),6,250);DISP.nd.t.needsUpdate=true}
+   g.fillStyle='#3bf0ff';g.fillText(p.d>0?'RW'+LND.id+' '+(p.d/1852).toFixed(1)+'NM':'RW'+LND.id,170,14);g.fillStyle='#7af59a';g.fillText(windStr(),6,250);DISP.nd.t.needsUpdate=true}
   // engines (EICAS / ECAM upper)
   {const g=DISP.eng.g;g.fillStyle='#000';g.fillRect(0,0,256,256);const n=a.eng,n1=lerp(20,100,s.thrust/a.thr);const rev=s.onGround&&s.throttle<.12&&s.Gs>15*KT;
    for(let i=0;i<n;i++){const cx=n===4?32+i*64:80+i*96,cy=60;g.strokeStyle='#fff';g.lineWidth=2;g.beginPath();g.arc(cx,cy,24,Math.PI*.75,Math.PI*2.25);g.stroke();
@@ -2311,7 +2351,7 @@ function drawDisplays(dt){
   {const g=DISP.sys.g;g.fillStyle='#000';g.fillRect(0,0,256,256);g.fillStyle='#fff';g.font='12px monospace';g.fillText(airbus?'STATUS':'LANDING CHECKLIST',14,22);
    const items=[['GEAR','DOWN',s.gearPos>.99],['FLAPS',a.flaps[4],s.flapIdx>=4],['SPEEDBRAKE','ARMED',true],['AUTOBRAKE','2',true],['LANDING LIGHTS','ON',true]];
    items.forEach((it,i)=>{g.fillStyle=it[2]?'#7af59a':'#fff';g.fillText((it[2]?'✓ ':'  ')+it[0].padEnd(15,'.')+it[1],14,54+i*24)});
-   g.fillStyle='#3bf0ff';g.fillText('KAI TAK  VHHH  IGS 13',14,200);g.fillStyle='#fff';g.fillText('QNH 1012  T 27C',14,222);DISP.sys.t.needsUpdate=true}
+   g.fillStyle='#3bf0ff';g.fillText(LND.id==='31'?'KAI TAK  VHHH  RWY 31':'KAI TAK  VHHH  IGS 13',14,200);g.fillStyle='#fff';g.fillText('QNH 1012  T 27C',14,222);DISP.sys.t.needsUpdate=true}
 }
 function animateDeck(){
   const g=deckGroup;if(!g||!g.visible)return;const s=ST;
@@ -2405,8 +2445,10 @@ function arrivalPose(t,c0,gateS){gateS=gateS||300;
     const flare=clamp((t-(tTD-5))/5,0,1);return {x:p.x,z:p.z,y:p.alt+flare*-.5,psi:p.h,theta:(2+flare*3)*D2R,phi,gear:c>thr-9000?1:0,lights:true}}
   const dt=t-tTD,a=2.0,vT=10;const tDec=(v-vT)/a;let s;
   if(dt<tDec)s=300+v*dt-.5*a*dt*dt;else s=300+(v*v-vT*vT)/(2*a)+vT*(dt-tDec);
-  if(s<1800){const q=rwP(s,0);return {x:q[0],z:q[1],y:RWY.elev,psi:RWY.hdg*D2R,theta:dt<4?(4-dt)*D2R:0,phi:0,gear:1,lights:true,spl:dt<tDec}}
+  if(s<1800){const q=rwP(LND.dir>0?s:RWY.len-s,0);return {x:q[0],z:q[1],y:RWY.elev,psi:LND.hdg*D2R,theta:dt<4?(4-dt)*D2R:0,phi:0,gear:1,lights:true,spl:dt<tDec}}
   const t0=tTD+tDec+(1800-300-(v*v-vT*vT)/(2*a))/vT;
+  if(LND.dir<0){const E=RWY.len-1800;  // Runway 31: vacate to the parallel taxiway and taxi back along it to the apron
+    return polyPose([[E,0,t0],[E-60,0,t0+6],[E-140,-96,t0+16],[600,-96,t0+16+(E-740)/10],[420,-300,t0+44+(E-740)/10],[gateS,-470,t0+44+(E-740)/10+Math.abs(gateS-420)/8+12]],t,vT,0)}
   return polyPose([[1800,0,t0],[1840,0,t0+4],[1900,-96,t0+16],[1780,-96,t0+28],[600,-96,t0+146],[420,-300,t0+174],[gateS,-470,t0+174+Math.abs(gateS-420)/8+12]],t,vT,0);
 }
 const TAXI_END_S=90; // where a departing aircraft lines up on the runway, metres from the threshold
@@ -2423,6 +2465,20 @@ function departurePose(t,gate){
     const c=[q[0]+R*Math.cos(RWY.hdg*D2R),q[1]+R*Math.sin(RWY.hdg*D2R)];x=c[0]-R*Math.cos(psi);z=c[1]-R*Math.sin(psi);const extra=Math.max(0,(tc-turnStart)*v-R);x+=Math.sin(psi)*extra;z-=Math.cos(psi)*extra}
   return {x,z,y:Math.min(alt+(tc>turnStart?(tc-turnStart)*6:0),2400),psi,theta:tc<4?tc*2.5*D2R:9*D2R,phi:tc>turnStart&&tc<turnStart+40?18*D2R:0,gear:tc<6?1:0,lights:tc<90}
 }
+// Runway 31 departure: taxi along the parallel taxiway to the east end, line up facing north-west, roll, then climb out over Kowloon
+// and turn left toward the harbour
+const lineupT31=gate=>48+(RWY.len-110-gate-40)/9+46;
+function departurePose31(t,gate){
+  const tB=48+(RWY.len-110-gate-40)/9,taxi=[[gate,-560,0],[gate,-300,25],[gate+40,-96,48],[RWY.len,-96,tB],[RWY.len,0,tB+22],[RWY.len-TAXI_END_S,0,tB+36]];
+  const tLine=lineupT31(gate),h0=(RWY.hdg+180)*D2R;if(t<tLine)return polyPose(taxi,t);
+  const tau=t-tLine,a=2.2,vR=82;const tR=vR/a,sR=.5*a*tR*tR,S0=TAXI_END_S;
+  if(tau<tR){const s=.5*a*tau*tau;const q=rwP(RWY.len-(S0+s),0);return {x:q[0],z:q[1],y:RWY.elev,psi:h0,theta:0,phi:0,gear:1,lights:true}}
+  const tc=tau-tR,v=vR+Math.min(30,tc*1.2);let s=sR+vR*tc+.6*Math.min(tc,25)**2;const gam=Math.min(8,tc*2.5)*D2R;const alt=RWY.elev+Math.max(0,(s-sR))*Math.tan(gam)*.95;
+  let psi=h0,x,z;const turnStart=60;
+  if(tc<turnStart){const q=rwP(RWY.len-(S0+s),0);x=q[0];z=q[1]}else{const q=rwP(RWY.len-(S0+sR+vR*turnStart+.6*625),0);const R=3200;const ang=Math.min((tc-turnStart)*v/R,1.0);psi=h0-ang;
+    const c=[q[0]-R*Math.cos(h0),q[1]-R*Math.sin(h0)];x=c[0]+R*Math.cos(psi);z=c[1]+R*Math.sin(psi);const extra=Math.max(0,(tc-turnStart)*v-R);x+=Math.sin(psi)*extra;z-=Math.cos(psi)*extra}
+  return {x,z,y:Math.min(alt+(tc>turnStart?(tc-turnStart)*6:0),2400),psi,theta:tc<4?tc*2.5*D2R:9*D2R,phi:tc>turnStart&&tc<turnStart+40?-18*D2R:0,gear:tc<6?1:0,lights:tc<90}
+}
 function holdingPose(t,cx,cz,alt,R,ph){const v=105,w=v/R;const a=t*w+ph;return {x:cx+Math.cos(a)*R,z:cz+Math.sin(a)*R,y:alt,psi:a+Math.PI,theta:2*D2R,phi:Math.atan(v*v/(G*R)),gear:0}}
 const AI_LIVERIES=[0x7a1f24,0x23406e,0x3a5f2e,0xc9a23a,0x5b2a6b,0x2b2f34,0x1f6f8a,0x8a5a2b];
 function buildAI(){
@@ -2431,6 +2487,16 @@ function buildAI(){
     const L=[];for(const p of m.userData.navPts)L.push(p[0],p[1],p[2],p[3],p[4],p[5],2.4,-1);for(const p of m.userData.strobePts)L.push(p[0],p[1],p[2],1,1,1,4,.37);
     const ll=makeLights([0,AC[type].cy-1,-AC[type].len*.48,1,.97,.9,9,-1]);m.add(makeLights(L),ll);AI.push({m,fn,ll,type})};
   const c0=PATH.pts[0].c;
+  if(LND.id==='31'){  // Runway 31 flow: one departure ahead of you, one arrival two minutes ahead and one behind, holds out to the south-east
+    mk('a333',AI_LIVERIES[0],t=>departurePose31(t+lineupT31(430)-30,430));
+    mk('b744',AI_LIVERIES[1],t=>arrivalPose(t,c0+8600));
+    mk('b772',AI_LIVERIES[2],t=>departurePose31(t-24,515));
+    mk('a343',AI_LIVERIES[3],t=>arrivalPose(t-85,c0));
+    mk('b744',AI_LIVERIES[4],t=>holdingPose(t,8000,13500,1850,2600,0));
+    mk('a333',AI_LIVERIES[5],t=>holdingPose(t,8000,13500,2150,2600,Math.PI));
+    mk('b744',AI_LIVERIES[6],t=>departurePose31(t-330,600));
+    mk('a333',AI_LIVERIES[7],t=>polyPose([[700,-200,0],[700,-110,20],[1500,-110,105],[1500,-200,125]],(t%260)));
+    return}
   mk('a333',AI_LIVERIES[0],t=>departurePose(t+70,430));                       // departs before you arrive
   mk('b744',AI_LIVERIES[1],t=>arrivalPose(t,c0+8600));                         // lands about two minutes ahead of you
   mk('b772',AI_LIVERIES[2],t=>departurePose(t-24,515));                      // lines up once the runway is clear
@@ -2544,9 +2610,9 @@ function updateCamera(dt){
     camera.lookAt(tx,ty,tz);camera.fov=58;
   } else if(SPOTS[V]){
     const sp=SPOTS[V];camera.position.set(sp[0],sp[1]+(V==='boat'?Math.sin(performance.now()/900)*.35:0),sp[2]);_v.set(s.x,s.y+a.cy,s.z);
-    const d=camera.position.distanceTo(_v);if(d>2600&&V!=='boat'){const P=PATH.pts;const j=V==='checker'?Math.max(0,PATH.iA-120):V==='street'?PATH.iA:PATH.iB;_v.set(P[j].x,P[j].alt,P[j].z)}else if(d>4500){const q=rwP(-300,0);_v.set(q[0],60,q[1])}
+    const d=camera.position.distanceTo(_v);if(d>2600&&V!=='boat'){const P=PATH.pts;const j=V==='checker'?Math.max(0,PATH.iA-120):V==='street'||V==='lym'?PATH.iA:PATH.iB;_v.set(P[j].x,P[j].alt,P[j].z)}else if(d>4500){const q=rwP(-300,0);_v.set(q[0],60,q[1])}
     camera.lookAt(_v);camera.rotateY(look.yaw*.6);camera.rotateX(look.pitch*.6);if(V==='boat')camera.rotateZ(Math.sin(performance.now()/1300)*.02);
-    camera.fov=(V==='carpark'||V==='boat'||V==='checker'||V==='peak'?clamp(2*Math.atan(a.span*1.5/Math.max(d,1))*R2D,18,70):78)/look.dist;
+    camera.fov=(V==='carpark'||V==='boat'||V==='checker'||V==='peak'||V==='lym'?clamp(2*Math.atan(a.span*1.5/Math.max(d,1))*R2D,18,70):78)/look.dist;
   } else if(V==='tower'){
     camera.position.set(s0.tower[0],s0.tower[1],s0.tower[2]);camera.lookAt(s.x,s.y+a.cy,s.z);
     const dist=camera.position.distanceTo(_v.set(s.x,s.y,s.z));camera.fov=clamp(2*Math.atan(a.span*2.6/dist)*R2D/look.dist,3,60);
@@ -2626,7 +2692,7 @@ function drawHUD(){
     diamond(gx,cy-gv*22*k,7*k,COL.mag);
     const lat=pathLateral(s.pi,s.x,s.z);const dotL=clamp(p.d*.0175,30,260);const lv=clamp(lat/dotL,-2.5,2.5);const ly=cy+tH/2+(V==='cockpit'?58:62)*k;
     for(let i=-2;i<=2;i++){if(!i)continue;hc.beginPath();hc.arc(cx+i*24*k,ly,3*k,0,Math.PI*2);hc.stroke()}hc.beginPath();hc.moveTo(cx,ly-8*k);hc.lineTo(cx,ly+8*k);hc.stroke();
-    diamond(cx-lv*24*k,ly,7*k,COL.mag);txt('IGS',cx-70*k,ly+4*k,11*k,COL.dim,'right')}
+    diamond(cx-lv*24*k,ly,7*k,COL.mag);txt(LND.id==='31'?'APP':'IGS',cx-70*k,ly+4*k,11*k,COL.dim,'right')}
   }
   if(V==='tower'||SPOTS[V]){txt(Math.round(ias)+' kt   '+Math.round(alt).toLocaleString('en')+' ft   '+(vs>=0?'+':'')+Math.round(vs/10)*10+' fpm',cx,Math.max(54,HH*.1)+20,15*k,COL.ph,'center',700)}
   // ---- bottom status ----
@@ -2643,7 +2709,7 @@ function drawHUD(){
   hc.shadowBlur=0;
   if(V==='cabin'){txt('Drag to look around the cabin',cx,HH-84,12,COL.dim,'center');txt(s.onGround?'Welcome to Hong Kong':'Seat belt sign ON · '+Math.round(alt).toLocaleString('en')+' ft · '+Math.round(ias)+' kt',cx,HH-30,13,COL.txt,'center')}
 }
-function windStr(){const w=WX[CFG.wx];return String(w.wd).padStart(3,'0')+'/'+w.ws+(w.gust?'G'+(w.ws+w.gust):'')}
+function windStr(){const w=WX[CFG.wx];return String(wxDir()).padStart(3,'0')+'/'+w.ws+(w.gust?'G'+(w.ws+w.gust):'')}
 function diamond(x,y,r,c){hc.fillStyle=c;hc.beginPath();hc.moveTo(x,y-r);hc.lineTo(x+r,y);hc.lineTo(x,y+r);hc.lineTo(x-r,y);hc.closePath();hc.fill()}
 function tape(x,cy,w,h,val,step,pxPer,fmt,bug,unit,left){
   hc.fillStyle='rgba(6,10,12,.55)';hc.fillRect(x,cy-h/2,w,h);hc.strokeStyle=COL.dim;hc.strokeRect(x,cy-h/2,w,h);
@@ -2687,7 +2753,7 @@ function gpws(dt){
   s.warn=w;
   // radio altitude callouts over the runway environment
   if(p.d<3000){for(const c of[1000,500,100,50,40,30,20,10]){if(raFt<c&&!s.callouts[c]&&s.vy<0){s.callouts[c]=1;if(c===1000||c===500||raFt>c-30)speak(c===1000?'One thousand':c===500?'Five hundred':c===100?'One hundred':String(c),false)}}}
-  if(CFG.game==='approach'&&p.d<PATH.turnD+250&&p.d>PATH.turnD-100&&!s.callouts.turn){s.callouts.turn=1;toast('Checkerboard ahead. Start the right turn now.')}
+  if(CFG.game==='approach'&&LND.id==='13'&&p.d<PATH.turnD+250&&p.d>PATH.turnD-100&&!s.callouts.turn){s.callouts.turn=1;toast('Checkerboard ahead. Start the right turn now.')}
 }
 
 /* =====================================================================
@@ -2702,7 +2768,7 @@ window.addEventListener('keydown',e=>{
   keys[e.code]=true;const s=ST;VIA='key';
   switch(e.code){
     case 'KeyG':toggleGear();break;case 'KeyF':setFlaps(1);break;case 'KeyV':setFlaps(-1);break;
-    case 'KeyC':{const o=CFG.game==='watch'?['carpark','ped','street','boat','checker','peak','tower','chase']:['cockpit','chase','tower','street','ped','carpark','boat','checker','peak','cabin'];setView(o[(o.indexOf(CFG.view)+1)%o.length]);break}
+    case 'KeyC':{const o=CFG.game==='watch'?['carpark','ped','street','boat','checker','peak','tower','chase']:['cockpit','chase','tower','street','ped','carpark','boat','checker',...(LND.id==='31'?['lym']:[]),'peak','cabin'];setView(o[(o.indexOf(CFG.view)+1)%o.length]);break}
     case 'KeyZ':toggleAP();break;case 'KeyR':toggleRadio();break;case 'BracketLeft':timeJump(-10);break;case 'BracketRight':timeJump(10);break;
     case 'KeyT':setTs(CFG.ts>=8?1:CFG.ts*2);break;case 'KeyI':setZoom(Math.min(16,CFG.zoom*2));break;case 'KeyO':setZoom(Math.max(1,CFG.zoom/2));break;case 'KeyK':toggleDeck();break;case 'KeyN':toggleNight();break;case 'KeyU':setClouds_on(!CFG.clouds);break;case 'KeyP':togglePause();break;
   }
@@ -2767,9 +2833,12 @@ const acCards=document.getElementById('acCards');
 for(const k in AC){const a=AC[k];const l=document.createElement('label');l.className='card';l.innerHTML=`<input type="radio" name="ac" value="${k}" ${k===CFG.ac?'checked':''}><b>${a.name}</b><span>${a.note}<br>Vref ${a.vref} kt · span ${a.span} m</span>`;acCards.appendChild(l)}
 const wxChips=document.getElementById('wxChips'),wxSel=document.getElementById('wxSel');
 for(const k in WX){const l=document.createElement('label');l.className='chip';l.innerHTML=`<input type="radio" name="wx" value="${k}" ${k===CFG.wx?'checked':''}><span>${WX[k].label}</span>`;wxChips.appendChild(l);const o=document.createElement('option');o.value=k;o.textContent=WX[k].label;wxSel.appendChild(o)}
-const MODE_TXT={approach:['Begin descent','Start on the IGS at 3,100 ft and land on Runway 13.'],free:['Line up on Runway 13','Start lined up on Runway 13. Full thrust, pull back at about 150 kt, then fly anywhere. Landings are graded but the flight carries on.'],
+const MODE_TXT={approach:['Begin descent','Start on the IGS at 3,100 ft and land on Runway 13.'],approach31:['Begin descent','Start eight miles out over the sea at 2,700 ft, fly through the Lei Yue Mun gap and land on Runway 31.'],free:['Line up on Runway 13','Start lined up on Runway 13. Full thrust, pull back at about 150 kt, then fly anywhere. Landings are graded but the flight carries on.'],
   watch:['Watch the airport','No flying. Arrivals land every couple of minutes and departures roll in between. Pick a spectator spot, follow a jet, or speed up time.']};
-for(const r of document.querySelectorAll('input[name=game]'))r.addEventListener('change',()=>{const m=document.querySelector('input[name=game]:checked').value;document.getElementById('goLabel').textContent=MODE_TXT[m][0];document.getElementById('modeNote').textContent=MODE_TXT[m][1];applyLang()});
+const HERO13=['IGS approach · Runway 13','Hit the checkerboard, turn right, land before the harbour.',document.getElementById('heroText').textContent];
+const HERO31=['Easterly approach · Runway 31','Through the Lei Yue Mun gap, then down onto the runway in the bay.','You start the descent about eight nautical miles out over the sea east of Kowloon at 2,700 ft, heading 314 on the runway line. Fly through the narrow Lei Yue Mun channel between the hills, cross Kowloon Bay low over the water and land on Runway 31.'];
+for(const r of document.querySelectorAll('input[name=game]'))r.addEventListener('change',()=>{const m=document.querySelector('input[name=game]:checked').value;document.getElementById('goLabel').textContent=MODE_TXT[m][0];document.getElementById('modeNote').textContent=MODE_TXT[m][1];
+  const H=m==='approach31'?HERO31:HERO13;document.getElementById('heroEye').textContent=H[0];document.getElementById('heroTitle').textContent=H[1];document.getElementById('heroText').textContent=H[2];applyLang()});
 /* LANGUAGE: English / Cantonese toggle for the home screen */
 const ZH={
 'Blog':'網誌',
@@ -2781,9 +2850,13 @@ const ZH={
 'Hit the checkerboard, turn right, land before the harbour.':'對正棋盤，向右急轉，喺海旁之前降落。',
 'You start the descent over Tsing Yi at about 3,000 ft, established on the instrument guidance system, heading 088. Follow it toward the orange-and-white checkerboard on the hill, then make the 47° right turn low over Kowloon City and line up with a runway that ends in Kowloon Bay.':'你喺青衣上空約 3,000 呎開始下降，已經對正儀器導航系統（IGS），航向 088。跟住佢飛向山上嘅橙白棋盤，然後喺九龍城上空低飛，向右急轉 47°，對正一條盡頭係九龍灣嘅跑道。',
 'Mode':'模式','Aircraft':'機型','Time of day':'時間','Weather':'天氣','Options':'選項',
-'IGS 13 approach':'IGS 13 進場','Free flight':'自由飛行','Plane Spotter':'觀機',
+'IGS 13 approach':'IGS 13 進場','Runway 31 approach':'31 號跑道進場','Free flight':'自由飛行','Plane Spotter':'觀機',
 'Day':'日間','Night':'夜間',
 'Begin descent':'開始下降',
+'Easterly approach · Runway 31':'東面進場 · 31 號跑道',
+'Through the Lei Yue Mun gap, then down onto the runway in the bay.':'飛過鯉魚門，然後降落喺海灣入面嘅跑道。',
+'You start the descent about eight nautical miles out over the sea east of Kowloon at 2,700 ft, heading 314 on the runway line. Fly through the narrow Lei Yue Mun channel between the hills, cross Kowloon Bay low over the water and land on Runway 31.':'你喺九龍以東海面、距離跑道約 8 海里、2,700 呎高度開始下降，航向 314，對正跑道。穿過兩邊山丘之間嘅鯉魚門海峽，低飛掠過九龍灣海面，然後降落 31 號跑道。',
+'Start eight miles out over the sea at 2,700 ft, fly through the Lei Yue Mun gap and land on Runway 31.':'喺海面 8 海里外、2,700 呎開始，飛過鯉魚門，然後降落 31 號跑道。',
 'Start on the IGS at 3,100 ft and land on Runway 13.':'喺 3,100 呎對正 IGS 開始，然後降落 13 號跑道。',
 'Line up on Runway 13':'對正 13 號跑道',
 'Start lined up on Runway 13. Full thrust, pull back at about 150 kt, then fly anywhere. Landings are graded but the flight carries on.':'由 13 號跑道起步。推滿油門，約 150 節時拉桿，之後可以飛去任何地方。降落會被評分，但飛行會繼續。',
@@ -2845,7 +2918,7 @@ function applyLang(){
   for(const s of b.querySelectorAll('span'))s.classList.toggle('on',s.dataset.l===LANG)}
 document.getElementById('btnLang').addEventListener('click',e=>{LANG=LANG==='zh'?'en':'zh';try{localStorage.setItem('fkt-lang',LANG)}catch(_){}track('language_toggle',{language:LANG==='zh'?'cantonese':'english'});applyLang();e.currentTarget.blur()});
 applyLang();
-function readSetup(){CFG.game=document.querySelector('input[name=game]:checked').value;CFG.ac=document.querySelector('input[name=ac]:checked').value;CFG.night=document.querySelector('input[name=tod]:checked').value==='night';CFG.wx=document.querySelector('input[name=wx]:checked').value;
+function readSetup(){const gv=document.querySelector('input[name=game]:checked').value;CFG.game=gv==='approach31'?'approach':gv;CFG.rwy=gv==='approach31'?'31':'13';CFG.ac=document.querySelector('input[name=ac]:checked').value;CFG.night=document.querySelector('input[name=tod]:checked').value==='night';CFG.wx=document.querySelector('input[name=wx]:checked').value;
   CFG.lightning=document.getElementById('optLightning').checked;CFG.clouds=document.getElementById('optClouds').checked;CFG.guide=document.getElementById('optGuide').checked;CFG.ap=document.getElementById('optAP').checked;CFG.walled=document.getElementById('optWalled').checked}
 document.getElementById('setup').addEventListener('change',e=>{const t=e.target;if(!t||t.tagName!=='INPUT')return;
   if(t.name==='ac')track('aircraft_select',{aircraft:t.value});
@@ -2916,31 +2989,31 @@ const reducedMotion=()=>!!(window.matchMedia&&matchMedia('(prefers-reduced-motio
 if(reducedMotion())reel.removeAttribute('autoplay');
 function reelShow(on){if(!reelOK)return;if(on&&!reducedMotion())reel.play().catch(()=>{});else reel.pause()}
 function showSetup(){hsRenderHome();setMore(false);try{if(screen.orientation&&screen.orientation.unlock)screen.orientation.unlock()}catch(e){}reelShow(true);flightEnd('quit');mode='attract';paused=false;for(const id of['bar','ctl','map','result','cabin'])document.getElementById(id).hidden=true;document.getElementById('setup').hidden=false;sfx.stopAll();if(synth)synth.cancel();radioClear();
-  clearFX();CFG.ap=true;resetFlight();ST.ap=true;spawnAircraftModel();buildAI();CFG.view='chase';applyEnvironment();setWalled(document.getElementById('optWalled').checked)}
+  clearFX();CFG.ap=true;setRunway('13');resetFlight();ST.ap=true;spawnAircraftModel();buildAI();CFG.view='chase';applyEnvironment();setWalled(document.getElementById('optWalled').checked)}
 function startFlight(){
-  setMore(false);reelShow(false);readSetup();flightEnd('restart');clearFX();mode='fly';paused=false;SEED=window.__capture?1998:1998+Math.floor(Math.random()*1000);
+  setMore(false);reelShow(false);readSetup();setRunway(CFG.game==='approach'&&CFG.rwy==='31'?'31':'13');flightEnd('restart');clearFX();mode='fly';paused=false;SEED=window.__capture?1998:1998+Math.floor(Math.random()*1000);
   for(const id of['setup','result'])document.getElementById(id).hidden=true;for(const id of['bar','ctl','map'])document.getElementById(id).hidden=false;
   resetFlight();ST.attempted=false;flightBegin();radioReset();HIST.length=0;spawnAircraftModel();FOCUS=null;
   if(CFG.game==='watch')buildAISchedule(0,true);else if(CFG.game==='free')buildAISchedule(-100,false);else buildAI();
   applyEnvironment();setWalled(CFG.walled);hoops.visible=CFG.guide&&CFG.game==='approach';wxSel.value=CFG.wx;
   const W=CFG.game==='watch';
-  document.getElementById('flightid').textContent=(W?'PLANE SPOTTER · KAI TAK':ST.ac.short.toUpperCase()+' · '+(CFG.game==='free'?'FREE FLIGHT':'IGS 13'))+' · '+(CFG.night?'NIGHT':'DAY')+' · '+WX[CFG.wx].label.toUpperCase();
-  for(const o of document.querySelectorAll('#viewSel option'))o.hidden=W&&(o.value==='cockpit'||o.value==='cabin');
+  document.getElementById('flightid').textContent=(W?'PLANE SPOTTER · KAI TAK':ST.ac.short.toUpperCase()+' · '+(CFG.game==='free'?'FREE FLIGHT':LND.id==='31'?'RWY 31':'IGS 13'))+' · '+(CFG.night?'NIGHT':'DAY')+' · '+WX[CFG.wx].label.toUpperCase();
+  for(const o of document.querySelectorAll('#viewSel option'))o.hidden=(W&&(o.value==='cockpit'||o.value==='cabin'))||(o.value==='lym'&&(W||LND.id!=='31'));
   for(const id of['btnAP','btnHud','btnGuide','btnDeck'])document.getElementById(id).hidden=W;
   if(W){for(const id of['ctl','map'])document.getElementById(id).hidden=true}
   setView(W?'carpark':CFG.game==='free'?'chase':CFG.ap?'chase':'cockpit');
   syncButtons();sfx.start();sfx.mute(CFG.sound);lightningT=rr(4,9);
-  track('game_start',{flight_number:FLT.n,game_mode:CFG.game,autopilot:CFG.ap,guide:CFG.guide,walled_city:CFG.walled,lightning:CFG.lightning});
-  toast(W?'Plane Spotter mode. Pick a spot from the view menu, or Exterior to follow the jet. '+(TOUCH?'More > Time speeds up time.':'T speeds up time.'):CFG.game==='free'?(TOUCH?'Lined up on Runway 13. Slide thrust to full, pull back at about 150 kt.':'Lined up on Runway 13. Full thrust (E), pull back at about 150 kt.'):CFG.ap?'Autopilot engaged. Pick a view or a cabin seat.':'Established on the IGS, 3,100 ft. You have control.');
+  track('game_start',{flight_number:FLT.n,game_mode:modeId(),runway:LND.id,autopilot:CFG.ap,guide:CFG.guide,walled_city:CFG.walled,lightning:CFG.lightning});
+  toast(W?'Plane Spotter mode. Pick a spot from the view menu, or Exterior to follow the jet. '+(TOUCH?'More > Time speeds up time.':'T speeds up time.'):CFG.game==='free'?(TOUCH?'Lined up on Runway 13. Slide thrust to full, pull back at about 150 kt.':'Lined up on Runway 13. Full thrust (E), pull back at about 150 kt.'):CFG.ap?'Autopilot engaged. Pick a view or a cabin seat.':LND.id==='31'?'Eight miles out over the sea, 2,700 ft, heading 314. Runway 31 is dead ahead. You have control.':'Established on the IGS, 3,100 ft. You have control.');
 }
 function showResult(){
   const s=ST,e=s.ended;if(!e||mode!=='fly')return;mode='ended';const card=document.getElementById('resCard');card.classList.toggle('crash',!!e.crash);
   document.getElementById('ctl').hidden=true;
   const st=document.getElementById('resStats');st.innerHTML='';const rows=[];const row=(a,b)=>{rows.push([a,b]);st.insertAdjacentHTML('beforeend',`<dt>${a}</dt><dd>${b}</dd>`)};
-  if(e.landed){const g=gradeLanding(s.td);trackLanding({grade:g.g,score:Math.max(0,g.pts),touchdown_fpm:Math.round(g.fpm),touchdown_m:Math.round(s.td.s),sim_seconds:Math.round(e.t),autopilot_used:!!s.ap,mode:CFG.game});flightEnd('landed');document.getElementById('resEyebrow').textContent='Landed · Runway 13';document.getElementById('resTitle').textContent='Welcome to Hong Kong';document.getElementById('resGrade').textContent=g.g;
+  if(e.landed){const g=gradeLanding(s.td);trackLanding({grade:g.g,score:Math.max(0,g.pts),touchdown_fpm:Math.round(g.fpm),touchdown_m:Math.round(s.td.s),sim_seconds:Math.round(e.t),autopilot_used:!!s.ap,mode:modeId(),runway:LND.id});flightEnd('landed');document.getElementById('resEyebrow').textContent='Landed · Runway '+LND.id;document.getElementById('resTitle').textContent='Welcome to Hong Kong';document.getElementById('resGrade').textContent=g.g;
     document.getElementById('resWhy').textContent=g.feel+(s.tailstrike?' Tail strike on touchdown: the aft fuselage touched the runway.':'')+' Score '+Math.max(0,g.pts)+'/100.';
     row('Touchdown rate',Math.round(g.fpm)+' fpm');row('Touchdown past threshold',Math.round(s.td.s)+' m');row('Off centreline',Math.abs(s.td.l).toFixed(1)+' m '+(s.td.l>0?'right':'left'));
-    row('Bank at touchdown',s.td.bank.toFixed(1)+'°');row('Airspeed',Math.round(s.td.ias)+' kt (target '+(s.ac.vref+5)+')');row('Stopped with runway left',Math.round(RWY.len-rwS(s.x,s.z))+' m');hsShowResult(g,s);}
+    row('Bank at touchdown',s.td.bank.toFixed(1)+'°');row('Airspeed',Math.round(s.td.ias)+' kt (target '+(s.ac.vref+5)+')');row('Stopped with runway left',Math.round(RWY.len-lS(s.x,s.z))+' m');hsShowResult(g,s);}
   else{document.getElementById('resHs').hidden=true;HS_ENTRY=null;if(CFG.game==='approach'||(s.gearDown&&!s.onGround))attemptStart(e.crash?'crash':'missed');trackFail(e.crash?'crash':'missed_approach',{cause:e.title,sim_seconds:Math.round(e.t),distance_nm:+(PATH.pts[s.pi].d/1852).toFixed(2)});flightEnd(e.crash?'crash':'missed_approach');document.getElementById('resEyebrow').textContent=e.crash?'Accident':'Approach abandoned';document.getElementById('resTitle').textContent=e.title;document.getElementById('resGrade').textContent=e.crash?'✕':'↺';
     document.getElementById('resWhy').textContent=e.why;const p=PATH.pts[s.pi];row('Distance to threshold',p.d>0?(p.d/1852).toFixed(2)+' nm':'past threshold');row('Altitude',fmtFt(s.y));row('Airspeed',Math.round(s.V/KT)+' kt');row('Time flown',Math.floor(e.t/60)+':'+String(Math.floor(e.t%60)).padStart(2,'0'))}
   RES={kind:e.landed?'landed':e.crash?'crash':'missed',grade:document.getElementById('resGrade').textContent,pts:e.landed?Math.max(0,gradeLanding(s.td).pts):null,
@@ -3056,7 +3129,7 @@ function frame(now,manual){
   if(peakAnim&&!paused)peakAnim(dt,peakClock!==null?peakClock:now/1000);
   updateRain(dt,mode==='attract'?w.rain*.4:w.rain,ST.wind||[0,0,0],camera.position);
   // PAPI colours
-  if(papi){const c=papi.geometry.attributes.color;const pp=papi.geometry.attributes.position;for(let i=0;i<4;i++){const dx=camera.position.x-pp.getX(i),dz=camera.position.z-pp.getZ(i);const ang=Math.atan2(camera.position.y-pp.getY(i),Math.hypot(dx,dz))*R2D;const thr=[3.6,3.27,2.93,2.6][i];const white=ang>thr;c.setXYZ(i,1,white?1:.12,white?1:.1)}c.needsUpdate=true}
+  for(const pl of[papi,papi31])if(pl&&pl.visible){const c=pl.geometry.attributes.color;const pp=pl.geometry.attributes.position;for(let i=0;i<4;i++){const dx=camera.position.x-pp.getX(i),dz=camera.position.z-pp.getZ(i);const ang=Math.atan2(camera.position.y-pp.getY(i),Math.hypot(dx,dz))*R2D;const thr=[3.6,3.27,2.93,2.6][i];const white=ang>thr;c.setXYZ(i,1,white?1:.12,white?1:.1)}c.needsUpdate=true}
   if(mode==='fly'&&CFG.game==='watch'){const F=FOCUS;let thr=0;if(F&&F.p){const d=camera.position.distanceTo(_v.set(F.p.x,F.p.y,F.p.z));thr=clamp(1.3-d/1400,0,1)*((F.v||0)>3?1:0)}
     sfx.update(thr,0,w.rain,false,{rev:F&&F.p&&F.p.spl&&thr>.2})}
   else if(mode==='fly'){const s=ST,on=s.onGround&&!s.ended;const rev=on&&s.throttle<.12&&s.Gs>30*KT;
@@ -3083,7 +3156,7 @@ const fontsReady=document.fonts&&document.fonts.ready?Promise.race([document.fon
 fontsReady.then(()=>setTimeout(boot,30));
 
 /* test hooks */
-window.__kt={CFG,ST,PATH,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.game}]`).checked=true;document.querySelector(`input[name=tod][value=${CFG.night?'night':'day'}]`).checked=true;startFlight()},
+window.__kt={CFG,ST,get PATH(){return PATH},LND,setRunway,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,{rwy:'13'},o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.game==='approach'&&CFG.rwy==='31'?'approach31':CFG.game}]`).checked=true;document.querySelector(`input[name=tod][value=${CFG.night?'night':'day'}]`).checked=true;startFlight()},
   run:(sec)=>{if(CFG.game==='watch'){ST.t+=sec;return {t:ST.t}}const h=1/120;for(let i=0;i<sec*120&&!ST.ended;i++){physStep(h);if(i%60===0)recordHistory()}return {ended:ST.ended,td:ST.td,t:ST.t,x:ST.x,y:ST.y,z:ST.z,V:ST.V/KT,d:PATH.pts[ST.pi].d}},
   get mode(){return mode},get CFG(){return CFG},frame:(now)=>frame(now,true),get FOCUS(){return FOCUS},step:()=>physStep(1/120),rwS,setZoom:z=>{CFG.zoom=z},get AI(){return AI},get shipLights(){return shipLights},get SHIPS(){return SHIPS},get DISP(){return DISP},get deck(){return deckGroup},get streetCam(){return STREET_CAM},get BB(){return BB},get water(){return water},get camera(){return camera},get nStreets(){return STREETS.length},drawDisplays,look,setView,terrainAt,buildingAt,groundInfo};
 })();

@@ -1,5 +1,35 @@
 [
   {
+    "slug": "runway-31-easterly-approach-lei-yue-mun",
+    "title": "New: easterly approach to Runway 31",
+    "dek": "Fly in from the east through the Lei Yue Mun gap, by day or at night.",
+    "description": "Fly Kai Tak adds a Runway 31 approach: a straight-in final over the sea, through the Lei Yue Mun gap and across Kowloon Bay, with its own lights, PAPI, radio calls, traffic and spotter view.",
+    "date": "2026-10-03",
+    "tag": "Feature",
+    "keywords": [
+      "Kai Tak",
+      "Runway 31",
+      "Lei Yue Mun",
+      "easterly approach",
+      "night landing"
+    ],
+    "hero": "rwy31-gap-night",
+    "hero_alt": "Night approach to Runway 31 through the Lei Yue Mun gap, with city lights on both sides and the runway lights ahead.",
+    "hero_caption": "Through the Lei Yue Mun gap at night.",
+    "card_kicker": "RUNWAY 31 · NEW",
+    "card_title": "Easterly approach",
+    "card_sub": "Through Lei Yue Mun",
+    "card_image": "rwy31-gap-night",
+    "card_focus": 50,
+    "zh": {
+      "title": "新功能：31 號跑道東面進場",
+      "dek": "由東面穿過鯉魚門進場，日夜都飛得。",
+      "description": "Fly Kai Tak 加入 31 號跑道進場：喺海面直線進場，穿過鯉魚門，橫過九龍灣，有專屬燈光、PAPI、無線電、交通同觀機視角。",
+      "hero_alt": "夜間穿過鯉魚門進場 31 號跑道，兩邊係城市燈光，前方係跑道燈。",
+      "hero_caption": "夜晚穿過鯉魚門。"
+    }
+  },
+  {
     "slug": "high-scores-button-on-the-home-screen",
     "title": "Update: a High scores button on the home screen",
     "dek": "Open and close the high score table from the top left of the home screen.",

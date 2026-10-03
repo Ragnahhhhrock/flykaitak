@@ -48,6 +48,7 @@ The home screen shows the live sim of the airport in the background, with a 58-s
 
 ## Modes
 - **IGS 13 approach**: the original game. Start on the IGS at 3,100 ft and land.
+- **Runway 31 approach**: the easterly approach. Start about 8 NM out over the sea at 2,700 ft, heading 314, fly through the Lei Yue Mun gap and land on Runway 31 (own approach lights, PAPI, radio calls and traffic; a Lei Yue Mun spotter view).
 - **Free flight**: start lined up on Runway 13. Take off over Kowloon Bay and fly anywhere; landings are graded but the flight carries on (touch-and-go with full thrust). The autopilot holds heading, altitude and speed once airborne.
 - **Plane Spotter**: no flying. A continuous schedule of arrivals every 100 s with departures in between, plus aircraft in the hold. Watch from the car park roof, Prince Edward Road, a Kowloon City street, a harbour junk or the tower, or follow the active jet.
 

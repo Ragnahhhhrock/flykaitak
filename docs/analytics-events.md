@@ -7,9 +7,9 @@ Every event also carries `aircraft`, `weather` and `time_of_day`. Events only se
 | `aircraft_select` | Aircraft card chosen on the setup screen | `aircraft` |
 | `setup_option` | Any other setup choice (mode, time, weather, tick boxes) | `option`, `value` |
 | `language_toggle` | Home screen language button (English / Cantonese) | `language` (`english`, `cantonese`) |
-| `game_start` | Flight begins | `flight_number`, `game_mode`, `autopilot`, `guide`, `walled_city`, `lightning` |
+| `game_start` | Flight begins | `flight_number`, `game_mode` (`approach`, `approach31`, `free`, `watch`), `runway`, `autopilot`, `guide`, `walled_city`, `lightning` |
 | `landing_attempt` | Wheels touch, or a crash / missed approach with gear down | `attempt_number`, `how` (`touchdown`, `crash`, `missed`), `flight_seconds` |
-| `landing` | Successful landing (approach: rolled out; free flight: stopped) | `grade`, `score`, `touchdown_fpm`, `touchdown_m`, `flight_number`, `flight_seconds`, `sim_seconds` |
+| `landing` | Successful landing (approach: rolled out; free flight: stopped) | `runway`, `grade`, `score`, `touchdown_fpm`, `touchdown_m`, `flight_number`, `flight_seconds`, `sim_seconds` |
 | `crash` / `missed_approach` | Flight ended badly | `cause`, `distance_nm`, `flight_seconds`, `sim_seconds` |
 | `control_toggle` | Gear, flaps, autopilot, HUD, deck, guide, sound, clouds, night, pause, seat side | `control`, `state`, `via` (`button`, `key`, `auto`), `flight_seconds` |
 | `view_change`, `zoom`, `time_speed`, `weather_change`, `rewind`, `fast_forward` | In-flight controls | per event |

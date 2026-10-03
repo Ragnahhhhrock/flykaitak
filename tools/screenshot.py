@@ -15,7 +15,8 @@ shots.json is a list of shots:
           wx: clear|rain|typhoon|storm|lowcloud|fog, night, deck, lightning, ap ...)
   run     seconds of simulation to advance first (the approach turn is at about 190 s,
           the Kowloon City street camera sees the jet overhead at about 204 s)
-  view    cockpit, chase, tower, street, ped, carpark, boat, checker, cabin
+  view    cockpit, chase, tower, street, ped, carpark, boat, checker, lym (Runway 31 only), cabin
+  (start "rwy": "13"|"31" with game approach picks the runway)
   cam     optional free camera [x, y, z, targetX, targetY, targetZ] in sim metres (x east, z south)
   clean   true hides all UI overlays so the shot is only the 3D scene
   frames  frames to render before the shot (about 14 settles the scene; 30 also draws the cockpit displays)
