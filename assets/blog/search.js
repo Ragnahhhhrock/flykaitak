@@ -8,9 +8,9 @@ var PER=20,root=document.documentElement,data=null,loading=null,failed=false,q='
 var TAGS={Feature:'新功能',Update:'更新','Behind the scenes':'幕後花絮',Fix:'修正',New:'新增',History:'歷史'};
 function zh(){return root.getAttribute('data-lang')==='zh'}
 var T={
-  en:{ph:'Search posts',none:'No posts match your search.',err:'Search is not available right now.',read:'Read the post →',prev:'← Previous',next:'Next →',
+  en:{none:'No posts match your search.',err:'Search is not available right now.',read:'Read the post →',prev:'← Previous',next:'Next →',
       found:function(n){return n===1?'1 post found':n+' posts found'},pg:function(n,m){return 'Page '+n+' of '+m}},
-  zh:{ph:'搜尋文章',none:'搵唔到相關文章。',err:'暫時用唔到搜尋。',read:'閱讀文章 →',prev:'← 上一頁',next:'下一頁 →',
+  zh:{none:'搵唔到相關文章。',err:'暫時用唔到搜尋。',read:'閱讀文章 →',prev:'← 上一頁',next:'下一頁 →',
       found:function(n){return '搵到 '+n+' 篇文章'},pg:function(n,m){return '第 '+n+' 頁，共 '+m+' 頁'}}};
 function t(){return zh()?T.zh:T.en}
 function el(tag,cls,text){var e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e}
@@ -76,8 +76,7 @@ function track(){
     try{window.gtag&&gtag('event','search',{search_term:q,results:found?found.length:0,page_type:'blog'})}catch(e){}},900)}
 input.addEventListener('input',function(){clearTimeout(timer);timer=setTimeout(function(){run(input.value,1).then(track)},120)});
 form.addEventListener('submit',function(e){e.preventDefault();clearTimeout(timer);run(input.value,1).then(track)});
-new MutationObserver(function(){input.placeholder=t().ph;if(q)show()}).observe(root,{attributes:true,attributeFilter:['data-lang']});
-input.placeholder=t().ph;
+new MutationObserver(function(){if(q)show()}).observe(root,{attributes:true,attributeFilter:['data-lang']});
 var m=/[?&]q=([^&]*)/.exec(location.search);
 if(m){try{q=decodeURIComponent(m[1].replace(/\+/g,' '))}catch(e){q=''}
   var pm=/[?&]p=(\d+)/.exec(location.search);

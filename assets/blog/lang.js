@@ -10,7 +10,7 @@ var ZH={
 'It runs in your browser. Pick an aircraft, a time of day and the weather, then hit the checkerboard.':'喺瀏覽器就玩得。揀機型、時間同天氣，然後飛向棋盤。',
 'Begin descent':'開始下降','More from the blog':'網誌更多文章','Read the post →':'閱讀文章 →',
 'The Fly Kai Tak blog':'Fly Kai Tak 網誌','New features, bug fixes and notes from the Kai Tak approach.':'新功能、錯誤修正，以及啟德進場嘅筆記。','Latest posts':'最新文章',
-'Search posts':'搜尋文章','Search':'搜尋','Category':'分類','Sort':'排序','Newest':'最新','By category':'按分類','All':'全部','Posts by category':'按分類排列嘅文章',
+'Search':'搜尋','Category':'分類','Sort':'排序','Newest':'最新','By category':'按分類','All':'全部','Posts by category':'按分類排列嘅文章',
 '← Previous':'← 上一頁','Next →':'下一頁 →','1 post':'1 篇文章'};
 var MON={January:1,February:2,March:3,April:4,May:5,June:6,July:7,August:8,September:9,October:10,November:11,December:12};
 var TAGS={Feature:'新功能',Update:'更新','Behind the scenes':'幕後花絮',Fix:'修正',New:'新增',History:'歷史'};

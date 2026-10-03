@@ -321,23 +321,23 @@ CUR = ' aria-current="page"'
 
 
 def tools_block(posts, counts, cur_cat, show_sort, sort_mode):
-    chips = [f'<a href="/blog/"{CUR if cur_cat is None else ""}>All <span class="n">{len(posts)}</span></a>']
+    chips = [f'<a href="/blog/"{CUR if cur_cat is None else ""}><span class="nm">All</span><span class="n">{len(posts)}</span></a>']
     for slug, c in CATS.items():
         if counts[slug]:
-            chips.append(f'<a href="/blog/category/{slug}/"{CUR if slug == cur_cat else ""}><span data-zh="{E(c["zh"])}">{E(c["name"])}</span>'
+            chips.append(f'<a href="/blog/category/{slug}/"{CUR if slug == cur_cat else ""}><span class="nm" data-zh="{E(c["zh"])}">{E(c["name"])}</span>'
                          f'<span class="n">{counts[slug]}</span></a>')
     sort = ""
     if show_sort:
-        sort = ('<nav class="sortbar" aria-label="Sort posts"><span class="k">Sort</span>'
+        sort = ('<nav class="sortbar" aria-label="Sort posts"><h2 class="k">Sort</h2><div class="seg">'
                 f'<a href="/blog/"{"" if sort_mode else CUR}>Newest</a>'
-                f'<a href="/blog/sort/category/"{CUR if sort_mode else ""}>By category</a></nav>')
+                f'<a href="/blog/sort/category/"{CUR if sort_mode else ""}>By category</a></div></nav>')
     return f"""<div class="tools">
   <form class="blogsearch" id="blogsearch" role="search" action="/blog/" method="get">
     <label class="sr" for="blogq">Search posts</label>
-    <input id="blogq" name="q" type="search" placeholder="Search posts" autocomplete="off" enterkeyhint="search">
+    <input id="blogq" name="q" type="search" autocomplete="off" enterkeyhint="search">
     <button class="btn" type="submit">Search</button>
   </form>
-  <nav class="chips" aria-label="Categories"><span class="k">Category</span>{"".join(chips)}</nav>
+  <nav class="chips" aria-label="Categories"><h2 class="k">Category</h2><div class="chipgrid">{"".join(chips)}</div></nav>
   {sort}
 </div>"""
 
