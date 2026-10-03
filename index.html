@@ -166,6 +166,38 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
 
 #toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 64px);transform:translateX(-50%);background:var(--panel);border:1px solid var(--line-2);padding:8px 14px;border-radius:3px;font-size:13px;letter-spacing:.04em;opacity:0;transition:opacity .25s;pointer-events:none;max-width:calc(100% - 32px);text-align:center}
 #toast.on{opacity:1}
+
+/* ---------- take-off lesson coach ---------- */
+#coach{position:fixed;z-index:3;left:50%;top:calc(env(safe-area-inset-top,0px) + 58px);transform:translateX(-50%);width:min(500px,calc(100% - 400px));min-width:300px;box-sizing:border-box;background:var(--panel-2);border:1px solid var(--line-2);border-left:4px solid var(--checker);border-radius:4px;padding:12px 14px;display:grid;grid-template-columns:minmax(0,1fr);gap:8px;backdrop-filter:blur(6px);box-shadow:0 12px 34px rgba(0,0,0,.5)}
+#coach[hidden]{display:none!important}
+.coach-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.coach-top .eyebrow{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.coach-top .eyebrow.ok{color:var(--phosphor)}
+#coach .btn{padding:6px 9px;font-size:11px;flex:none}
+#coach h3{margin:0;font-size:16px;line-height:1.25;text-wrap:balance}
+#coach p{margin:0;font-size:13.5px;line-height:1.5;color:var(--text);max-width:none}
+#coach p b{color:var(--paper)}
+#coach kbd{font-family:var(--f-num);font-size:11px;border:1px solid var(--line-2);border-bottom-width:2px;border-radius:3px;padding:1px 6px;white-space:nowrap}
+#coach .coach-warn{color:var(--amber);font-weight:700;font-size:13px}
+.cm-row{display:flex;justify-content:space-between;font-family:var(--f-num);font-size:11px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
+.cm-row b{color:var(--text);font-weight:700;font-size:12px}
+.cm-bar{position:relative;height:10px;border-radius:2px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:4px}
+.cm-zone{position:absolute;top:0;bottom:0;background:rgba(47,163,109,.35);border-left:1px solid var(--jade-bright);border-right:1px solid var(--jade-bright)}
+.cm-fill{position:absolute;left:0;top:0;bottom:0;background:var(--checker);transition:width .1s linear}
+.cm-bar.in .cm-fill{background:var(--jade-bright)}
+.cm-bar.bad .cm-fill{background:var(--alarm)}
+.coach-actions{display:flex;gap:8px;flex-wrap:wrap}
+.coach-actions .go{padding:11px 16px;font-size:13px;flex:1 1 auto;justify-content:center;gap:14px}
+.coach-actions .btn{padding:11px 14px;font-size:12px}
+.coach-dots{display:flex;gap:5px}
+.coach-dots i{width:18px;height:4px;border-radius:2px;background:var(--line-2)}
+.coach-dots i.d{background:var(--jade-bright)}.coach-dots i.c{background:var(--checker)}
+.hl{outline:2px solid var(--checker)!important;outline-offset:2px;animation:hlp 1.1s ease-in-out infinite}
+@keyframes hlp{50%{outline-color:transparent}}
+@media (prefers-reduced-motion:reduce){.hl{animation:none}.cm-fill{transition:none}}
+@media (max-width:820px){#coach{left:calc(env(safe-area-inset-left,0px) + 132px);right:calc(env(safe-area-inset-right,0px) + 10px);width:auto;min-width:0;transform:none}body.lessonon #radio{display:none}}
+@media (max-width:520px) and (min-height:521px){#coach{top:calc(env(safe-area-inset-top,0px) + 172px);left:calc(env(safe-area-inset-left,0px) + 10px)}}
+@media (max-height:520px){#coach{top:calc(env(safe-area-inset-top,0px) + 54px);left:calc(env(safe-area-inset-left,0px) + 116px);right:calc(env(safe-area-inset-right,0px) + 10px);width:auto;min-width:0;transform:none;padding:8px 10px;gap:5px}#coach h3{font-size:14px}#coach p{font-size:12px;line-height:1.4}body.lessonon #radio{display:none}}
 #radio{position:fixed;left:10px;top:calc(env(safe-area-inset-top,0px) + 226px);width:min(330px,calc(100% - 20px));display:flex;flex-direction:column;gap:3px;pointer-events:none;font-size:12px;line-height:1.35;letter-spacing:.02em}
 #radio[hidden]{display:none}
 #radio .rl{background:var(--panel);border-left:3px solid var(--line-2);padding:4px 8px;border-radius:2px;animation:rlIn .2s ease-out}
@@ -349,6 +381,15 @@ html,body{overscroll-behavior:none;touch-action:manipulation}
 </div>
 
 <div id="toast" role="status" aria-live="polite"></div>
+<div id="coach" hidden>
+  <div class="coach-top"><span class="eyebrow" id="coachStep"></span><button class="btn" id="coachSkip" type="button">Skip lesson</button></div>
+  <h3 id="coachTitle" aria-live="polite"></h3>
+  <p id="coachBody"></p>
+  <div id="coachMeter" hidden><div class="cm-row"><span id="cmLabel"></span><b id="cmVal"></b></div><div class="cm-bar" id="cmBar"><i class="cm-zone" id="cmZone"></i><i class="cm-fill" id="cmFill"></i></div></div>
+  <p class="coach-warn" id="coachWarn" hidden></p>
+  <div class="coach-actions" id="coachActions" hidden></div>
+  <div class="coach-dots" id="coachDots" aria-hidden="true"></div>
+</div>
 <div id="radio" aria-live="off" hidden></div>
 
 <section id="setup" hidden>
@@ -375,6 +416,7 @@ html,body{overscroll-behavior:none;touch-action:manipulation}
       <fieldset>
         <legend>Mode</legend>
         <div class="chips" id="modeChips">
+          <label class="chip"><input type="radio" name="game" value="learn"><span>Take-off lesson</span></label>
           <label class="chip"><input type="radio" name="game" value="approach" checked><span>IGS 13 approach</span></label>
           <label class="chip"><input type="radio" name="game" value="approach31"><span>Runway 31 approach</span></label>
           <label class="chip"><input type="radio" name="game" value="free"><span>Free flight</span></label>
@@ -530,7 +572,7 @@ const LND={id:'13',hdg:RWY.hdg,dir:1};
 let PATH=PATH13;
 const lS=(x,z)=>LND.dir>0?rwS(x,z):RWY.len-rwS(x,z);   // metres past the landing threshold, along the landing direction
 const lL=(x,z)=>LND.dir>0?rwL(x,z):-rwL(x,z);            // metres right of the landing centreline
-const modeId=()=>CFG.game==='approach'&&LND.id==='31'?'approach31':CFG.game;
+const modeId=()=>CFG.lesson?'lesson':CFG.game==='approach'&&LND.id==='31'?'approach31':CFG.game;
 function pathNearest(x,z,hint){
   const P=PATH.pts;let best=hint|0,bd=1e18;const a=Math.max(0,best-260),b=Math.min(P.length-1,best+260);
   for(let i=a;i<=b;i++){const dx=P[i].x-x,dz=P[i].z-z,d=dx*dx+dz*dz;if(d<bd){bd=d;best=i}}
@@ -597,7 +639,7 @@ const WX={
 };
 
 /* ---------------- state & settings ---------------- */
-const CFG={game:'approach',rwy:'13',zoom:1,ts:1,deck:false,hud:true,ac:'b744',night:false,wx:'clear',lightning:false,clouds:true,guide:true,ap:false,walled:true,view:'cockpit',sound:true,radio:true,seatRow:34,seatLeft:true};
+const CFG={game:'approach',lesson:false,rwy:'13',zoom:1,ts:1,deck:false,hud:true,ac:'b744',night:false,wx:'clear',lightning:false,clouds:true,guide:true,ap:false,walled:true,view:'cockpit',sound:true,radio:true,seatRow:34,seatLeft:true};
 const ST={};let mode='loading'; // loading | attract | fly | ended
 let paused=false;
 
@@ -1973,7 +2015,7 @@ function timeJump(sec){
   if(sec<0){s.rewound=true;const target=s.t+sec;let i=HIST.length-1;while(i>0&&HIST[i].t>target)i--;const o=HIST[i];if(!o)return;HIST.length=i+1;
     for(const k of HKEYS)s[k]=o[k];s.td=o.td?{...o.td}:null;s.callouts={...o.callouts};s.attempted=!!s.td;
     if(s.ended){if(FLT)FLT.done=false;s.ended=null;clearFX();acModel.visible=true;document.getElementById('result').hidden=true;mode='fly';document.getElementById('ctl').hidden=CFG.view==='cabin'}
-    s.warn='';toast('Back to '+fmtT(s.t))}
+    s.warn='';toast('Back to '+fmtT(s.t));coachResync()}
   else{if(s.ended)return;const h=1/120;for(let i=0;i<sec*120&&!s.ended;i++){physStep(h);if(i%60===0)recordHistory()}toast('Forward to '+fmtT(s.t))}
 }
 function fmtT(t){return Math.floor(t/60)+':'+String(Math.floor(t%60)).padStart(2,'0')}
@@ -2877,8 +2919,8 @@ function gpws(dt){
   if(s.stall){w='STALL';if(Math.floor(s.t*4)!==Math.floor((s.t-dt)*4))sfx.shaker()}
   else if(pull)w='PULL UP';
   else if(raFt<1000&&vs<-1700)w='SINK RATE';
-  else if(raFt<500&&!s.gearDown&&s.V/KT<200)w='TOO LOW · GEAR';
-  else if(raFt<250&&s.flapIdx<3&&p.d<2500)w='TOO LOW · FLAPS';
+  else if(raFt<500&&!s.gearDown&&s.V/KT<200&&(CFG.game==='approach'||vs<-200))w='TOO LOW · GEAR';
+  else if(raFt<250&&s.flapIdx<3&&p.d<2500&&(CFG.game==='approach'||vs<-200))w='TOO LOW · FLAPS';
   else if(CFG.game==='approach'&&p.d>0&&raFt<900&&(s.y-p.alt)<-Math.max(12,p.d*Math.tan(.35*D2R))*1.4)w='GLIDESLOPE';
   else if(Math.abs(s.phi)>35*D2R)w='BANK ANGLE';
   if(w&&w!==s.warn){speak(w==='PULL UP'?'Terrain, terrain. Pull up.':w==='TOO LOW · GEAR'?'Too low, gear':w==='TOO LOW · FLAPS'?'Too low, flaps':w.toLowerCase(),true);s.lastGPWS=s.t}
@@ -2898,6 +2940,7 @@ window.addEventListener('keydown',e=>{
   if(e.target&&(e.target.tagName==='INPUT'||e.target.tagName==='SELECT')&&e.key!=='Enter')return;
   if(mode==='attract'&&e.key==='Enter'&&!document.getElementById('setup').hidden){startFlight();return}
   if(mode!=='fly')return;
+  if(COACH.on&&LESSON[COACH.i].manual&&(e.code==='Enter'||e.code==='NumpadEnter')&&!(e.target&&e.target.tagName==='BUTTON')){e.preventDefault();coachNext();return}
   keys[e.code]=true;const s=ST;VIA='key';
   switch(e.code){
     case 'KeyG':toggleGear();break;case 'KeyF':setFlaps(1);break;case 'KeyV':setFlaps(-1);break;
@@ -2956,8 +2999,125 @@ function syncButtons(){document.getElementById('btnRadio').setAttribute('aria-pr
   document.getElementById('btnGuide').setAttribute('aria-pressed',String(CFG.guide));document.getElementById('btnHud').setAttribute('aria-pressed',String(CFG.hud));const bd=document.getElementById('btnDeck');bd.setAttribute('aria-pressed',String(CFG.deck));bd.hidden=CFG.view!=='cockpit';document.getElementById('btnSound').setAttribute('aria-pressed',String(CFG.sound));document.getElementById('btnClouds').setAttribute('aria-pressed',String(CFG.clouds));
   document.getElementById('btnGear').textContent='Gear '+(ST.gearDown?'↓':'↑');
 }
-let toastT=0;function toast(t){const el=document.getElementById('toast');el.textContent=t;el.classList.add('on');toastT=performance.now()+2600}
+let toastT=0;function toast(t){if(COACH.on)return;const el=document.getElementById('toast');el.textContent=t;el.classList.add('on');toastT=performance.now()+2600}
 function ctlVisible(){return !document.getElementById('ctl').hidden}
+
+/* =====================================================================
+   TAKE-OFF LESSON: a guided coach for first-time pilots. It runs on top of free flight
+   (mode "Take-off lesson"): each step names one control, shows a live meter, and moves on by itself
+   when the aircraft does what the step asked.
+   ===================================================================== */
+const COACH={on:false,i:0,okAt:0,skipped:false,sig:'',hl:null};
+const VR=150;                                   // rotate speed, kt: all four types lift off at about 155 kt
+const KB=(a,b)=>TOUCH?b:a;                      // keyboard wording / touch wording
+const NOSE=()=>ST.theta*R2D;
+const LESSON=[
+ {id:'welcome',title:'Welcome to the flight deck',manual:'Start the lesson',
+  body:()=>'You are lined up on Runway 13 at Kai Tak. A take-off is four moves: <b>full power</b>, <b>stay straight</b>, <b>lift the nose</b>, <b>wheels up</b>. The flaps (extra lift panels on the wings) are already set for take-off. No flying experience needed.'},
+ {id:'thrust',title:'Push the thrust levers to full',hl:'.thr',
+  body:()=>KB('Thrust is engine power. Hold <kbd>E</kbd> until <b>THR</b> at the bottom of the screen reads 100%.','Thrust is engine power. Slide the thrust lever on the right all the way up.'),
+  meter:{label:'Thrust',get:()=>ST.throttle*100,min:0,max:100,zone:[97,100],fmt:v=>Math.round(v)+'%'},
+  done:()=>ST.throttle>=.97},
+ {id:'speed',title:'Stay on the centre line as you speed up',hl:'#stick',
+  body:()=>KB('The jet now accelerates down the runway. Keep the nose on the white centre line by tapping <kbd>←</kbd> <kbd>→</kbd> (or <kbd>A</kbd> <kbd>D</kbd>). Watch the speed tape on the left: at <b>150 kt</b> you lift the nose.','The jet now accelerates down the runway. Keep the nose on the white centre line by dragging the yoke sideways a little. Watch the speed tape on the left: at <b>150 kt</b> you lift the nose.'),
+  meter:{label:'Speed',get:()=>ST.Gs/KT,min:0,max:170,zone:[VR,170],fmt:v=>Math.round(v)+' kt'},
+  done:()=>ST.Gs/KT>=VR||!ST.onGround},
+ {id:'rotate',title:'Rotate: lift the nose now',hl:'#stick',
+  body:()=>KB('Hold <kbd>↓</kbd> (or <kbd>S</kbd>) to raise the nose. The jet leaves the ground by itself at about 155 kt. Let go when the nose reads <b>10 to 12°</b>.','Drag the yoke down (pull back) to raise the nose. The jet leaves the ground by itself at about 155 kt. Let go when the nose reads <b>10 to 12°</b>.'),
+  meter:{label:'Nose angle',get:NOSE,min:0,max:20,zone:[9,13],fmt:v=>Math.round(v)+'°',bad:v=>v>15},
+  done:()=>!ST.onGround},
+ {id:'gear',title:'Wheels up',hl:'#btnGear',
+  body:()=>KB('You are flying. Raise the landing gear so the jet slips through the air more easily: press <kbd>G</kbd>. Keep the nose at <b>10 to 12°</b>.','You are flying. Raise the landing gear so the jet slips through the air more easily: tap <b>Gear</b>. Keep the nose at <b>10 to 12°</b>.'),
+  meter:{label:'Nose angle',get:NOSE,min:0,max:20,zone:[9,13],fmt:v=>Math.round(v)+'°',bad:v=>v>15},
+  done:()=>!ST.gearDown},
+ {id:'flaps',title:'Tuck the flaps away',hl:'#btnFlapUp',
+  body:()=>KB('Flaps give extra lift at low speed. Once the speed tape passes <b>190 kt</b>, press <kbd>V</kbd> twice to retract them. Keep the nose at <b>10 to 12°</b>.','Flaps give extra lift at low speed. Once the speed tape passes <b>190 kt</b>, tap <b>Flaps −</b> twice to retract them. Keep the nose at <b>10 to 12°</b>.'),
+  meter:{label:'Speed',get:()=>ST.V/KT,min:140,max:230,zone:[190,230],fmt:v=>Math.round(v)+' kt'},
+  done:()=>ST.flapIdx===0&&ST.flapPos<.05},
+ {id:'climb',title:'Climb to 2,000 ft',
+  body:()=>'Keep the nose at <b>10 to 12°</b> and let the jet climb over Kowloon Bay. The altitude tape is on the right.',
+  meter:{label:'Altitude',get:()=>ST.y/FT,min:0,max:2000,zone:[2000,2000],fmt:v=>Math.round(v/10)*10+' ft'},
+  done:()=>ST.y/FT>=2000},
+ {id:'ap',title:'Let the computer fly',hl:'#btnAP',
+  body:()=>KB('Press <kbd>Z</kbd> to switch on the autopilot. It holds your height, speed and heading, so you can relax.','Tap <b>Autopilot</b>. It holds your height, speed and heading, so you can relax.'),
+  done:()=>ST.ap},
+ {id:'finish',title:'Take-off complete',final:true,
+  body:()=>'You took off from Runway 13 at Kai Tak and the autopilot has the jet. Look around with the view menu, or turn the autopilot off ('+KB('<kbd>Z</kbd>','tap Autopilot')+') and fly it yourself. When you are ready, try landing back at Kai Tak.'}
+];
+const LESSON_STEPS=LESSON.filter(l=>!l.final).length;
+const coachEl=document.getElementById('coach');
+function coachWarn(){
+  const s=ST,kt=s.V/KT,nose=NOSE();
+  if(s.onGround){
+    const lr=rwL(s.x,s.z);
+    if(Math.abs(lr)>16&&s.Gs>8)return 'Drifting '+(lr>0?'right':'left')+' of the centre line. Steer '+(lr>0?'left':'right')+' a little.';
+    if(kt>=VR+22&&COACH.i<=3)return 'Pull back now! '+KB('Hold ↓ (or S).','Drag the yoke down.');
+    return '';
+  }
+  if(s.stall)return 'Stall warning! Ease the nose down.';
+  if(nose>15)return 'Nose too high. '+KB('Tap ↑ (or W)','Drag the yoke up a little')+' to bring it down to 10 to 12°.';
+  if(nose<4&&s.ra<150&&COACH.i>=4)return 'Nose too low. '+KB('Tap ↓ (or S)','Drag the yoke down a little')+' to raise it to 10 to 12°.';
+  if(Math.abs(s.phi)>25*D2R)return 'Level the wings: '+KB('tap the opposite arrow key','drag the yoke the other way')+'.';
+  return '';
+}
+function coachRender(){
+  const L=LESSON[COACH.i];COACH.sig='';
+  document.getElementById('coachStep').textContent=L.final?'Take-off lesson · complete':'Take-off lesson · step '+(COACH.i+1)+' of '+LESSON_STEPS;
+  document.getElementById('coachStep').classList.remove('ok');
+  document.getElementById('coachTitle').textContent=L.title;
+  document.getElementById('coachBody').innerHTML=L.body();
+  document.getElementById('coachMeter').hidden=!L.meter;
+  if(L.meter){document.getElementById('cmLabel').textContent=L.meter.label;const z=document.getElementById('cmZone'),m=L.meter;
+    if(m.zone){z.hidden=false;z.style.left=((m.zone[0]-m.min)/(m.max-m.min)*100)+'%';z.style.width=Math.max(1.5,(m.zone[1]-m.zone[0])/(m.max-m.min)*100)+'%'}else z.hidden=true}
+  const act=document.getElementById('coachActions');act.hidden=!(L.manual||L.final);act.innerHTML='';
+  if(L.manual){const b=document.createElement('button');b.className='go';b.type='button';b.innerHTML='<span>'+L.manual+'</span><span class="k">ENTER</span>';b.addEventListener('click',coachNext);act.appendChild(b)}
+  if(L.final){
+    const keep=document.createElement('button');keep.className='go';keep.type='button';keep.innerHTML='<span>Keep flying</span>';keep.addEventListener('click',()=>{track('lesson_action',{action:'keep_flying'});coachHide()});act.appendChild(keep);
+    const land=document.createElement('button');land.className='btn';land.type='button';land.textContent='Try the landing';land.addEventListener('click',()=>{track('lesson_action',{action:'try_landing'});document.querySelector('input[name=game][value=approach]').checked=true;startFlight()});act.appendChild(land)}
+  document.getElementById('coachSkip').hidden=!!L.final;
+  document.getElementById('coachDots').innerHTML=LESSON.filter(l=>!l.final).map((l,j)=>'<i class="'+(j<COACH.i||L.final?'d':j===COACH.i?'c':'')+'"></i>').join('');
+  coachHighlight(L.hl);
+  document.getElementById('coachWarn').hidden=true;
+}
+function coachHighlight(sel){
+  if(COACH.hl){for(const e of document.querySelectorAll('.hl'))e.classList.remove('hl')}COACH.hl=sel||null;
+  if(sel)for(const e of document.querySelectorAll(sel))e.classList.add('hl')}
+function coachStart(){
+  COACH.on=true;COACH.i=0;COACH.okAt=0;COACH.skipped=false;coachEl.hidden=false;document.body.classList.add('lessonon');coachRender();
+  document.getElementById('toast').classList.remove('on');track('lesson_start',{});
+}
+function coachHide(keepState){
+  coachEl.hidden=true;coachHighlight(null);document.body.classList.remove('lessonon');
+  if(!keepState){COACH.on=false}}
+function coachGo(n){
+  if(!COACH.on)return;COACH.i=Math.min(LESSON.length-1,n);COACH.okAt=0;coachRender();
+  const L=LESSON[COACH.i];if(L.final)track('lesson_complete',{flight_seconds:Math.round(FLT?FLT.active:0)});else track('lesson_step',{step:L.id,index:COACH.i+1})}
+function coachNext(){coachGo(COACH.i+1)}
+document.getElementById('coachSkip').addEventListener('click',()=>{track('lesson_skip',{step:LESSON[COACH.i].id,index:COACH.i+1});COACH.skipped=true;coachHide();toast(KB('Lesson skipped. You are in free flight: full thrust (E), pull back at 150 kt.','Lesson skipped. You are in free flight: slide thrust to full, pull back at 150 kt.'))});
+function coachUpdate(now){
+  if(mode!=='fly'||!COACH.on||coachEl.hidden&&!ST.ended)return;
+  if(ST.ended){coachEl.hidden=true;return}
+  const L=LESSON[COACH.i];
+  if(L.done&&!COACH.okAt&&L.done()){COACH.okAt=now;const e=document.getElementById('coachStep');e.classList.add('ok');e.textContent='✓ '+e.textContent}
+  if(COACH.okAt&&now-COACH.okAt>700){coachNext();return}
+  if(L.meter){const m=L.meter,v=m.get(),f=clamp((v-m.min)/(m.max-m.min),0,1),inZ=m.zone&&v>=m.zone[0]&&(v<=m.zone[1]||m.zone[0]===m.zone[1]||m.zone[1]>=m.max);
+    const bar=document.getElementById('cmBar');bar.classList.toggle('in',!!inZ||!!COACH.okAt);bar.classList.toggle('bad',!!(m.bad&&m.bad(v)));
+    document.getElementById('cmFill').style.width=(f*100)+'%';document.getElementById('cmVal').textContent=m.fmt(v)}
+  const w=L.final||L.manual?'':coachWarn(),ww=document.getElementById('coachWarn');
+  if(w!==COACH.sig){COACH.sig=w;ww.hidden=!w;ww.textContent=w}
+}
+function coachResync(){
+  // after a rewind: pick the step that matches the aircraft's state again
+  if(!COACH.on||COACH.skipped)return;const s=ST;let i;
+  if(s.onGround)i=s.t<1?0:s.throttle<.97?1:2;
+  else if(s.gearDown)i=4;else if(s.flapIdx>0)i=5;else if(s.y/FT<2000)i=6;else i=s.ap?8:7;
+  coachEl.hidden=false;document.body.classList.add('lessonon');if(i!==COACH.i){COACH.i=i;COACH.okAt=0;coachRender()}else COACH.okAt=0}
+const LESSON_TIPS=[[/excursion/i,'Lesson tip: steer gently with the left and right controls and keep the nose on the white centre line.'],
+  [/overran/i,'Lesson tip: lift the nose at 150 kt. If you wait too long, the runway runs out.'],
+  [/stall/i,'Lesson tip: the nose went up too far. Hold it at 10 to 12°, then let go.'],
+  [/wing|struck|building/i,'Lesson tip: climb straight ahead over Kowloon Bay and keep the wings level.'],
+  [/ditch|water|ground|hill/i,'Lesson tip: once airborne, hold the nose at 10 to 12° and raise the gear.']];
+function lessonTip(e){for(const [re,t] of LESSON_TIPS)if(re.test(e.title))return t;return 'Lesson tip: follow the steps on screen: full thrust, stay straight, lift the nose at 150 kt, wheels up.'}
 
 /* =====================================================================
    UI WIRING
@@ -2966,12 +3126,13 @@ const acCards=document.getElementById('acCards');
 for(const k in AC){const a=AC[k];const l=document.createElement('label');l.className='card';l.innerHTML=`<input type="radio" name="ac" value="${k}" ${k===CFG.ac?'checked':''}><b>${a.name}</b><span>${a.note}<br>Vref ${a.vref} kt · span ${a.span} m</span>`;acCards.appendChild(l)}
 const wxChips=document.getElementById('wxChips'),wxSel=document.getElementById('wxSel');
 for(const k in WX){const l=document.createElement('label');l.className='chip';l.innerHTML=`<input type="radio" name="wx" value="${k}" ${k===CFG.wx?'checked':''}><span>${WX[k].label}</span>`;wxChips.appendChild(l);const o=document.createElement('option');o.value=k;o.textContent=WX[k].label;wxSel.appendChild(o)}
-const MODE_TXT={approach:['Begin descent','Start on the IGS at 3,100 ft and land on Runway 13.'],approach31:['Begin descent','Start eight miles out over the sea at 2,700 ft, fly through the Lei Yue Mun gap and land on Runway 31.'],free:['Line up on Runway 13','Start lined up on Runway 13. Full thrust, pull back at about 150 kt, then fly anywhere. Landings are graded but the flight carries on.'],
+const MODE_TXT={learn:['Start the lesson','New to flying? A guided take-off on Runway 13, one step at a time: full power, stay straight, lift the nose, wheels up. No experience needed.'],approach:['Begin descent','Start on the IGS at 3,100 ft and land on Runway 13.'],approach31:['Begin descent','Start eight miles out over the sea at 2,700 ft, fly through the Lei Yue Mun gap and land on Runway 31.'],free:['Line up on Runway 13','Start lined up on Runway 13. Full thrust, pull back at about 150 kt, then fly anywhere. Landings are graded but the flight carries on.'],
   watch:['Watch the airport','No flying. Arrivals land every couple of minutes and departures roll in between. Pick a spectator spot, follow a jet, or speed up time.']};
 const HERO13=['IGS approach · Runway 13','Hit the checkerboard, turn right, land before the harbour.',document.getElementById('heroText').textContent];
 const HERO31=['Easterly approach · Runway 31','Through the Lei Yue Mun gap, then down onto the runway in the bay.','You start the descent about eight nautical miles out over the sea east of Kowloon at 2,700 ft, heading 314 on the runway line. Fly through the narrow Lei Yue Mun channel between the hills, cross Kowloon Bay low over the water and land on Runway 31.'];
-for(const r of document.querySelectorAll('input[name=game]'))r.addEventListener('change',()=>{const m=document.querySelector('input[name=game]:checked').value;document.getElementById('goLabel').textContent=MODE_TXT[m][0];document.getElementById('modeNote').textContent=MODE_TXT[m][1];
-  const H=m==='approach31'?HERO31:HERO13;document.getElementById('heroEye').textContent=H[0];document.getElementById('heroTitle').textContent=H[1];document.getElementById('heroText').textContent=H[2];applyLang()});
+function syncMode(){const m=document.querySelector('input[name=game]:checked').value;document.getElementById('goLabel').textContent=MODE_TXT[m][0];document.getElementById('modeNote').textContent=MODE_TXT[m][1];
+  const H=m==='approach31'?HERO31:HERO13;document.getElementById('heroEye').textContent=H[0];document.getElementById('heroTitle').textContent=H[1];document.getElementById('heroText').textContent=H[2];applyLang()}
+for(const r of document.querySelectorAll('input[name=game]'))r.addEventListener('change',syncMode);
 /* LANGUAGE: English / Cantonese toggle for the home screen */
 const ZH={
 'Blog':'網誌',
@@ -2983,9 +3144,11 @@ const ZH={
 'Hit the checkerboard, turn right, land before the harbour.':'對正棋盤，向右急轉，喺海旁之前降落。',
 'You start the descent over Tsing Yi at about 3,000 ft, established on the instrument guidance system, heading 088. Follow it toward the orange-and-white checkerboard on the hill, then make the 47° right turn low over Kowloon City and line up with a runway that ends in Kowloon Bay.':'你喺青衣上空約 3,000 呎開始下降，已經對正儀器導航系統（IGS），航向 088。跟住佢飛向山上嘅橙白棋盤，然後喺九龍城上空低飛，向右急轉 47°，對正一條盡頭係九龍灣嘅跑道。',
 'Mode':'模式','Aircraft':'機型','Time of day':'時間','Weather':'天氣','Options':'選項',
-'IGS 13 approach':'IGS 13 進場','Runway 31 approach':'31 號跑道進場','Free flight':'自由飛行','Plane Spotter':'觀機',
+'IGS 13 approach':'IGS 13 進場','Runway 31 approach':'31 號跑道進場','Free flight':'自由飛行','Plane Spotter':'觀機','Take-off lesson':'起飛教學',
 'Day':'日間','Night':'夜間',
 'Begin descent':'開始下降',
+'Start the lesson':'開始教學',
+'New to flying? A guided take-off on Runway 13, one step at a time: full power, stay straight, lift the nose, wheels up. No experience needed.':'初次接觸飛行？喺 13 號跑道一步一步跟住教你起飛：推滿油門、保持直線、拉起機頭、收起落架。唔使有任何經驗。',
 'Easterly approach · Runway 31':'東面進場 · 31 號跑道',
 'Through the Lei Yue Mun gap, then down onto the runway in the bay.':'飛過鯉魚門，然後降落喺海灣入面嘅跑道。',
 'You start the descent about eight nautical miles out over the sea east of Kowloon at 2,700 ft, heading 314 on the runway line. Fly through the narrow Lei Yue Mun channel between the hills, cross Kowloon Bay low over the water and land on Runway 31.':'你喺九龍以東海面、距離跑道約 8 海里、2,700 呎高度開始下降，航向 314，對正跑道。穿過兩邊山丘之間嘅鯉魚門海峽，低飛掠過九龍灣海面，然後降落 31 號跑道。',
@@ -3051,7 +3214,7 @@ function applyLang(){
   for(const s of b.querySelectorAll('span'))s.classList.toggle('on',s.dataset.l===LANG)}
 document.getElementById('btnLang').addEventListener('click',e=>{LANG=LANG==='zh'?'en':'zh';try{localStorage.setItem('fkt-lang',LANG)}catch(_){}track('language_toggle',{language:LANG==='zh'?'cantonese':'english'});applyLang();e.currentTarget.blur()});
 applyLang();
-function readSetup(){const gv=document.querySelector('input[name=game]:checked').value;CFG.game=gv==='approach31'?'approach':gv;CFG.rwy=gv==='approach31'?'31':'13';CFG.ac=document.querySelector('input[name=ac]:checked').value;CFG.night=document.querySelector('input[name=tod]:checked').value==='night';CFG.wx=document.querySelector('input[name=wx]:checked').value;
+function readSetup(){const gv=document.querySelector('input[name=game]:checked').value;CFG.lesson=gv==='learn';CFG.game=gv==='approach31'?'approach':CFG.lesson?'free':gv;CFG.rwy=gv==='approach31'?'31':'13';CFG.ac=document.querySelector('input[name=ac]:checked').value;CFG.night=document.querySelector('input[name=tod]:checked').value==='night';CFG.wx=document.querySelector('input[name=wx]:checked').value;
   CFG.lightning=document.getElementById('optLightning').checked;CFG.clouds=document.getElementById('optClouds').checked;CFG.guide=document.getElementById('optGuide').checked;CFG.ap=document.getElementById('optAP').checked;CFG.walled=document.getElementById('optWalled').checked}
 document.getElementById('setup').addEventListener('change',e=>{const t=e.target;if(!t||t.tagName!=='INPUT')return;
   if(t.name==='ac')track('aircraft_select',{aircraft:t.value});
@@ -3121,7 +3284,7 @@ const STRIPE_LINK='https://buy.stripe.com/9B6cMX2TT3tPaFi0UcaAw00';
 const reducedMotion=()=>!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
 if(reducedMotion())reel.removeAttribute('autoplay');
 function reelShow(on){if(!reelOK)return;if(on&&!reducedMotion())reel.play().catch(()=>{});else reel.pause()}
-function showSetup(){hsRenderHome();setMore(false);try{if(screen.orientation&&screen.orientation.unlock)screen.orientation.unlock()}catch(e){}reelShow(true);flightEnd('quit');mode='attract';paused=false;for(const id of['bar','ctl','map','result','cabin'])document.getElementById(id).hidden=true;document.getElementById('setup').hidden=false;sfx.stopAll();if(synth)synth.cancel();radioClear();
+function showSetup(){hsRenderHome();setMore(false);try{if(screen.orientation&&screen.orientation.unlock)screen.orientation.unlock()}catch(e){}reelShow(true);flightEnd('quit');mode='attract';paused=false;for(const id of['bar','ctl','map','result','cabin'])document.getElementById(id).hidden=true;document.getElementById('setup').hidden=false;sfx.stopAll();if(synth)synth.cancel();radioClear();coachHide();syncMode();
   clearFX();CFG.ap=true;setRunway('13');resetFlight();ST.ap=true;spawnAircraftModel();buildAI();CFG.view='chase';applyEnvironment();setWalled(document.getElementById('optWalled').checked)}
 function startFlight(){
   setMore(false);reelShow(false);readSetup();setRunway(CFG.game==='approach'&&CFG.rwy==='31'?'31':'13');flightEnd('restart');clearFX();mode='fly';paused=false;SEED=window.__capture?1998:1998+Math.floor(Math.random()*1000);
@@ -3130,25 +3293,25 @@ function startFlight(){
   if(CFG.game==='watch')buildAISchedule(0,true);else if(CFG.game==='free')buildAISchedule(-100,false);else buildAI();
   applyEnvironment();setWalled(CFG.walled);hoops.visible=CFG.guide&&CFG.game==='approach';wxSel.value=CFG.wx;
   const W=CFG.game==='watch';
-  document.getElementById('flightid').textContent=(W?'PLANE SPOTTER · KAI TAK':ST.ac.short.toUpperCase()+' · '+(CFG.game==='free'?'FREE FLIGHT':LND.id==='31'?'RWY 31':'IGS 13'))+' · '+(CFG.night?'NIGHT':'DAY')+' · '+WX[CFG.wx].label.toUpperCase();
+  document.getElementById('flightid').textContent=(W?'PLANE SPOTTER · KAI TAK':ST.ac.short.toUpperCase()+' · '+(CFG.lesson?'TAKE-OFF LESSON':CFG.game==='free'?'FREE FLIGHT':LND.id==='31'?'RWY 31':'IGS 13'))+' · '+(CFG.night?'NIGHT':'DAY')+' · '+WX[CFG.wx].label.toUpperCase();
   for(const o of document.querySelectorAll('#viewSel option'))o.hidden=(W&&(o.value==='cockpit'||o.value==='cabin'))||(o.value==='lym'&&(W||LND.id!=='31'));
   for(const id of['btnAP','btnHud','btnGuide','btnDeck'])document.getElementById(id).hidden=W;
   if(W){for(const id of['ctl','map'])document.getElementById(id).hidden=true}
   setView(W?'carpark':CFG.game==='free'?'chase':CFG.ap?'chase':'cockpit');
   syncButtons();sfx.start();sfx.mute(CFG.sound);lightningT=rr(4,9);
   track('game_start',{flight_number:FLT.n,game_mode:modeId(),runway:LND.id,autopilot:CFG.ap,guide:CFG.guide,walled_city:CFG.walled,lightning:CFG.lightning});
-  toast(W?'Plane Spotter mode. Pick a spot from the view menu, or Exterior to follow the jet. '+(TOUCH?'More > Time speeds up time.':'T speeds up time.'):CFG.game==='free'?(TOUCH?'Lined up on Runway 13. Slide thrust to full, pull back at about 150 kt.':'Lined up on Runway 13. Full thrust (E), pull back at about 150 kt.'):CFG.ap?'Autopilot engaged. Pick a view or a cabin seat.':LND.id==='31'?'Eight miles out over the sea, 2,700 ft, heading 314. Runway 31 is dead ahead. You have control.':'Established on the IGS, 3,100 ft. You have control.');
+  if(CFG.lesson)coachStart();else{coachHide();toast(W?'Plane Spotter mode. Pick a spot from the view menu, or Exterior to follow the jet. '+(TOUCH?'More > Time speeds up time.':'T speeds up time.'):CFG.game==='free'?(TOUCH?'Lined up on Runway 13. Slide thrust to full, pull back at about 150 kt.':'Lined up on Runway 13. Full thrust (E), pull back at about 150 kt.'):CFG.ap?'Autopilot engaged. Pick a view or a cabin seat.':LND.id==='31'?'Eight miles out over the sea, 2,700 ft, heading 314. Runway 31 is dead ahead. You have control.':'Established on the IGS, 3,100 ft. You have control.')}
 }
 function showResult(){
   const s=ST,e=s.ended;if(!e||mode!=='fly')return;mode='ended';const card=document.getElementById('resCard');card.classList.toggle('crash',!!e.crash);
-  document.getElementById('ctl').hidden=true;
+  document.getElementById('ctl').hidden=true;coachHide(true);
   const st=document.getElementById('resStats');st.innerHTML='';const rows=[];const row=(a,b)=>{rows.push([a,b]);st.insertAdjacentHTML('beforeend',`<dt>${a}</dt><dd>${b}</dd>`)};
   if(e.landed){const g=gradeLanding(s.td);trackLanding({grade:g.g,score:Math.max(0,g.pts),touchdown_fpm:Math.round(g.fpm),touchdown_m:Math.round(s.td.s),sim_seconds:Math.round(e.t),autopilot_used:!!s.ap,mode:modeId(),runway:LND.id});flightEnd('landed');document.getElementById('resEyebrow').textContent='Landed · Runway '+LND.id;document.getElementById('resTitle').textContent='Welcome to Hong Kong';document.getElementById('resGrade').textContent=g.g;
     document.getElementById('resWhy').textContent=g.feel+(s.tailstrike?' Tail strike on touchdown: the aft fuselage touched the runway.':'')+' Score '+Math.max(0,g.pts)+'/100.';
     row('Touchdown rate',Math.round(g.fpm)+' fpm');row('Touchdown past threshold',Math.round(s.td.s)+' m');row('Off centreline',Math.abs(s.td.l).toFixed(1)+' m '+(s.td.l>0?'right':'left'));
     row('Bank at touchdown',s.td.bank.toFixed(1)+'°');row('Airspeed',Math.round(s.td.ias)+' kt (target '+(s.ac.vref+5)+')');row('Stopped with runway left',Math.round(RWY.len-lS(s.x,s.z))+' m');hsShowResult(g,s);}
   else{document.getElementById('resHs').hidden=true;HS_ENTRY=null;if(CFG.game==='approach'||(s.gearDown&&!s.onGround))attemptStart(e.crash?'crash':'missed');trackFail(e.crash?'crash':'missed_approach',{cause:e.title,sim_seconds:Math.round(e.t),distance_nm:+(PATH.pts[s.pi].d/1852).toFixed(2)});flightEnd(e.crash?'crash':'missed_approach');document.getElementById('resEyebrow').textContent=e.crash?'Accident':'Approach abandoned';document.getElementById('resTitle').textContent=e.title;document.getElementById('resGrade').textContent=e.crash?'✕':'↺';
-    document.getElementById('resWhy').textContent=e.why;const p=PATH.pts[s.pi];row('Distance to threshold',p.d>0?(p.d/1852).toFixed(2)+' nm':'past threshold');row('Altitude',fmtFt(s.y));row('Airspeed',Math.round(s.V/KT)+' kt');row('Time flown',Math.floor(e.t/60)+':'+String(Math.floor(e.t%60)).padStart(2,'0'))}
+    document.getElementById('resWhy').textContent=e.why+(CFG.lesson&&!COACH.skipped?' '+lessonTip(e):'');const p=PATH.pts[s.pi];row('Distance to threshold',p.d>0?(p.d/1852).toFixed(2)+' nm':'past threshold');row('Altitude',fmtFt(s.y));row('Airspeed',Math.round(s.V/KT)+' kt');row('Time flown',Math.floor(e.t/60)+':'+String(Math.floor(e.t%60)).padStart(2,'0'))}
   RES={kind:e.landed?'landed':e.crash?'crash':'missed',grade:document.getElementById('resGrade').textContent,pts:e.landed?Math.max(0,gradeLanding(s.td).pts):null,
     eyebrow:document.getElementById('resEyebrow').textContent,title:document.getElementById('resTitle').textContent,rows,ac:s.ac.short,fpm:e.landed?Math.round(gradeLanding(s.td).fpm):null,
     ctx:document.getElementById('flightid').textContent};
@@ -3237,6 +3400,7 @@ function frame(now,manual){
   else if(running&&!ST.ended){acc+=dt*(mode==='fly'?CFG.ts:1);const h=1/120;let n=0;while(acc>=h&&n<1200){physStep(h);acc-=h;n++}if(mode==='fly')recordHistory()}
   if(mode==='attract'&&ST.ended){resetFlight();ST.ap=true;}
   if(mode==='fly'&&!paused&&CFG.game!=='watch')gpws(dt);
+  if(COACH.on)coachUpdate(now);
   atcUpdate(dt);
   const t=now/1000;LIGHT_U.uTime.value=t;WATER_U.uTime.value=t;
   const sdt=dt*(mode==='fly'?CFG.ts:1);
@@ -3289,7 +3453,7 @@ const fontsReady=document.fonts&&document.fonts.ready?Promise.race([document.fon
 fontsReady.then(()=>setTimeout(boot,30));
 
 /* test hooks */
-window.__kt={CFG,ST,get PATH(){return PATH},LND,setRunway,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,{rwy:'13'},o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.game==='approach'&&CFG.rwy==='31'?'approach31':CFG.game}]`).checked=true;document.querySelector(`input[name=tod][value=${CFG.night?'night':'day'}]`).checked=true;startFlight()},
+window.__kt={CFG,ST,COACH,LESSON,keys,coachUpdate,coachResync,coachGo,rwL,get PATH(){return PATH},LND,setRunway,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,{rwy:'13'},o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.game==='approach'&&CFG.rwy==='31'?'approach31':CFG.game}]`).checked=true;document.querySelector(`input[name=tod][value=${CFG.night?'night':'day'}]`).checked=true;startFlight()},
   run:(sec)=>{if(CFG.game==='watch'){ST.t+=sec;return {t:ST.t}}const h=1/120;for(let i=0;i<sec*120&&!ST.ended;i++){physStep(h);if(i%60===0)recordHistory()}return {ended:ST.ended,td:ST.td,t:ST.t,x:ST.x,y:ST.y,z:ST.z,V:ST.V/KT,d:PATH.pts[ST.pi].d}},
   get mode(){return mode},get CFG(){return CFG},frame:(now)=>frame(now,true),get FOCUS(){return FOCUS},step:()=>physStep(1/120),rwS,setZoom:z=>{CFG.zoom=z},get AI(){return AI},get GSE(){return GSE},get parked(){return parked},gseAt:(t)=>{ST.t=t;updateGSE();return GSE.map(e=>({k:e.kind,x:e.p.x,z:e.p.z,psi:e.p.psi,lift:e.lift}))},get shipLights(){return shipLights},get SHIPS(){return SHIPS},get DISP(){return DISP},get deck(){return deckGroup},get streetCam(){return STREET_CAM},get BB(){return BB},get water(){return water},get camera(){return camera},get nStreets(){return STREETS.length},drawDisplays,look,setView,terrainAt,buildingAt,groundInfo};
 })();

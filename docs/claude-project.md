@@ -25,6 +25,7 @@ You are helping build Fly Kai Tak, a browser flight simulator of the 1998 Runway
 - Links: the design system artifact, the playable artifact, https://flykaitak.com
 
 ## Roadmap
+0. Learn to fly: the take-off lesson has shipped. Next: a landing lesson for first-time pilots
 1. ATC radio (first version shipped: approach/tower calls, captions, R toggle). Next: ground and taxi calls, more voices, go-arounds, crews matched to the AI traffic
 2. More aircraft: 747-200/300, 767-300, MD-11, A300-600, A320, 737-300, L-1011, DC-10
 3. Runway 31 approach and traffic (done); Runway 31 in free flight

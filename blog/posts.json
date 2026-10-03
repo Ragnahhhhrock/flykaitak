@@ -1,5 +1,67 @@
 [
   {
+    "slug": "take-off-lesson-for-first-time-pilots",
+    "title": "New: a take-off lesson for first-time pilots",
+    "dek": "A guided take-off on Runway 13: full thrust, steer, rotate, gear up, autopilot. No experience needed.",
+    "description": "Fly Kai Tak now has a Take-off lesson: a coach panel walks first-time pilots through a Runway 13 take-off in eight steps with live meters and plain-language tips.",
+    "date": "2026-10-03",
+    "tag": "Feature",
+    "keywords": [
+      "Kai Tak",
+      "take-off lesson",
+      "tutorial",
+      "beginner",
+      "flight simulator",
+      "onboarding"
+    ],
+    "hero": "lesson-welcome",
+    "hero_alt": "The Take-off lesson welcome panel above a 747 lined up on Runway 13 at Kai Tak, with a Start the lesson button.",
+    "hero_caption": "The lesson starts lined up on Runway 13 with a plain-language welcome.",
+    "card_kicker": "LEARN TO FLY · NEW",
+    "card_title": "Take-off lesson",
+    "card_sub": "A guided first flight for non-pilots",
+    "card_image": "lesson-rotate",
+    "card_focus": 50,
+    "zh": {
+      "title": "新增：俾初學者嘅起飛教學",
+      "dek": "喺 13 號跑道一步一步學起飛：推滿油門、轉向、拉機頭、收起落架、自動駕駛。唔使有經驗。",
+      "description": "Fly Kai Tak 新增起飛教學：教練面板分八步帶初學者喺 13 號跑道起飛，有實時量表同淺白提示。",
+      "hero_alt": "起飛教學嘅歡迎面板，下面係一架停喺啟德 13 號跑道起點嘅 747，有「Start the lesson」按鈕。",
+      "hero_caption": "教學由 13 號跑道起點開始，先有一段淺白嘅歡迎。"
+    }
+  },
+  {
+    "slug": "quiet-take-offs-no-false-too-low-calls",
+    "title": "Fix: no more false \"too low\" calls after take-off",
+    "dek": "The gear and flap warnings now only sound when you are descending.",
+    "description": "Fly Kai Tak fix: the \"Too low, gear\" and \"Too low, flaps\" warnings no longer fire on take-off. They need a descent now; the IGS 13 approach is unchanged.",
+    "date": "2026-10-03",
+    "tag": "Fix",
+    "keywords": [
+      "Kai Tak",
+      "GPWS",
+      "too low gear",
+      "take-off",
+      "bug fix",
+      "free flight"
+    ],
+    "hero": "takeoff-quiet",
+    "hero_alt": "A 777 climbing out over Kowloon Bay with the gear coming up and no warning on the display.",
+    "hero_caption": "Climb-out with the gear coming up, and no false warning.",
+    "card_kicker": "FIX · TAKE-OFF",
+    "card_title": "Quiet take-offs",
+    "card_sub": "No false \"too low\" calls",
+    "card_image": "takeoff-quiet",
+    "card_focus": 50,
+    "zh": {
+      "title": "修正：起飛後唔會再有錯誤嘅「太低」警告",
+      "dek": "起落架同襟翼警告而家只會喺下降時先響。",
+      "description": "Fly Kai Tak 修正：「Too low, gear」同「Too low, flaps」警告唔會再喺起飛時響，要下降先會觸發；IGS 13 進場冇變。",
+      "hero_alt": "777 喺九龍灣上空爬升，起落架收緊，顯示器冇任何警告。",
+      "hero_caption": "爬升收起落架，冇錯誤警告。"
+    }
+  },
+  {
     "slug": "airport-ground-vehicles",
     "title": "New: ground vehicles on the Kai Tak apron",
     "dek": "Buses, catering trucks, baggage trains, freight trucks and a fire station now work around the parked aircraft.",

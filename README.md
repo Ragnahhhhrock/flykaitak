@@ -35,7 +35,7 @@ Data: © Lands Department, HKSAR Government (CSDI). Elevation: SRTM via AWS Terr
 - Airport ground vehicles: buses at the parked aircraft's doors, catering trucks whose boxes lift to the door, baggage tractors towing loaded carts under the wing, container and box freight trucks around a cargo shed, a lorry on the service road, and a fire station with crash tenders and a rescue vehicle. They run on the sim clock, so rewind and fast-forward work. At night they show headlights, tail lamps and beacons
 - Other airliners: a 747 landing two minutes ahead of you, an A340 following you in on the IGS, departures taxiing out and climbing over Kowloon Bay, two aircraft in the hold west of the harbour, and apron movements
 - Zoom 1×, 2×, 4×, 8×, 16× (I / O); time 1×, 2×, 4×, 8× (T); jump back or forward 10 seconds ([ / ]), including back from a crash
-- GPWS callouts and warnings, engine, wind, rain and thunder sound
+- GPWS callouts and warnings (gear and flap calls only while descending, so take-offs stay quiet), engine, wind, rain and thunder sound
 
 ## Demo reel
 The home screen shows the live sim of the airport in the background, with a 58-second muted demo reel (`assets/video/reel.mp4`, with a WebM fallback) looping in a framed inset beside the title. It's rendered from the sim itself: a 747 at night, an A330 breaking out of low cloud, gear and flaps deploying, the turn at the checkerboard, ailerons over Kowloon City, a 747 low over a Kowloon City street, a 777 crabbing in a typhoon, an A340 in a lightning storm, and touchdowns in rain and at night. It pauses during play; reduced-motion users see the poster frame.
@@ -48,6 +48,7 @@ The home screen shows the live sim of the airport in the background, with a 58-s
 - The "Buy me a coffee" button ($5 AUD) opens a Stripe Payment Link, set in `STRIPE_LINK` in `index.html`
 
 ## Modes
+- **Take-off lesson**: a guided take-off for people who have never flown. A coach panel gives one step at a time (full thrust, stay on the centre line, rotate at 150 kt, gear up, flaps up, climb to 2,000 ft, autopilot), with a live meter for each step, plain-language warnings (drifting off the centre line, nose too high or low, stall) and a highlight on the control to use. It moves on by itself when you do the step; Skip lesson hands you free flight at any time. It ends with a choice to keep flying or try the IGS 13 approach
 - **IGS 13 approach**: the original game. Start on the IGS at 3,100 ft and land.
 - **Runway 31 approach**: the easterly approach. Start about 8 NM out over the sea at 2,700 ft, heading 314, fly through the Lei Yue Mun gap and land on Runway 31 (own approach lights, PAPI, radio calls and traffic; a Lei Yue Mun spotter view).
 - **Free flight**: start lined up on Runway 13. Take off over Kowloon Bay and fly anywhere; landings are graded but the flight carries on (touch-and-go with full thrust). The autopilot holds heading, altitude and speed once airborne.
@@ -82,6 +83,7 @@ The on-screen yoke works with touch or a mouse and is inverted like a real contr
 Google Analytics 4 with game events. See docs/analytics.md.
 
 ## Roadmap
+- Learn to fly, next: a landing lesson that follows the take-off lesson
 - ATC radio, next: ground and taxi calls, more voices, go-around instructions, crews that match the AI traffic
 - More aircraft: 747-200/300, 767-300, MD-11, A300-600, A320, 737-300, L-1011, DC-10
 - Higher-fidelity terrain and coastline, more hand-built landmarks

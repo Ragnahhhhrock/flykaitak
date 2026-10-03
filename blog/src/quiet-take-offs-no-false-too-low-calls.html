@@ -1,0 +1,27 @@
+<p>After take-off, the ground proximity warning could shout "Too low, gear" the moment you raised the landing gear, and "Too low, flaps" while you were still climbing out with take-off flaps. Both calls are wrong on a take-off. They now only sound when you are descending.</p>
+
+<div class="readouts" role="list">
+  <div class="readout" role="listitem"><b>200 fpm</b><span>Descent needed<i>for the gear and flap calls</i></span></div>
+  <div class="readout" role="listitem"><b>0</b><span>False calls<i>on a normal take-off</i></span></div>
+  <div class="readout" role="listitem"><b>Same</b><span>IGS approach<i>calls unchanged</i></span></div>
+</div>
+
+<h2>What was wrong</h2>
+<p>The two calls checked height and configuration only. Close to the runway, with the gear up (below 500 ft) or with flaps under setting 3 (below 250 ft), they fired whether you were going up or down. In free flight, a normal climb-out set them off, and the first call also came with an amber warning on the display.</p>
+<figure class="wide">
+  <img src="/assets/blog/shots/takeoff-quiet.jpg" width="1600" height="900" loading="lazy" alt="A 777 climbing out over Kowloon Bay at 330 feet with the gear in transit and no warning on the display.">
+  <figcaption>The gear coming up on a 777 climb-out. No warning.</figcaption>
+</figure>
+
+<h2>What changed</h2>
+<ul>
+  <li>The "Too low, gear" and "Too low, flaps" calls now need a descent of more than 200 feet per minute.</li>
+  <li>On the IGS 13 approach they work exactly as before, because you are always descending there.</li>
+  <li>Terrain, sink rate, glideslope, bank angle and stall warnings are unchanged.</li>
+</ul>
+<p>The fix matters most for the new Take-off lesson, where raising the gear is a step of its own.</p>
+
+<h2>What did not change</h2>
+<ul>
+  <li>Flying with no input still ends in a crash, and the autopilot still lands in every weather preset, in all four aircraft.</li>
+</ul>

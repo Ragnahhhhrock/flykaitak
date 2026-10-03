@@ -7,7 +7,8 @@ Every event also carries `aircraft`, `weather` and `time_of_day`. Events only se
 | `aircraft_select` | Aircraft card chosen on the setup screen | `aircraft` |
 | `setup_option` | Any other setup choice (mode, time, weather, tick boxes) | `option`, `value` |
 | `language_toggle` | Home screen language button (English / Cantonese) | `language` (`english`, `cantonese`) |
-| `game_start` | Flight begins | `flight_number`, `game_mode` (`approach`, `approach31`, `free`, `watch`), `runway`, `autopilot`, `guide`, `walled_city`, `lightning` |
+| `game_start` | Flight begins | `flight_number`, `game_mode` (`approach`, `approach31`, `free`, `watch`, `lesson`), `runway`, `autopilot`, `guide`, `walled_city`, `lightning` |
+| `lesson_start`, `lesson_step`, `lesson_complete`, `lesson_skip`, `lesson_action` | Take-off lesson: begun; a step reached (`step`, `index`); finished (`flight_seconds`); skipped (`step`, `index`); end-card choice (`action`: `keep_flying`, `try_landing`) | per event |
 | `landing_attempt` | Wheels touch, or a crash / missed approach with gear down | `attempt_number`, `how` (`touchdown`, `crash`, `missed`), `flight_seconds` |
 | `landing` | Successful landing (approach: rolled out; free flight: stopped) | `runway`, `grade`, `score`, `touchdown_fpm`, `touchdown_m`, `flight_number`, `flight_seconds`, `sim_seconds` |
 | `crash` / `missed_approach` | Flight ended badly | `cause`, `distance_nm`, `flight_seconds`, `sim_seconds` |
