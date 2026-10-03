@@ -14,7 +14,14 @@
     "card_title": "Rotate prompt fix",
     "card_sub": "Clears when you turn your phone",
     "card_image": "rotate-lock",
-    "card_focus": 50
+    "card_focus": 50,
+    "zh": {
+      "title": "修正：轉橫電話後，旋轉提示會自動消失",
+      "dek": "提示而家跟住視窗嘅真實大小，iPhone 玩家仲有直向鎖定嘅提示。",
+      "description": "Fly Kai Tak 手機版修正：視窗轉橫後旋轉提示會消失，iPhone 玩家如開咗直向鎖定亦有提示。",
+      "hero_alt": "電話直向，畫面顯示「Turn your phone sideways」提示，同有關直向鎖定嘅提示。",
+      "hero_caption": "旋轉提示，而家加咗俾 iPhone 玩家嘅提示。"
+    }
   },
   {
     "slug": "redrawn-aircraft-cockpit-winglets",
