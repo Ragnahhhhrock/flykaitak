@@ -75,6 +75,10 @@ button,select,input{font-family:inherit}
 /* ---------- setup sheet ---------- */
 #setup{position:fixed;inset:0;overflow:auto;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,560px);background:linear-gradient(90deg,rgba(10,17,21,0) 0%,rgba(10,17,21,.35) 40%,rgba(10,17,21,.94) 62%)}
 #setup[hidden]{display:none!important}
+.topnav{position:absolute;top:16px;left:28px;display:flex;align-items:flex-start;gap:8px;z-index:2}
+.navitem{display:inline-flex;align-items:center;box-sizing:border-box;height:38px;line-height:1;padding:8px 16px;background:var(--panel);border:1px solid var(--line-2);border-radius:3px;color:var(--paper);font-family:var(--f-num);font-size:12px;letter-spacing:.16em;text-transform:uppercase;text-decoration:none;backdrop-filter:blur(6px)}
+.navitem:hover{border-color:var(--checker)}
+.navitem:focus-visible{outline:2px solid var(--checker);outline-offset:2px}
 .brand{display:flex;align-items:flex-end;gap:22px;padding:32px 28px 40px;min-width:0}
 .han{font-family:var(--f-han);font-weight:900;display:grid;flex:none;font-size:clamp(56px,9vw,128px);line-height:1;letter-spacing:.06em;color:var(--paper);text-shadow:0 2px 30px rgba(0,0,0,.55);margin:0}
 .brand-meta{display:grid;gap:10px;padding-bottom:6px;text-shadow:0 1px 12px rgba(0,0,0,.8)}
@@ -185,7 +189,8 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
   #setup{grid-template-columns:minmax(0,1fr);background:rgba(10,17,21,.55)}
   .brand{padding:20px 16px 8px;align-items:center}
   .han{grid-auto-flow:column;font-size:clamp(40px,12vw,64px)}
-  .brand{flex-wrap:wrap;gap:12px}.brand-meta{flex:1 1 100%}
+  .topnav{left:16px;top:12px}
+  .brand{flex-wrap:wrap;gap:12px;padding-top:62px}.brand-meta{flex:1 1 100%}
   #reel,.reelbox .checkband{width:100%}
   .sheet{border-left:0}
   .sheet-body{padding:18px 16px 24px}
@@ -249,6 +254,7 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
 <div id="radio" aria-live="off" hidden></div>
 
 <section id="setup" hidden>
+  <nav class="topnav" aria-label="Site"><a class="navitem" href="/blog/">Blog</a></nav>
   <div class="brand">
     <h2 class="han" lang="zh-Hant" aria-label="啟德機場 Kai Tak Airport"><span>啟</span><span>德</span><span>機</span><span>場</span></h2>
     <div class="brand-meta">
@@ -256,7 +262,6 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
       <div class="code">VHHH · KAI TAK</div>
       <div class="sub">Hong Kong · 1998</div>
       <div class="credit"><a href="https://malgordon.com" target="_blank" rel="noopener">Another Mal Gordon project</a></div>
-      <div class="credit"><a href="/blog/">Read the blog</a></div>
       <a class="coffee" id="btnCoffee" href="#" target="_blank" rel="noopener" hidden>☕ Buy me a coffee · $5</a>
     </div>
   </div>
