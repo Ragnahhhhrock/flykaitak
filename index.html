@@ -1781,8 +1781,10 @@ function buildAircraftModel(a,opt={}){
   {const gb=patchBuf();
    if(!a.hump){for(const sd of[-1,1]){let r=ph(sd,4,22);addPatch(gb,fusP,nl*.60,nl*.72,r[0],r[1],3,4,.02);r=ph(sd,26,46);addPatch(gb,fusP,nl*.66,nl*.78,r[0],r[1],3,4,.02);r=ph(sd,56,72);addPatch(gb,fusP,nl*.76,nl*.88,r[0],r[1],3,3,.02)}}
    else{
-    const hu0=.058,hu1=.39,yb=cy+R*.38,env=v=>v<.2?Math.sin(v/.2*Math.PI/2):v<.48?1:Math.pow(Math.cos((v-.48)/.52*Math.PI/2),1.5);
-    const HP=(v,al)=>{const b=env(v),wd=R*(.52+.2*b),top=yb+R*1.5*b,s_=Math.sin(al),c_=Math.cos(al);return[wd*s_,yb+(top-yb)*c_,-L/2+(hu0+(hu1-hu0)*v)*L,s_,c_,0]};
+    // 747 hump: about 1.8 m above the fuselage crown (R*.55), about 4.5 m wide, running from just behind the nose to roughly 0.37 L,
+    // full height over the flight deck and the first part of the upper deck, then a long shallow fairing back into the crown
+    const hu0=.06,hu1=.37,yb=cy+R*.55,env=v=>v<.22?Math.sin(v/.22*Math.PI/2):v<.46?1:Math.pow(Math.cos((v-.46)/.54*Math.PI/2),1.25);
+    const HP=(v,al)=>{const b=env(v),wd=R*(.5+.19*b),top=yb+R*1.0*b,s_=Math.sin(al),c_=Math.cos(al);return[wd*s_,yb+(top-yb)*c_,-L/2+(hu0+(hu1-hu0)*v)*L,s_,c_,0]};
     const hb=patchBuf();addPatch(hb,HP,0,1,-Math.PI/2,Math.PI/2,48,28,0);g.add(patchMesh(hb,white));
     for(const sd of[-1,1]){let r=ph(sd,4,24);addPatch(gb,HP,.10,.15,r[0],r[1],3,4,.02);r=ph(sd,28,50);addPatch(gb,HP,.12,.17,r[0],r[1],3,4,.02);r=ph(sd,58,76);addPatch(gb,HP,.17,.215,r[0],r[1],3,3,.02)}
     const ub=patchBuf();for(let k=0;k<9;k++){const v0=.31+k*.055;for(const sd of[-1,1]){const q=HP(v0+.016,sd*68*D2R);if(Math.hypot(q[0],q[1]-cy)<R*1.012)continue;const r=ph(sd,60,77);addPatch(ub,HP,v0,v0+.03,r[0],r[1],1,2,.02)}}

@@ -1,5 +1,34 @@
 [
   {
+    "slug": "747-upper-deck-hump-reshaped",
+    "title": "Fix: the 747 upper-deck hump now has the right shape",
+    "dek": "A lower, wider hump with a long slope back into the roof, like the real jet.",
+    "description": "The 747-400 upper-deck hump in Fly Kai Tak was too tall and narrow. It is now lower and wider with a long shallow slope into the roof, like the real 747.",
+    "date": "2026-10-03",
+    "tag": "Fix",
+    "keywords": [
+      "Kai Tak",
+      "747-400",
+      "upper deck",
+      "aircraft models"
+    ],
+    "hero": "747-hump-side",
+    "hero_alt": "Side view of a 747-400 on the runway with a low upper-deck hump sloping gently back into the roof.",
+    "hero_caption": "The reshaped 747 hump from the side.",
+    "card_kicker": "747-400 · FIX",
+    "card_title": "747 hump reshaped",
+    "card_sub": "Lower, wider, longer slope",
+    "card_image": "747-hump-three-quarter",
+    "card_focus": 50,
+    "zh": {
+      "title": "修正：747 上層艙隆起部分形狀更準確",
+      "dek": "隆起較低較闊，後面有長斜坡接返機頂，同真正 747 更加似。",
+      "description": "Fly Kai Tak 嘅 747-400 上層艙隆起之前太高太窄，而家改成較低較闊，後面有長而平緩嘅斜坡接返機頂，更似真正 747。",
+      "hero_alt": "747-400 喺跑道上嘅側面圖，上層艙隆起較低，並向後平緩斜落機頂。",
+      "hero_caption": "重新設計後嘅 747 隆起側面。"
+    }
+  },
+  {
     "slug": "runway-31-plane-spotter",
     "title": "New: Plane Spotter on Runway 31",
     "dek": "Watch the easterly traffic from the spectator spots and the new Lei Yue Mun view.",
