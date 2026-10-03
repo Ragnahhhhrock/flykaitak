@@ -6,6 +6,7 @@
   assets/blog/shots/*.jpg    screenshots (tools/screenshot.py)
   assets/blog/og/<slug>.jpg  social cards (tools/blog_images.py)
 
+Each post needs a Cantonese body (blog/src/<slug>.zh.html) and a "zh" block in posts.json; the build fails without them.
 Writes blog/index.html, blog/<slug>/index.html, blog/feed.xml and sitemap.xml. See docs/blog.md.
 Usage: python3 tools/blog.py
 """
@@ -52,10 +53,10 @@ SHARE_JS = """<script>
     box.querySelectorAll('a[data-method]').forEach(function(a){a.addEventListener('click',function(){track(a.getAttribute('data-method'))})});
     var copy=box.querySelector('[data-copy]');
     if(copy){copy.parentNode.hidden=false;copy.addEventListener('click',function(){
-      function ok(){var t=copy.querySelector('span');var o=t.textContent;t.textContent='Link copied';copy.classList.add('done');track('copy_link');
+      function ok(){var zh=document.documentElement.getAttribute('data-lang')==='zh';var t=copy.querySelector('span');var o=t.textContent;t.textContent=zh?'已複製連結':'Link copied';copy.classList.add('done');track('copy_link');
         setTimeout(function(){t.textContent=o;copy.classList.remove('done')},2200)}
-      if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(url).then(ok,function(){window.prompt('Copy this link',url)})}
-      else{window.prompt('Copy this link',url)}})}
+      if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(url).then(ok,function(){window.prompt(zh?'複製呢條連結':'Copy this link',url)})}
+      else{window.prompt(zh?'複製呢條連結':'Copy this link',url)}})}
     var nat=box.querySelector('[data-native]');
     if(nat&&navigator.share){nat.parentNode.hidden=false;nat.addEventListener('click',function(){
       navigator.share({title:title,url:url}).then(function(){track('native')}).catch(function(){})})}
@@ -68,6 +69,10 @@ def load_posts():
     posts = json.load(open(BLOG / "posts.json", encoding="utf-8"))
     for p in posts:
         p["body"] = (BLOG / "src" / f"{p['slug']}.html").read_text(encoding="utf-8").strip()
+        p["body_zh"] = (BLOG / "src" / f"{p['slug']}.zh.html").read_text(encoding="utf-8").strip()
+        zh = p.get("zh") or {}
+        for k in ("title", "dek", "description", "hero_alt", "hero_caption"):
+            assert zh.get(k), f"{p['slug']}: missing zh.{k} in posts.json"
         p["url"] = f"{SITE}/blog/{p['slug']}/"
         p["words"] = len(re.sub(r"<[^>]+>", " ", p["body"]).split())
         p["mins"] = max(1, math.ceil(p["words"] / 200))
@@ -83,10 +88,11 @@ def human(date):
     return f"{d.day} {d.strftime('%B %Y')}"
 
 
-def head(title, desc, canonical, og_image, og_alt, og_type="website", extra="", keywords=None, jsonld=None):
+def head(title, desc, canonical, og_image, og_alt, og_type="website", extra="", keywords=None, jsonld=None, zh_title=None):
     kw = f'<meta name="keywords" content="{E(", ".join(keywords))}">\n' if keywords else ""
     ld = "".join(f'<script type="application/ld+json">{json.dumps(j, ensure_ascii=False, separators=(",", ":"))}</script>\n'
                  for j in (jsonld or []))
+    zt = f'<meta name="fkt-zh-title" content="{E(zh_title)}">\n' if zh_title else ""
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -120,12 +126,17 @@ def head(title, desc, canonical, og_image, og_alt, og_type="website", extra="", 
 <meta name="twitter:image" content="{og_image}">
 <meta name="twitter:image:alt" content="{E(og_alt)}">
 {ld}{GA}
+{zt}<script>try{{if(localStorage.getItem('fkt-lang')==='zh')document.documentElement.setAttribute('data-lang','zh')}}catch(e){{}}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="{FONTS}">
 <link rel="stylesheet" href="/assets/blog/blog.css">
 </head>
 """
+
+
+LANG_BTN = ('<button class="langtog" id="btnLang" type="button" aria-pressed="false" aria-label="Language: English / 廣東話" '
+            'title="English / 廣東話"><span data-l="en" class="on">EN</span><span data-l="zh" lang="zh-HK">粵</span></button>')
 
 
 def site_header(current):
@@ -137,7 +148,7 @@ def site_header(current):
 <div class="checkband" aria-hidden="true"></div>
 <header class="site"><div class="wrap">
   <a class="brandlink" href="/" aria-label="{NAME}, play the simulator"><img src="/assets/brand/mark.svg" width="32" height="32" alt=""><span>{NAME}</span><span class="han" lang="zh-Hant" aria-hidden="true">啟德機場</span></a>
-  <nav aria-label="Main">{a("/blog/", "Blog", "blog")}<a href="/">Play</a></nav>
+  <nav aria-label="Main">{a("/blog/", "Blog", "blog")}<a href="/">Play</a>{LANG_BTN}</nav>
 </div></header>
 """
 
@@ -150,6 +161,7 @@ def site_footer():
   </div>
   <div>Map data &copy; Lands Department, HKSAR Government. Elevation: SRTM via AWS Terrain Tiles. Aircraft and liveries are not real airlines.</div>
 </div></footer>
+<script src="/assets/blog/lang.js"></script>
 </body>
 </html>
 """
@@ -157,11 +169,11 @@ def site_footer():
 
 def card(p):
     return f"""<a class="pcard" href="/blog/{p['slug']}/">
-  <img src="/assets/blog/og/{p['slug']}.jpg" width="1200" height="630" loading="lazy" alt="{E(p['hero_alt'])}">
+  <img src="/assets/blog/og/{p['slug']}.jpg" width="1200" height="630" loading="lazy" alt="{E(p['hero_alt'])}" data-zh-alt="{E(p['zh']['hero_alt'])}">
   <div class="body">
     <div class="meta">{E(p['tag'])} &middot; {human(p['date'])}</div>
-    <h3>{E(p['title'])}</h3>
-    <p>{E(p['description'])}</p>
+    <h3 data-zh="{E(p['zh']['title'])}">{E(p['title'])}</h3>
+    <p data-zh="{E(p['zh']['description'])}">{E(p['description'])}</p>
     <span class="more">Read the post &rarr;</span>
   </div>
 </a>"""
@@ -208,24 +220,28 @@ def post_page(p, others):
     extra = (f'<meta property="article:published_time" content="{iso}">\n<meta property="article:modified_time" content="{mod}">\n'
              f'<meta property="article:section" content="{E(p["tag"])}">\n<meta property="article:author" content="{NAME}">\n'
              + "".join(f'<meta property="article:tag" content="{E(k)}">\n' for k in p["keywords"]))
-    out = head(f"{p['title']} | {NAME}", desc, p["url"], p["og"], p["hero_alt"], "article", extra, p["keywords"], ld)
+    out = head(f"{p['title']} | {NAME}", desc, p["url"], p["og"], p["hero_alt"], "article", extra, p["keywords"], ld,
+               zh_title=f"{p['zh']['title']} | {NAME}")
     out += site_header("blog")
     out += f"""<main id="main"><article>
 <div class="wrap">
   <nav class="crumbs" aria-label="Breadcrumb"><a href="/">{NAME}</a> / <a href="/blog/">Blog</a> / <span aria-current="page">{E(p['tag'])}</span></nav>
   <header class="post-head">
     <p class="eyebrow">{E(p['tag'])}</p>
-    <h1>{E(p['title'])}</h1>
-    <p class="dek">{E(p['dek'])}</p>
+    <h1 data-zh="{E(p['zh']['title'])}">{E(p['title'])}</h1>
+    <p class="dek" data-zh="{E(p['zh']['dek'])}">{E(p['dek'])}</p>
     <div class="byline"><time datetime="{iso}">{human(iso)}</time><span>{p['mins']} min read</span><span>{NAME}</span></div>
   </header>
   {share_box(p, 'top')}
   <figure class="hero">
-    <img src="/assets/blog/shots/{p['hero']}.jpg" width="1600" height="900" fetchpriority="high" alt="{E(p['hero_alt'])}">
-    <figcaption>{E(p['hero_caption'])}</figcaption>
+    <img src="/assets/blog/shots/{p['hero']}.jpg" width="1600" height="900" fetchpriority="high" alt="{E(p['hero_alt'])}" data-zh-alt="{E(p['zh']['hero_alt'])}">
+    <figcaption data-zh="{E(p['zh']['hero_caption'])}">{E(p['hero_caption'])}</figcaption>
   </figure>
-  <div class="prose">
+  <div class="prose" data-lang="en">
 {p['body']}
+  </div>
+  <div class="prose" data-lang="zh" lang="zh-HK">
+{p['body_zh']}
   </div>
   {share_box(p, 'bottom')}
   <aside class="cta" aria-label="Play Fly Kai Tak">
@@ -253,7 +269,7 @@ def index_page(posts):
     first = posts[0]
     out = head(f"Blog | {NAME}", desc, f"{SITE}/blog/", first["og"],
                "Fly Kai Tak blog: news and features from the Kai Tak flight simulator.", "website", "",
-               ["Kai Tak", "flight simulator", "Hong Kong 1998", "IGS 13", "blog"], ld)
+               ["Kai Tak", "flight simulator", "Hong Kong 1998", "IGS 13", "blog"], ld, zh_title=f"網誌 | {NAME}")
     out += site_header("blog")
     out += f"""<main id="main">
 <section class="masthead" aria-labelledby="blog-title">

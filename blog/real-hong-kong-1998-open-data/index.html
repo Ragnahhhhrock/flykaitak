@@ -52,6 +52,8 @@ window.FKT_ANALYTICS={id:'G-7MNP3SBEF8',src:'/metrics/',fallback:'https://www.go
   load(c.src,function(){load(c.fallback)});
   gtag('js',new Date());gtag('config',c.id,{anonymize_ip:true});})(window.FKT_ANALYTICS);
 </script>
+<meta name="fkt-zh-title" content="真實香港：用開放數據建構 1998 年 | Fly Kai Tak">
+<script>try{if(localStorage.getItem('fkt-lang')==='zh')document.documentElement.setAttribute('data-lang','zh')}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=B612:wght@400;700&family=B612+Mono:wght@400;700&family=Noto+Serif+TC:wght@900&display=swap">
@@ -62,23 +64,23 @@ window.FKT_ANALYTICS={id:'G-7MNP3SBEF8',src:'/metrics/',fallback:'https://www.go
 <div class="checkband" aria-hidden="true"></div>
 <header class="site"><div class="wrap">
   <a class="brandlink" href="/" aria-label="Fly Kai Tak, play the simulator"><img src="/assets/brand/mark.svg" width="32" height="32" alt=""><span>Fly Kai Tak</span><span class="han" lang="zh-Hant" aria-hidden="true">啟德機場</span></a>
-  <nav aria-label="Main"><a href="/blog/" aria-current="page">Blog</a><a href="/">Play</a></nav>
+  <nav aria-label="Main"><a href="/blog/" aria-current="page">Blog</a><a href="/">Play</a><button class="langtog" id="btnLang" type="button" aria-pressed="false" aria-label="Language: English / 廣東話" title="English / 廣東話"><span data-l="en" class="on">EN</span><span data-l="zh" lang="zh-HK">粵</span></button></nav>
 </div></header>
 <main id="main"><article>
 <div class="wrap">
   <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Fly Kai Tak</a> / <a href="/blog/">Blog</a> / <span aria-current="page">Behind the scenes</span></nav>
   <header class="post-head">
     <p class="eyebrow">Behind the scenes</p>
-    <h1>Real Hong Kong: building 1998 from open data</h1>
-    <p class="dek">The coastline, roads and about 24,000 buildings under the Kai Tak approach come from official Hong Kong open data. Here is what is real, and what we changed to make it 1998.</p>
+    <h1 data-zh="真實香港：用開放數據建構 1998 年">Real Hong Kong: building 1998 from open data</h1>
+    <p class="dek" data-zh="啟德進場航道下面嘅海岸線、道路同約 24,000 幢建築物，來自香港官方開放數據。呢度講吓邊啲係真，同我哋點樣將佢變返 1998 年。">The coastline, roads and about 24,000 buildings under the Kai Tak approach come from official Hong Kong open data. Here is what is real, and what we changed to make it 1998.</p>
     <div class="byline"><time datetime="2026-10-03">3 October 2026</time><span>3 min read</span><span>Fly Kai Tak</span></div>
   </header>
   <section class="share share--top" aria-label="Share this post" data-share data-url="https://flykaitak.com/blog/real-hong-kong-1998-open-data/" data-title="Real Hong Kong: building 1998 from open data" data-slug="real-hong-kong-1998-open-data"><h2>Share this post</h2><ul><li><a data-method="x" href="https://twitter.com/intent/tweet?text=Real%20Hong%20Kong%3A%20building%201998%20from%20open%20data%20%7C%20Fly%20Kai%20Tak&url=https%3A%2F%2Fflykaitak.com%2Fblog%2Freal-hong-kong-1998-open-data%2F" target="_blank" rel="noopener noreferrer">Post on X</a></li><li><a data-method="facebook" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fflykaitak.com%2Fblog%2Freal-hong-kong-1998-open-data%2F" target="_blank" rel="noopener noreferrer">Facebook</a></li><li><a data-method="reddit" href="https://www.reddit.com/submit?url=https%3A%2F%2Fflykaitak.com%2Fblog%2Freal-hong-kong-1998-open-data%2F&title=Real%20Hong%20Kong%3A%20building%201998%20from%20open%20data" target="_blank" rel="noopener noreferrer">Reddit</a></li><li><a data-method="linkedin" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fflykaitak.com%2Fblog%2Freal-hong-kong-1998-open-data%2F" target="_blank" rel="noopener noreferrer">LinkedIn</a></li><li><a data-method="whatsapp" href="https://wa.me/?text=Real%20Hong%20Kong%3A%20building%201998%20from%20open%20data%20%7C%20Fly%20Kai%20Tak%20https%3A%2F%2Fflykaitak.com%2Fblog%2Freal-hong-kong-1998-open-data%2F" target="_blank" rel="noopener noreferrer">WhatsApp</a></li><li><a data-method="threads" href="https://www.threads.net/intent/post?text=Real%20Hong%20Kong%3A%20building%201998%20from%20open%20data%20%7C%20Fly%20Kai%20Tak%20https%3A%2F%2Fflykaitak.com%2Fblog%2Freal-hong-kong-1998-open-data%2F" target="_blank" rel="noopener noreferrer">Threads</a></li><li><a data-method="email" href="mailto:?subject=Real%20Hong%20Kong%3A%20building%201998%20from%20open%20data&body=https%3A%2F%2Fflykaitak.com%2Fblog%2Freal-hong-kong-1998-open-data%2F"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="m22 6-10 7L2 6"/></svg>Email</a></li><li hidden><button type="button" data-copy><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><span>Copy link</span></button></li><li hidden><button type="button" data-native><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg><span>Share&hellip;</span></button></li></ul></section>
   <figure class="hero">
-    <img src="/assets/blog/shots/spectator.jpg" width="1600" height="900" fetchpriority="high" alt="A 747 on the apron at Kai Tak with the runway running out into Victoria Harbour and the Hong Kong skyline behind.">
-    <figcaption>Spectator mode from the car park roof: the apron, Runway 13 running into the harbour, and the skyline across the water.</figcaption>
+    <img src="/assets/blog/shots/spectator.jpg" width="1600" height="900" fetchpriority="high" alt="A 747 on the apron at Kai Tak with the runway running out into Victoria Harbour and the Hong Kong skyline behind." data-zh-alt="啟德停機坪上嘅一架 747，跑道伸出維多利亞港，後面係香港天際線。">
+    <figcaption data-zh="喺停車場天台觀機：停機坪、伸出海港嘅 13 號跑道，同對岸嘅天際線。">Spectator mode from the car park roof: the apron, Runway 13 running into the harbour, and the skyline across the water.</figcaption>
   </figure>
-  <div class="prose">
+  <div class="prose" data-lang="en">
 <p>The streets under the Kai Tak approach are not made up. The coastline, the roads and the buildings you fly over come from Hong Kong's own open data, fitted to the real runway, then corrected to match 1998.</p>
 
 <div class="readouts" role="list">
@@ -129,6 +131,57 @@ window.FKT_ANALYTICS={id:'G-7MNP3SBEF8',src:'/metrics/',fallback:'https://www.go
   <p>Data: &copy; Lands Department, HKSAR Government (CSDI). Elevation: SRTM via AWS Terrain Tiles.</p>
 </div>
   </div>
+  <div class="prose" data-lang="zh" lang="zh-HK">
+<p>啟德進場航道下面嘅街道並非虛構。你飛越嘅海岸線、道路同建築物，全部來自香港本地嘅開放數據，對準真實跑道，再修正返去 1998 年。</p>
+
+<div class="readouts" role="list">
+  <div class="readout" role="listitem"><b>24,000</b><span>建築物<i>真實建築輪廓</i></span></div>
+  <div class="readout" role="listitem"><b>6,900</b><span>車輛<i>行駛喺真實道路</i></span></div>
+  <div class="readout" role="listitem"><b>134</b><span>船隻<i>喺海港入面</i></span></div>
+  <div class="readout" role="listitem"><b>1998</b><span>年份<i>唔係而家</i></span></div>
+</div>
+
+<h2>邊啲係真嘅</h2>
+<ul>
+  <li><strong>影像、海岸線、道路同建築物。</strong>航空影像、海岸線、主要道路同約 24,000 幢建築物輪廓，全部來自香港地政總署嘅開放數據。</li>
+  <li><strong>地形。</strong>高度數據係 SRTM，並已濾走建築物造成嘅凸起，免得將一幢大廈誤當成山丘。</li>
+  <li><strong>跑道。</strong>佢對準舊啟德跑道：13 號跑道入口位於北緯 22.3256°、東經 114.1926°，真航向 134.08°。</li>
+</ul>
+
+<figure class="wide">
+  <img src="/assets/home/aerial-kai-tak.jpg" width="1920" height="1080" loading="lazy" alt="啟德跑道、停機坪同周邊九龍社區同海港嘅鳥瞰。">
+  <figcaption>由上而下望啟德：跑道伸出海港，前面係九龍城嘅街道。</figcaption>
+</figure>
+
+<h2>還原 1998 年</h2>
+<p>開放數據顯示嘅係香港而家嘅模樣，所以我哋要拿走一啲嘢。模擬器移除咗啟德舊址同西九龍填海區上嘅建築物，而中環填海第三期嘅海旁就變返海港。</p>
+<p>天際線同樣依足當時嘅年代：冇國際金融中心二期（2003 年），亦冇長江集團中心（1999 年）。</p>
+
+<h3>九龍寨城可以揀</h3>
+<p>九龍寨城喺 1993 至 94 年間拆卸。模擬器預設顯示佢 1994 年前嘅模樣，你亦可以取消剔選，睇 1998 年嘅公園。</p>
+
+<h2>進場航道下面嘅生活</h2>
+<p>交通按香港嘅模樣製作，而唔係隨便一個城市。</p>
+<ul>
+  <li><strong>路上。</strong>約 6,900 架車輛行駛喺真實嘅主要道路同九龍城街道：銀頂嘅紅色皇冠 Comfort 款的士、綠色新界的士、乳白色小巴、雙層巴士、貨車同私家車。</li>
+  <li><strong>水上。</strong>約 134 艘船隻：四條航線嘅天星小輪、貨輪、貨櫃船、郵輪、中式帆船、遊艇、水警快艇、拖船同下錨嘅船隻，全部都有正確嘅航行燈。</li>
+  <li><strong>招牌上。</strong>商店招牌根據當年相片繪製，有中文有英文，彌敦道一帶嘅霓虹燈都有。真實嘅企業標誌被剔除，真實航空公司名稱同塗裝亦冇用，飛機改用受塗裝啟發嘅顏色。</li>
+</ul>
+
+<figure class="wide">
+  <img src="/assets/blog/shots/spectator.jpg" width="1600" height="900" loading="lazy" alt="停機坪上嘅一架 747，13 號跑道伸出海港，後面係香港天際線。">
+  <figcaption>啟德停車場天台，其中一個觀機位置。海港交通、停機坪同對岸嘅天際線都係實時運作。</figcaption>
+</figure>
+
+<h2>地標</h2>
+<p>留意中銀大廈、中環廣場、中環中心、滙豐總行、怡和大廈、交易廣場、會議展覽中心新翼、尖沙咀鐘樓、文化中心、海運大廈、紅磡體育館，以及啟德客運大樓同塔台。另外仲有深水埗嘅嘉頓山障礙物燈。</p>
+
+<div class="callout">
+  <p class="eyebrow">自己建立地圖</p>
+  <p>喺 <a href="https://github.com/Ragnahhhhrock/flykaitak">GitHub 儲存庫</a>入面，用 <code>python3 tools/fetch.py &amp;&amp; python3 tools/build.py</code> 就可以由源頭重建地圖數據。</p>
+  <p>數據：© 香港特別行政區政府地政總署（CSDI）。高度數據：SRTM，經 AWS Terrain Tiles 提供。</p>
+</div>
+  </div>
   <section class="share" aria-label="Share this post" data-share data-url="https://flykaitak.com/blog/real-hong-kong-1998-open-data/" data-title="Real Hong Kong: building 1998 from open data" data-slug="real-hong-kong-1998-open-data"><h2>Share this post</h2><ul><li><a data-method="x" href="https://twitter.com/intent/tweet?text=Real%20Hong%20Kong%3A%20building%201998%20from%20open%20data%20%7C%20Fly%20Kai%20Tak&url=https%3A%2F%2Fflykaitak.com%2Fblog%2Freal-hong-kong-1998-open-data%2F" target="_blank" rel="noopener noreferrer">Post on X</a></li><li><a data-method="facebook" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fflykaitak.com%2Fblog%2Freal-hong-kong-1998-open-data%2F" target="_blank" rel="noopener noreferrer">Facebook</a></li><li><a data-method="reddit" href="https://www.reddit.com/submit?url=https%3A%2F%2Fflykaitak.com%2Fblog%2Freal-hong-kong-1998-open-data%2F&title=Real%20Hong%20Kong%3A%20building%201998%20from%20open%20data" target="_blank" rel="noopener noreferrer">Reddit</a></li><li><a data-method="linkedin" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fflykaitak.com%2Fblog%2Freal-hong-kong-1998-open-data%2F" target="_blank" rel="noopener noreferrer">LinkedIn</a></li><li><a data-method="whatsapp" href="https://wa.me/?text=Real%20Hong%20Kong%3A%20building%201998%20from%20open%20data%20%7C%20Fly%20Kai%20Tak%20https%3A%2F%2Fflykaitak.com%2Fblog%2Freal-hong-kong-1998-open-data%2F" target="_blank" rel="noopener noreferrer">WhatsApp</a></li><li><a data-method="threads" href="https://www.threads.net/intent/post?text=Real%20Hong%20Kong%3A%20building%201998%20from%20open%20data%20%7C%20Fly%20Kai%20Tak%20https%3A%2F%2Fflykaitak.com%2Fblog%2Freal-hong-kong-1998-open-data%2F" target="_blank" rel="noopener noreferrer">Threads</a></li><li><a data-method="email" href="mailto:?subject=Real%20Hong%20Kong%3A%20building%201998%20from%20open%20data&body=https%3A%2F%2Fflykaitak.com%2Fblog%2Freal-hong-kong-1998-open-data%2F"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="m22 6-10 7L2 6"/></svg>Email</a></li><li hidden><button type="button" data-copy><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><span>Copy link</span></button></li><li hidden><button type="button" data-native><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg><span>Share&hellip;</span></button></li></ul></section>
   <aside class="cta" aria-label="Play Fly Kai Tak">
     <span class="han" lang="zh-Hant" aria-hidden="true">啟德</span>
@@ -137,21 +190,21 @@ window.FKT_ANALYTICS={id:'G-7MNP3SBEF8',src:'/metrics/',fallback:'https://www.go
     <a class="btn go" href="/">Begin descent</a>
   </aside>
   <section class="more-posts"><h2 class="label" style="font-family:var(--f-num);font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);font-weight:400;margin:0 0 20px">More from the blog</h2><div class="cards">
-<a class="pcard" href="/blog/cantonese-language-toggle/">
-  <img src="/assets/blog/og/cantonese-language-toggle.jpg" width="1200" height="630" loading="lazy" alt="The Fly Kai Tak setup screen in Cantonese, with the EN and 粵 button at the top left.">
+<a class="pcard" href="/blog/blog-in-cantonese/">
+  <img src="/assets/blog/og/blog-in-cantonese.jpg" width="1200" height="630" loading="lazy" alt="The Fly Kai Tak blog index in Cantonese, with the EN and 粵 button in the header." data-zh-alt="Fly Kai Tak 網誌首頁嘅廣東話版本，頁首有 EN 同粵掣。">
   <div class="body">
     <div class="meta">Feature &middot; 3 October 2026</div>
-    <h3>Fly Kai Tak in Cantonese: a language toggle on the home screen</h3>
-    <p>Fly Kai Tak&#x27;s home screen now has an English / Cantonese toggle: the whole setup screen switches to written Cantonese and remembers your choice.</p>
+    <h3 data-zh="用廣東話睇 Fly Kai Tak 網誌">Read the Fly Kai Tak blog in Cantonese</h3>
+    <p data-zh="Fly Kai Tak 網誌每頁都有英文／廣東話切換：文章、圖片說明、頁首同頁尾都可以轉做書面粵語。">The Fly Kai Tak blog now has an English / Cantonese toggle on every page: posts, captions, header and footer switch to written Cantonese.</p>
     <span class="more">Read the post &rarr;</span>
   </div>
 </a>
-<a class="pcard" href="/blog/the-peak-tram-lookout-and-view/">
-  <img src="/assets/blog/og/the-peak-tram-lookout-and-view.jpg" width="1200" height="630" loading="lazy" alt="The view from the Peak over the harbour to Kowloon.">
+<a class="pcard" href="/blog/cantonese-language-toggle/">
+  <img src="/assets/blog/og/cantonese-language-toggle.jpg" width="1200" height="630" loading="lazy" alt="The Fly Kai Tak setup screen in Cantonese, with the EN and 粵 button at the top left." data-zh-alt="Fly Kai Tak 設定畫面嘅廣東話版本，左上角有 EN 同粵掣。">
   <div class="body">
     <div class="meta">Feature &middot; 3 October 2026</div>
-    <h3>The Peak Tram, the Peak Lookout and a view from the Peak</h3>
-    <p>Fly Kai Tak adds the Peak Tram, the Peak Lookout and a Spectator: The Peak view, alongside Ocean Park&#x27;s cable car between the Waterfront and the Summit.</p>
+    <h3 data-zh="用廣東話玩 Fly Kai Tak：首頁語言切換">Fly Kai Tak in Cantonese: a language toggle on the home screen</h3>
+    <p data-zh="Fly Kai Tak 首頁而家有英文／廣東話切換：成個設定畫面轉做書面粵語，並記住你嘅選擇。">Fly Kai Tak&#x27;s home screen now has an English / Cantonese toggle: the whole setup screen switches to written Cantonese and remembers your choice.</p>
     <span class="more">Read the post &rarr;</span>
   </div>
 </a>
@@ -165,6 +218,7 @@ window.FKT_ANALYTICS={id:'G-7MNP3SBEF8',src:'/metrics/',fallback:'https://www.go
   </div>
   <div>Map data &copy; Lands Department, HKSAR Government. Elevation: SRTM via AWS Terrain Tiles. Aircraft and liveries are not real airlines.</div>
 </div></footer>
+<script src="/assets/blog/lang.js"></script>
 <script>
 (function(){
   document.querySelectorAll('[data-share]').forEach(function(box){
@@ -173,10 +227,10 @@ window.FKT_ANALYTICS={id:'G-7MNP3SBEF8',src:'/metrics/',fallback:'https://www.go
     box.querySelectorAll('a[data-method]').forEach(function(a){a.addEventListener('click',function(){track(a.getAttribute('data-method'))})});
     var copy=box.querySelector('[data-copy]');
     if(copy){copy.parentNode.hidden=false;copy.addEventListener('click',function(){
-      function ok(){var t=copy.querySelector('span');var o=t.textContent;t.textContent='Link copied';copy.classList.add('done');track('copy_link');
+      function ok(){var zh=document.documentElement.getAttribute('data-lang')==='zh';var t=copy.querySelector('span');var o=t.textContent;t.textContent=zh?'已複製連結':'Link copied';copy.classList.add('done');track('copy_link');
         setTimeout(function(){t.textContent=o;copy.classList.remove('done')},2200)}
-      if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(url).then(ok,function(){window.prompt('Copy this link',url)})}
-      else{window.prompt('Copy this link',url)}})}
+      if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(url).then(ok,function(){window.prompt(zh?'複製呢條連結':'Copy this link',url)})}
+      else{window.prompt(zh?'複製呢條連結':'Copy this link',url)}})}
     var nat=box.querySelector('[data-native]');
     if(nat&&navigator.share){nat.parentNode.hidden=false;nat.addEventListener('click',function(){
       navigator.share({title:title,url:url}).then(function(){track('native')}).catch(function(){})})}

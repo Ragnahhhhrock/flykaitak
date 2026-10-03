@@ -1,0 +1,49 @@
+<p>啟德進場航道下面嘅街道並非虛構。你飛越嘅海岸線、道路同建築物，全部來自香港本地嘅開放數據，對準真實跑道，再修正返去 1998 年。</p>
+
+<div class="readouts" role="list">
+  <div class="readout" role="listitem"><b>24,000</b><span>建築物<i>真實建築輪廓</i></span></div>
+  <div class="readout" role="listitem"><b>6,900</b><span>車輛<i>行駛喺真實道路</i></span></div>
+  <div class="readout" role="listitem"><b>134</b><span>船隻<i>喺海港入面</i></span></div>
+  <div class="readout" role="listitem"><b>1998</b><span>年份<i>唔係而家</i></span></div>
+</div>
+
+<h2>邊啲係真嘅</h2>
+<ul>
+  <li><strong>影像、海岸線、道路同建築物。</strong>航空影像、海岸線、主要道路同約 24,000 幢建築物輪廓，全部來自香港地政總署嘅開放數據。</li>
+  <li><strong>地形。</strong>高度數據係 SRTM，並已濾走建築物造成嘅凸起，免得將一幢大廈誤當成山丘。</li>
+  <li><strong>跑道。</strong>佢對準舊啟德跑道：13 號跑道入口位於北緯 22.3256°、東經 114.1926°，真航向 134.08°。</li>
+</ul>
+
+<figure class="wide">
+  <img src="/assets/home/aerial-kai-tak.jpg" width="1920" height="1080" loading="lazy" alt="啟德跑道、停機坪同周邊九龍社區同海港嘅鳥瞰。">
+  <figcaption>由上而下望啟德：跑道伸出海港，前面係九龍城嘅街道。</figcaption>
+</figure>
+
+<h2>還原 1998 年</h2>
+<p>開放數據顯示嘅係香港而家嘅模樣，所以我哋要拿走一啲嘢。模擬器移除咗啟德舊址同西九龍填海區上嘅建築物，而中環填海第三期嘅海旁就變返海港。</p>
+<p>天際線同樣依足當時嘅年代：冇國際金融中心二期（2003 年），亦冇長江集團中心（1999 年）。</p>
+
+<h3>九龍寨城可以揀</h3>
+<p>九龍寨城喺 1993 至 94 年間拆卸。模擬器預設顯示佢 1994 年前嘅模樣，你亦可以取消剔選，睇 1998 年嘅公園。</p>
+
+<h2>進場航道下面嘅生活</h2>
+<p>交通按香港嘅模樣製作，而唔係隨便一個城市。</p>
+<ul>
+  <li><strong>路上。</strong>約 6,900 架車輛行駛喺真實嘅主要道路同九龍城街道：銀頂嘅紅色皇冠 Comfort 款的士、綠色新界的士、乳白色小巴、雙層巴士、貨車同私家車。</li>
+  <li><strong>水上。</strong>約 134 艘船隻：四條航線嘅天星小輪、貨輪、貨櫃船、郵輪、中式帆船、遊艇、水警快艇、拖船同下錨嘅船隻，全部都有正確嘅航行燈。</li>
+  <li><strong>招牌上。</strong>商店招牌根據當年相片繪製，有中文有英文，彌敦道一帶嘅霓虹燈都有。真實嘅企業標誌被剔除，真實航空公司名稱同塗裝亦冇用，飛機改用受塗裝啟發嘅顏色。</li>
+</ul>
+
+<figure class="wide">
+  <img src="/assets/blog/shots/spectator.jpg" width="1600" height="900" loading="lazy" alt="停機坪上嘅一架 747，13 號跑道伸出海港，後面係香港天際線。">
+  <figcaption>啟德停車場天台，其中一個觀機位置。海港交通、停機坪同對岸嘅天際線都係實時運作。</figcaption>
+</figure>
+
+<h2>地標</h2>
+<p>留意中銀大廈、中環廣場、中環中心、滙豐總行、怡和大廈、交易廣場、會議展覽中心新翼、尖沙咀鐘樓、文化中心、海運大廈、紅磡體育館，以及啟德客運大樓同塔台。另外仲有深水埗嘅嘉頓山障礙物燈。</p>
+
+<div class="callout">
+  <p class="eyebrow">自己建立地圖</p>
+  <p>喺 <a href="https://github.com/Ragnahhhhrock/flykaitak">GitHub 儲存庫</a>入面，用 <code>python3 tools/fetch.py &amp;&amp; python3 tools/build.py</code> 就可以由源頭重建地圖數據。</p>
+  <p>數據：© 香港特別行政區政府地政總署（CSDI）。高度數據：SRTM，經 AWS Terrain Tiles 提供。</p>
+</div>

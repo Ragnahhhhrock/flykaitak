@@ -1,5 +1,38 @@
 [
   {
+    "slug": "blog-in-cantonese",
+    "title": "Read the Fly Kai Tak blog in Cantonese",
+    "dek": "Every blog page now has an EN / 粵 button that switches the whole post between English and Cantonese, and shares your choice with the home screen.",
+    "description": "The Fly Kai Tak blog now has an English / Cantonese toggle on every page: posts, captions, header and footer switch to written Cantonese.",
+    "date": "2026-10-03",
+    "tag": "Feature",
+    "keywords": [
+      "Kai Tak",
+      "flight simulator",
+      "Cantonese",
+      "廣東話",
+      "blog",
+      "language toggle",
+      "Hong Kong",
+      "Hong Kong 1998"
+    ],
+    "hero": "blog-cantonese",
+    "hero_alt": "The Fly Kai Tak blog index in Cantonese, with the EN and 粵 button in the header.",
+    "hero_caption": "The Blog index in Cantonese. The EN / 粵 button is in the header.",
+    "card_kicker": "BLOG · LANGUAGE · 1998",
+    "card_title": "Blog in Cantonese",
+    "card_sub": "EN / 粵 on every blog page",
+    "card_image": "blog-cantonese",
+    "card_focus": 50,
+    "zh": {
+      "title": "用廣東話睇 Fly Kai Tak 網誌",
+      "dek": "每一頁網誌而家都有 EN / 粵 掣，可以將成篇文章喺英文同廣東話之間切換，並同首頁共用你嘅選擇。",
+      "description": "Fly Kai Tak 網誌每頁都有英文／廣東話切換：文章、圖片說明、頁首同頁尾都可以轉做書面粵語。",
+      "hero_alt": "Fly Kai Tak 網誌首頁嘅廣東話版本，頁首有 EN 同粵掣。",
+      "hero_caption": "廣東話版網誌首頁。EN / 粵 掣喺頁首。"
+    }
+  },
+  {
     "slug": "cantonese-language-toggle",
     "title": "Fly Kai Tak in Cantonese: a language toggle on the home screen",
     "dek": "A new EN / 粵 button on the home screen switches all of the setup text between English and Cantonese, and remembers your choice.",
@@ -23,7 +56,14 @@
     "card_title": "Now in Cantonese",
     "card_sub": "EN / 粵 toggle on the home screen",
     "card_image": "home-cantonese",
-    "card_focus": 50
+    "card_focus": 50,
+    "zh": {
+      "title": "用廣東話玩 Fly Kai Tak：首頁語言切換",
+      "dek": "首頁新增 EN / 粵 掣，可以將所有設定文字喺英文同廣東話之間切換，並會記住你嘅選擇。",
+      "description": "Fly Kai Tak 首頁而家有英文／廣東話切換：成個設定畫面轉做書面粵語，並記住你嘅選擇。",
+      "hero_alt": "Fly Kai Tak 設定畫面嘅廣東話版本，左上角有 EN 同粵掣。",
+      "hero_caption": "廣東話版設定畫面。EN / 粵 掣喺左上角。"
+    }
   },
   {
     "slug": "the-peak-tram-lookout-and-view",
@@ -49,7 +89,14 @@
     "card_title": "The Peak",
     "card_sub": "Peak Tram, Peak Lookout and a view from the top",
     "card_image": "peak-view",
-    "card_focus": 50
+    "card_focus": 50,
+    "zh": {
+      "title": "山頂纜車、山頂餐廳同山頂景色",
+      "dek": "由花園道搭山頂纜車上山，喺凌霄閣旁邊搵到山頂餐廳，再喺山頂睇飛機進場。",
+      "description": "Fly Kai Tak 加入山頂纜車、山頂餐廳同「Plane Spotter: The Peak」視角，仲有海洋公園海濱同山上之間嘅纜車。",
+      "hero_alt": "由山頂望過海港去九龍嘅景色。",
+      "hero_caption": "Plane Spotter: The Peak，望過海港去九龍。"
+    }
   },
   {
     "slug": "inverted-yoke-touch-and-mouse",
@@ -75,7 +122,14 @@
     "card_title": "Inverted yoke",
     "card_sub": "Drag down to pull up, with touch or mouse",
     "card_image": "yoke-inverted",
-    "card_focus": 50
+    "card_focus": 50,
+    "zh": {
+      "title": "觸控同滑鼠嘅反向操縱桿：向下拖就拉起",
+      "dek": "螢幕上嘅操縱桿而家好似真正嘅操縱柱：向下拖就拉起機頭，向上拖就壓低機頭，觸控或滑鼠都得。",
+      "description": "Fly Kai Tak 嘅螢幕操縱桿而家為觸控同滑鼠反向：向下拖拉起機頭，向上拖壓低機頭，同鍵盤一致。",
+      "hero_alt": "747 沿 IGS 進場，左下角有個圓形螢幕操縱桿。",
+      "hero_caption": "左下角嘅螢幕操縱桿，觸控或滑鼠都用得。"
+    }
   },
   {
     "slug": "share-on-threads",
@@ -97,7 +151,14 @@
     "card_title": "Share on Threads",
     "card_sub": "A new share button on every post",
     "card_image": "lm-boc",
-    "card_focus": 50
+    "card_focus": 50,
+    "zh": {
+      "title": "喺 Threads 分享 Fly Kai Tak 文章",
+      "dek": "每篇網誌文章而家都有 Threads 分享掣，同 X、Facebook、Reddit、LinkedIn、WhatsApp、電郵同複製連結放埋一齊。",
+      "description": "Fly Kai Tak 網誌文章而家可以一㩒分享去 Threads，標題同連結已預先填好。",
+      "hero_alt": "Fly Kai Tak 入面嘅中銀大廈同中環天際線。",
+      "hero_caption": "發現鍾意嘅畫面？將佢嘅來源文章分享出去。"
+    }
   },
   {
     "slug": "landmarks-ocean-park-happy-valley",
@@ -121,7 +182,14 @@
     "card_title": "Landmarks tour",
     "card_sub": "Plus Ocean Park and Happy Valley",
     "card_image": "lm-boc",
-    "card_focus": 50
+    "card_focus": 50,
+    "zh": {
+      "title": "地標導覽，另加海洋公園同跑馬地",
+      "dek": "由中銀大廈到嘉頓山障礙物燈：啟德四周你可以認出嘅地標，仲有兩個新增景點：海洋公園同跑馬地馬場。",
+      "description": "Fly Kai Tak 入面香港地標嘅導覽連截圖，仲有新加入嘅海洋公園同跑馬地馬場。",
+      "hero_alt": "中銀大廈有斜撐、刻面嘅塔身，喺中環高樓之間。",
+      "hero_caption": "中銀大廈同中環天際線。"
+    }
   },
   {
     "slug": "flying-kai-tak-on-your-phone",
@@ -146,7 +214,14 @@
     "card_title": "Fly Kai Tak on your phone",
     "card_sub": "Landscape, a cleaner toolbar, bigger controls",
     "card_image": "mobile-landscape",
-    "card_focus": 50
+    "card_focus": 50,
+    "zh": {
+      "title": "用手機飛啟德：橫向、更精簡嘅工具列同更大嘅控制掣",
+      "dek": "一行工具列加 More 抽屜、啱晒短身橫向螢幕嘅觸控控制，仲有提示直向玩家轉橫手機。",
+      "description": "Fly Kai Tak 手機版：精簡工具列加 More 抽屜、橫向觸控控制、直向旋轉提示、開始下降時全螢幕，仲支援安全區域。",
+      "hero_alt": "橫向手機視窗入面嘅 747-400 沿 IGS 進場，左下角係操縱桿，右下角係起落架、襟翼同推力桿。",
+      "hero_caption": "手機大小嘅橫向螢幕上嘅 IGS 進場：一行工具列，左邊係操縱桿，右邊係起落架、襟翼同推力桿。"
+    }
   },
   {
     "slug": "checkerboard-turn-igs-13-approach",
@@ -171,7 +246,14 @@
     "card_title": "The checkerboard turn",
     "card_sub": "Flying the IGS 13 approach",
     "card_image": "street2",
-    "card_focus": 40
+    "card_focus": 40,
+    "zh": {
+      "title": "棋盤轉彎：飛 IGS 13 進場",
+      "dek": "喺青衣上空下降，瞄準九龍山上嘅棋盤，然後喺屋頂上空將 747 向右轉 47°。Fly Kai Tak 入面 13 號跑道進場點運作。",
+      "description": "著名嘅啟德 13 號跑道 IGS 進場喺 Fly Kai Tak 點運作：088° 航道、山上棋盤、九龍城上空 47° 右轉，同降落評分。",
+      "hero_alt": "747 駕駛艙視角，向右傾斜飛越九龍城，前方係啟德 13 號跑道同海港。",
+      "hero_caption": "747-400 轉彎途中。航向已由 088° 轉到 102°，人工地平儀傾斜，13 號跑道喺運動場後面出現。"
+    }
   },
   {
     "slug": "real-hong-kong-1998-open-data",
@@ -196,7 +278,14 @@
     "card_title": "Real Hong Kong",
     "card_sub": "Building 1998 from open data",
     "card_image": "spectator",
-    "card_focus": 55
+    "card_focus": 55,
+    "zh": {
+      "title": "真實香港：用開放數據建構 1998 年",
+      "dek": "啟德進場航道下面嘅海岸線、道路同約 24,000 幢建築物，來自香港官方開放數據。呢度講吓邊啲係真，同我哋點樣將佢變返 1998 年。",
+      "description": "Fly Kai Tak 點樣用地政總署開放數據同 SRTM 地形建構香港，同 1998 年嘅修正：冇啟德重建、冇西九龍大廈，仲有可以揀嘅九龍寨城。",
+      "hero_alt": "啟德停機坪上嘅一架 747，跑道伸出維多利亞港，後面係香港天際線。",
+      "hero_caption": "喺停車場天台觀機：停機坪、伸出海港嘅 13 號跑道，同對岸嘅天際線。"
+    }
   },
   {
     "slug": "typhoons-fog-and-night-flying",
@@ -221,6 +310,13 @@
     "card_title": "Weather and night",
     "card_sub": "Typhoons, fog and city lights",
     "card_image": "rain",
-    "card_focus": 50
+    "card_focus": 50,
+    "zh": {
+      "title": "颱風、大霧同城市燈海：啟德嘅天氣同夜間飛行",
+      "dek": "六個天氣預設、一個閃電開關、會推動飛機嘅陣風，仲有照亮九龍嘅夜間模式。同一個進場，完全唔同嘅飛行。",
+      "description": "Fly Kai Tak 嘅天氣同夜間飛行：晴朗、落雨、颱風、雷暴、低雲同大霧預設，陣風同亂流，閃電，以及夜晚亮晒嘅九龍。",
+      "hero_alt": "777 喺颱風入面沿 IGS 進場嘅駕駛艙視角，大雨傾盆，城市消失喺灰色入面。",
+      "hero_caption": "777-200 喺颱風中沿 IGS 進場。無線電報出實時 QNH，風速顯示 36 節，陣風 52 節。"
+    }
   }
 ]
