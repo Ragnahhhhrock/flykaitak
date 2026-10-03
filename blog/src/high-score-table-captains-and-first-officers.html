@@ -1,0 +1,29 @@
+<p>Fly Kai Tak now keeps a <strong>high score table</strong>. Land the IGS 13 approach by hand and your score goes on the board, with a rank that depends on how well you flew it.</p>
+
+<figure class="wide">
+  <img src="/assets/blog/shots/high-scores-result.jpg" width="1600" height="900" loading="lazy" alt="The result screen after a landing: score 88, a callsign box, the rank First Officer and the top five of the high score table.">
+  <figcaption>The result screen shows your rank, your position and the top five.</figcaption>
+</figure>
+
+<h2>Ranks</h2>
+<p>Every landing is scored out of 100 for touchdown rate, touchdown point, centreline, bank and airspeed. The score sets the rank, and the table is sorted by score.</p>
+<ul>
+  <li><strong>Captain:</strong> 90 and above</li>
+  <li><strong>First Officer:</strong> 76 to 89</li>
+  <li><strong>Second Officer:</strong> 60 to 75</li>
+  <li><strong>Flight Engineer:</strong> 45 to 59</li>
+  <li><strong>Cadet:</strong> below 45</li>
+</ul>
+
+<h2>What counts</h2>
+<p>Only hand-flown landings in the <strong>IGS 13 approach</strong> mode are ranked. A landing with the autopilot switched on at any point, or after a rewind, still gets its grade but is not added. Crashes are not scored.</p>
+
+<h2>Your callsign and where it is kept</h2>
+<p>Type a callsign of up to 12 characters on the result screen and press Enter. It is remembered for next time. The table is saved in your browser, so it is still there after you close the tab. The top ten also show on the home screen under <strong>High scores</strong>.</p>
+
+<figure class="wide">
+  <img src="/assets/blog/shots/high-scores-home.jpg" width="1600" height="900" loading="lazy" alt="The home screen with the High scores list open, showing ten landings ranked from Captain down to Cadet.">
+  <figcaption>The top ten on the home screen, from Captain down to Cadet.</figcaption>
+</figure>
+
+<div class="callout"><p>The table is per browser for now. The repository includes a small Cloudflare Worker and D1 database that can make it one shared table for every player.</p></div>

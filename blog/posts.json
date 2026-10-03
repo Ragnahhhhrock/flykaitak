@@ -1,5 +1,38 @@
 [
   {
+    "slug": "high-score-table-captains-and-first-officers",
+    "title": "New: a high score table with Captain and First Officer ranks",
+    "dek": "Hand-fly the IGS 13 approach and your landing goes on a saved high score table, ranked from Captain down to Cadet.",
+    "description": "Fly Kai Tak now has a high score table. Land the IGS 13 approach by hand to rank as Captain, First Officer, Second Officer, Flight Engineer or Cadet.",
+    "date": "2026-10-03",
+    "tag": "Feature",
+    "keywords": [
+      "Kai Tak",
+      "high score",
+      "leaderboard",
+      "ranks",
+      "Captain",
+      "First Officer",
+      "IGS 13",
+      "flight simulator"
+    ],
+    "hero": "high-scores-result",
+    "hero_alt": "The result screen after a landing: score 88, a callsign box, the rank First Officer and the top five of the high score table.",
+    "hero_caption": "Your rank, your position and the top five.",
+    "card_kicker": "VHHH · HIGH SCORES · 1998",
+    "card_title": "High score table",
+    "card_sub": "Captain, First Officer and more",
+    "card_image": "high-scores-result",
+    "card_focus": 50,
+    "zh": {
+      "title": "新功能：最高分榜，設機長同副機長官階",
+      "dek": "親手駕駛 IGS 13 進場，降落就會上榜，官階由機長排到見習機師。",
+      "description": "Fly Kai Tak 而家有最高分榜。親手降落 IGS 13 進場，就可以獲得機長、副機長、第二副機師、飛行機械師或見習機師官階。",
+      "hero_alt": "降落後嘅結果畫面：88 分、呼號輸入框、官階「副機長」，同埋最高分榜頭五名。",
+      "hero_caption": "你嘅官階、排名同頭五名。"
+    }
+  },
+  {
     "slug": "giant-billboards-and-neon-over-kowloon",
     "title": "New: giant billboards and neon over Kowloon",
     "dek": "Floodlit hoardings on the airport road and glowing neon signs, visible from the IGS at night.",

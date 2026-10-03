@@ -187,6 +187,24 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
 .res.crash .eyebrow{color:var(--alarm)}
 .stats{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 18px;font-size:13px;border-top:1px solid var(--line);padding-top:14px}
 .stats dt{color:var(--muted)} .stats dd{margin:0;font-family:var(--f-num);font-variant-numeric:tabular-nums;text-align:right}
+.hs{display:grid;gap:8px;border-top:1px solid var(--line);padding-top:14px}
+.hs-me{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px}
+.hs-me label{color:var(--muted);font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+.hs-me input{background:var(--ink);color:var(--paper);border:1px solid var(--line-2);border-radius:3px;padding:7px 9px;font:inherit;font-family:var(--f-num);text-transform:uppercase;width:11.5em}
+.hs-rank{font-family:var(--f-num);font-size:13px;color:var(--phosphor)}
+.hs-note{color:var(--muted);font-size:12px;margin:0}
+.hst{width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums}
+.hst caption{text-align:left;color:var(--muted);font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding-bottom:6px}
+.hst th{font-weight:400;color:var(--muted);text-align:left;padding:3px 6px;font-size:11px}
+.hst td{padding:4px 6px;border-top:1px solid var(--line);white-space:nowrap}
+.hst td:nth-child(1),.hst th:nth-child(1){width:2.2em;color:var(--muted);font-family:var(--f-num)}
+.hst td.sc,.hst th.sc{text-align:right;font-family:var(--f-num)}
+.hst td.rk{color:var(--phosphor)}
+.hst td.nm{font-family:var(--f-num);overflow:hidden;text-overflow:ellipsis;max-width:9em}
+.hst tr.me td{background:rgba(255,255,255,.07)}
+.hst tr.cap td.rk{color:var(--checker)}
+.hst .opt{color:var(--muted)}
+@media (max-width:560px){.hst .opt{display:none}}
 .res-actions{display:flex;gap:8px;flex-wrap:wrap}
 .res-actions .go{flex:1;justify-content:center}
 .res-actions .btn{padding:13px 14px}
@@ -374,6 +392,10 @@ html,body{overscroll-behavior:none;touch-action:manipulation}
           <label class="tog"><input type="checkbox" id="optWalled" checked><span>Kowloon Walled City as it stood before 1994<small>It was demolished in 1993–94. Untick to see the 1998 park instead.</small></span></label>
         </div>
       </fieldset>
+      <details id="hsHome">
+        <summary>High scores</summary>
+        <div id="hsHomeTable" style="margin-top:12px"></div>
+      </details>
       <button class="go" id="btnGo" type="button"><span id="goLabel">Begin descent</span><span class="k">ENTER</span></button>
       <details>
         <summary>Controls</summary>
@@ -413,6 +435,11 @@ html,body{overscroll-behavior:none;touch-action:manipulation}
       </div>
       <p class="why" id="resWhy"></p>
       <dl class="stats" id="resStats"></dl>
+      <div class="hs" id="resHs" hidden>
+        <div class="hs-me"><label for="hsName">Callsign</label><input id="hsName" maxlength="12" autocomplete="off" autocapitalize="characters" spellcheck="false"><span class="hs-rank" id="hsRank"></span></div>
+        <p class="hs-note" id="hsNote"></p>
+        <div id="hsResTable"></div>
+      </div>
       <div class="res-actions">
         <button class="go" id="btnAgain" type="button"><span>Fly it again</span></button>
         <button class="btn" id="btnRewind" type="button">Rewind 10 s</button>
@@ -1730,7 +1757,7 @@ function resetFlight(){
   const a=AC[CFG.ac];const P=PATH.pts;
   Object.assign(ST,{ac:a,t:0,pi:0,x:P[0].x,z:P[0].z,y:P[0].alt,V:175*KT,gamma:-GP,psi:IGS_HDG*D2R,phi:0,flapIdx:2,flapPos:2,gearDown:false,gearPos:0,
     throttle:.1,thrust:0,onGround:false,ended:null,stall:false,gdot:0,apI:0,inPitch:0,inRoll:0,td:null,Gs:0,psiG:0,vx:0,vy:0,vz:0,ra:900,
-    ph:[0,1,2,3,4,5].map(()=>rnd()*6.28),callouts:{},warnT:0,warn:'',ap:CFG.ap,crashT:0,lastGPWS:0,tailstrike:false});
+    ph:[0,1,2,3,4,5].map(()=>rnd()*6.28),callouts:{},warnT:0,warn:'',ap:CFG.ap,crashT:0,lastGPWS:0,tailstrike:false,apUsed:false,rewound:false});
   // trim for the glidepath
   const q=.5*RHO*ST.V*ST.V;const CL=a.mass*G*Math.cos(ST.gamma)/(q*a.S);const al=(CL-CL0S[2])/CLA;ST.theta=ST.gamma+al;
   const D=q*a.S*(CD0+CDFS[2]+KI*CL*CL);const T=D+a.mass*G*Math.sin(ST.gamma);ST.thrust=Math.max(T,.03*a.thr);ST.throttle=ST.thrust/a.thr;
@@ -1884,7 +1911,7 @@ const HIST=[];const HKEYS=['x','y','z','V','gamma','psi','theta','phi','flapIdx'
 function recordHistory(){const s=ST;if(s.ended)return;const last=HIST[HIST.length-1];if(last&&s.t-last.t<.5)return;const o={};for(const k of HKEYS)o[k]=s[k];o.td=s.td?{...s.td}:null;o.callouts={...s.callouts};HIST.push(o);if(HIST.length>2400)HIST.shift()}
 function timeJump(sec){
   if(mode!=='fly'&&mode!=='ended')return;const s=ST;track(sec<0?'rewind':'fast_forward',{seconds:Math.abs(sec)});
-  if(sec<0){const target=s.t+sec;let i=HIST.length-1;while(i>0&&HIST[i].t>target)i--;const o=HIST[i];if(!o)return;HIST.length=i+1;
+  if(sec<0){s.rewound=true;const target=s.t+sec;let i=HIST.length-1;while(i>0&&HIST[i].t>target)i--;const o=HIST[i];if(!o)return;HIST.length=i+1;
     for(const k of HKEYS)s[k]=o[k];s.td=o.td?{...o.td}:null;s.callouts={...o.callouts};s.attempted=!!s.td;
     if(s.ended){if(FLT)FLT.done=false;s.ended=null;clearFX();acModel.visible=true;document.getElementById('result').hidden=true;mode='fly';document.getElementById('ctl').hidden=CFG.view==='cabin'}
     s.warn='';toast('Back to '+fmtT(s.t))}
@@ -1914,6 +1941,46 @@ function gradeLanding(td){
   const feel=fpm<=150?'Greased it.':fpm<=300?'Smooth.':fpm<=480?'Positive.':fpm<=600?'Firm.':'Hard, but it held together.';
   return {g,pts,feel,fpm};
 }
+
+/* =====================================================================
+   HIGH SCORES
+   Saved in this browser (localStorage). If HS_API is set (see docs/highscores.md)
+   scores are also shared through a Cloudflare Worker + D1 database.
+   Only hand-flown, un-rewound IGS 13 landings are ranked. Rank title comes from the score band.
+   ===================================================================== */
+const HS_API='';
+const HS_KEY='fkt-scores',HS_NAME='fkt-callsign',HS_MAX=100;
+const HS_RANKS=[[90,'Captain'],[76,'First Officer'],[60,'Second Officer'],[45,'Flight Engineer'],[0,'Cadet']];
+const rankTitle=pts=>{for(const [m,t] of HS_RANKS)if(pts>=m)return t;return 'Cadet'};
+const hsEsc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const hsClean=n=>String(n||'').replace(/[^A-Za-z0-9 _.\-]/g,'').trim().slice(0,12).toUpperCase()||'PILOT';
+function hsLocal(){let a=[];try{a=JSON.parse(localStorage.getItem(HS_KEY)||'[]');if(!Array.isArray(a))a=[]}catch(e){a=[]}return a.filter(e=>e&&typeof e.id==='string'&&Number.isFinite(e.s))}
+function hsSort(a){return a.sort((x,y)=>y.s-x.s||x.d-y.d)}
+function hsStore(a){hsSort(a);a.length=Math.min(a.length,HS_MAX);try{localStorage.setItem(HS_KEY,JSON.stringify(a))}catch(e){}}
+function hsMerge(remote){if(!Array.isArray(remote))return;const a=hsLocal(),ids=new Set(a.map(e=>e.id));for(const r of remote)if(r&&r.id&&!ids.has(r.id)&&Number.isFinite(r.s))a.push({id:String(r.id),n:hsClean(r.n),s:r.s|0,g:String(r.g||'').slice(0,1),ac:String(r.ac||'').slice(0,20),wx:String(r.wx||'').slice(0,12),tod:r.tod==='night'?'night':'day',d:+r.d||0});hsStore(a)}
+function hsSync(){if(!HS_API)return Promise.resolve();return fetch(HS_API+'/scores').then(r=>r.json()).then(hsMerge).catch(()=>{})}
+function hsPush(e){if(!HS_API)return;try{fetch(HS_API+'/scores',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(e)}).catch(()=>{})}catch(_){}}
+function hsCallsign(){let n='';try{n=localStorage.getItem(HS_NAME)||''}catch(e){}return n?hsClean(n):''}
+function hsAdd(g,s){
+  const e={id:Date.now().toString(36)+Math.random().toString(36).slice(2,7),n:hsCallsign()||'PILOT',s:Math.max(0,Math.min(100,g.pts|0)),g:g.g,ac:s.ac.short,wx:CFG.wx,tod:CFG.night?'night':'day',d:Date.now()};
+  const a=hsLocal();a.push(e);hsStore(a);hsPush(e);return e}
+function hsRename(e,name){name=hsClean(name);e.n=name;try{localStorage.setItem(HS_NAME,name)}catch(_){}const a=hsLocal(),m=a.find(x=>x.id===e.id);if(m)m.n=name;hsStore(a);hsPush(e);return name}
+function hsTable(mineId,limit,cap){
+  const a=hsSort(hsLocal().slice());if(!a.length)return '<p class="hs-note">No landings on the table yet. Hand-fly the IGS 13 approach to get on it.</p>';
+  let rows='';a.slice(0,limit).forEach((e,i)=>{rows+=`<tr class="${e.id===mineId?'me ':''}${e.s>=90?'cap':''}"><td>${i+1}</td><td class="rk">${rankTitle(e.s)}</td><td class="nm">${hsEsc(e.n)}</td><td class="sc">${e.s}</td><td class="opt">${hsEsc(e.ac)}</td><td class="opt">${(WX[e.wx]||{label:e.wx}).label}</td></tr>`});
+  return `<table class="hst">${cap?'<caption>High scores</caption>':''}<thead><tr><th>#</th><th>Rank</th><th>Callsign</th><th class="sc">Score</th><th class="opt">Aircraft</th><th class="opt">Weather</th></tr></thead><tbody>${rows}</tbody></table>`}
+function hsRenderHome(){const el=document.getElementById('hsHomeTable');if(!el)return;el.innerHTML=hsTable(null,10,false);if(typeof applyLang==='function')applyLang()}
+function hsShowResult(g,s){
+  const box=document.getElementById('resHs');const ranked=!(CFG.ap||s.apUsed||s.rewound||CFG.game!=='approach');
+  box.hidden=false;const nameEl=document.getElementById('hsName'),rankEl=document.getElementById('hsRank'),note=document.getElementById('hsNote'),tbl=document.getElementById('hsResTable');
+  if(!ranked){nameEl.parentNode.hidden=true;rankEl.textContent='';note.textContent=CFG.ap||s.apUsed?'Landings with the autopilot are not ranked.':s.rewound?'Landings after a rewind are not ranked.':'Only IGS 13 approach landings are ranked.';tbl.innerHTML=hsTable(null,5,true);HS_ENTRY=null;return}
+  nameEl.parentNode.hidden=false;nameEl.value=hsCallsign()||'';nameEl.placeholder='PILOT';
+  const e=hsAdd(g,s);HS_ENTRY=e;
+  const pos=hsSort(hsLocal().slice()).findIndex(x=>x.id===e.id)+1;
+  rankEl.textContent=rankTitle(e.s)+' · #'+pos;note.textContent=pos===1?'New number one on the table.':'Score '+e.s+'. Ranks: Captain 90+, First Officer 76+, Second Officer 60+, Flight Engineer 45+.';
+  tbl.innerHTML=hsTable(e.id,5,true)}
+let HS_ENTRY=null;
+function hsCommitName(){if(!HS_ENTRY)return;const el=document.getElementById('hsName');const n=hsRename(HS_ENTRY,el.value);el.value=n;document.getElementById('hsResTable').innerHTML=hsTable(HS_ENTRY.id,5,true);hsRenderHome()}
 
 /* =====================================================================
    SOUND
@@ -2652,7 +2719,7 @@ function toggleHud(){CFG.hud=!CFG.hud;tog('hud',CFG.hud?'on':'off');syncButtons(
 function toggleGuide(){CFG.guide=!CFG.guide;hoops.visible=CFG.guide;tog('guide',CFG.guide?'on':'off');syncButtons()}
 function toggleSound(){CFG.sound=!CFG.sound;sfx.mute(CFG.sound);if(!CFG.sound&&synth)synth.cancel();tog('sound',CFG.sound?'on':'off');syncButtons()}
 function toggleNight(){CFG.night=!CFG.night;tog('night',CFG.night?'night':'day');applyEnvironment()}
-function toggleAP(on){ST.ap=on===undefined?!ST.ap:on;ST.apT=null;if(ST.ap&&ST.onGround&&CFG.game!=='approach'){ST.ap=false;toast('Autopilot engages once you are airborne');syncButtons();return}tog('autopilot',ST.ap?'on':'off',on===undefined?VIA:'auto');if(ST.ap){ST.apI=0;toast('Autopilot and autothrottle engaged')}else toast('Autopilot off: you have control');syncButtons()}
+function toggleAP(on){ST.ap=on===undefined?!ST.ap:on;if(ST.ap)ST.apUsed=true;ST.apT=null;if(ST.ap&&ST.onGround&&CFG.game!=='approach'){ST.ap=false;toast('Autopilot engages once you are airborne');syncButtons();return}tog('autopilot',ST.ap?'on':'off',on===undefined?VIA:'auto');if(ST.ap){ST.apI=0;toast('Autopilot and autothrottle engaged')}else toast('Autopilot off: you have control');syncButtons()}
 function setClouds_on(on){CFG.clouds=on;for(const c of cloudLayers)c.visible=on;tog('clouds',on?'on':'off');syncButtons();toast('Clouds '+(on?'on':'off'))}
 function togglePause(){paused=!paused;tog('pause',paused?'on':'off');syncButtons()}
 function setView(v){if(CFG.game==='watch'&&(v==='cockpit'||v==='cabin'))v='carpark';if(mode==='fly'&&v!==CFG.view)track('view_change',{view:v});CFG.view=v;document.getElementById('viewSel').value=v;look.yaw=look.pitch=0;look.dist=1;camera.userData.snap=true;
@@ -2714,6 +2781,9 @@ const ZH={
 'Kowloon Walled City as it stood before 1994':'1994 年前嘅九龍寨城',
 'It was demolished in 1993–94. Untick to see the 1998 park instead.':'寨城喺 1993–94 年拆卸。取消剔選就會睇到 1998 年嘅公園。',
 'Controls':'操作',
+'High scores':'最高分','Rank':'官階','Callsign':'呼號','Score':'分數',
+'Captain':'機長','First Officer':'副機長','Second Officer':'第二副機師','Flight Engineer':'飛行機械師','Cadet':'見習機師',
+'No landings on the table yet. Hand-fly the IGS 13 approach to get on it.':'榜上暫時未有降落紀錄。親手駕駛 IGS 13 進場就可以上榜。',
 'Pitch: up arrow pushes the nose down, down arrow pulls it up. The on-screen yoke works the same way with touch or mouse: drag down to pull up, drag up to push down':'俯仰：上箭咀向下壓機頭，下箭咀向上拉機頭。螢幕上嘅操縱桿用觸控或滑鼠都一樣：向下拖就拉起，向上拖就壓低',
 'Roll (nosewheel steering on the runway)':'橫滾（喺跑道上就係前輪轉向）',
 'Thrust up / down':'增加 / 減少推力',
@@ -2759,6 +2829,8 @@ document.getElementById('setup').addEventListener('change',e=>{const t=e.target;
 document.getElementById('btnGo').addEventListener('click',startFlight);
 document.getElementById('btnAgain').addEventListener('click',startFlight);
 document.getElementById('btnSetup').addEventListener('click',showSetup);
+{const hn=document.getElementById('hsName');hn.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter'){e.preventDefault();hsCommitName();hn.blur()}});hn.addEventListener('keyup',e=>e.stopPropagation());hn.addEventListener('change',hsCommitName);hn.addEventListener('blur',hsCommitName)}
+hsRenderHome();hsSync().then(hsRenderHome);
 document.getElementById('btnRewind').addEventListener('click',()=>{mode='fly';timeJump(-10)});
 document.getElementById('btnMenu').addEventListener('click',showSetup);
 document.getElementById('viewSel').addEventListener('change',e=>setView(e.target.value));
@@ -2814,7 +2886,7 @@ const STRIPE_LINK='https://buy.stripe.com/9B6cMX2TT3tPaFi0UcaAw00';
 const reducedMotion=()=>!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
 if(reducedMotion())reel.removeAttribute('autoplay');
 function reelShow(on){if(!reelOK)return;if(on&&!reducedMotion())reel.play().catch(()=>{});else reel.pause()}
-function showSetup(){setMore(false);try{if(screen.orientation&&screen.orientation.unlock)screen.orientation.unlock()}catch(e){}reelShow(true);flightEnd('quit');mode='attract';paused=false;for(const id of['bar','ctl','map','result','cabin'])document.getElementById(id).hidden=true;document.getElementById('setup').hidden=false;sfx.stopAll();if(synth)synth.cancel();radioClear();
+function showSetup(){hsRenderHome();setMore(false);try{if(screen.orientation&&screen.orientation.unlock)screen.orientation.unlock()}catch(e){}reelShow(true);flightEnd('quit');mode='attract';paused=false;for(const id of['bar','ctl','map','result','cabin'])document.getElementById(id).hidden=true;document.getElementById('setup').hidden=false;sfx.stopAll();if(synth)synth.cancel();radioClear();
   clearFX();CFG.ap=true;resetFlight();ST.ap=true;spawnAircraftModel();buildAI();CFG.view='chase';applyEnvironment();setWalled(document.getElementById('optWalled').checked)}
 function startFlight(){
   setMore(false);reelShow(false);readSetup();flightEnd('restart');clearFX();mode='fly';paused=false;SEED=window.__capture?1998:1998+Math.floor(Math.random()*1000);
@@ -2839,8 +2911,8 @@ function showResult(){
   if(e.landed){const g=gradeLanding(s.td);trackLanding({grade:g.g,score:Math.max(0,g.pts),touchdown_fpm:Math.round(g.fpm),touchdown_m:Math.round(s.td.s),sim_seconds:Math.round(e.t),autopilot_used:!!s.ap,mode:CFG.game});flightEnd('landed');document.getElementById('resEyebrow').textContent='Landed · Runway 13';document.getElementById('resTitle').textContent='Welcome to Hong Kong';document.getElementById('resGrade').textContent=g.g;
     document.getElementById('resWhy').textContent=g.feel+(s.tailstrike?' Tail strike on touchdown: the aft fuselage touched the runway.':'')+' Score '+Math.max(0,g.pts)+'/100.';
     row('Touchdown rate',Math.round(g.fpm)+' fpm');row('Touchdown past threshold',Math.round(s.td.s)+' m');row('Off centreline',Math.abs(s.td.l).toFixed(1)+' m '+(s.td.l>0?'right':'left'));
-    row('Bank at touchdown',s.td.bank.toFixed(1)+'°');row('Airspeed',Math.round(s.td.ias)+' kt (target '+(s.ac.vref+5)+')');row('Stopped with runway left',Math.round(RWY.len-rwS(s.x,s.z))+' m');}
-  else{if(CFG.game==='approach'||(s.gearDown&&!s.onGround))attemptStart(e.crash?'crash':'missed');trackFail(e.crash?'crash':'missed_approach',{cause:e.title,sim_seconds:Math.round(e.t),distance_nm:+(PATH.pts[s.pi].d/1852).toFixed(2)});flightEnd(e.crash?'crash':'missed_approach');document.getElementById('resEyebrow').textContent=e.crash?'Accident':'Approach abandoned';document.getElementById('resTitle').textContent=e.title;document.getElementById('resGrade').textContent=e.crash?'✕':'↺';
+    row('Bank at touchdown',s.td.bank.toFixed(1)+'°');row('Airspeed',Math.round(s.td.ias)+' kt (target '+(s.ac.vref+5)+')');row('Stopped with runway left',Math.round(RWY.len-rwS(s.x,s.z))+' m');hsShowResult(g,s);}
+  else{document.getElementById('resHs').hidden=true;HS_ENTRY=null;if(CFG.game==='approach'||(s.gearDown&&!s.onGround))attemptStart(e.crash?'crash':'missed');trackFail(e.crash?'crash':'missed_approach',{cause:e.title,sim_seconds:Math.round(e.t),distance_nm:+(PATH.pts[s.pi].d/1852).toFixed(2)});flightEnd(e.crash?'crash':'missed_approach');document.getElementById('resEyebrow').textContent=e.crash?'Accident':'Approach abandoned';document.getElementById('resTitle').textContent=e.title;document.getElementById('resGrade').textContent=e.crash?'✕':'↺';
     document.getElementById('resWhy').textContent=e.why;const p=PATH.pts[s.pi];row('Distance to threshold',p.d>0?(p.d/1852).toFixed(2)+' nm':'past threshold');row('Altitude',fmtFt(s.y));row('Airspeed',Math.round(s.V/KT)+' kt');row('Time flown',Math.floor(e.t/60)+':'+String(Math.floor(e.t%60)).padStart(2,'0'))}
   document.getElementById('result').hidden=false;document.getElementById('btnAgain').focus();
 }
