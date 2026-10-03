@@ -464,7 +464,7 @@ html,body{overscroll-behavior:none;touch-action:manipulation}
           <span><kbd>Z</kbd></span><span>Autopilot on/off</span>
           <span><kbd>K</kbd></span><span>Show or hide the cockpit panel (cockpit view)</span>
           <span><kbd>N</kbd> <kbd>P</kbd> <kbd>U</kbd></span><span>Day/night, pause, clouds</span>
-          <span><kbd>I</kbd> <kbd>O</kbd></span><span>Zoom in / out (1× to 16×)</span>
+          <span><kbd>I</kbd> <kbd>O</kbd> / mouse wheel</span><span>Zoom in / out (1× to 16×). Scroll up to zoom in, down to zoom out</span>
           <span><kbd>T</kbd></span><span>Time speed 1×, 2×, 4×, 8×</span>
           <span><kbd>[</kbd> <kbd>]</kbd></span><span>Jump back / forward 10 seconds (back works after a crash too)</span>
           <span>Drag the view</span><span>Look around (cockpit, cabin) or orbit (exterior)</span>
@@ -3319,7 +3319,14 @@ canvas.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return
   if(CFG.view==='chase'){look.orbitYaw-=dx*4;look.orbitPitch=clamp(look.orbitPitch+dy*2,-.2,1.3)}else{look.yaw=clamp(look.yaw-dx*2.4,-3.1,3.1);look.pitch=clamp(look.pitch-dy*1.6,-1.2,1.1)}});
 canvas.addEventListener('pointerup',()=>drag=null);canvas.addEventListener('pointercancel',()=>drag=null);
 canvas.addEventListener('dblclick',()=>{look.yaw=look.pitch=0;look.orbitYaw=0;look.orbitPitch=.18;look.dist=1});
-canvas.addEventListener('wheel',e=>{look.dist=clamp(look.dist*(e.deltaY>0?1.1:.9),.35,4);e.preventDefault()},{passive:false});
+// Mouse wheel zoom: scroll up = zoom in, scroll down = zoom out (same steps as the I / O keys, 1× to 16×)
+let wheelAcc=0,wheelT=0;
+canvas.addEventListener('wheel',e=>{e.preventDefault();
+  const px=e.deltaMode===1?e.deltaY*33:e.deltaMode===2?e.deltaY*400:e.deltaY;   // lines / pages to pixels
+  wheelAcc+=px;const now=performance.now();
+  if(Math.abs(wheelAcc)<40||now-wheelT<120)return;                              // one step per notch; trackpad bursts don't skip levels
+  const z=wheelAcc<0?Math.min(16,CFG.zoom*2):Math.max(1,CFG.zoom/2);wheelAcc=0;wheelT=now;
+  if(z!==CFG.zoom)setZoom(z)},{passive:false});
 const thrEl=document.getElementById('thr'),thrV=document.getElementById('thrv');
 thrEl.addEventListener('input',()=>{if(ST.ap)toggleAP(false);ST.throttle=thrEl.value/100});
 function readInputs(dt){
@@ -3540,7 +3547,7 @@ const ZH={
 'Autopilot on/off':'自動駕駛 開 / 關',
 'Show or hide the cockpit panel (cockpit view)':'顯示或隱藏駕駛艙儀表板（駕駛艙視角）',
 'Day/night, pause, clouds':'日夜、暫停、雲層',
-'Zoom in / out (1× to 16×)':'放大 / 縮小（1× 至 16×）',
+'Zoom in / out (1× to 16×). Scroll up to zoom in, down to zoom out':'放大 / 縮小（1× 至 16×）。滑鼠滾輪向上放大，向下縮小',
 'Time speed 1×, 2×, 4×, 8×':'時間速度 1×、2×、4×、8×',
 'Jump back / forward 10 seconds (back works after a crash too)':'後退 / 前進 10 秒（撞機之後亦可以後退）',
 'Drag the view':'拖曳畫面',

@@ -71,7 +71,7 @@ The home screen shows the live sim of the airport in the background, with a 58-s
 | Z | Autopilot |
 | R | ATC radio on/off |
 | N, P | Day/night, pause |
-| I / O | Zoom in / out |
+| I / O, mouse wheel | Zoom in / out (scroll up zooms in, scroll down zooms out) |
 | T | Time speed |
 | [ / ] | Back / forward 10 s |
 | K | Cockpit panel on/off |
