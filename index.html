@@ -318,6 +318,7 @@ html,body{overscroll-behavior:none;touch-action:manipulation}
     <svg viewBox="0 0 84 84" aria-hidden="true"><rect x="26" y="8" width="32" height="68" rx="6" fill="none" stroke="#e9eee8" stroke-width="3"/><rect x="26" y="62" width="32" height="6" fill="#e8571f"/><circle cx="42" cy="71" r="1.6" fill="#e9eee8"/></svg>
     <h2 id="rotH">Turn your phone sideways</h2>
     <p>Fly Kai Tak is built for landscape: the instruments, yoke and thrust lever need the width. The flight is paused until you rotate.</p>
+    <p id="rotHint" hidden>Still upright? Turn off Portrait Orientation Lock in Control Centre.</p>
     <button class="btn" id="btnRotGo" type="button">Fly in portrait anyway</button>
   </div>
 </div>
@@ -2668,12 +2669,14 @@ document.addEventListener('fullscreenchange',fsLabel);fsLabel();
 // phones: Go goes fullscreen and asks for landscape (Android Chrome honours it; iPhone Safari has no fullscreen or lock, so the rotate prompt covers it)
 document.getElementById('btnGo').addEventListener('click',()=>{if(TOUCH&&compactMQ.matches)goFullscreen()});
 let rotPaused=false,rotDismissed=false;
-function rotCheck(){const need=mode==='fly'&&CFG.game!=='watch'&&portraitMQ.matches&&!rotDismissed&&!ST.ended;
+function rotCheck(){const need=mode==='fly'&&CFG.game!=='watch'&&TOUCH&&innerWidth<=820&&innerHeight>innerWidth&&!rotDismissed&&!ST.ended;
   if(rotEl.hidden!==need)return;rotEl.hidden=!need;
   if(need){if(!paused){paused=true;rotPaused=true;syncButtons()}}else if(rotPaused){rotPaused=false;paused=false;syncButtons()}}
 setInterval(rotCheck,300);portraitMQ.addEventListener('change',rotCheck);
 document.getElementById('btnRotGo').addEventListener('click',()=>{rotDismissed=true;rotCheck()});
 window.addEventListener('orientationchange',()=>setTimeout(resize,300));
+window.addEventListener('resize',rotCheck);
+if(/iPhone|iPad|iPod/.test(navigator.userAgent))document.getElementById('rotHint').hidden=false;
 
 const reel=document.getElementById('reel');let reelOK=true;
 {const off=()=>{reelOK=false;reel.hidden=true};reel.addEventListener('error',off);const srcs=reel.querySelectorAll('source');srcs[srcs.length-1].addEventListener('error',off)}

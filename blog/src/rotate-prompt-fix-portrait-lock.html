@@ -1,0 +1,18 @@
+<p>Some players turned their phone sideways and the "Turn your phone sideways" prompt stayed on screen. This update makes the prompt follow the real window size and explains what to do when the phone will not rotate.</p>
+
+<h2>What changed</h2>
+<ul>
+  <li>The prompt now checks the window's width and height directly, every time the window resizes, instead of relying only on a media query.</li>
+  <li>On iPhone and iPad it adds a hint: <strong>Still upright? Turn off Portrait Orientation Lock in Control Centre.</strong> With the lock on, the browser stays in portrait whichever way you hold the phone, so the prompt cannot clear.</li>
+  <li><strong>Fly in portrait anyway</strong> still dismisses the prompt and resumes the flight.</li>
+</ul>
+
+<figure class="wide">
+  <img src="/assets/blog/shots/rotate-lock.jpg" width="1600" height="900" loading="lazy" alt="A phone in portrait showing the Turn your phone sideways prompt with a hint about Portrait Orientation Lock.">
+  <figcaption>The prompt with the new hint, over the paused flight.</figcaption>
+</figure>
+
+<div class="callout">
+  <p class="eyebrow">Try this</p>
+  <p>If the prompt will not go away, open Control Centre, switch off the orientation lock, and turn the phone sideways. The flight resumes by itself.</p>
+</div>
