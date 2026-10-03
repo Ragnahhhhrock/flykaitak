@@ -6,7 +6,7 @@
     "description": "Fly Kai Tak aircraft now have collision detection: ground traffic avoids each other, and a collision shows broken wings, scorch marks, smoke and fire.",
     "date": "2026-10-03",
     "tag": "Feature",
-    "category": "Features",
+    "category": "aircraft",
     "keywords": [
       "Kai Tak",
       "collision",
