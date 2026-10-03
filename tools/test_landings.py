@@ -54,6 +54,28 @@ RUN = """
 """
 
 
+TAKEOFF = """
+([cfg, sec]) => {
+  window.__kt.start(cfg);
+  const S = window.__kt.ST, h = 1 / 120; let air = null, maxAlt = 0;
+  for (let i = 0; i < sec * 120 && !S.ended; i++) {
+    S.throttle = 1;
+    if (!S.onGround && air === null) air = S.t;
+    if (S.onGround) S.inPitch = S.Gs > 75 ? 0.5 : 0;
+    else {
+      S.inPitch = Math.max(-1, Math.min(1, (0.1 - S.gamma) * 6));
+      if (S.ra > 40) S.gearDown = false;
+      S.inRoll = (S.t - air > 40 && S.t - air < 110) ? Math.max(-1, Math.min(1, (-0.3 - S.phi) * 3)) : Math.max(-1, Math.min(1, -S.phi * 3));
+    }
+    window.__kt.step(); maxAlt = Math.max(maxAlt, S.y);
+  }
+  const e = S.ended;
+  return {kind: e ? (e.crash ? 'crash' : 'ended') : (air === null ? 'grounded' : 'airborne'), title: e && e.title, why: e && e.why,
+          t: Math.round(S.t), air: air && Math.round(air), alt: Math.round(S.y), maxAlt: Math.round(maxAlt), V: Math.round(S.V * 1.944)};
+}
+"""
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--rwy", default="both")
@@ -88,6 +110,11 @@ def main():
                 ok = r["kind"] == "crash"
                 print(f"RWY {rwy} {ac} no input             -> {r['kind']:7s} t={r['t']}s {r['title']}", flush=True)
                 fails += 0 if ok else 1
+        for rwy in rwys:
+            r = pg.evaluate(TAKEOFF, [{"game": "free", "rwy": rwy, "ac": "b744", "wx": "clear", "night": a.night, "deck": False, "ap": False}, 200])
+            ok = r["kind"] == "airborne" and r["alt"] > 500
+            print(f"RWY {rwy} take-off (free flight)    -> {r['kind']:8s} airborne at {r['air']}s, alt {r['alt']} m, {r['V']} kt {'' if ok else r['title']} {'' if ok else r['why']}", flush=True)
+            fails += 0 if ok else 1
         b.close()
     srv.shutdown()
     if errs:

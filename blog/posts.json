@@ -1,5 +1,34 @@
 [
   {
+    "slug": "runway-31-takeoff-free-flight",
+    "title": "New: take off from Runway 31 in free flight",
+    "dek": "Line up at the Kowloon Bay end, point at Kowloon City, then climb and turn left.",
+    "description": "Fly Kai Tak free flight now starts on Runway 31 as well as Runway 13, with Runway 31 radio calls, mirrored airport traffic and a climb out over Kowloon City.",
+    "date": "2026-10-03",
+    "tag": "Feature",
+    "keywords": [
+      "Kai Tak",
+      "Runway 31",
+      "take-off",
+      "free flight"
+    ],
+    "hero": "rwy31-takeoff-lineup",
+    "hero_alt": "Night view of a 747-400 lined up on Runway 31 with the runway lights ahead and the lights of Kowloon beyond.",
+    "hero_caption": "Lined up on Runway 31 at night.",
+    "card_kicker": "RUNWAY 31 · NEW",
+    "card_title": "Runway 31 take-off",
+    "card_sub": "Free flight from the bay end",
+    "card_image": "rwy31-takeoff-lineup",
+    "card_focus": 50,
+    "zh": {
+      "title": "新功能：自由飛行可以喺 31 號跑道起飛",
+      "dek": "喺九龍灣嗰一頭對正，機頭向住九龍城，然後爬升同向左轉。",
+      "description": "Fly Kai Tak 自由飛行而家除咗 13 號跑道，亦可以由 31 號跑道開始，有 31 號跑道無線電、鏡像機場交通，同飛越九龍城嘅離場。",
+      "hero_alt": "夜晚 747-400 對正 31 號跑道，前方係跑道燈同遠處九龍嘅燈光。",
+      "hero_caption": "夜晚對正 31 號跑道。"
+    }
+  },
+  {
     "slug": "take-off-lesson-for-first-time-pilots",
     "title": "New: a take-off lesson for first-time pilots",
     "dek": "A guided take-off on Runway 13: full thrust, steer, rotate, gear up, autopilot. No experience needed.",

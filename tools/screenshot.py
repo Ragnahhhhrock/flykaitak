@@ -89,7 +89,7 @@ def main():
             for i in range(s.get("frames", 14)):
                 pg.evaluate("t=>window.__kt.frame(t)", 1000 + i * 33)
             pg.wait_for_timeout(300)
-            im = Image.open(io.BytesIO(pg.screenshot())).convert("RGB")
+            im = Image.open(io.BytesIO(pg.screenshot(timeout=180000))).convert("RGB")
             dest = out / f"{s['name']}.jpg"
             im.save(dest, quality=82, optimize=True, progressive=True)
             print("saved", dest.relative_to(ROOT) if dest.is_relative_to(ROOT) else dest, flush=True)
