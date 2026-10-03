@@ -16,6 +16,8 @@ shots.json is a list of shots:
   run     seconds of simulation to advance first (the approach turn is at about 190 s,
           the Kowloon City street camera sees the jet overhead at about 204 s)
   view    cockpit, chase, tower, street, ped, carpark, boat, checker, cabin
+  cam     optional free camera [x, y, z, targetX, targetY, targetZ] in sim metres (x east, z south)
+  clean   true hides all UI overlays so the shot is only the 3D scene
   frames  frames to render before the shot (about 14 settles the scene; 30 also draws the cockpit displays)
   js      optional JavaScript to run before the shot
 
@@ -77,6 +79,10 @@ def main():
                 pg.evaluate("s=>window.__kt.run(s)", s["run"])
             if s.get("view"):
                 pg.evaluate("v=>window.__kt.setView(v)", s["view"])
+            if s.get("cam"):  # free camera [x, y, z, targetX, targetY, targetZ] in sim metres (x east, z south)
+                pg.evaluate("c=>{window.__kt.freeCam=c}", s["cam"])
+            if s.get("clean"):  # hide every overlay: just the 3D scene
+                pg.evaluate("()=>{document.querySelectorAll('body>*:not(#gl)').forEach(e=>{if(e.tagName!=='SCRIPT')e.style.display='none'})}")
             if s.get("js"):
                 pg.evaluate(s["js"])
             for i in range(s.get("frames", 14)):

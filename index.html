@@ -961,6 +961,83 @@ const LM={boc:[-3206,5120],hsbc:[-3433,4999],lippo:[-2938,5109],jardine:[-3392,4
   coliseum:[-1109,2593],peak:[-4420,6005],cenPier:[-3150,4600]};
 for(const [k,p] of Object.entries(LM))LANDMARK_CLEAR.push([p[0],p[1],k==='hkcec'?170:k==='exch'?90:k==='culture'?110:60]);
 const gAt=(p)=>Math.max(terrainAt(p[0],p[1]),3.5);
+/* Happy Valley Racecourse and Ocean Park: stylised, placed at their real sites. Animated parts run from parkAnim. */
+let parkAnim=null;
+const bAt=(x,z)=>{const b=buildingAt(x,z,0);return Math.max(terrainAt(x,z),b?b.top:0,3.5)};
+function buildHappyValley(){
+  const L=[];
+  // Floodlit since 1973: a ring of floodlight masts round the oval, a canopy on the main stand, the infield screen
+  const cx=-1075,cz=5865,A=335,B=175,ca=Math.cos(1.117),sa=Math.sin(1.117);
+  const pole=new THREE.MeshLambertMaterial({color:0x9aa0a3});
+  for(let i=0;i<16;i++){
+    const t=i/16*Math.PI*2,u=(A+16)*Math.cos(t),v=(B+16)*Math.sin(t),x=cx+u*ca-v*sa,z=cz+u*sa+v*ca,b=Math.max(terrainAt(x,z),3.5);
+    box(2.2,46,2.2,pole,x,b,z);
+    const head=box(16,6,2,new THREE.MeshLambertMaterial({color:0xdfe3e5}),x,b+46,z,Math.atan2(cx-x,cz-z));head.userData.neon=0xfff0c0;landmarkLights.push(head);
+    L.push(x,b+49,z,1,.96,.82,16,-1);addCollider(x-1.5,x+1.5,z-1.5,z+1.5,b+52,'a racecourse floodlight');
+  }
+  const sb=buildingAt(-1220,5948,0);
+  if(sb&&sb.top<80){box(26,1.6,sb.z1-sb.z0+10,new THREE.MeshLambertMaterial({color:0xf0eee6}),sb.x1-6,sb.top,(sb.z0+sb.z1)/2);addCollider(sb.x0,sb.x1+20,sb.z0,sb.z1,sb.top+2,'the Happy Valley stands')}
+  const sc=[-1062,5742],sg=Math.max(terrainAt(sc[0],sc[1]),3.5);
+  box(1.4,13,28,new THREE.MeshLambertMaterial({color:0x1b2a30}),sc[0],sg+6,sc[1]);
+  const face=box(.6,11,25,new THREE.MeshLambertMaterial({color:0x2a3d44}),sc[0]-1,sg+7,sc[1]);face.userData.neon=0x7fe9ff;landmarkLights.push(face);
+  scene.add(makeLights(L));
+}
+function buildOceanPark(){
+  const L=[];
+  // Waterfront (the lowland, a wheel and the cable car station) and the Summit on the headland (tower, Dragon, Space Wheel), linked by the 1977 cable car
+  const WF=[-1770,8880],SU=[-2290,10010];
+  const white=new THREE.MeshLambertMaterial({color:0xe9e7de}),steel=new THREE.MeshLambertMaterial({color:0x8d959a}),red=new THREE.MeshLambertMaterial({color:0xd6262b});
+  const cyl=(rt,rb,h,mat,x,y,z,seg)=>{const m=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg||10).translate(0,h/2,0),mat);m.position.set(x,y,z);scene.add(m);return m};
+  // Summit: Ocean Park Tower
+  {const [x,z]=[-2262,10092],b=bAt(x,z);cyl(2.6,3.6,62,white,x,b,z);
+   const cap=cyl(9,9,5,new THREE.MeshLambertMaterial({color:0xc9c4b2}),x,b+50,z,16);cap.userData.neon=0xffd36b;landmarkLights.push(cap);
+   cyl(.35,.5,16,red,x,b+62,z,6);L.push(x,b+79,z,1,.1,.1,4,.45);towerCollider(x,z,12,12,b+80,'the Ocean Park Tower')}
+  // Summit: the Dragon, a looping coaster
+  {const [x,z]=[-2345,9925],b=bAt(x,z),g=new THREE.Group();g.position.set(x,b,z);g.rotation.y=.45;
+   const pts=[[0,6,0],[34,30,2],[62,34,0],[92,5,0]];
+   for(let k=1;k<=12;k++){const t=k/12*Math.PI*2;pts.push([104+14*Math.sin(t)+k*1.6,16-14*Math.cos(t),4+k*.9])}
+   pts.push([134,10,22],[142,12,48],[112,9,62],[72,14,58],[34,9,44],[8,6,24]);
+   const curve=new THREE.CatmullRomCurve3(pts.map(q=>new THREE.Vector3(q[0],q[1],q[2])),true,'catmullrom',.4);
+   g.add(new THREE.Mesh(new THREE.TubeGeometry(curve,220,.55,5,true),new THREE.MeshLambertMaterial({color:0xe8571f})));
+   const sp=curve.getSpacedPoints(70);for(let i=0;i<sp.length;i+=2){const q=sp[i];if(q.y<4)continue;const h=q.y+8;const m=new THREE.Mesh(new THREE.BoxGeometry(.5,h,.5).translate(0,-h/2,0),steel);m.position.set(q.x,q.y,q.z);g.add(m)}
+   scene.add(g);addCollider(x-30,x+150,z-20,z+95,b+38,'the Dragon roller coaster')}
+  // Summit: Space Wheel (a spinning arm ride)
+  let spin=null;
+  {const [x,z]=[-2222,9960],b=bAt(x,z),g=new THREE.Group();g.position.set(x,b,z);
+   const post=new THREE.Mesh(new THREE.BoxGeometry(1.6,12,1.6).translate(0,6,0),steel);g.add(post);
+   spin=new THREE.Group();spin.position.y=13;spin.rotation.x=.7;g.add(spin);
+   for(let i=0;i<10;i++){const a=i/10*Math.PI*2;const arm=new THREE.Mesh(new THREE.BoxGeometry(9.5,.35,.35).translate(4.75,0,0),steel);arm.rotation.z=a;spin.add(arm);
+     const pod=new THREE.Mesh(new THREE.BoxGeometry(2.4,1.8,1.8),new THREE.MeshLambertMaterial({color:i%2?0x2f6fd6:0xe8571f}));pod.position.set(Math.cos(a)*9.8,Math.sin(a)*9.8,0);spin.add(pod)}
+   scene.add(g);addCollider(x-13,x+13,z-13,z+13,b+26,'the Space Wheel')}
+  // Waterfront: Ferris wheel (1994)
+  let wheel=null;const pods=[];
+  {const [x,z]=[-1690,8700],b=bAt(x,z),g=new THREE.Group();g.position.set(x,b,z);g.rotation.y=-.6;
+   const R=28,H=R+4;for(const sd of[-1,1]){const leg=new THREE.Mesh(new THREE.BoxGeometry(1.2,H+3,1.2).translate(0,(H+3)/2,0),steel);leg.position.set(sd*0+0,0,sd*3.2);g.add(leg)}
+   wheel=new THREE.Group();wheel.position.set(0,H,0);g.add(wheel);
+   const rim=new THREE.Mesh(new THREE.TorusGeometry(R,.6,5,48),new THREE.MeshLambertMaterial({color:0xdadada}));rim.userData.neon=0x7be0ff;landmarkLights.push(rim);wheel.add(rim);
+   for(let i=0;i<8;i++){const sk=new THREE.Mesh(new THREE.BoxGeometry(R*2,.25,.25),steel);sk.rotation.z=i/8*Math.PI;wheel.add(sk)}
+   for(let i=0;i<16;i++){const a=i/16*Math.PI*2;const pod=new THREE.Mesh(new THREE.BoxGeometry(2.2,2.4,2.2).translate(0,-1.2,0),new THREE.MeshLambertMaterial({color:[0xd6262b,0xf5efe3,0x1b7d52,0xffb94a][i%4]}));pod.position.set(Math.cos(a)*R,Math.sin(a)*R,0);wheel.add(pod);pods.push(pod)}
+   scene.add(g);addCollider(x-30,x+30,z-30,z+30,b+2*R+6,'the Ocean Park Ferris wheel')}
+  // The cable car: pylons from the Waterfront station over Brick Hill to the Summit station, with cabins running both ways
+  const N=14,tops=[];
+  for(let i=0;i<=N;i++){const t=i/N,x=WF[0]+(SU[0]-WF[0])*t,z=WF[1]+(SU[1]-WF[1])*t;let h=0;for(let dx=-45;dx<=45;dx+=15)for(let dz=-45;dz<=45;dz+=15)h=Math.max(h,terrainAt(x+dx,z+dz));
+    const base=(i===0||i===N)?bAt(x,z):Math.max(terrainAt(x,z),3.5);const top=(i===0||i===N)?base+14:Math.max(base+16,h+22);tops.push(new THREE.Vector3(x,top,z));
+    if(i>0&&i<N){box(1.4,top-base+2,1.4,steel,x,base-2,z);box(8,.7,.7,steel,x,top-.5,z,Math.atan2(SU[0]-WF[0],SU[1]-WF[1])+Math.PI/2)}
+    else{box(14,10,14,new THREE.MeshLambertMaterial({color:0xcfd4d6}),x,base,z);addCollider(x-9,x+9,z-9,z+9,base+16,'a cable car station')}}
+  const cab=new THREE.MeshLambertMaterial({color:0xd6262b});
+  const pos=[];for(let i=0;i<tops.length-1;i++)pos.push(tops[i].x,tops[i].y,tops[i].z,tops[i+1].x,tops[i+1].y,tops[i+1].z);
+  const cg=new THREE.BufferGeometry();cg.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));scene.add(new THREE.LineSegments(cg,new THREE.LineBasicMaterial({color:0x2a2f33})));
+  const seg=[];let tot=0;for(let i=0;i<tops.length-1;i++){const l=tops[i].distanceTo(tops[i+1]);seg.push([tot,l]);tot+=l}
+  const cabins=[];for(let i=0;i<6;i++){const m=new THREE.Mesh(new THREE.BoxGeometry(4.6,3,3).translate(0,-4.5,0),cab);scene.add(m);cabins.push({m,s:tot*(i+.5)/6,d:i%2?-1:1})}
+  const at=(s,out)=>{for(let i=0;i<seg.length;i++)if(s<=seg[i][0]+seg[i][1]||i===seg.length-1){const f=Math.min(1,Math.max(0,(s-seg[i][0])/seg[i][1]));return out.lerpVectors(tops[i],tops[i+1],f)}};
+  const tmp=new THREE.Vector3();
+  parkAnim=(dt,t)=>{
+    if(spin)spin.rotation.z=t*.9;
+    if(wheel){wheel.rotation.z=t*.12;for(const p of pods)p.rotation.z=-wheel.rotation.z}
+    for(const c of cabins){c.s+=c.d*7*Math.min(dt,.2);if(c.s>tot){c.s=tot;c.d=-1}if(c.s<0){c.s=0;c.d=1}at(c.s,tmp);c.m.position.copy(tmp)}
+  };
+  scene.add(makeLights(L));
+}
 function buildLandmarks(){
   const L=[];
   // Bank of China Tower (1990): four triangular shafts stepping up, white cross-bracing, twin masts
@@ -2449,6 +2526,7 @@ function frame(now,manual){
   if((w.light||CFG.lightning)&&!paused){lightningT-=dt;if(lightningT<0){lightningT=rr(3,11);flash=1;if(mode==='fly')sfx.thunder(rr(.4,2.5))}}
   if(window.__flashNow){flash=1;window.__flashNow=false}
   flash=Math.max(0,flash-dt*3.2);const fl=flash>0?(Math.sin(flash*40)>0?flash:flash*.3):0;amb.intensity=fl*2.2;skyMat.uniforms.flash.value=fl*.7;
+  if(parkAnim&&!paused)parkAnim(dt,now/1000);
   updateRain(dt,mode==='attract'?w.rain*.4:w.rain,ST.wind||[0,0,0],camera.position);
   // PAPI colours
   if(papi){const c=papi.geometry.attributes.color;const pp=papi.geometry.attributes.position;for(let i=0;i<4;i++){const dx=camera.position.x-pp.getX(i),dz=camera.position.z-pp.getZ(i);const ang=Math.atan2(camera.position.y-pp.getY(i),Math.hypot(dx,dz))*R2D;const thr=[3.6,3.27,2.93,2.6][i];const white=ang>thr;c.setXYZ(i,1,white?1:.12,white?1:.1)}c.needsUpdate=true}
@@ -2470,7 +2548,7 @@ async function boot(){
   const ld=document.getElementById('loading');
   try{await loadGeo(t=>ld.textContent=t)}catch(e){ld.textContent='COULD NOT LOAD MAP DATA. OPEN THIS PAGE FROM A WEB SERVER, NOT A FILE.';console.error(e);return}
   ld.textContent='BUILDING HONG KONG…';await new Promise(r=>setTimeout(r,20));
-  buildTerrain();buildRoads();buildLandmarks();buildCity();buildStreetScene();buildAirport();buildShips();buildRain();
+  buildTerrain();buildRoads();buildLandmarks();buildCity();buildHappyValley();buildOceanPark();buildStreetScene();buildAirport();buildShips();buildRain();
   resize();showSetup();ld.hidden=true;
   requestAnimationFrame(frame);
 }
