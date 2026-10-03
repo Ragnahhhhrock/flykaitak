@@ -1,5 +1,22 @@
 [
   {
+    "slug": "flying-kai-tak-on-your-phone",
+    "title": "Flying Kai Tak on your phone: landscape, a cleaner toolbar and bigger controls",
+    "dek": "A one-row toolbar with a More drawer, touch controls sized for short landscape screens, and a prompt that asks portrait players to turn the phone sideways.",
+    "description": "Fly Kai Tak on mobile: a compact toolbar with a More drawer, landscape touch controls, a rotate prompt for portrait, full screen on Begin descent and safe-area support.",
+    "date": "2026-10-03",
+    "tag": "Feature",
+    "keywords": ["Kai Tak", "mobile flight simulator", "phone", "landscape", "touch controls", "browser game", "Hong Kong 1998"],
+    "hero": "mobile-landscape",
+    "hero_alt": "A 747-400 on the IGS approach in a landscape phone window, with the yoke bottom left and gear, flaps and thrust lever bottom right.",
+    "hero_caption": "The IGS approach on a phone-sized landscape screen: a one-row toolbar, the yoke on the left and the gear, flaps and thrust lever on the right.",
+    "card_kicker": "MOBILE · LANDSCAPE · 1998",
+    "card_title": "Fly Kai Tak on your phone",
+    "card_sub": "Landscape, a cleaner toolbar, bigger controls",
+    "card_image": "mobile-landscape",
+    "card_focus": 50
+  },
+  {
     "slug": "checkerboard-turn-igs-13-approach",
     "title": "The checkerboard turn: flying the IGS 13 approach",
     "dek": "Descend over Tsing Yi, aim at a checkerboard on a hill in Kowloon, then turn a 747 right by 47° over the rooftops. How the Runway 13 approach works in Fly Kai Tak.",

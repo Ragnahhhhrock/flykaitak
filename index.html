@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="description" content="Fly the 1998 Runway 13 IGS approach into Hong Kong Kai Tak in your browser: the checkerboard, the 47° right turn low over Kowloon City, and a runway that ends in the harbour. Real aerial imagery, four airliners, day and night, typhoons.">
 <link rel="canonical" href="https://flykaitak.com/">
 <meta name="theme-color" content="#0a1115">
@@ -200,6 +203,70 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
   .flightid{display:none}
 }
 @media (prefers-reduced-motion:reduce){#toast{transition:none}}
+
+/* ---------- mobile: safe areas, compact toolbar, landscape layout, rotate prompt ---------- */
+html,body{overscroll-behavior:none;touch-action:manipulation}
+#gl,#bar,#ctl,#more,#rotate{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+#bar{left:calc(env(safe-area-inset-left,0px) + 10px);right:calc(env(safe-area-inset-right,0px) + 10px)}
+#map,#radio{left:calc(env(safe-area-inset-left,0px) + 10px)}
+#ctl{padding-left:calc(env(safe-area-inset-left,0px) + 14px);padding-right:calc(env(safe-area-inset-right,0px) + 14px)}
+#btnMore,#btnFs{display:none}
+#btnFs[hidden]{display:none!important}
+#more{position:fixed;z-index:5;left:calc(env(safe-area-inset-left,0px) + 10px);right:calc(env(safe-area-inset-right,0px) + 10px);top:calc(env(safe-area-inset-top,0px) + 54px);max-height:calc(100% - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 70px);overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:6px;padding:8px;background:var(--panel);border:1px solid var(--line-2);border-radius:4px;backdrop-filter:blur(6px)}
+#more[hidden]{display:none!important}
+#more .btn,#more select{display:block;width:100%;min-height:40px;box-sizing:border-box}
+#more select{appearance:none;background:var(--panel-2);color:var(--text);border:1px solid var(--line-2);border-radius:3px;font-size:12px;padding:7px 10px;letter-spacing:.04em}
+#more #btnFs:not([hidden]){display:block}
+#rotate{position:fixed;inset:0;z-index:6;display:grid;place-items:center;padding:24px;background:rgba(6,10,12,.82);text-align:center}
+#rotate[hidden]{display:none!important}
+#rotate .box{max-width:320px;display:grid;gap:14px;justify-items:center}
+#rotate svg{width:84px;height:84px;animation:rotHint 2.6s ease-in-out infinite}
+#rotate h2{margin:0;font-size:20px;line-height:1.2}
+#rotate p{margin:0;color:var(--muted);font-size:13.5px;line-height:1.5}
+#rotate .btn{padding:12px 16px}
+@keyframes rotHint{0%,25%{transform:rotate(0)}65%,100%{transform:rotate(-90deg)}}
+@media (prefers-reduced-motion:reduce){#rotate svg{animation:none}}
+@media (pointer:coarse){
+  .btn,.tools select{min-height:40px}
+  .cfg .btn{min-height:44px}
+  .thr input{width:40px}
+  #seatbox input[type=range]{height:32px}
+}
+/* phones and small windows: one-row toolbar, the rest in the More drawer */
+@media (max-width:820px),(max-height:520px){
+  #btnMore{display:inline-block}
+  #bar{justify-content:flex-end}
+  .tools{flex:1;min-width:0;flex-wrap:nowrap;align-items:center;justify-content:flex-end}
+  .tools>*{flex:none}
+  .tools>select{flex:1 1 0;min-width:0;max-width:220px;text-overflow:ellipsis}
+  .flightid{display:none}
+}
+@media (max-width:480px){.tools .btn{padding:10px 8px;letter-spacing:.03em}}
+/* start screen on phones: Go stays reachable while the options scroll */
+.coffee{white-space:nowrap}
+@media (pointer:coarse){.go .k{display:none}}
+@media (max-width:820px),(max-height:520px){.go{position:sticky;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);z-index:2;box-shadow:0 8px 28px rgba(0,0,0,.65)}}
+@media (max-height:520px){.reelbox{display:none}.sheet-body{padding:16px 20px 20px;gap:16px}.sheet h1{font-size:22px}}
+@media (max-height:520px) and (min-width:821px){#setup{grid-template-columns:minmax(0,1fr) minmax(0,460px)}}
+/* landscape phones: short screens need smaller chrome */
+@media (max-height:520px){
+  #map{width:96px;height:96px;top:calc(env(safe-area-inset-top,0px) + 50px)}
+  #radio{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);left:calc(env(safe-area-inset-left,0px) + 132px);right:calc(env(safe-area-inset-right,0px) + 196px);width:auto;max-height:96px;overflow:hidden;justify-content:flex-end;font-size:11px}
+  #toast{top:calc(env(safe-area-inset-top,0px) + 54px)}
+  #ctl{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 8px)}
+  #stick{width:104px;height:104px}
+  .thr input{height:96px}
+  .cfg .btn{min-width:68px;padding:8px}
+  #cabin .tag{bottom:16px}
+  #result{padding:8px}
+  .res{width:min(720px,100%)}
+}
+@media (max-height:520px) and (orientation:landscape){
+  .res-body{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px 22px;align-items:start;padding:14px 18px 16px}
+  .res-body>:nth-child(1){grid-column:1;grid-row:1}.res-body>:nth-child(2){grid-column:1;grid-row:2}
+  .res-body>:nth-child(3){grid-column:2;grid-row:1}.res-body>:nth-child(4){grid-column:2;grid-row:2}
+  .res h2{font-size:22px}.grade{font-size:40px}.stats{font-size:12px;gap:4px 14px;padding-top:10px}
+}
 </style>
 <!--/FRAG:HEAD-->
 </head>
@@ -233,8 +300,19 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
     <button class="btn" id="btnGuide" type="button" aria-pressed="true">Guide</button>
     <button class="btn" id="btnSound" type="button" aria-pressed="true">Sound</button>
     <button class="btn" id="btnRadio" type="button" aria-pressed="true" title="ATC radio on/off ( R )">Radio</button>
+    <button class="btn" id="btnFs" type="button" hidden>Full screen</button>
     <button class="btn" id="btnPause" type="button" aria-pressed="false">Pause</button>
+    <button class="btn" id="btnMore" type="button" aria-expanded="false" aria-controls="more">More</button>
     <button class="btn" id="btnMenu" type="button">Menu</button>
+  </div>
+</div>
+<div id="more" hidden></div>
+<div id="rotate" role="dialog" aria-modal="true" aria-labelledby="rotH" hidden>
+  <div class="box">
+    <svg viewBox="0 0 84 84" aria-hidden="true"><rect x="26" y="8" width="32" height="68" rx="6" fill="none" stroke="#e9eee8" stroke-width="3"/><rect x="26" y="62" width="32" height="6" fill="#e8571f"/><circle cx="42" cy="71" r="1.6" fill="#e9eee8"/></svg>
+    <h2 id="rotH">Turn your phone sideways</h2>
+    <p>Fly Kai Tak is built for landscape: the instruments, yoke and thrust lever need the width. The flight is paused until you rotate.</p>
+    <button class="btn" id="btnRotGo" type="button">Fly in portrait anyway</button>
   </div>
 </div>
 
@@ -2270,6 +2348,32 @@ document.getElementById('seatRow').addEventListener('input',e=>{CFG.seatRow=+e.t
 document.getElementById('seatSide').addEventListener('click',()=>{CFG.seatLeft=!CFG.seatLeft;tog('seat_side',CFG.seatLeft?'left':'right');updateSeatTag()});
 for(const b of document.querySelectorAll('#bar button,#ctl button'))b.addEventListener('click',()=>b.blur());
 
+/* ---------- mobile: compact toolbar, fullscreen + landscape, rotate prompt ---------- */
+const TOUCH=matchMedia('(pointer:coarse)').matches;
+const compactMQ=matchMedia('(max-width:820px),(max-height:520px)'),portraitMQ=matchMedia('(orientation:portrait) and (pointer:coarse) and (max-width:820px)');
+const toolsEl=document.querySelector('#bar .tools'),moreEl=document.getElementById('more'),btnMore=document.getElementById('btnMore'),btnFs=document.getElementById('btnFs'),rotEl=document.getElementById('rotate');
+const PRIMARY=new Set(['seatbox','viewSel','btnAP','btnPause','btnMore','btnMenu']),TOOL_ELS=[...toolsEl.children];
+function setMore(on){moreEl.hidden=!on;btnMore.setAttribute('aria-expanded',String(on));btnMore.setAttribute('aria-pressed',String(on))}
+function layoutTools(){const c=compactMQ.matches;for(const el of TOOL_ELS)(c&&!PRIMARY.has(el.id)?moreEl:toolsEl).appendChild(el);if(!c)setMore(false)}
+layoutTools();compactMQ.addEventListener('change',layoutTools);
+btnMore.addEventListener('click',()=>setMore(moreEl.hidden));
+canvas.addEventListener('pointerdown',()=>setMore(false));
+btnFs.hidden=!document.fullscreenEnabled;
+const fsLabel=()=>{btnFs.textContent=document.fullscreenElement?'Exit full screen':'Full screen'};
+function lockLandscape(){try{const o=screen.orientation;if(o&&o.lock&&CFG.game!=='watch')o.lock('landscape').catch(()=>{})}catch(e){}}
+function goFullscreen(){if(!document.fullscreenEnabled||document.fullscreenElement)return;try{const p=document.documentElement.requestFullscreen({navigationUI:'hide'});if(p&&p.then)p.then(lockLandscape).catch(()=>{})}catch(e){}}
+btnFs.addEventListener('click',()=>{if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});else goFullscreen()});
+document.addEventListener('fullscreenchange',fsLabel);fsLabel();
+// phones: Go goes fullscreen and asks for landscape (Android Chrome honours it; iPhone Safari has no fullscreen or lock, so the rotate prompt covers it)
+document.getElementById('btnGo').addEventListener('click',()=>{if(TOUCH&&compactMQ.matches)goFullscreen()});
+let rotPaused=false,rotDismissed=false;
+function rotCheck(){const need=mode==='fly'&&CFG.game!=='watch'&&portraitMQ.matches&&!rotDismissed&&!ST.ended;
+  if(rotEl.hidden!==need)return;rotEl.hidden=!need;
+  if(need){if(!paused){paused=true;rotPaused=true;syncButtons()}}else if(rotPaused){rotPaused=false;paused=false;syncButtons()}}
+setInterval(rotCheck,300);portraitMQ.addEventListener('change',rotCheck);
+document.getElementById('btnRotGo').addEventListener('click',()=>{rotDismissed=true;rotCheck()});
+window.addEventListener('orientationchange',()=>setTimeout(resize,300));
+
 const reel=document.getElementById('reel');let reelOK=true;
 {const off=()=>{reelOK=false;reel.hidden=true};reel.addEventListener('error',off);const srcs=reel.querySelectorAll('source');srcs[srcs.length-1].addEventListener('error',off)}
 // Stripe Payment Link for the $5 AUD "Buy me a coffee" button. The button stays hidden if this is empty.
@@ -2279,10 +2383,10 @@ const STRIPE_LINK='https://buy.stripe.com/9B6cMX2TT3tPaFi0UcaAw00';
 const reducedMotion=()=>!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
 if(reducedMotion())reel.removeAttribute('autoplay');
 function reelShow(on){if(!reelOK)return;if(on&&!reducedMotion())reel.play().catch(()=>{});else reel.pause()}
-function showSetup(){reelShow(true);flightEnd('quit');mode='attract';paused=false;for(const id of['bar','ctl','map','result','cabin'])document.getElementById(id).hidden=true;document.getElementById('setup').hidden=false;sfx.stopAll();if(synth)synth.cancel();radioClear();
+function showSetup(){setMore(false);try{if(screen.orientation&&screen.orientation.unlock)screen.orientation.unlock()}catch(e){}reelShow(true);flightEnd('quit');mode='attract';paused=false;for(const id of['bar','ctl','map','result','cabin'])document.getElementById(id).hidden=true;document.getElementById('setup').hidden=false;sfx.stopAll();if(synth)synth.cancel();radioClear();
   clearFX();CFG.ap=true;resetFlight();ST.ap=true;spawnAircraftModel();buildAI();CFG.view='chase';applyEnvironment();setWalled(document.getElementById('optWalled').checked)}
 function startFlight(){
-  reelShow(false);readSetup();flightEnd('restart');clearFX();mode='fly';paused=false;SEED=window.__capture?1998:1998+Math.floor(Math.random()*1000);
+  setMore(false);reelShow(false);readSetup();flightEnd('restart');clearFX();mode='fly';paused=false;SEED=window.__capture?1998:1998+Math.floor(Math.random()*1000);
   for(const id of['setup','result'])document.getElementById(id).hidden=true;for(const id of['bar','ctl','map'])document.getElementById(id).hidden=false;
   resetFlight();ST.attempted=false;flightBegin();radioReset();HIST.length=0;spawnAircraftModel();FOCUS=null;
   if(CFG.game==='watch')buildAISchedule(0,true);else if(CFG.game==='free')buildAISchedule(-100,false);else buildAI();
@@ -2295,7 +2399,7 @@ function startFlight(){
   setView(W?'carpark':CFG.game==='free'?'chase':CFG.ap?'chase':'cockpit');
   syncButtons();sfx.start();sfx.mute(CFG.sound);lightningT=rr(4,9);
   track('game_start',{flight_number:FLT.n,game_mode:CFG.game,autopilot:CFG.ap,guide:CFG.guide,walled_city:CFG.walled,lightning:CFG.lightning});
-  toast(W?'Spectator mode. Pick a spot from the view menu, or Exterior to follow the jet. T speeds up time.':CFG.game==='free'?'Lined up on Runway 13. Full thrust (E), pull back at about 150 kt.':CFG.ap?'Autopilot engaged. Pick a view or a cabin seat.':'Established on the IGS, 3,100 ft. You have control.');
+  toast(W?'Spectator mode. Pick a spot from the view menu, or Exterior to follow the jet. '+(TOUCH?'More > Time speeds up time.':'T speeds up time.'):CFG.game==='free'?(TOUCH?'Lined up on Runway 13. Slide thrust to full, pull back at about 150 kt.':'Lined up on Runway 13. Full thrust (E), pull back at about 150 kt.'):CFG.ap?'Autopilot engaged. Pick a view or a cabin seat.':'Established on the IGS, 3,100 ft. You have control.');
 }
 function showResult(){
   const s=ST,e=s.ended;if(!e||mode!=='fly')return;mode='ended';const card=document.getElementById('resCard');card.classList.toggle('crash',!!e.crash);
