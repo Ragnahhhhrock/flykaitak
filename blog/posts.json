@@ -1,5 +1,70 @@
 [
  {
+  "slug": "redrawn-aircraft-cockpit-winglets",
+  "title": "Redrawn aircraft: embedded cockpits and real winglets",
+  "dek": "The cockpit glass is cut into the fuselage, the winglets are swept blades and the wings taper, on all four aircraft.",
+  "description": "Fly Kai Tak update: the 747-400, 777-200, A330-300 and A340-300 are redrawn with embedded cockpit glass, swept winglets and tapered wings.",
+  "date": "2026-10-03",
+  "tag": "Update",
+  "keywords": [
+   "Kai Tak",
+   "flight simulator",
+   "747-400",
+   "777-200",
+   "A330-300",
+   "A340-300",
+   "winglets",
+   "aircraft models",
+   "Hong Kong 1998"
+  ],
+  "hero": "models-747-nose",
+  "hero_alt": "A 747-400 seen from ahead and below, with its upper deck rising behind the nose and the windscreen set into the skin.",
+  "hero_caption": "The 747-400 upper deck, with the windscreen set into the skin.",
+  "card_kicker": "VHHH · AIRCRAFT · 1998",
+  "card_title": "Redrawn aircraft",
+  "card_sub": "Embedded cockpits, swept winglets, tapered wings",
+  "card_image": "models-747-nose",
+  "card_focus": 40,
+  "zh": {
+   "title": "重新畫過嘅飛機：嵌入式駕駛艙同翼尖小翼",
+   "dek": "四款飛機嘅駕駛艙玻璃開喺機身表面，小翼向後掠，機翼亦愈近翼尖愈薄。",
+   "description": "Fly Kai Tak 更新：747-400、777-200、A330-300 同 A340-300 重新畫過，駕駛艙玻璃嵌入機身，小翼向後掠，機翼收窄。",
+   "hero_alt": "由前面下方望住一架 747-400，上層喺機鼻後面隆起，擋風玻璃嵌入表面。",
+   "hero_caption": "747-400 嘅上層，擋風玻璃嵌入表面。"
+  }
+ },
+ {
+  "slug": "smooth-taxi-turns",
+  "title": "Aircraft now turn smoothly on the ground",
+  "dek": "Other jets used to snap to a new heading at every corner of the taxi route. They now curve through each turn and ease their speed.",
+  "description": "Fly Kai Tak fix: other aircraft snapped to a new heading at every taxi corner. They now curve through turns, ease their speed and line up on the runway.",
+  "date": "2026-10-03",
+  "tag": "Fix",
+  "keywords": [
+   "Kai Tak",
+   "flight simulator",
+   "taxiing",
+   "aircraft traffic",
+   "bug fix",
+   "Hong Kong 1998"
+  ],
+  "hero": "taxi-turn",
+  "hero_alt": "A 747 seen from above and behind, curving through a turn on the taxiway beside the runway.",
+  "hero_caption": "An arrival curving through its turn at the end of the runway.",
+  "card_kicker": "VHHH · FIX · 1998",
+  "card_title": "Smooth taxi turns",
+  "card_sub": "Other aircraft now curve through corners",
+  "card_image": "taxi-turn",
+  "card_focus": 50,
+  "zh": {
+   "title": "飛機而家喺地面順滑咁轉彎",
+   "dek": "其他飛機之前喺滑行路線每個轉角都突然轉向，而家會順滑咁彎過，速度亦會平順轉變。",
+   "description": "Fly Kai Tak 修正：其他飛機喺滑行轉角會突然轉向，而家會順滑咁轉彎、平順加減速，並對正跑道排隊。",
+   "hero_alt": "由高處後面望住一架 747，喺跑道旁邊嘅滑行道上轉彎。",
+   "hero_caption": "一架進場飛機喺跑道尾嘅轉彎入面。"
+  }
+ },
+ {
   "slug": "airlines-and-aircraft-at-kai-tak",
   "title": "The airlines and aircraft of Kai Tak",
   "dek": "Seven carriers, the jets they flew and how they looked on the apron, with a short history of each.",

@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Aircraft now turn smoothly on the ground | Fly Kai Tak</title>
+<meta name="description" content="Fly Kai Tak fix: other aircraft snapped to a new heading at every taxi corner. They now curve through turns, ease their speed and line up on the runway.">
+<link rel="canonical" href="https://flykaitak.com/blog/smooth-taxi-turns/">
+<meta name="theme-color" content="#0a1115">
+<meta name="color-scheme" content="dark">
+<meta name="author" content="Fly Kai Tak">
+<meta name="keywords" content="Kai Tak, flight simulator, taxiing, aircraft traffic, bug fix, Hong Kong 1998">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="icon" href="/assets/brand/mark.svg" type="image/svg+xml">
+<link rel="icon" href="/assets/brand/favicon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="alternate" type="application/rss+xml" title="Fly Kai Tak blog" href="/blog/feed.xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Fly Kai Tak">
+<meta property="og:title" content="Aircraft now turn smoothly on the ground | Fly Kai Tak">
+<meta property="og:description" content="Fly Kai Tak fix: other aircraft snapped to a new heading at every taxi corner. They now curve through turns, ease their speed and line up on the runway.">
+<meta property="og:url" content="https://flykaitak.com/blog/smooth-taxi-turns/">
+<meta property="og:image" content="https://flykaitak.com/assets/blog/og/smooth-taxi-turns.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="A 747 seen from above and behind, curving through a turn on the taxiway beside the runway.">
+<meta property="og:locale" content="en_GB">
+<meta property="article:published_time" content="2026-10-03">
+<meta property="article:modified_time" content="2026-10-03">
+<meta property="article:section" content="Fix">
+<meta property="article:author" content="Fly Kai Tak">
+<meta property="article:tag" content="Kai Tak">
+<meta property="article:tag" content="flight simulator">
+<meta property="article:tag" content="taxiing">
+<meta property="article:tag" content="aircraft traffic">
+<meta property="article:tag" content="bug fix">
+<meta property="article:tag" content="Hong Kong 1998">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Aircraft now turn smoothly on the ground | Fly Kai Tak">
+<meta name="twitter:description" content="Fly Kai Tak fix: other aircraft snapped to a new heading at every taxi corner. They now curve through turns, ease their speed and line up on the runway.">
+<meta name="twitter:image" content="https://flykaitak.com/assets/blog/og/smooth-taxi-turns.jpg">
+<meta name="twitter:image:alt" content="A 747 seen from above and behind, curving through a turn on the taxiway beside the runway.">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Aircraft now turn smoothly on the ground","description":"Fly Kai Tak fix: other aircraft snapped to a new heading at every taxi corner. They now curve through turns, ease their speed and line up on the runway.","image":["https://flykaitak.com/assets/blog/og/smooth-taxi-turns.jpg","https://flykaitak.com/assets/blog/shots/taxi-turn.jpg"],"datePublished":"2026-10-03","dateModified":"2026-10-03","author":{"@type":"Organization","name":"Fly Kai Tak","url":"https://flykaitak.com/"},"publisher":{"@type":"Organization","name":"Fly Kai Tak","url":"https://flykaitak.com/","logo":{"@type":"ImageObject","url":"https://flykaitak.com/assets/brand/icon-512.png"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://flykaitak.com/blog/smooth-taxi-turns/"},"keywords":"Kai Tak, flight simulator, taxiing, aircraft traffic, bug fix, Hong Kong 1998","articleSection":"Fix","inLanguage":"en-GB","wordCount":207,"isPartOf":{"@type":"Blog","name":"Fly Kai Tak blog","url":"https://flykaitak.com/blog/"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Fly Kai Tak","item":"https://flykaitak.com/"},{"@type":"ListItem","position":2,"name":"Blog","item":"https://flykaitak.com/blog/"},{"@type":"ListItem","position":3,"name":"Aircraft now turn smoothly on the ground","item":"https://flykaitak.com/blog/smooth-taxi-turns/"}]}</script>
+<script>
+window.FKT_ANALYTICS={id:'G-7MNP3SBEF8',src:'/metrics/',fallback:'https://www.googletagmanager.com/gtag/js',hosts:['flykaitak.com','www.flykaitak.com']};
+(function(c){window.dataLayer=window.dataLayer||[];window.gtag=function(){dataLayer.push(arguments)};
+  if(!/^G-[A-Z0-9]{6,}$/.test(c.id)||c.id==='G-XXXXXXXXXX'||c.hosts.indexOf(location.hostname)<0)return;
+  function load(u,f){var s=document.createElement('script');s.async=true;s.src=u+(u.indexOf('?')<0?'?':'&')+'id='+c.id;if(f)s.onerror=f;document.head.appendChild(s)}
+  load(c.src,function(){load(c.fallback)});
+  gtag('js',new Date());gtag('config',c.id,{anonymize_ip:true});})(window.FKT_ANALYTICS);
+</script>
+<meta name="fkt-zh-title" content="飛機而家喺地面順滑咁轉彎 | Fly Kai Tak">
+<script>try{if(localStorage.getItem('fkt-lang')==='zh')document.documentElement.setAttribute('data-lang','zh')}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=B612:wght@400;700&family=B612+Mono:wght@400;700&family=Noto+Serif+TC:wght@900&display=swap">
+<link rel="stylesheet" href="/assets/blog/blog.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="checkband" aria-hidden="true"></div>
+<header class="site"><div class="wrap">
+  <a class="brandlink" href="/" aria-label="Fly Kai Tak, play the simulator"><img src="/assets/brand/mark.svg" width="32" height="32" alt=""><span>Fly Kai Tak</span><span class="han" lang="zh-Hant" aria-hidden="true">啟德機場</span></a>
+  <nav aria-label="Main"><a href="/blog/" aria-current="page">Blog</a><a href="/">Play</a><button class="langtog" id="btnLang" type="button" aria-pressed="false" aria-label="Language: English / 廣東話" title="English / 廣東話"><span data-l="en" class="on">EN</span><span data-l="zh" lang="zh-HK">粵</span></button></nav>
+</div></header>
+<main id="main"><article>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Fly Kai Tak</a> / <a href="/blog/">Blog</a> / <span aria-current="page">Fix</span></nav>
+  <header class="post-head">
+    <p class="eyebrow">Fix</p>
+    <h1 data-zh="飛機而家喺地面順滑咁轉彎">Aircraft now turn smoothly on the ground</h1>
+    <p class="dek" data-zh="其他飛機之前喺滑行路線每個轉角都突然轉向，而家會順滑咁彎過，速度亦會平順轉變。">Other jets used to snap to a new heading at every corner of the taxi route. They now curve through each turn and ease their speed.</p>
+    <div class="byline"><time datetime="2026-10-03">3 October 2026</time><span>2 min read</span><span>Fly Kai Tak</span></div>
+  </header>
+  <section class="share share--top" aria-label="Share this post" data-share data-url="https://flykaitak.com/blog/smooth-taxi-turns/" data-title="Aircraft now turn smoothly on the ground" data-slug="smooth-taxi-turns"><h2>Share this post</h2><ul><li><a data-method="x" href="https://twitter.com/intent/tweet?text=Aircraft%20now%20turn%20smoothly%20on%20the%20ground%20%7C%20Fly%20Kai%20Tak&url=https%3A%2F%2Fflykaitak.com%2Fblog%2Fsmooth-taxi-turns%2F" target="_blank" rel="noopener noreferrer">Post on X</a></li><li><a data-method="facebook" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fflykaitak.com%2Fblog%2Fsmooth-taxi-turns%2F" target="_blank" rel="noopener noreferrer">Facebook</a></li><li><a data-method="reddit" href="https://www.reddit.com/submit?url=https%3A%2F%2Fflykaitak.com%2Fblog%2Fsmooth-taxi-turns%2F&title=Aircraft%20now%20turn%20smoothly%20on%20the%20ground" target="_blank" rel="noopener noreferrer">Reddit</a></li><li><a data-method="linkedin" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fflykaitak.com%2Fblog%2Fsmooth-taxi-turns%2F" target="_blank" rel="noopener noreferrer">LinkedIn</a></li><li><a data-method="whatsapp" href="https://wa.me/?text=Aircraft%20now%20turn%20smoothly%20on%20the%20ground%20%7C%20Fly%20Kai%20Tak%20https%3A%2F%2Fflykaitak.com%2Fblog%2Fsmooth-taxi-turns%2F" target="_blank" rel="noopener noreferrer">WhatsApp</a></li><li><a data-method="threads" href="https://www.threads.net/intent/post?text=Aircraft%20now%20turn%20smoothly%20on%20the%20ground%20%7C%20Fly%20Kai%20Tak%20https%3A%2F%2Fflykaitak.com%2Fblog%2Fsmooth-taxi-turns%2F" target="_blank" rel="noopener noreferrer">Threads</a></li><li><a data-method="email" href="mailto:?subject=Aircraft%20now%20turn%20smoothly%20on%20the%20ground&body=https%3A%2F%2Fflykaitak.com%2Fblog%2Fsmooth-taxi-turns%2F"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="m22 6-10 7L2 6"/></svg>Email</a></li><li hidden><button type="button" data-copy><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><span>Copy link</span></button></li><li hidden><button type="button" data-native><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg><span>Share&hellip;</span></button></li></ul></section>
+  <figure class="hero">
+    <img src="/assets/blog/shots/taxi-turn.jpg" width="1600" height="900" fetchpriority="high" alt="A 747 seen from above and behind, curving through a turn on the taxiway beside the runway." data-zh-alt="由高處後面望住一架 747，喺跑道旁邊嘅滑行道上轉彎。">
+    <figcaption data-zh="一架進場飛機喺跑道尾嘅轉彎入面。">An arrival curving through its turn at the end of the runway.</figcaption>
+  </figure>
+  <div class="prose" data-lang="en">
+<p>Other aircraft used to snap to a new heading at every corner of their taxi route. They now curve through each turn, ease their speed between points on the route, and line up for takeoff already pointing down the runway.</p>
+
+<div class="readouts" role="list">
+  <div class="readout" role="listitem"><b>136° to 2.8°</b><span>Arrivals<i>largest heading change in 0.1 s</i></span></div>
+  <div class="readout" role="listitem"><b>90° to 1.2°</b><span>Departures<i>largest heading change in 0.1 s</i></span></div>
+  <div class="readout" role="listitem"><b>0</b><span>Heading steps over 3°<i>in a full cycle of traffic</i></span></div>
+</div>
+
+<h2>What changed</h2>
+<ul>
+  <li>Each corner on the taxi route is now a rounded curve, and the heading follows the path a few metres ahead and behind.</li>
+  <li>Speed eases between the timed points on the route, so jets no longer jump from one speed to another at a corner.</li>
+  <li>Arrivals leave the runway on a straight leg first, so the turn off starts from the runway heading.</li>
+  <li>Departures make a U-turn onto the runway and finish it pointing along the runway. They start the takeoff roll from that lineup point, 90 m down the runway.</li>
+</ul>
+
+<figure class="wide">
+  <img src="/assets/blog/shots/taxi-turn.jpg" width="1600" height="900" loading="lazy" alt="A 747 seen from above and behind, curving through a turn on the taxiway beside the runway.">
+  <figcaption>An arrival curving through its turn at the end of the runway.</figcaption>
+</figure>
+
+<h2>What did not change</h2>
+<ul>
+  <li>Your own aircraft. This only affects the other traffic.</li>
+  <li>The autopilot still lands in every weather preset, and flying with no input still ends in a crash.</li>
+</ul>
+  </div>
+  <div class="prose" data-lang="zh" lang="zh-HK">
+<p>其他飛機之前喺滑行路線嘅每個轉角，航向都會突然跳去新方向。而家佢哋會順滑咁轉彎，喺路線上各點之間平順咁加減速，而且排隊起飛嗰陣已經對正跑道方向。</p>
+
+<div class="readouts" role="list">
+  <div class="readout" role="listitem"><b>136° 變 2.8°</b><span>進場飛機<i>0.1 秒內最大航向變化</i></span></div>
+  <div class="readout" role="listitem"><b>90° 變 1.2°</b><span>離場飛機<i>0.1 秒內最大航向變化</i></span></div>
+  <div class="readout" role="listitem"><b>0</b><span>超過 3° 嘅航向跳動<i>喺一整個交通週期內</i></span></div>
+</div>
+
+<h2>改咗啲乜</h2>
+<ul>
+  <li>滑行路線上每個轉角而家係圓滑嘅彎，航向會跟住前後幾米嘅路徑。</li>
+  <li>路線上每個有時間嘅點之間，速度會平順咁轉變，所以飛機喺轉角唔會突然轉速。</li>
+  <li>進場飛機離開跑道時會先行一段直路，所以轉出跑道嗰下由跑道方向開始。</li>
+  <li>離場飛機會做一個 U 形轉彎上跑道，轉完已經對正跑道，之後喺嗰個排隊點（跑道上 90 米）開始起飛滑跑。</li>
+</ul>
+
+<figure class="wide">
+  <img src="/assets/blog/shots/taxi-turn.jpg" width="1600" height="900" loading="lazy" alt="由高處後面望住一架 747，喺跑道旁邊嘅滑行道上轉彎。">
+  <figcaption>一架進場飛機喺跑道尾嘅轉彎入面。</figcaption>
+</figure>
+
+<h2>冇改嘅嘢</h2>
+<ul>
+  <li>你自己架飛機。呢個只影響其他交通。</li>
+  <li>自動駕駛仍然可以喺所有天氣設定下降落，完全唔操作仍然會墜毀。</li>
+</ul>
+  </div>
+  <section class="share" aria-label="Share this post" data-share data-url="https://flykaitak.com/blog/smooth-taxi-turns/" data-title="Aircraft now turn smoothly on the ground" data-slug="smooth-taxi-turns"><h2>Share this post</h2><ul><li><a data-method="x" href="https://twitter.com/intent/tweet?text=Aircraft%20now%20turn%20smoothly%20on%20the%20ground%20%7C%20Fly%20Kai%20Tak&url=https%3A%2F%2Fflykaitak.com%2Fblog%2Fsmooth-taxi-turns%2F" target="_blank" rel="noopener noreferrer">Post on X</a></li><li><a data-method="facebook" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fflykaitak.com%2Fblog%2Fsmooth-taxi-turns%2F" target="_blank" rel="noopener noreferrer">Facebook</a></li><li><a data-method="reddit" href="https://www.reddit.com/submit?url=https%3A%2F%2Fflykaitak.com%2Fblog%2Fsmooth-taxi-turns%2F&title=Aircraft%20now%20turn%20smoothly%20on%20the%20ground" target="_blank" rel="noopener noreferrer">Reddit</a></li><li><a data-method="linkedin" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fflykaitak.com%2Fblog%2Fsmooth-taxi-turns%2F" target="_blank" rel="noopener noreferrer">LinkedIn</a></li><li><a data-method="whatsapp" href="https://wa.me/?text=Aircraft%20now%20turn%20smoothly%20on%20the%20ground%20%7C%20Fly%20Kai%20Tak%20https%3A%2F%2Fflykaitak.com%2Fblog%2Fsmooth-taxi-turns%2F" target="_blank" rel="noopener noreferrer">WhatsApp</a></li><li><a data-method="threads" href="https://www.threads.net/intent/post?text=Aircraft%20now%20turn%20smoothly%20on%20the%20ground%20%7C%20Fly%20Kai%20Tak%20https%3A%2F%2Fflykaitak.com%2Fblog%2Fsmooth-taxi-turns%2F" target="_blank" rel="noopener noreferrer">Threads</a></li><li><a data-method="email" href="mailto:?subject=Aircraft%20now%20turn%20smoothly%20on%20the%20ground&body=https%3A%2F%2Fflykaitak.com%2Fblog%2Fsmooth-taxi-turns%2F"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="m22 6-10 7L2 6"/></svg>Email</a></li><li hidden><button type="button" data-copy><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><span>Copy link</span></button></li><li hidden><button type="button" data-native><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg><span>Share&hellip;</span></button></li></ul></section>
+  <aside class="cta" aria-label="Play Fly Kai Tak">
+    <span class="han" lang="zh-Hant" aria-hidden="true">啟德</span>
+    <strong>Fly the approach yourself</strong>
+    <p>It runs in your browser. Pick an aircraft, a time of day and the weather, then hit the checkerboard.</p>
+    <a class="btn go" href="/">Begin descent</a>
+  </aside>
+  <section class="more-posts"><h2 class="label" style="font-family:var(--f-num);font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);font-weight:400;margin:0 0 20px">More from the blog</h2><div class="cards">
+<a class="pcard" href="/blog/redrawn-aircraft-cockpit-winglets/">
+  <img src="/assets/blog/og/redrawn-aircraft-cockpit-winglets.jpg" width="1200" height="630" loading="lazy" alt="A 747-400 seen from ahead and below, with its upper deck rising behind the nose and the windscreen set into the skin." data-zh-alt="由前面下方望住一架 747-400，上層喺機鼻後面隆起，擋風玻璃嵌入表面。">
+  <div class="body">
+    <div class="meta">Update &middot; 3 October 2026</div>
+    <h3 data-zh="重新畫過嘅飛機：嵌入式駕駛艙同翼尖小翼">Redrawn aircraft: embedded cockpits and real winglets</h3>
+    <p data-zh="Fly Kai Tak 更新：747-400、777-200、A330-300 同 A340-300 重新畫過，駕駛艙玻璃嵌入機身，小翼向後掠，機翼收窄。">Fly Kai Tak update: the 747-400, 777-200, A330-300 and A340-300 are redrawn with embedded cockpit glass, swept winglets and tapered wings.</p>
+    <span class="more">Read the post &rarr;</span>
+  </div>
+</a>
+<a class="pcard" href="/blog/airlines-and-aircraft-at-kai-tak/">
+  <img src="/assets/blog/og/airlines-and-aircraft-at-kai-tak.jpg" width="1200" height="630" loading="lazy" alt="Spectator view from the car park roof: a white jet with a dark green tail on the apron, another aircraft on the runway, and the Kowloon skyline and hills beyond." data-zh-alt="喺停車場天台望出去：停機坪上有一架白色、深綠色尾翼嘅客機，跑道上有另一架飛機，遠處係九龍嘅高樓同山嶺。">
+  <div class="body">
+    <div class="meta">History &middot; 3 October 2026</div>
+    <h3 data-zh="啟德機場嘅航空公司同機型">The airlines and aircraft of Kai Tak</h3>
+    <p data-zh="介紹九十年代啟德機場嘅航空公司同機型：國泰、港龍、澳洲航空、英航、新航、泰航同日航，附簡短歷史。">A guide to the airlines and aircraft types at Kai Tak in the 1990s: Cathay Pacific, Dragonair, Qantas, BA, Singapore, Thai and JAL, with brief histories.</p>
+    <span class="more">Read the post &rarr;</span>
+  </div>
+</a>
+  </div></section>
+</div>
+</article></main>
+<footer class="foot"><div class="wrap">
+  <div class="row">
+    <span>&copy; Fly Kai Tak. <a href="https://malgordon.com" target="_blank" rel="noopener">Another Mal Gordon project</a></span>
+    <span><a href="mailto:contact@flykaitak.com">contact@flykaitak.com</a> &middot; <a href="/blog/feed.xml">RSS</a> &middot; <a href="https://github.com/Ragnahhhhrock/flykaitak" target="_blank" rel="noopener">GitHub</a></span>
+  </div>
+  <div>Map data &copy; Lands Department, HKSAR Government. Elevation: SRTM via AWS Terrain Tiles. Aircraft and liveries are not real airlines.</div>
+</div></footer>
+<script src="/assets/blog/lang.js"></script>
+<script>
+(function(){
+  document.querySelectorAll('[data-share]').forEach(function(box){
+    var url=box.getAttribute('data-url'),title=box.getAttribute('data-title'),slug=box.getAttribute('data-slug');
+    function track(m){try{window.gtag&&gtag('event','share',{method:m,content_type:'article',item_id:slug})}catch(e){}}
+    box.querySelectorAll('a[data-method]').forEach(function(a){a.addEventListener('click',function(){track(a.getAttribute('data-method'))})});
+    var copy=box.querySelector('[data-copy]');
+    if(copy){copy.parentNode.hidden=false;copy.addEventListener('click',function(){
+      function ok(){var zh=document.documentElement.getAttribute('data-lang')==='zh';var t=copy.querySelector('span');var o=t.textContent;t.textContent=zh?'已複製連結':'Link copied';copy.classList.add('done');track('copy_link');
+        setTimeout(function(){t.textContent=o;copy.classList.remove('done')},2200)}
+      if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(url).then(ok,function(){window.prompt(zh?'複製呢條連結':'Copy this link',url)})}
+      else{window.prompt(zh?'複製呢條連結':'Copy this link',url)}})}
+    var nat=box.querySelector('[data-native]');
+    if(nat&&navigator.share){nat.parentNode.hidden=false;nat.addEventListener('click',function(){
+      navigator.share({title:title,url:url}).then(function(){track('native')}).catch(function(){})})}
+  });
+})();
+</script>
+</body>
+</html>

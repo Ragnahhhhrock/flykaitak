@@ -533,10 +533,10 @@ async function loadGeo(progress){
 /* ---------------- aircraft data ---------------- */
 const CL0S=[0.2,0.35,0.5,0.68,0.85],CLMS=[1.3,1.5,1.7,1.95,2.15],CDFS=[0,0.008,0.018,0.035,0.055],CLA=5.5,CD0=0.019,CDG=0.017,KI=0.05;
 const AC={
- b744:{name:'Boeing 747-400',short:'747-400',eng:4,vref:150,S:541,span:64.4,len:70.7,diam:6.5,thr:1008e3,roll:14,engR:1.35,engX:[11.9,21.2],winglet:'cant',hump:true,belly:2.5,tail:11.5,flaps:['UP','1','10','20','30'],flapV:[999,280,240,205,180],note:'Four engines · upper-deck hump'},
- b772:{name:'Boeing 777-200',short:'777-200',eng:2,vref:140,S:427.8,span:60.9,len:63.7,diam:6.2,thr:800e3,roll:16,engR:1.75,engX:[9.7],winglet:null,hump:false,belly:2.0,tail:10.5,flaps:['UP','1','5','20','30'],flapV:[999,255,235,205,180],note:'Two engines · new for 1996'},
- a333:{name:'Airbus A330-300',short:'A330-300',eng:2,vref:138,S:361.6,span:60.3,len:63.7,diam:5.64,thr:600e3,roll:17,engR:1.45,engX:[9.4],winglet:'up',hump:false,belly:1.9,tail:10.5,flaps:['0','1','2','3','FULL'],flapV:[999,240,215,195,180],note:'Two engines · regional workhorse'},
- a343:{name:'Airbus A340-300',short:'A340-300',eng:4,vref:142,S:361.6,span:60.3,len:63.7,diam:5.64,thr:560e3,roll:15,engR:1.05,engX:[9.3,17.4],winglet:'up',hump:false,belly:1.9,tail:9.5,flaps:['0','1','2','3','FULL'],flapV:[999,240,215,195,180],note:'Four engines · long haul'},
+ b744:{name:'Boeing 747-400',short:'747-400',eng:4,vref:150,S:541,span:64.4,len:70.7,diam:6.5,thr:1008e3,roll:14,engR:1.35,engX:[11.9,21.2],winglet:{h:1.9,rc:.8,tc:.28,sw:58,cant:29,bl:.1},fus:{nl:.14,ne:.58,drop:.55,tl:.70,up:.5},hump:true,belly:2.5,tail:11.5,flaps:['UP','1','10','20','30'],flapV:[999,280,240,205,180],note:'Four engines · upper-deck hump'},
+ b772:{name:'Boeing 777-200',short:'777-200',eng:2,vref:140,S:427.8,span:60.9,len:63.7,diam:6.2,thr:800e3,roll:16,engR:1.75,engX:[9.7],winglet:null,fus:{nl:.125,ne:.62,drop:.4,tl:.70,up:.45},hump:false,belly:2.0,tail:10.5,flaps:['UP','1','5','20','30'],flapV:[999,255,235,205,180],note:'Two engines · new for 1996'},
+ a333:{name:'Airbus A330-300',short:'A330-300',eng:2,vref:138,S:361.6,span:60.3,len:63.7,diam:5.64,thr:600e3,roll:17,engR:1.45,engX:[9.4],winglet:{h:2.1,rc:.82,tc:.3,sw:48,cant:24,bl:.38},fus:{nl:.12,ne:.66,drop:.4,tl:.73,up:.5},hump:false,belly:1.9,tail:10.5,flaps:['0','1','2','3','FULL'],flapV:[999,240,215,195,180],note:'Two engines · regional workhorse'},
+ a343:{name:'Airbus A340-300',short:'A340-300',eng:4,vref:142,S:361.6,span:60.3,len:63.7,diam:5.64,thr:560e3,roll:15,engR:1.05,engX:[9.3,17.4],winglet:{h:2.1,rc:.82,tc:.3,sw:48,cant:24,bl:.38},fus:{nl:.12,ne:.66,drop:.4,tl:.73,up:.5},hump:false,belly:1.9,tail:9.5,flaps:['0','1','2','3','FULL'],flapV:[999,240,215,195,180],note:'Four engines · long haul'},
 };
 for(const k in AC){const a=AC[k];const v=a.vref*KT;a.mass=0.5*RHO*v*v*a.S*1.29/G;a.strike=Math.asin(Math.min(1,4.4/(a.span/2)));a.tailMax=(k==='a343'?9.5:k==='b744'?11:10)*D2R;a.R=a.diam/2;a.cy=a.belly+a.R}
 
@@ -1461,50 +1461,98 @@ function updateRain(dt,intensity,wind,camPos){
 /* =====================================================================
    AIRCRAFT MODEL
    ===================================================================== */
+/* ---- aircraft model helpers ---- */
+const sm01=x=>x*x*(3-2*x);
+function patchBuf(){return{pos:[],idx:[]}}
+// a grid patch on a parametric surface fn(u,v)->[x,y,z,nx,ny,nz], pushed out along the normal by off
+function addPatch(b,fn,u0,u1,v0,v1,nu,nv,off){const base=b.pos.length/3;
+  for(let i=0;i<=nu;i++)for(let j=0;j<=nv;j++){const p=fn(u0+(u1-u0)*i/nu,v0+(v1-v0)*j/nv);b.pos.push(p[0]+p[3]*off,p[1]+p[4]*off,p[2]+p[5]*off)}
+  for(let i=0;i<nu;i++)for(let j=0;j<nv;j++){const a=base+i*(nv+1)+j,c=a+nv+1;b.idx.push(a,c,a+1,a+1,c,c+1)}}
+function patchMesh(b,mat){const ge=new THREE.BufferGeometry();ge.setAttribute('position',new THREE.Float32BufferAttribute(b.pos,3));ge.setIndex(b.idx);ge.computeVertexNormals();return new THREE.Mesh(ge,mat)}
+// a winglet lofted along a path that leaves the wing tip level, turns up over the blend fraction, then runs straight at the cant angle;
+// swept, tapered, with a thin aerofoil section. Root at the origin, running outward along +x, leading edge at z=0
+function wingletGeo(h,rc,tc,sweepDeg,cantDeg,blend,thick){
+  const N=14,be=(90-cantDeg)*D2R,ts=Math.tan(sweepDeg*D2R),bAt=s=>be*sm01(Math.min(1,s/blend));
+  const P=[{x:0,y:0,b:0}];let x=0,y=0;
+  for(let k=1;k<=N;k++){const b=bAt((k-.5)/N);x+=Math.cos(b)/N;y+=Math.sin(b)/N;P.push({x,y,b:bAt(k/N)})}
+  const sc=h/y,fr=[0,.12,.45,1,.45,.12],tm=[0,.55,1,0,-1,-.55],M=6,pos=[],idx=[];
+  P.forEach((q,k)=>{const s=k/N,c=lerp(rc,tc,s),zl=ts*s*sc,th=thick*c,nx=-Math.sin(q.b),ny=Math.cos(q.b);
+    for(let j=0;j<M;j++)pos.push(q.x*sc+nx*th*tm[j],q.y*sc+ny*th*tm[j],zl+fr[j]*c)});
+  for(let k=0;k<N;k++)for(let j=0;j<M;j++){const a0=k*M+j,b0=k*M+(j+1)%M,c0=a0+M,d0=b0+M;idx.push(a0,b0,c0,b0,d0,c0)}
+  let cx=0,cy_=0,cz=0;for(let j=0;j<M;j++){const o=(N*M+j)*3;cx+=pos[o];cy_+=pos[o+1];cz+=pos[o+2]}const ci=pos.length/3;pos.push(cx/M,cy_/M,cz/M);
+  for(let j=0;j<M;j++)idx.push(N*M+j,N*M+(j+1)%M,ci);
+  const ge=new THREE.BufferGeometry();ge.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));ge.setIndex(idx);ge.computeVertexNormals();return ge}
+// an engine pylon: a swept plate from the top of the nacelle up into the underside of the wing leading edge
+function pylonGeo(Rn){const sh=new THREE.Shape();sh.moveTo(-.9*Rn,.85*Rn);sh.lineTo(2.3*Rn,Rn+.45);sh.lineTo(3.7*Rn,Rn+.45);sh.lineTo(3.7*Rn,.7*Rn);sh.lineTo(-.9*Rn,.85*Rn);
+  return new THREE.ExtrudeGeometry(sh,{depth:.4,bevelEnabled:false}).translate(0,0,-.2).rotateY(-Math.PI/2)}
+// an engine nacelle: lipped intake, fan cowl, smaller core cowl and a plug; axis along z, intake at -2.3R
+function nacelleGeo(Rn){const f=[[-2.3,.9],[-2.24,.98],[-2.0,1.02],[-1.3,1.03],[-.2,.98],[1.0,.86],[1.7,.7],[1.95,.56],[2.45,.5],[2.95,.1]],pts=f.map(q=>new THREE.Vector2(q[1]*Rn,q[0]*Rn));pts.push(new THREE.Vector2(0,3*Rn));
+  return new THREE.LatheGeometry(pts,24).rotateX(Math.PI/2)}
 function buildAircraftModel(a,opt={}){
   const g=new THREE.Group();const L=a.len,R=a.R,cy=a.cy;
   const white=new THREE.MeshLambertMaterial({color:0xf2f2ee}),grey=new THREE.MeshLambertMaterial({color:0xb9bcbf}),dark=new THREE.MeshLambertMaterial({color:0x22272b});
   const tailC=new THREE.MeshLambertMaterial({color:opt.tail||0x1d6f6a,side:THREE.DoubleSide}),wingM=new THREE.MeshLambertMaterial({color:0xc4c7ca,side:THREE.DoubleSide});
-  // fuselage (lathe, nose at -z)
-  const prof=[];const nN=14,nT=12;
-  prof.push(new THREE.Vector2(0.01,L/2));
-  for(let i=1;i<=nN;i++){const t=i/nN;prof.push(new THREE.Vector2(R*Math.pow(Math.sin(t*Math.PI/2),.75),L/2-t*L*.12))}
-  prof.push(new THREE.Vector2(R,-L*.18));
-  for(let i=1;i<=nT;i++){const t=i/nT;prof.push(new THREE.Vector2(R*lerp(1,.12,Math.pow(t,1.3)),-L*.18-t*(L*.32)))}
-  const fg=new THREE.LatheGeometry(prof,28);fg.rotateX(-Math.PI/2);
-  const fus=new THREE.Mesh(fg,white);fus.position.y=cy;g.add(fus);fus.userData.fus=true;
-  const belly=new THREE.Mesh(new THREE.CylinderGeometry(R*.985,R*.985,L*.62,28,1,true,Math.PI/2+.5,Math.PI-1).rotateX(Math.PI/2),grey);belly.position.set(0,cy,L*.03);g.add(belly);
-  // cheatline & windows
-  const cheat=new THREE.Mesh(new THREE.CylinderGeometry(R*1.005,R*1.005,L*.6,28,1,true,0,Math.PI*2).rotateX(Math.PI/2),new THREE.MeshLambertMaterial({color:opt.tail||0x1d6f6a,transparent:true,opacity:0}));
-  const winM=new THREE.MeshLambertMaterial({color:0x1b2328,emissive:0x000000});winM.userData.cabin=true;
-  for(const sd of[-1,1]){const w=new THREE.Mesh(new THREE.BoxGeometry(.05,.42,L*.68),winM);w.position.set(sd*R*.985,cy+R*.06,-L*.02);w.userData.winStrip=true;g.add(w);
-    const st=new THREE.Mesh(new THREE.BoxGeometry(.05,.5,L*.8),new THREE.MeshLambertMaterial({color:opt.cheat||opt.tail||0x1d6f6a}));st.position.set(sd*R*.97,cy-R*.2,-L*.02);g.add(st)}
-  // cockpit windows
-  const cw=new THREE.Mesh(new THREE.BoxGeometry(R*1.1,.7,1.6),dark);cw.position.set(0,cy+R*(a.hump?1.25:.55),-L/2+L*.065);cw.rotation.x=.4;g.add(cw);
-  if(a.hump){const h=new THREE.Mesh(new THREE.SphereGeometry(1,24,14),white);h.scale.set(R*.82,R*.62,L*.17);h.position.set(0,cy+R*.62,-L/2+L*.23);g.add(h);
-    for(const sd of[-1,1]){const w=new THREE.Mesh(new THREE.BoxGeometry(.05,.38,L*.16),winM);w.position.set(sd*R*.8,cy+R*1.05,-L/2+L*.24);g.add(w)}}
+  // fuselage: rings along z (nose at -z). Windscreen, windows and stripes are patches on this same skin, so nothing sits on top of it
+  const F=a.fus,nl=F.nl,tl=F.tl;
+  const rad=u=>{if(u<=nl)return R*Math.pow(Math.sin(u/nl*Math.PI/2),F.ne);if(u<=tl)return R;return R*(1-.9*Math.pow((u-tl)/(1-tl),1.35))};
+  const dyf=u=>{if(u<nl){const t=1-u/nl;return -F.drop*t*t}if(u<=tl)return 0;return F.up*R*Math.pow((u-tl)/(1-tl),1.7)};
+  const fusP=(u,phi)=>{const r=rad(u),s_=Math.sin(phi),c_=Math.cos(phi);return[r*s_,cy+dyf(u)+r*c_,-L/2+u*L,s_,c_,0]};
+  {const fb=patchBuf(),us=[],NS=40;for(let i=0;i<=32;i++)us.push(nl*Math.pow(i/32,1.5));for(let i=1;i<=6;i++)us.push(nl+(tl-nl)*i/6);for(let i=1;i<=16;i++)us.push(tl+(1-tl)*Math.pow(i/16,.9));
+   us.forEach(u=>{for(let j=0;j<NS;j++){const p=fusP(u,j/NS*Math.PI*2);fb.pos.push(p[0],p[1],p[2])}});
+   for(let i=0;i<us.length-1;i++)for(let j=0;j<NS;j++){const a0=i*NS+j,b0=i*NS+(j+1)%NS,c0=a0+NS,d0=b0+NS;fb.idx.push(a0,c0,b0,b0,c0,d0)}
+   const e=fusP(1,0),ci=fb.pos.length/3,lo=(us.length-1)*NS;fb.pos.push(e[0],cy+dyf(1),e[2]);for(let j=0;j<NS;j++)fb.idx.push(lo+j,lo+(j+1)%NS,ci);
+   const fus=patchMesh(fb,white);g.add(fus);fus.userData.fus=true}
+  const ph=(sd,a_,b_)=>sd>0?[a_*D2R,b_*D2R]:[-b_*D2R,-a_*D2R];
+  const winM=new THREE.MeshLambertMaterial({color:0x1b2328,emissive:0x000000,side:THREE.DoubleSide});winM.userData.cabin=true;
+  const glassM=new THREE.MeshLambertMaterial({color:0x14191d,side:THREE.DoubleSide});
+  // belly fairing and cheatline follow the skin right to the tail
+  {const bb=patchBuf();addPatch(bb,fusP,.2,.63,128*D2R,232*D2R,14,10,.014);g.add(patchMesh(bb,grey));
+   const cl=patchBuf(),cc=opt.cheat||opt.tail||0x1d6f6a;for(const sd of[-1,1]){const r=ph(sd,97,106);addPatch(cl,fusP,a.hump?.17:.13,.97,r[0],r[1],40,2,.012)}
+   g.add(patchMesh(cl,new THREE.MeshLambertMaterial({color:cc,side:THREE.DoubleSide})))}
+  // cabin windows: a row of individual windows per side
+  {const wb=patchBuf(),u0=a.hump?.19:.15,u1=.655,pitch=.64/L;for(const sd of[-1,1]){const r=ph(sd,82.5,90.5);for(let u=u0;u<u1;u+=pitch)addPatch(wb,fusP,u,u+pitch*.6,r[0],r[1],1,1,.016)}
+   const w=patchMesh(wb,winM);w.userData.winStrip=true;g.add(w)}
+  // flight deck glazing, cut into the skin of the nose (747: into the front of the upper deck)
+  {const gb=patchBuf();
+   if(!a.hump){for(const sd of[-1,1]){let r=ph(sd,4,22);addPatch(gb,fusP,nl*.60,nl*.72,r[0],r[1],3,4,.02);r=ph(sd,26,46);addPatch(gb,fusP,nl*.66,nl*.78,r[0],r[1],3,4,.02);r=ph(sd,56,72);addPatch(gb,fusP,nl*.76,nl*.88,r[0],r[1],3,3,.02)}}
+   else{
+    const hu0=.058,hu1=.39,yb=cy+R*.38,env=v=>v<.2?Math.sin(v/.2*Math.PI/2):v<.48?1:Math.pow(Math.cos((v-.48)/.52*Math.PI/2),1.5);
+    const HP=(v,al)=>{const b=env(v),wd=R*(.52+.2*b),top=yb+R*1.5*b,s_=Math.sin(al),c_=Math.cos(al);return[wd*s_,yb+(top-yb)*c_,-L/2+(hu0+(hu1-hu0)*v)*L,s_,c_,0]};
+    const hb=patchBuf();addPatch(hb,HP,0,1,-Math.PI/2,Math.PI/2,48,28,0);g.add(patchMesh(hb,white));
+    for(const sd of[-1,1]){let r=ph(sd,4,24);addPatch(gb,HP,.10,.15,r[0],r[1],3,4,.02);r=ph(sd,28,50);addPatch(gb,HP,.12,.17,r[0],r[1],3,4,.02);r=ph(sd,58,76);addPatch(gb,HP,.17,.215,r[0],r[1],3,3,.02)}
+    const ub=patchBuf();for(let k=0;k<9;k++){const v0=.31+k*.055;for(const sd of[-1,1]){const q=HP(v0+.016,sd*68*D2R);if(Math.hypot(q[0],q[1]-cy)<R*1.012)continue;const r=ph(sd,60,77);addPatch(ub,HP,v0,v0+.03,r[0],r[1],1,2,.02)}}
+    const uw=patchMesh(ub,winM);uw.userData.winStrip=true;g.add(uw)}
+   g.add(patchMesh(gb,glassM))}
   // wings
   const cr=L*.2,ct=cr*.24,semi=a.span/2,sweep=Math.tan(36*D2R),zle=-L*.08;
-  const wingGeo=(semi,cr,ct,zle,thick)=>{const sh=new THREE.Shape();sh.moveTo(0,zle);sh.lineTo(semi,zle+semi*sweep);sh.lineTo(semi,zle+semi*sweep+ct);sh.lineTo(0,zle+cr);sh.lineTo(0,zle);
-    const eg=new THREE.ExtrudeGeometry(sh,{depth:thick,bevelEnabled:false});eg.rotateX(Math.PI/2);return eg};
+  // a wing lofted from its planform: flat top, underside deepest near a third of the chord, thickness in proportion to the local chord
+  const wingGeo=(semi,cr,ct,zle,tr)=>{const NX=10,NC=12,pos=[],idx=[],kt=ct/cr,prof=c=>Math.sin(Math.PI*Math.pow(c,.6));
+    const st=(i,j)=>{const x=semi*i/NX,ch=cr+(ct-cr)*i/NX;return[x,zle+x*sweep+j/NC*ch,tr*(1-(1-kt)*i/NX)*prof(j/NC)]};
+    for(let i=0;i<=NX;i++)for(let j=0;j<=NC;j++){const q=st(i,j);pos.push(q[0],0,q[1])}
+    for(let i=0;i<=NX;i++)for(let j=0;j<=NC;j++){const q=st(i,j);pos.push(q[0],-q[2],q[1])}
+    const T=(i,j)=>i*(NC+1)+j,B=(i,j)=>(NX+1)*(NC+1)+i*(NC+1)+j;
+    for(let i=0;i<NX;i++)for(let j=0;j<NC;j++){idx.push(T(i,j),T(i+1,j),T(i,j+1),T(i,j+1),T(i+1,j),T(i+1,j+1),B(i,j),B(i,j+1),B(i+1,j),B(i,j+1),B(i+1,j+1),B(i+1,j))}
+    for(let j=0;j<NC;j++)idx.push(T(NX,j),T(NX,j+1),B(NX,j),T(NX,j+1),B(NX,j+1),B(NX,j));
+    const ge=new THREE.BufferGeometry();ge.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));ge.setIndex(idx);ge.computeVertexNormals();return ge};
+  const nacM=new THREE.MeshLambertMaterial({color:0xb9bcbf,side:THREE.DoubleSide});
   const surf={ail:[],elev:[],flap:[],spl:[]};const surfM=new THREE.MeshLambertMaterial({color:0xb5b9bc,side:THREE.DoubleSide});
   // a hinged surface on a wing-shaped mesh: hinge line along the trailing edge, deflection about the hinge
   const hinged=(parent,semi_,cr_,ct_,zle_,sweep_,x0,len,ch,top,thick)=>{const k=(semi_*sweep_+ct_-cr_)/semi_;const zte=zle_+cr_+x0*k;
     const piv=new THREE.Group();piv.position.set(x0,top?.02:-thick/2,top?zte-ch*2.2:zte-ch);piv.rotation.y=-Math.atan(k);parent.add(piv);
     const h=new THREE.Group();piv.add(h);const m=new THREE.Mesh(new THREE.BoxGeometry(len/Math.cos(Math.atan(k)),top?.12:thick*.8,ch).translate(len/Math.cos(Math.atan(k))/2,top?.06:0,ch/2),surfM);h.add(m);return h};
-  for(const sd of[-1,1]){const w=new THREE.Mesh(wingGeo(semi,cr,ct,zle,.9),wingM);w.scale.x=sd;w.position.y=cy-R*.45;w.rotation.z=sd*5*D2R;g.add(w);
-    surf.ail.push({h:hinged(w,semi,cr,ct,zle,sweep,semi*.7,semi*.22,ct*.38,false,.9),sd});
-    surf.flap.push({h:hinged(w,semi,cr,ct,zle,sweep,R*1.05,semi*.58-R,cr*.16,false,.9),sd});
-    surf.spl.push({h:hinged(w,semi,cr,ct,zle,sweep,R*1.3,semi*.42,cr*.11,true,.9),sd});
-    if(a.winglet){const wl=new THREE.Mesh(new THREE.BoxGeometry(.25,a.winglet==='cant'?3.6:2.8,ct*.8),tailC);wl.position.set(sd*(semi+.1),cy-R*.45+semi*Math.tan(5*D2R)+1.4,zle+semi*sweep+ct*.5);wl.rotation.z=sd*(a.winglet==='cant'?-.5:-.15);g.add(wl)}
+  for(const sd of[-1,1]){const w=new THREE.Mesh(wingGeo(semi,cr,ct,zle,cr*.115),wingM);w.scale.x=sd;w.position.y=cy-R*.45;w.rotation.z=sd*5*D2R;g.add(w);
+    surf.ail.push({h:hinged(w,semi,cr,ct,zle,sweep,semi*.7,semi*.22,ct*.38,false,.2),sd});
+    surf.flap.push({h:hinged(w,semi,cr,ct,zle,sweep,R*1.05,semi*.58-R,cr*.16,false,.2),sd});
+    surf.spl.push({h:hinged(w,semi,cr,ct,zle,sweep,R*1.3,semi*.42,cr*.11,true,.2),sd});
+    if(a.winglet){const W=a.winglet,wm=new THREE.Mesh(wingletGeo(W.h,ct*W.rc,ct*W.tc,W.sw,W.cant,W.bl,.055),tailC);wm.position.set(sd*(semi*Math.cos(5*D2R)-.5),cy-R*.45+semi*Math.sin(5*D2R)-.45,zle+semi*sweep+ct*.1);wm.scale.x=sd;g.add(wm)}
     // engines
     for(const ex of a.engX){const ez=zle+ex*sweep-a.engR*2.6;const ey=cy-R*.45+ex*Math.tan(5*D2R)-a.engR-.6;
-      const nac=new THREE.Mesh(new THREE.CylinderGeometry(a.engR,a.engR*.82,a.engR*4.6,18).rotateX(Math.PI/2),grey);nac.position.set(sd*ex,ey,ez);g.add(nac);
-      const inlet=new THREE.Mesh(new THREE.CircleGeometry(a.engR*.9,18),dark);inlet.position.set(sd*ex,ey,ez-a.engR*2.31);inlet.rotation.y=Math.PI;g.add(inlet);
-      const py=new THREE.Mesh(new THREE.BoxGeometry(.5,1,a.engR*3),grey);py.position.set(sd*ex,ey+a.engR+.3,ez+a.engR*.8);g.add(py)}
+      const nac=new THREE.Mesh(nacelleGeo(a.engR),nacM);nac.position.set(sd*ex,ey,ez);g.add(nac);
+      const inlet=new THREE.Mesh(new THREE.CircleGeometry(a.engR*.86,20),dark);inlet.position.set(sd*ex,ey,ez-a.engR*2.05);inlet.rotation.y=Math.PI;g.add(inlet);
+      const py=new THREE.Mesh(pylonGeo(a.engR),nacM);py.position.set(sd*ex,ey,ez);g.add(py)}
     // stabiliser
-    const hs=new THREE.Mesh(wingGeo(a.span*.17,L*.1,L*.035,L*.36,.4),wingM);hs.scale.x=sd;hs.position.y=cy+R*.25;hs.rotation.z=sd*7*D2R;g.add(hs);
-    surf.elev.push({h:hinged(hs,a.span*.17,L*.1,L*.035,L*.36,sweep,R*.5,a.span*.17*.85-R*.5,L*.028,false,.4),sd})}
+    const hs=new THREE.Mesh(wingGeo(a.span*.17,L*.1,L*.035,L*.36,.55),wingM);hs.scale.x=sd;hs.position.y=cy+R*.25;hs.rotation.z=sd*7*D2R;g.add(hs);
+    surf.elev.push({h:hinged(hs,a.span*.17,L*.1,L*.035,L*.36,sweep,R*.5,a.span*.17*.85-R*.5,L*.028,false,.2),sd})}
   g.userData.surf=surf;
   // fin
   {const sh=new THREE.Shape();const fh=a.tail,fc=L*.14;sh.moveTo(0,0);sh.lineTo(fc,0);sh.lineTo(fc+fh*.95,fh);sh.lineTo(fc*.45+fh*.95,fh);sh.lineTo(0,0);
@@ -2100,10 +2148,28 @@ function buildCabin(a,key){
 const AI=[];
 function pathAtC(c){const P=PATH.pts;c=clamp(c,0,P[P.length-1].c);let lo=0,hi=P.length-1;while(hi-lo>1){const m=(lo+hi)>>1;if(P[m].c<c)lo=m;else hi=m}const a=P[lo],b=P[hi];const t=(c-a.c)/Math.max(1e-6,b.c-a.c);
   return {x:lerp(a.x,b.x,t),z:lerp(a.z,b.z,t),alt:lerp(a.alt,b.alt,t),h:a.h+angDiff(b.h,a.h)*t,k:a.k}}
-function polyPose(pts,t){ // pts: [[s,l,tArrive],…] ground taxi along runway coordinates
-  for(let i=1;i<pts.length;i++){if(t<=pts[i][2]){const a=pts[i-1],b=pts[i];const u=clamp((t-a[2])/Math.max(.01,b[2]-a[2]),0,1);const s=lerp(a[0],b[0],u),l=lerp(a[1],b[1],u);const q=rwP(s,l);
-    const d=rwP(b[0]-a[0],b[1]-a[1]);return {x:q[0],z:q[1],y:RWY.elev,psi:Math.atan2(d[0],-d[1]),theta:0,phi:0,gear:1,moving:u<1}}}
-  const a=pts[pts.length-2]||pts[0],b=pts[pts.length-1];const q=rwP(b[0],b[1]);const d=rwP(b[0]-a[0],b[1]-a[1]);return {x:q[0],z:q[1],y:RWY.elev,psi:Math.atan2(d[0],-d[1]),theta:0,phi:0,gear:1,moving:false}}
+// A taxi route, pts: [[s,l,tArrive],…] in runway coordinates. Corners are rounded into curves, speed eases between the timed
+// vertices (v0 and v1 are the speeds at the ends, m/s), and heading follows the path a few metres ahead and behind,
+// so an aircraft turns through a corner instead of snapping to a new heading.
+const TAXI_R=48,TAXI_LOOK=14;
+function polyPose(pts,t,v0,v1){
+  const n=pts.length,V=pts.map(q=>[q[0],q[1]]),Q=[],K=[];
+  for(let i=0;i<n;i++){const P=V[i],A=V[i-1],B=V[i+1];
+    if(A&&B){const ix=P[0]-A[0],iy=P[1]-A[1],ox=B[0]-P[0],oy=B[1]-P[1],li=Math.hypot(ix,iy),lo=Math.hypot(ox,oy),ux=ix/li,uy=iy/li,vx=ox/lo,vy=oy/lo;
+      if(ux*vx+uy*vy<.9995){const d=Math.min(TAXI_R,.45*li,.45*lo),ax=P[0]-ux*d,ay=P[1]-uy*d,bx=P[0]+vx*d,by=P[1]+vy*d,k0=Q.length;
+        for(let m=0;m<=12;m++){const u=m/12,w0=(1-u)*(1-u),w1=2*u*(1-u),w2=u*u;Q.push([w0*ax+w1*P[0]+w2*bx,w0*ay+w1*P[1]+w2*by])}
+        K.push(k0+6);continue}}
+    K.push(Q.length);Q.push([P[0],P[1]])}
+  const D=[0];for(let i=1;i<Q.length;i++)D.push(D[i-1]+Math.hypot(Q[i][0]-Q[i-1][0],Q[i][1]-Q[i-1][1]));
+  const Kd=K.map(k=>D[k]),T=pts.map(q=>q[2]),sl=[];
+  for(let i=0;i<n-1;i++)sl.push((Kd[i+1]-Kd[i])/Math.max(.01,T[i+1]-T[i]));
+  const mt=new Array(n);mt[0]=v0||0;mt[n-1]=v1||0;for(let i=1;i<n-1;i++)mt[i]=sl[i-1]*sl[i]>0?2*sl[i-1]*sl[i]/(sl[i-1]+sl[i]):0;
+  for(let i=0;i<n-1;i++){const c=3*Math.max(0,sl[i]);mt[i]=Math.min(mt[i],c);mt[i+1]=Math.min(mt[i+1],c)}
+  let dist;if(t<=T[0])dist=Kd[0];else if(t>=T[n-1])dist=Kd[n-1];else{let i=1;while(t>T[i])i++;const h=T[i]-T[i-1],u=(t-T[i-1])/h,u2=u*u,u3=u2*u;
+    dist=(2*u3-3*u2+1)*Kd[i-1]+(u3-2*u2+u)*h*mt[i-1]+(-2*u3+3*u2)*Kd[i]+(u3-u2)*h*mt[i]}
+  const at=d=>{d=clamp(d,0,D[D.length-1]);let lo=0,hi=D.length-1;while(hi-lo>1){const m=(lo+hi)>>1;if(D[m]<d)lo=m;else hi=m}const f=(d-D[lo])/Math.max(1e-6,D[hi]-D[lo]);return[lerp(Q[lo][0],Q[hi][0],f),lerp(Q[lo][1],Q[hi][1],f)]};
+  const q=at(dist),a=at(dist-TAXI_LOOK),b=at(dist+TAXI_LOOK),w=rwP(q[0],q[1]),d=rwP(b[0]-a[0],b[1]-a[1]);
+  return {x:w[0],z:w[1],y:RWY.elev,psi:Math.atan2(d[0],-d[1]),theta:0,phi:0,gear:1,moving:t<T[n-1]}}
 function arrivalPose(t,c0,gateS){gateS=gateS||300;
   const v=76,thr=PATH.pts.find(p=>p.d<=0).c;const tdC=thr+300;const tTD=(tdC-c0)/v;
   if(t<0)return null;
@@ -2113,17 +2179,19 @@ function arrivalPose(t,c0,gateS){gateS=gateS||300;
   if(dt<tDec)s=300+v*dt-.5*a*dt*dt;else s=300+(v*v-vT*vT)/(2*a)+vT*(dt-tDec);
   if(s<1800){const q=rwP(s,0);return {x:q[0],z:q[1],y:RWY.elev,psi:RWY.hdg*D2R,theta:dt<4?(4-dt)*D2R:0,phi:0,gear:1,lights:true,spl:dt<tDec}}
   const t0=tTD+tDec+(1800-300-(v*v-vT*vT)/(2*a))/vT;
-  return polyPose([[1800,0,t0],[1900,-96,t0+16],[1780,-96,t0+28],[600,-96,t0+146],[420,-300,t0+174],[gateS,-470,t0+174+Math.abs(gateS-420)/8+12]],t);
+  return polyPose([[1800,0,t0],[1840,0,t0+4],[1900,-96,t0+16],[1780,-96,t0+28],[600,-96,t0+146],[420,-300,t0+174],[gateS,-470,t0+174+Math.abs(gateS-420)/8+12]],t,vT,0);
 }
+const TAXI_END_S=90; // where a departing aircraft lines up on the runway, metres from the threshold
+const lineupT=gate=>94+(gate-40)/9;
 function departurePose(t,gate){
-  const taxi=[[gate,-560,0],[gate,-300,25],[gate-40,-96,48],[40,-96,48+(gate-80)/9],[0,-40,60+(gate-80)/9],[0,0,68+(gate-80)/9]];
-  const tLine=taxi[taxi.length-1][2]+12;if(t<tLine)return polyPose(taxi,t);
-  const tau=t-tLine,a=2.2,vR=82;const tR=vR/a,sR=.5*a*tR*tR;
-  if(tau<tR){const s=.5*a*tau*tau;const q=rwP(s,0);return {x:q[0],z:q[1],y:RWY.elev,psi:RWY.hdg*D2R,theta:0,phi:0,gear:1,lights:true}}
+  const tA=48+(gate-40)/9,taxi=[[gate,-560,0],[gate,-300,25],[gate-40,-96,48],[0,-96,tA],[0,0,tA+22],[TAXI_END_S,0,tA+36]];
+  const tLine=lineupT(gate);if(t<tLine)return polyPose(taxi,t);
+  const tau=t-tLine,a=2.2,vR=82;const tR=vR/a,sR=.5*a*tR*tR,S0=TAXI_END_S;
+  if(tau<tR){const s=.5*a*tau*tau;const q=rwP(S0+s,0);return {x:q[0],z:q[1],y:RWY.elev,psi:RWY.hdg*D2R,theta:0,phi:0,gear:1,lights:true}}
   // climb out over Kowloon Bay, then a right turn toward the south over the harbour
   const tc=tau-tR,v=vR+Math.min(30,tc*1.2);let s=sR+vR*tc+.6*Math.min(tc,25)**2;const gam=Math.min(8,tc*2.5)*D2R;const alt=RWY.elev+Math.max(0,(s-sR))*Math.tan(gam)*.95;
   let psi=RWY.hdg*D2R,x,z;const turnStart=60;
-  if(tc<turnStart){const q=rwP(s,0);x=q[0];z=q[1]}else{const q=rwP(sR+vR*turnStart+.6*625,0);const R=3200;const ang=Math.min((tc-turnStart)*v/R,1.0);psi=RWY.hdg*D2R+ang;
+  if(tc<turnStart){const q=rwP(S0+s,0);x=q[0];z=q[1]}else{const q=rwP(S0+sR+vR*turnStart+.6*625,0);const R=3200;const ang=Math.min((tc-turnStart)*v/R,1.0);psi=RWY.hdg*D2R+ang;
     const c=[q[0]+R*Math.cos(RWY.hdg*D2R),q[1]+R*Math.sin(RWY.hdg*D2R)];x=c[0]-R*Math.cos(psi);z=c[1]-R*Math.sin(psi);const extra=Math.max(0,(tc-turnStart)*v-R);x+=Math.sin(psi)*extra;z-=Math.cos(psi)*extra}
   return {x,z,y:Math.min(alt+(tc>turnStart?(tc-turnStart)*6:0),2400),psi,theta:tc<4?tc*2.5*D2R:9*D2R,phi:tc>turnStart&&tc<turnStart+40?18*D2R:0,gear:tc<6?1:0,lights:tc<90}
 }
@@ -2158,7 +2226,7 @@ function buildAISchedule(phase,wrapNeg){
   const loc=(t,off)=>{let k=t+phase-off;if(k<0&&!wrapNeg)return -1;return ((k%P)+P)%P};
   const types=['b744','a333','b772','a343','b744','a333'];const gatesA=[150,250,350,450,550,650],gatesD=[430,515,600,680,360,250];
   for(let i=0;i<6;i++){const off=i*100;mk(types[i],AI_LIVERIES[i],t=>{const k=loc(t,off);return k<0?null:arrivalPose(k,c0,gatesA[i])},'arrival')}
-  for(let i=0;i<6;i++){const g=gatesD[i];const tLine=68+(g-80)/9+12;const off=145+i*100-tLine;
+  for(let i=0;i<6;i++){const g=gatesD[i];const tLine=lineupT(g);const off=145+i*100-tLine;
     mk(types[(i+3)%6],AI_LIVERIES[(i+2)%8],t=>{const k=loc(t,off);return k<0?departurePose(0,g):departurePose(k,g)},'departure')}
   mk('b744',AI_LIVERIES[4],t=>holdingPose(t,-11000,5200,1850,2600,0),'holding');
   mk('a343',AI_LIVERIES[5],t=>holdingPose(t,-11000,5200,2150,2600,Math.PI),'holding');
