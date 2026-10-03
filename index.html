@@ -496,7 +496,6 @@ html,body{overscroll-behavior:none;touch-action:manipulation}
       </div>
       <div class="res-actions">
         <button class="go" id="btnAgain" type="button"><span>Fly it again</span></button>
-        <button class="btn" id="btnRewind" type="button">Rewind 10 s</button>
         <button class="btn" id="btnSetup" type="button">Change setup</button>
       </div>
       <section class="res-share" id="resShare" aria-label="Share your result">
@@ -3232,7 +3231,6 @@ hsRenderHome();hsSync().then(hsRenderHome);
  b.addEventListener('click',e=>{set(pn.hidden);e.currentTarget.blur()});
  window.addEventListener('keydown',e=>{if(e.key==='Escape'&&!pn.hidden&&mode==='attract')set(false)});
  try{if(localStorage.getItem('fkt-hs-open')==='1')set(true)}catch(_){}}
-document.getElementById('btnRewind').addEventListener('click',()=>{mode='fly';timeJump(-10)});
 document.getElementById('btnMenu').addEventListener('click',showSetup);
 document.getElementById('viewSel').addEventListener('change',e=>setView(e.target.value));
 function setZoom(z){CFG.zoom=z;track('zoom',{level:z});document.getElementById('zoomSel').value=String(z);toast('Zoom '+z+'×')}
