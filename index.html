@@ -262,7 +262,7 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
       <div class="code">VHHH · KAI TAK</div>
       <div class="sub">Hong Kong · 1998</div>
       <div class="credit"><a href="https://malgordon.com" target="_blank" rel="noopener">Another Mal Gordon project</a></div>
-      <a class="coffee" id="btnCoffee" href="#" target="_blank" rel="noopener" hidden>☕ Buy me a coffee · $5</a>
+      <a class="coffee" id="btnCoffee" href="#" target="_blank" rel="noopener" hidden>☕ Buy me a coffee · $5 AUD</a>
     </div>
   </div>
   <div class="sheet">
@@ -2272,8 +2272,8 @@ for(const b of document.querySelectorAll('#bar button,#ctl button'))b.addEventLi
 
 const reel=document.getElementById('reel');let reelOK=true;
 {const off=()=>{reelOK=false;reel.hidden=true};reel.addEventListener('error',off);const srcs=reel.querySelectorAll('source');srcs[srcs.length-1].addEventListener('error',off)}
-// Stripe Payment Link for the $5 USD "Buy me a coffee" button. Paste the https://buy.stripe.com/... URL here; the button stays hidden until it is set.
-const STRIPE_LINK='';
+// Stripe Payment Link for the $5 AUD "Buy me a coffee" button. The button stays hidden if this is empty.
+const STRIPE_LINK='https://buy.stripe.com/9B6cMX2TT3tPaFi0UcaAw00';
 {const c=document.getElementById('btnCoffee');if(/^https:\/\/(buy|donate)\.stripe\.com\//.test(STRIPE_LINK)){c.href=STRIPE_LINK;c.hidden=false}}
 // Home demo reel: loops in an inset while the live sim renders behind. Reduced motion: poster only.
 const reducedMotion=()=>!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);

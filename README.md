@@ -42,7 +42,7 @@ The home screen shows the live sim of the airport in the background, with a 58-s
 - Blog at https://flykaitak.com/blog/ (every feature and fix gets a post; see docs/blog.md)
 - Contact: contact@flykaitak.com
 - "Another Mal Gordon project" links to https://malgordon.com
-- The "Buy me a coffee" button ($5 USD) stays hidden until a Stripe Payment Link is pasted into `STRIPE_LINK` in `index.html`
+- The "Buy me a coffee" button ($5 AUD) opens a Stripe Payment Link, set in `STRIPE_LINK` in `index.html`
 
 ## Modes
 - **IGS 13 approach**: the original game. Start on the IGS at 3,100 ft and land.
