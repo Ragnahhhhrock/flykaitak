@@ -6,6 +6,7 @@
     "description": "Fly Kai Tak adds jet bridges to the Kai Tak terminal. Aircraft taxi in and dock at them, and pushback tugs push each departure back and turn it toward the runway.",
     "date": "2026-10-03",
     "tag": "New",
+    "category": "aircraft",
     "keywords": [
       "Kai Tak",
       "terminal",
@@ -31,12 +32,75 @@
     }
   },
   {
+    "slug": "apron-taxi-lines-and-numbered-stands",
+    "title": "Apron taxi lines and numbered stands",
+    "dek": "Yellow guidance lines, red stand boxes and numbered stands show where to taxi and where to park.",
+    "description": "Fly Kai Tak's apron now has yellow taxi lines, numbered stands, red stand boxes and service road lines, and the other aircraft taxi along them.",
+    "date": "2026-10-03",
+    "tag": "New",
+    "category": "scenery",
+    "keywords": [
+      "Kai Tak",
+      "apron",
+      "taxi lines",
+      "stand numbers",
+      "taxiway"
+    ],
+    "hero": "apron-markings-top",
+    "hero_alt": "The whole apron from above: seven terminal stands in one row, five drive-through stands in another, and the dark lane between them.",
+    "hero_caption": "The apron from above, with its taxi lines and numbered stands.",
+    "card_kicker": "APRON · NEW",
+    "card_title": "Apron markings",
+    "card_sub": "Taxi lines and numbered stands",
+    "card_image": "apron-markings-stands",
+    "card_focus": 50,
+    "zh": {
+      "title": "停機坪滑行標線同編號停機位",
+      "dek": "黃色引導線、紅色停機位框同編號停機位，指示飛機點樣滑行同泊位。",
+      "description": "Fly Kai Tak 嘅停機坪而家有黃色滑行引導線、編號停機位、紅色停機位框同服務道路標線，其他飛機亦跟住標線滑行。",
+      "hero_alt": "由上面望成個停機坪：一排七個客運大樓停機位、一排五個貫通式停機位，中間係深色車道。",
+      "hero_caption": "由上面望停機坪嘅滑行標線同編號停機位。"
+    }
+  },
+  {
+    "slug": "blog-categories-search-and-pages",
+    "title": "Blog categories, search and pages",
+    "dek": "Browse the blog by category, sort by category, page through 20 posts at a time and search every post.",
+    "description": "The Fly Kai Tak blog now has categories, a sort by category view, 20 posts per page and a search box that works in English and Cantonese.",
+    "date": "2026-10-03",
+    "tag": "Feature",
+    "category": "site",
+    "keywords": [
+      "blog",
+      "categories",
+      "search",
+      "pagination",
+      "Fly Kai Tak"
+    ],
+    "hero": "blog-categories",
+    "hero_alt": "The Fly Kai Tak blog sorted by category, with a heading above each group of posts.",
+    "hero_caption": "Sort by category groups the posts under their category.",
+    "card_kicker": "BLOG · FEATURE",
+    "card_title": "Blog categories & search",
+    "card_sub": "Sort, page and search every post",
+    "card_image": "blog-categories",
+    "card_focus": 50,
+    "zh": {
+      "title": "網誌分類、搜尋同分頁",
+      "dek": "按分類瀏覽網誌、按分類排序、每頁 20 篇，仲可以搜尋所有文章。",
+      "description": "Fly Kai Tak 網誌而家有分類、按分類排序、每頁 20 篇同搜尋框，英文同廣東話都用得。",
+      "hero_alt": "按分類排序嘅 Fly Kai Tak 網誌，每組文章上面有分類標題。",
+      "hero_caption": "按分類排序會將文章歸入各自嘅分類下面。"
+    }
+  },
+  {
     "slug": "747-upper-deck-hump-reshaped",
     "title": "Fix: the 747 upper-deck hump now has the right shape",
     "dek": "A lower, wider hump with a long slope back into the roof, like the real jet.",
     "description": "The 747-400 upper-deck hump in Fly Kai Tak was too tall and narrow. It is now lower and wider with a long shallow slope into the roof, like the real 747.",
     "date": "2026-10-03",
     "tag": "Fix",
+    "category": "aircraft",
     "keywords": [
       "Kai Tak",
       "747-400",
@@ -66,6 +130,7 @@
     "description": "Fly Kai Tak Plane Spotter now has a Runway 31 mode: arrivals over Lei Yue Mun, departures toward Kowloon City, and a Lei Yue Mun spectator view.",
     "date": "2026-10-03",
     "tag": "Feature",
+    "category": "scenery",
     "keywords": [
       "Kai Tak",
       "Plane Spotter",
@@ -95,6 +160,7 @@
     "description": "Fly Kai Tak free flight now starts on Runway 31 as well as Runway 13, with Runway 31 radio calls, mirrored airport traffic and a climb out over Kowloon City.",
     "date": "2026-10-03",
     "tag": "Feature",
+    "category": "flying",
     "keywords": [
       "Kai Tak",
       "Runway 31",
@@ -124,6 +190,7 @@
     "description": "Fly Kai Tak now has a Take-off lesson: a coach panel walks first-time pilots through a Runway 13 take-off in eight steps with live meters and plain-language tips.",
     "date": "2026-10-03",
     "tag": "Feature",
+    "category": "flying",
     "keywords": [
       "Kai Tak",
       "take-off lesson",
@@ -155,6 +222,7 @@
     "description": "Fly Kai Tak fix: the \"Too low, gear\" and \"Too low, flaps\" warnings no longer fire on take-off. They need a descent now; the IGS 13 approach is unchanged.",
     "date": "2026-10-03",
     "tag": "Fix",
+    "category": "flying",
     "keywords": [
       "Kai Tak",
       "GPWS",
@@ -186,6 +254,7 @@
     "description": "Fly Kai Tak adds airport ground vehicles: buses, catering trucks that lift to the door, baggage tractors with loaded carts, container and box freight trucks, and fire tenders at a fire station.",
     "date": "2026-10-03",
     "tag": "New",
+    "category": "scenery",
     "keywords": [
       "Kai Tak",
       "apron",
@@ -218,6 +287,7 @@
     "description": "Fly Kai Tak adds a Runway 31 approach: a straight-in final over the sea, through the Lei Yue Mun gap and across Kowloon Bay, with its own lights, PAPI, radio calls, traffic and spotter view.",
     "date": "2026-10-03",
     "tag": "Feature",
+    "category": "flying",
     "keywords": [
       "Kai Tak",
       "Runway 31",
@@ -248,6 +318,7 @@
     "description": "Fly Kai Tak update: a High scores button on the home screen opens and closes the table of ranked landings, from Captain down to Cadet.",
     "date": "2026-10-03",
     "tag": "Update",
+    "category": "scores",
     "keywords": [
       "Kai Tak",
       "high score",
@@ -278,6 +349,7 @@
     "description": "Fly Kai Tak's result screen now has share buttons for X, Facebook, Reddit, WhatsApp, Threads and email, plus a downloadable report card image.",
     "date": "2026-10-03",
     "tag": "Feature",
+    "category": "scores",
     "keywords": [
       "Kai Tak",
       "share score",
@@ -309,6 +381,7 @@
     "description": "Fly Kai Tak now has a high score table. Land the IGS 13 approach by hand to rank as Captain, First Officer, Second Officer, Flight Engineer or Cadet.",
     "date": "2026-10-03",
     "tag": "Feature",
+    "category": "scores",
     "keywords": [
       "Kai Tak",
       "high score",
@@ -342,6 +415,7 @@
     "description": "Fly Kai Tak now has 1990s-style giant floodlit billboards on Kowloon rooftops and roadsides, plus glowing neon signs. Brands are invented; no real logos.",
     "date": "2026-10-03",
     "tag": "Feature",
+    "category": "scenery",
     "keywords": [
       "Kai Tak",
       "billboards",
@@ -373,6 +447,7 @@
     "description": "The history of two Kai Tak plane spotting viewpoints, the airport car park roof and the Peak, and how to watch from both in Fly Kai Tak's Plane Spotter mode.",
     "date": "2026-10-03",
     "tag": "History",
+    "category": "scenery",
     "keywords": [
       "Kai Tak",
       "plane spotting",
@@ -406,6 +481,7 @@
     "description": "Fly Kai Tak mobile update: the Turn your phone sideways prompt is removed, so the sim plays in either orientation. Begin descent still asks for landscape full screen.",
     "date": "2026-10-03",
     "tag": "Update",
+    "category": "controls",
     "keywords": [
       "Kai Tak",
       "mobile",
@@ -436,6 +512,7 @@
     "description": "Fly Kai Tak mobile fix: the rotate prompt now clears when the window turns landscape, with a hint for iPhone players whose Portrait Orientation Lock is on.",
     "date": "2026-10-03",
     "tag": "Fix",
+    "category": "controls",
     "keywords": [
       "Kai Tak",
       "mobile",
@@ -467,6 +544,7 @@
     "description": "Fly Kai Tak update: the 747-400, 777-200, A330-300 and A340-300 are redrawn with embedded cockpit glass, swept winglets and tapered wings.",
     "date": "2026-10-03",
     "tag": "Update",
+    "category": "aircraft",
     "keywords": [
       "Kai Tak",
       "flight simulator",
@@ -501,6 +579,7 @@
     "description": "Fly Kai Tak fix: other aircraft snapped to a new heading at every taxi corner. They now curve through turns, ease their speed and line up on the runway.",
     "date": "2026-10-03",
     "tag": "Fix",
+    "category": "flying",
     "keywords": [
       "Kai Tak",
       "flight simulator",
@@ -532,6 +611,7 @@
     "description": "A guide to the airlines and aircraft types at Kai Tak in the 1990s: Cathay Pacific, Dragonair, Qantas, BA, Singapore, Thai and JAL, with brief histories.",
     "date": "2026-10-03",
     "tag": "History",
+    "category": "aircraft",
     "keywords": [
       "Kai Tak",
       "airlines",
@@ -564,6 +644,7 @@
     "description": "Fly Kai Tak fix: other aircraft were drawn banking the wrong way in turns. Arrivals and departures now dip the inside wing, as real jets do.",
     "date": "2026-10-03",
     "tag": "Fix",
+    "category": "aircraft",
     "keywords": [
       "Kai Tak",
       "flight simulator",
@@ -595,6 +676,7 @@
     "description": "The Fly Kai Tak blog now has an English / Cantonese toggle on every page: posts, captions, header and footer switch to written Cantonese.",
     "date": "2026-10-03",
     "tag": "Feature",
+    "category": "site",
     "keywords": [
       "Kai Tak",
       "flight simulator",
@@ -628,6 +710,7 @@
     "description": "Fly Kai Tak's home screen now has an English / Cantonese toggle: the whole setup screen switches to written Cantonese and remembers your choice.",
     "date": "2026-10-03",
     "tag": "Feature",
+    "category": "site",
     "keywords": [
       "Kai Tak",
       "flight simulator",
@@ -661,6 +744,7 @@
     "description": "Fly Kai Tak adds the Peak Tram, the Peak Lookout and a Spectator: The Peak view, alongside Ocean Park's cable car between the Waterfront and the Summit.",
     "date": "2026-10-03",
     "tag": "Feature",
+    "category": "scenery",
     "keywords": [
       "Kai Tak",
       "flight simulator",
@@ -694,6 +778,7 @@
     "description": "Fly Kai Tak's on-screen yoke is now inverted for touch and mouse: drag down to pull the nose up, drag up to push it down, matching the keyboard.",
     "date": "2026-10-03",
     "tag": "Feature",
+    "category": "controls",
     "keywords": [
       "Kai Tak",
       "flight simulator",
@@ -727,6 +812,7 @@
     "description": "Fly Kai Tak blog posts can now be shared on Threads with one click, with the title and link pre-filled.",
     "date": "2026-10-03",
     "tag": "Update",
+    "category": "scores",
     "keywords": [
       "Threads",
       "share",
@@ -756,6 +842,7 @@
     "description": "A tour of the Hong Kong landmarks in Fly Kai Tak, with screenshots, plus the new Ocean Park amusement park and Happy Valley Racecourse.",
     "date": "2026-10-03",
     "tag": "Feature",
+    "category": "scenery",
     "keywords": [
       "Hong Kong landmarks",
       "Ocean Park",
@@ -787,6 +874,7 @@
     "description": "Fly Kai Tak on mobile: a compact toolbar with a More drawer, landscape touch controls, a rotate prompt for portrait, full screen on Begin descent and safe-area support.",
     "date": "2026-10-03",
     "tag": "Feature",
+    "category": "controls",
     "keywords": [
       "Kai Tak",
       "mobile flight simulator",
@@ -819,6 +907,7 @@
     "description": "How the famous Runway 13 IGS approach into Kai Tak works in Fly Kai Tak: the 088° course, the checkerboard on the hill, the 47° right turn over Kowloon City and the landing grade.",
     "date": "2026-10-03",
     "tag": "Feature",
+    "category": "flying",
     "keywords": [
       "Kai Tak",
       "IGS 13",
@@ -851,6 +940,7 @@
     "description": "How Fly Kai Tak builds Hong Kong from Lands Department open data and SRTM terrain, and the 1998 corrections: no Kai Tak redevelopment, no West Kowloon buildings, and the Walled City as an option.",
     "date": "2026-10-03",
     "tag": "Behind the scenes",
+    "category": "scenery",
     "keywords": [
       "Kai Tak",
       "Hong Kong 1998",
@@ -883,6 +973,7 @@
     "description": "Weather and night flying in Fly Kai Tak: clear, rain, typhoon, storm, low cloud and fog presets, wind gusts and turbulence, lightning, and a lit-up Kowloon at night.",
     "date": "2026-10-03",
     "tag": "Feature",
+    "category": "scenery",
     "keywords": [
       "Kai Tak",
       "typhoon",

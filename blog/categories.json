@@ -1,0 +1,8 @@
+[
+  {"slug": "aircraft", "name": "Aircraft", "zh": "飛機", "desc": "Aircraft models, cockpits, liveries and bot traffic."},
+  {"slug": "flying", "name": "Flying & Procedures", "zh": "飛行同程序", "desc": "The IGS 13 approach, take-offs, taxiing and learning to fly."},
+  {"slug": "scenery", "name": "Scenery & Weather", "zh": "風景同天氣", "desc": "Hong Kong landmarks, viewpoints, ground life, typhoons and night."},
+  {"slug": "controls", "name": "Controls & Devices", "zh": "操控同裝置", "desc": "Touch, mouse and phone controls."},
+  {"slug": "scores", "name": "Scores & Sharing", "zh": "分數同分享", "desc": "High scores, report cards and sharing."},
+  {"slug": "site", "name": "Site & Language", "zh": "網站同語言", "desc": "The blog, the website and the Cantonese version."}
+]

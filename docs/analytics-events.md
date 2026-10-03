@@ -17,6 +17,7 @@ Every event also carries `aircraft`, `weather` and `time_of_day`. Events only se
 | `flight_end` | Result screen, back to menu, restart, or page close | `outcome`, `flight_seconds`, `sim_seconds`, `landing_attempts`, `successful_landings`, `controls_toggled`, `flight_number` |
 | `session_summary` | Tab hidden or page closed | `flights`, `landing_attempts`, `successful_landings`, `crashes`, `missed_approaches`, `landing_success_pct`, `total_flight_seconds`, `session_seconds` |
 | `share` | Blog share button clicked (blog pages only) | `method` (`x`, `facebook`, `reddit`, `linkedin`, `whatsapp`, `threads`, `email`, `copy_link`, `native`), `content_type` (`article`), `item_id` (post slug) |
+| `search` | Blog search box used, after typing pauses (blog pages only) | `search_term`, `results`, `page_type` (`blog`) |
 
 `flight_seconds` is real play time (excludes pauses and rewinds). `sim_seconds` is simulation time (affected by time speed and rewinds).
 

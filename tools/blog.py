@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 """Build the Fly Kai Tak blog (static pages for GitHub Pages).
 
-  blog/posts.json            post metadata (newest first)
+  blog/posts.json            post metadata (newest first); every post has a "category" slug
+  blog/categories.json       the categories (slug, name, zh, desc), in display order
   blog/src/<slug>.html       post body (an HTML fragment)
   assets/blog/shots/*.jpg    screenshots (tools/screenshot.py)
   assets/blog/og/<slug>.jpg  social cards (tools/blog_images.py)
 
 Each post needs a Cantonese body (blog/src/<slug>.zh.html) and a "zh" block in posts.json; the build fails without them.
-Writes blog/index.html, blog/<slug>/index.html, blog/feed.xml and sitemap.xml. See docs/blog.md.
+Writes blog/index.html (+ blog/page/N/), blog/category/<slug>/ (+ page/N/), blog/sort/category/ (+ page/N/),
+blog/<slug>/index.html, blog/search.json (read by assets/blog/search.js), blog/feed.xml and sitemap.xml. 20 posts per page.
+See docs/blog.md.
 Usage: python3 tools/blog.py
 """
 import datetime as dt
@@ -17,6 +20,7 @@ import json
 import math
 import pathlib
 import re
+import shutil
 import urllib.parse
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -25,6 +29,8 @@ SITE = "https://flykaitak.com"
 NAME = "Fly Kai Tak"
 TZ = dt.timezone(dt.timedelta(hours=8))
 E = html.escape
+PER_PAGE = 20
+CATS = {}  # slug -> {"slug","name","zh","desc"}, filled by load_categories()
 
 FONTS = ("https://fonts.googleapis.com/css2?family=B612:wght@400;700&family=B612+Mono:wght@400;700"
          "&family=Noto+Serif+TC:wght@900&display=swap")
@@ -65,9 +71,19 @@ SHARE_JS = """<script>
 </script>"""
 
 
+def load_categories():
+    CATS.clear()
+    for c in json.load(open(BLOG / "categories.json", encoding="utf-8")):
+        for k in ("slug", "name", "zh", "desc"):
+            assert c.get(k), f"categories.json: {c.get('slug')} missing {k}"
+        CATS[c["slug"]] = c
+
+
 def load_posts():
+    load_categories()
     posts = json.load(open(BLOG / "posts.json", encoding="utf-8"))
     for p in posts:
+        assert p.get("category") in CATS, f"{p['slug']}: category must be one of {', '.join(CATS)} (blog/categories.json)"
         p["body"] = (BLOG / "src" / f"{p['slug']}.html").read_text(encoding="utf-8").strip()
         p["body_zh"] = (BLOG / "src" / f"{p['slug']}.zh.html").read_text(encoding="utf-8").strip()
         zh = p.get("zh") or {}
@@ -88,7 +104,8 @@ def human(date):
     return f"{d.day} {d.strftime('%B %Y')}"
 
 
-def head(title, desc, canonical, og_image, og_alt, og_type="website", extra="", keywords=None, jsonld=None, zh_title=None):
+def head(title, desc, canonical, og_image, og_alt, og_type="website", extra="", keywords=None, jsonld=None, zh_title=None,
+         robots="index,follow,max-image-preview:large"):
     kw = f'<meta name="keywords" content="{E(", ".join(keywords))}">\n' if keywords else ""
     ld = "".join(f'<script type="application/ld+json">{json.dumps(j, ensure_ascii=False, separators=(",", ":"))}</script>\n'
                  for j in (jsonld or []))
@@ -104,7 +121,7 @@ def head(title, desc, canonical, og_image, og_alt, og_type="website", extra="", 
 <meta name="theme-color" content="#0a1115">
 <meta name="color-scheme" content="dark">
 <meta name="author" content="{NAME}">
-{kw}<meta name="robots" content="index,follow,max-image-preview:large">
+{kw}<meta name="robots" content="{robots}">
 <link rel="icon" href="/assets/brand/mark.svg" type="image/svg+xml">
 <link rel="icon" href="/assets/brand/favicon-32.png" type="image/png" sizes="32x32">
 <link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png">
@@ -153,7 +170,7 @@ def site_header(current):
 """
 
 
-def site_footer():
+def site_footer(scripts=""):
     return f"""<footer class="foot"><div class="wrap">
   <div class="row">
     <span>&copy; {NAME}. <a href="https://malgordon.com" target="_blank" rel="noopener">Another Mal Gordon project</a></span>
@@ -162,7 +179,7 @@ def site_footer():
   <div>Map data &copy; Lands Department, HKSAR Government. Elevation: SRTM via AWS Terrain Tiles. Aircraft and liveries are not real airlines.</div>
 </div></footer>
 <script src="/assets/blog/lang.js"></script>
-</body>
+{scripts}</body>
 </html>
 """
 
@@ -171,6 +188,7 @@ def card(p):
     return f"""<a class="pcard" href="/blog/{p['slug']}/">
   <img src="/assets/blog/og/{p['slug']}.jpg" width="1200" height="630" loading="lazy" alt="{E(p['hero_alt'])}" data-zh-alt="{E(p['zh']['hero_alt'])}">
   <div class="body">
+    <span class="catpill" data-zh="{E(CATS[p['category']]['zh'])}">{E(CATS[p['category']]['name'])}</span>
     <div class="meta">{E(p['tag'])} &middot; {human(p['date'])}</div>
     <h3 data-zh="{E(p['zh']['title'])}">{E(p['title'])}</h3>
     <p data-zh="{E(p['zh']['description'])}">{E(p['description'])}</p>
@@ -210,24 +228,25 @@ def post_page(p, others):
          "publisher": {"@type": "Organization", "name": NAME, "url": SITE + "/",
                        "logo": {"@type": "ImageObject", "url": f"{SITE}/assets/brand/icon-512.png"}},
          "mainEntityOfPage": {"@type": "WebPage", "@id": p["url"]}, "keywords": ", ".join(p["keywords"]),
-         "articleSection": p["tag"], "inLanguage": "en-GB", "wordCount": p["words"],
+         "articleSection": CATS[p["category"]]["name"], "inLanguage": "en-GB", "wordCount": p["words"],
          "isPartOf": {"@type": "Blog", "name": f"{NAME} blog", "url": f"{SITE}/blog/"}},
         {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
             {"@type": "ListItem", "position": 1, "name": NAME, "item": SITE + "/"},
             {"@type": "ListItem", "position": 2, "name": "Blog", "item": f"{SITE}/blog/"},
-            {"@type": "ListItem", "position": 3, "name": p["title"], "item": p["url"]}]},
+            {"@type": "ListItem", "position": 3, "name": CATS[p["category"]]["name"], "item": f"{SITE}/blog/category/{p['category']}/"},
+            {"@type": "ListItem", "position": 4, "name": p["title"], "item": p["url"]}]},
     ]
     extra = (f'<meta property="article:published_time" content="{iso}">\n<meta property="article:modified_time" content="{mod}">\n'
-             f'<meta property="article:section" content="{E(p["tag"])}">\n<meta property="article:author" content="{NAME}">\n'
+             f'<meta property="article:section" content="{E(CATS[p["category"]]["name"])}">\n<meta property="article:author" content="{NAME}">\n'
              + "".join(f'<meta property="article:tag" content="{E(k)}">\n' for k in p["keywords"]))
     out = head(f"{p['title']} | {NAME}", desc, p["url"], p["og"], p["hero_alt"], "article", extra, p["keywords"], ld,
                zh_title=f"{p['zh']['title']} | {NAME}")
     out += site_header("blog")
     out += f"""<main id="main"><article>
 <div class="wrap">
-  <nav class="crumbs" aria-label="Breadcrumb"><a href="/">{NAME}</a> / <a href="/blog/">Blog</a> / <span aria-current="page">{E(p['tag'])}</span></nav>
+  <nav class="crumbs" aria-label="Breadcrumb"><a href="/">{NAME}</a> / <a href="/blog/">Blog</a> / <a href="/blog/category/{p['category']}/" data-zh="{E(CATS[p['category']]['zh'])}">{E(CATS[p['category']]['name'])}</a> / <span aria-current="page">{E(p['tag'])}</span></nav>
   <header class="post-head">
-    <p class="eyebrow">{E(p['tag'])}</p>
+    <p class="eyebrow"><span>{E(p['tag'])}</span> &middot; <a href="/blog/category/{p['category']}/" data-zh="{E(CATS[p['category']]['zh'])}">{E(CATS[p['category']]['name'])}</a></p>
     <h1 data-zh="{E(p['zh']['title'])}">{E(p['title'])}</h1>
     <p class="dek" data-zh="{E(p['zh']['dek'])}">{E(p['dek'])}</p>
     <div class="byline"><time datetime="{iso}">{human(iso)}</time><span>{p['mins']} min read</span><span>{NAME}</span></div>
@@ -258,38 +277,161 @@ def post_page(p, others):
     return out
 
 
-def index_page(posts):
-    desc = ("News, new features and behind-the-scenes notes from Fly Kai Tak, the browser flight simulator "
-            "of the 1998 Runway 13 approach into Hong Kong Kai Tak.")
-    ld = [{"@context": "https://schema.org", "@type": "Blog", "name": f"{NAME} blog", "url": f"{SITE}/blog/",
-           "description": desc, "inLanguage": "en-GB",
-           "publisher": {"@type": "Organization", "name": NAME, "url": SITE + "/"},
-           "blogPost": [{"@type": "BlogPosting", "headline": p["title"], "url": p["url"], "datePublished": p["date"],
-                         "image": p["og"]} for p in posts]}]
-    first = posts[0]
-    out = head(f"Blog | {NAME}", desc, f"{SITE}/blog/", first["og"],
-               "Fly Kai Tak blog: news and features from the Kai Tak flight simulator.", "website", "",
-               ["Kai Tak", "flight simulator", "Hong Kong 1998", "IGS 13", "blog"], ld, zh_title=f"網誌 | {NAME}")
+def page_url(base, n):
+    return base if n == 1 else f"{base}page/{n}/"
+
+
+def chunks(items):
+    return [items[i:i + PER_PAGE] for i in range(0, len(items), PER_PAGE)] or [[]]
+
+
+def pager(base, n, pages):
+    if pages < 2:
+        return ""
+    out = [f'<span class="pginfo">Page {n} of {pages}</span>']
+    if n > 1:
+        out.append(f'<a class="pg" rel="prev" href="{page_url(base, n - 1)}">&larr; Previous</a>')
+    for i in range(1, pages + 1):
+        cur = ' aria-current="page"' if i == n else ""
+        out.append(f'<a class="pg num" href="{page_url(base, i)}"{cur} aria-label="Page {i}">{i}</a>')
+    if n < pages:
+        out.append(f'<a class="pg" rel="next" href="{page_url(base, n + 1)}">Next &rarr;</a>')
+    return f'<nav class="pager" aria-label="Pagination">{"".join(out)}</nav>'
+
+
+def cards_html(items, grouped, counts):
+    if not grouped:
+        return '<div class="cards">\n' + "\n".join(card(p) for p in items) + "\n</div>"
+    segs = []
+    for p in items:
+        if segs and segs[-1][0] == p["category"]:
+            segs[-1][1].append(p)
+        else:
+            segs.append((p["category"], [p]))
+    out = ""
+    for slug, ps in segs:
+        c = CATS[slug]
+        out += (f'<h2 class="grouphead"><a href="/blog/category/{slug}/" data-zh="{E(c["zh"])}">{E(c["name"])}</a>'
+                f'<span class="n">{counts[slug]}</span></h2>\n<div class="cards">\n'
+                + "\n".join(card(p) for p in ps) + "\n</div>\n")
+    return out
+
+
+CUR = ' aria-current="page"'
+
+
+def tools_block(posts, counts, cur_cat, show_sort, sort_mode):
+    chips = [f'<a href="/blog/"{CUR if cur_cat is None else ""}><span class="nm">All</span><span class="n">{len(posts)}</span></a>']
+    for slug, c in CATS.items():
+        if counts[slug]:
+            chips.append(f'<a href="/blog/category/{slug}/"{CUR if slug == cur_cat else ""}><span class="nm" data-zh="{E(c["zh"])}">{E(c["name"])}</span>'
+                         f'<span class="n">{counts[slug]}</span></a>')
+    sort = ""
+    if show_sort:
+        sort = ('<nav class="sortbar" aria-label="Sort posts"><h2 class="k">Sort</h2><div class="seg">'
+                f'<a href="/blog/"{"" if sort_mode else CUR}>Newest</a>'
+                f'<a href="/blog/sort/category/"{CUR if sort_mode else ""}>By category</a></div></nav>')
+    return f"""<div class="tools">
+  <form class="blogsearch" id="blogsearch" role="search" action="/blog/" method="get">
+    <label class="sr" for="blogq">Search posts</label>
+    <input id="blogq" name="q" type="search" autocomplete="off" enterkeyhint="search">
+    <button class="btn" type="submit">Search</button>
+  </form>
+  <nav class="chips" aria-label="Categories"><h2 class="k">Category</h2><div class="chipgrid">{"".join(chips)}</div></nav>
+  {sort}
+</div>"""
+
+
+def listing_page(posts, items, n, pages, base, kind, cat=None):
+    """kind: 'latest' (/blog/), 'category' (/blog/category/<slug>/) or 'sort' (/blog/sort/category/)."""
+    counts = {s: sum(1 for p in posts if p["category"] == s) for s in CATS}
+    url = SITE + page_url(base, n)
+    suffix = f", page {n}" if n > 1 else ""
+    zsuffix = f"，第 {n} 頁" if n > 1 else ""
+    robots, canonical, ld = "index,follow,max-image-preview:large", url, None
+    if kind == "category":
+        title, zt = f"{cat['name']}{suffix} | Blog | {NAME}", f"{cat['zh']}{zsuffix} | 網誌 | {NAME}"
+        desc = f"{cat['name']} posts from the {NAME} blog. {cat['desc']}"
+        eyebrow, h1, zh_h1, lede = "Category", cat["name"], cat["zh"], cat["desc"]
+        label = f"{counts[cat['slug']]} posts" if counts[cat["slug"]] != 1 else "1 post"
+    else:
+        title, zt = f"Blog{suffix} | {NAME}", f"網誌{zsuffix} | {NAME}"
+        desc = ("News, new features and behind-the-scenes notes from Fly Kai Tak, the browser flight simulator "
+                "of the 1998 Runway 13 approach into Hong Kong Kai Tak.")
+        eyebrow, h1, zh_h1 = "VHHH &middot; IGS 13 &middot; 1998", "The Fly Kai Tak blog", None
+        lede = "New features, bug fixes and notes from the Kai Tak approach."
+        label = "Posts by category" if kind == "sort" else "Latest posts"
+        if kind == "sort":
+            robots, canonical = "noindex,follow", f"{SITE}/blog/"
+            title, zt = f"Blog by category{suffix} | {NAME}", f"網誌（按分類）{zsuffix} | {NAME}"
+        elif n == 1:
+            ld = [{"@context": "https://schema.org", "@type": "Blog", "name": f"{NAME} blog", "url": f"{SITE}/blog/",
+                   "description": desc, "inLanguage": "en-GB",
+                   "publisher": {"@type": "Organization", "name": NAME, "url": SITE + "/"},
+                   "blogPost": [{"@type": "BlogPosting", "headline": p["title"], "url": p["url"], "datePublished": p["date"],
+                                 "image": p["og"]} for p in posts]}]
+    extra = ""
+    if n > 1:
+        extra += f'<link rel="prev" href="{SITE}{page_url(base, n - 1)}">\n'
+    if n < pages:
+        extra += f'<link rel="next" href="{SITE}{page_url(base, n + 1)}">\n'
+    first = items[0] if items else posts[0]
+    out = head(title, desc, canonical, first["og"], "Fly Kai Tak blog: news and features from the Kai Tak flight simulator.",
+               "website", extra, ["Kai Tak", "flight simulator", "Hong Kong 1998", "IGS 13", "blog"], ld, zh_title=zt, robots=robots)
     out += site_header("blog")
+    h1_attr = f' data-zh="{E(zh_h1)}"' if zh_h1 else ""
     out += f"""<main id="main">
 <section class="masthead" aria-labelledby="blog-title">
   <img class="art" src="/assets/blog/header.jpg" width="1600" height="400" fetchpriority="high" alt="">
   <div class="copy"><div class="wrap">
-    <p class="eyebrow">VHHH &middot; IGS 13 &middot; 1998</p>
-    <h1 id="blog-title">The Fly Kai Tak blog</h1>
-    <p class="lede">New features, bug fixes and notes from the Kai Tak approach.</p>
+    <p class="eyebrow">{eyebrow}</p>
+    <h1 id="blog-title"{h1_attr}>{E(h1)}</h1>
+    <p class="lede">{E(lede)}</p>
   </div></div>
 </section>
 <div class="section"><div class="wrap">
-  <h2 class="label">Latest posts</h2>
-  <div class="cards">
-{chr(10).join(card(p) for p in posts)}
+  {tools_block(posts, counts, cat["slug"] if cat else None, kind != "category", kind == "sort")}
+  <div id="results" hidden>
+    <p class="count" id="resultcount" role="status" aria-live="polite"></p>
+    <div class="cards" id="resultcards"></div>
+    <nav class="pager" id="resultpager" aria-label="Search results pages" hidden></nav>
+  </div>
+  <div id="postlist">
+  <h2 class="label">{label}</h2>
+{cards_html(items, kind == "sort", counts)}
+  {pager(base, n, pages)}
   </div>
 </div></div>
 </main>
 """
-    out += site_footer()
+    out += site_footer('<script src="/assets/blog/search.js"></script>\n')
     return out
+
+
+def write_listing(posts, items, base, kind, cat=None):
+    parts = chunks(items)
+    root = ROOT / base.strip("/")
+    for i, part in enumerate(parts, 1):
+        d = root if i == 1 else root / "page" / str(i)
+        d.mkdir(parents=True, exist_ok=True)
+        (d / "index.html").write_text(listing_page(posts, part, i, len(parts), base, kind, cat), encoding="utf-8")
+    return len(parts)
+
+
+def plain(h):
+    return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", h))).strip()
+
+
+def search_index(posts):
+    out = []
+    for p in posts:
+        c, d = CATS[p["category"]], dt.date.fromisoformat(p["date"])
+        out.append({"s": p["slug"], "t": p["title"], "tz": p["zh"]["title"], "d": p["description"], "dz": p["zh"]["description"],
+                    "tag": p["tag"], "c": p["category"], "cn": c["name"], "cz": c["zh"], "date": p["date"],
+                    "dh": human(p["date"]), "dhz": f"{d.year} 年 {d.month} 月 {d.day} 日", "k": " ".join(p["keywords"]),
+                    "x": plain(p["body"]), "xz": plain(p["body_zh"]), "img": f"/assets/blog/og/{p['slug']}.jpg",
+                    "a": p["hero_alt"], "az": p["zh"]["hero_alt"]})
+    return json.dumps(out, ensure_ascii=False, separators=(",", ":"))
 
 
 def feed(posts):
@@ -298,7 +440,7 @@ def feed(posts):
     for p in posts:
         pub = email.utils.format_datetime(dt.datetime.fromisoformat(p["date"]).replace(tzinfo=TZ))
         items += (f"<item><title>{E(p['title'])}</title><link>{p['url']}</link><guid isPermaLink=\"true\">{p['url']}</guid>"
-                  f"<pubDate>{pub}</pubDate><category>{E(p['tag'])}</category>"
+                  f"<pubDate>{pub}</pubDate><category>{E(p['tag'])}</category><category>{E(CATS[p['category']]['name'])}</category>"
                   f"<description>{E(p['description'])}</description>"
                   f"<enclosure url=\"{p['og']}\" type=\"image/jpeg\" length=\"{(ROOT / 'assets/blog/og' / (p['slug'] + '.jpg')).stat().st_size}\"/></item>\n")
     return (f'<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0"><channel><title>{NAME} blog</title>'
@@ -307,9 +449,10 @@ def feed(posts):
             f'<lastBuildDate>{now}</lastBuildDate>\n{items}</channel></rss>\n')
 
 
-def sitemap(posts):
+def sitemap(posts, extra):
     newest = max(p.get("updated", p["date"]) for p in posts)
     urls = [(f"{SITE}/", None, "weekly"), (f"{SITE}/blog/", newest, "weekly")]
+    urls += [(u, m, "weekly") for u, m in extra]
     urls += [(p["url"], p.get("updated", p["date"]), "monthly") for p in posts]
     body = "".join(f"<url><loc>{u}</loc>" + (f"<lastmod>{m}</lastmod>" if m else "") + f"<changefreq>{c}</changefreq></url>\n"
                    for u, m, c in urls)
@@ -320,14 +463,32 @@ def main():
     posts = load_posts()
     slugs = [p["slug"] for p in posts]
     assert len(set(slugs)) == len(slugs), "duplicate slugs"
-    (BLOG / "index.html").write_text(index_page(posts), encoding="utf-8")
+    for sub in ("page", "category", "sort"):  # listing pages are regenerated from scratch
+        shutil.rmtree(BLOG / sub, ignore_errors=True)
+    newest = max(p.get("updated", p["date"]) for p in posts)
+    extra = []
+    pages = write_listing(posts, posts, "/blog/", "latest")
+    extra += [(f"{SITE}/blog/page/{i}/", newest) for i in range(2, pages + 1)]
+    order = {s: i for i, s in enumerate(CATS)}
+    by_cat = sorted(posts, key=lambda p: order[p["category"]])  # stable: newest first inside each category
+    write_listing(posts, by_cat, "/blog/sort/category/", "sort")
+    for slug, c in CATS.items():
+        items = [p for p in posts if p["category"] == slug]
+        if not items:
+            continue
+        base = f"/blog/category/{slug}/"
+        n = write_listing(posts, items, base, "category", c)
+        last = max(p.get("updated", p["date"]) for p in items)
+        extra += [(SITE + page_url(base, i), last) for i in range(1, n + 1)]
+    (BLOG / "search.json").write_text(search_index(posts), encoding="utf-8")
     for p in posts:
         d = BLOG / p["slug"]
         d.mkdir(exist_ok=True)
-        (d / "index.html").write_text(post_page(p, [o for o in posts if o is not p][:2]), encoding="utf-8")
+        rel = sorted((o for o in posts if o is not p), key=lambda o: o["category"] != p["category"])  # same category first
+        (d / "index.html").write_text(post_page(p, rel[:2]), encoding="utf-8")
     (BLOG / "feed.xml").write_text(feed(posts), encoding="utf-8")
-    (ROOT / "sitemap.xml").write_text(sitemap(posts), encoding="utf-8")
-    print(f"built {len(posts)} posts: " + ", ".join(slugs))
+    (ROOT / "sitemap.xml").write_text(sitemap(posts, extra), encoding="utf-8")
+    print(f"built {len(posts)} posts in {len(CATS)} categories, {pages} blog page(s): " + ", ".join(slugs))
 
 
 if __name__ == "__main__":
