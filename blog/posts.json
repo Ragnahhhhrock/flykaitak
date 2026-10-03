@@ -1,5 +1,31 @@
 [
   {
+    "slug": "the-peak-tram-lookout-and-view",
+    "title": "The Peak Tram, the Peak Lookout and a view from the Peak",
+    "dek": "Ride the Peak Tram up from Garden Road, find the Peak Lookout beside the Peak Tower, and watch the approach from the top of the Peak.",
+    "description": "Fly Kai Tak adds the Peak Tram, the Peak Lookout and a Spectator: The Peak view, alongside Ocean Park's cable car between the Waterfront and the Summit.",
+    "date": "2026-10-03",
+    "tag": "Feature",
+    "keywords": [
+      "Kai Tak",
+      "flight simulator",
+      "Peak Tram",
+      "Peak Lookout",
+      "The Peak",
+      "Ocean Park cable car",
+      "Hong Kong 1998",
+      "browser game"
+    ],
+    "hero": "peak-view",
+    "hero_alt": "The view from the Peak over the harbour to Kowloon.",
+    "hero_caption": "Spectator: The Peak, looking over the harbour to Kowloon.",
+    "card_kicker": "VHHH · THE PEAK · 1998",
+    "card_title": "The Peak",
+    "card_sub": "Peak Tram, Peak Lookout and a view from the top",
+    "card_image": "peak-view",
+    "card_focus": 50
+  },
+  {
     "slug": "inverted-yoke-touch-and-mouse",
     "title": "An inverted yoke for touch and mouse: drag down to pull up",
     "dek": "The on-screen yoke now works like a real control column: drag down to pull the nose up, drag up to push it down, with touch or a mouse.",

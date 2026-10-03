@@ -285,7 +285,7 @@ html,body{overscroll-behavior:none;touch-action:manipulation}
       <button class="btn" id="seatSide" type="button">Left</button>
     </div>
     <select id="viewSel" aria-label="Camera view">
-      <option value="cockpit">Cockpit</option><option value="chase">Exterior</option><option value="tower">Tower</option><option value="street">Spectator: Kowloon City street</option><option value="ped">Spectator: Prince Edward Road</option><option value="carpark">Spectator: car park roof</option><option value="boat">Spectator: boat in the harbour</option><option value="checker">Spectator: top of Checkerboard Hill</option><option value="cabin">Cabin seat</option>
+      <option value="cockpit">Cockpit</option><option value="chase">Exterior</option><option value="tower">Tower</option><option value="street">Spectator: Kowloon City street</option><option value="ped">Spectator: Prince Edward Road</option><option value="carpark">Spectator: car park roof</option><option value="boat">Spectator: boat in the harbour</option><option value="checker">Spectator: top of Checkerboard Hill</option><option value="peak">Spectator: The Peak</option><option value="cabin">Cabin seat</option>
     </select>
     <select id="zoomSel" aria-label="Zoom"><option value="1">Zoom 1×</option><option value="2">2×</option><option value="4">4×</option><option value="8">8×</option><option value="16">16×</option></select>
     <select id="tsSel" aria-label="Time speed"><option value="1">Time 1×</option><option value="2">2×</option><option value="4">4×</option><option value="8">8×</option></select>
@@ -959,6 +959,7 @@ function towerCollider(x,z,w,d,top,name){addCollider(x-w/2,x+w/2,z-d/2,z+d/2,top
 const LM={boc:[-3206,5120],hsbc:[-3433,4999],lippo:[-2938,5109],jardine:[-3392,4688],exch:[-3546,4578],ifc1:[-3484,4379],center:[-3917,4500],
   plaza:[-1960,5010],hopewell:[-2125,5629],fefc:[-2845,5043],hkcec:[-2050,4610],clock:[-2400,3505],culture:[-2300,3440],peninsula:[-2119,3368],
   coliseum:[-1109,2593],peak:[-4420,6005],cenPier:[-3150,4600]};
+LANDMARK_CLEAR.push([-4454,6031,26]); // the Peak Lookout replaces any footprint there
 for(const [k,p] of Object.entries(LM))LANDMARK_CLEAR.push([p[0],p[1],k==='hkcec'?170:k==='exch'?90:k==='culture'?110:60]);
 const gAt=(p)=>Math.max(terrainAt(p[0],p[1]),3.5);
 /* Happy Valley Racecourse and Ocean Park: stylised, placed at their real sites. Animated parts run from parkAnim. */
@@ -1038,6 +1039,79 @@ function buildOceanPark(){
   };
   scene.add(makeLights(L));
 }
+/* The Peak: the Peak Tram (1888 funicular, Garden Road to Victoria Gap) and the Peak Lookout (121 Peak Road). Cars run from peakAnim. */
+let peakAnim=null,peakClock=null; // peakClock: the screenshot tool can pin the tram clock
+function buildPeak(){
+  const L=[],LO=[-3446,5299],UP=[-4397,6039],LK=[-4454,6031];
+  const cream=new THREE.MeshLambertMaterial({color:0xe9e4d3}),blue=new THREE.MeshLambertMaterial({color:0x3f6f8c}),slate=new THREE.MeshLambertMaterial({color:0x56606a}),
+    bedM=new THREE.MeshLambertMaterial({color:0x5b5f61,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}),win=new THREE.MeshLambertMaterial({color:0xe9e4d3});
+  const sm=(a,b,x)=>{const u=Math.min(1,Math.max(0,(x-a)/(b-a)));return u*u*(3-2*u)};
+  // Track: a gentle S from Garden Road up the hill to the Peak Tower, climbing only
+  const way=[LO,[-3650,5380],[-3880,5560],[-4090,5760],[-4260,5900],UP];
+  const cv=new THREE.CatmullRomCurve3(way.map(q=>new THREE.Vector3(q[0],0,q[1])),false,'centripetal');
+  const NS=150,pts=[],cum=[0];
+  for(let i=0;i<=NS;i++){const p=cv.getPoint(i/NS);pts.push(new THREE.Vector3(p.x,Math.max(terrainAt(p.x,p.z),3.5)+1,p.z))}
+  for(let i=1;i<=NS;i++)pts[i].y=Math.max(pts[i].y,pts[i-1].y);
+  for(let k=0;k<3;k++)for(let i=1;i<NS;i++)pts[i].y=(pts[i-1].y+pts[i].y*2+pts[i+1].y)/4;
+  for(let i=1;i<=NS;i++)cum.push(cum[i-1]+pts[i].distanceTo(pts[i-1]));
+  const TL=cum[NS],LOOP=2.3;
+  const loopW=(s)=>{const u=s/TL;return sm(.38,.43,u)*(1-sm(.57,.62,u))};   // the passing loop mid-way
+  const at=(s,o)=>{s=Math.min(TL,Math.max(0,s));let lo=0,hi=NS;while(hi-lo>1){const m=(lo+hi)>>1;if(cum[m]<=s)lo=m;else hi=m}
+    const f=(s-cum[lo])/Math.max(1e-6,cum[lo+1]-cum[lo]),a=pts[lo],b=pts[lo+1],dx=b.x-a.x,dz=b.z-a.z,h=Math.hypot(dx,dz)||1;
+    o.x=a.x+dx*f;o.y=a.y+(b.y-a.y)*f;o.z=a.z+dz*f;o.yaw=Math.atan2(dx,dz);o.slope=(b.y-a.y)/h;o.px=dz/h;o.pz=-dx/h;return o};
+  const tmp={};
+  // Rails and bed for both tracks (they part at the passing loop)
+  const rails=[];
+  for(const side of[1,-1]){
+    const bed=[];let pv=null;
+    for(let i=0;i<=NS;i++){at(cum[i],tmp);const w=loopW(cum[i])*LOOP*side,cx=tmp.x+tmp.px*w,cz=tmp.z+tmp.pz*w;
+      bed.push(cx+tmp.px*1.7,tmp.y-.25,cz+tmp.pz*1.7,cx-tmp.px*1.7,tmp.y-.25,cz-tmp.pz*1.7);
+      const cur={x:cx,y:tmp.y,z:cz,px:tmp.px,pz:tmp.pz};
+      if(pv)for(const r of[-.75,.75])rails.push(pv.x+pv.px*r,pv.y+.05,pv.z+pv.pz*r,cur.x+cur.px*r,cur.y+.05,cur.z+cur.pz*r);
+      pv=cur}
+    const idx=[];for(let i=0;i<NS;i++){const a=i*2;idx.push(a,a+1,a+2,a+1,a+3,a+2)}
+    const bg=new THREE.BufferGeometry();bg.setAttribute('position',new THREE.Float32BufferAttribute(bed,3));bg.setIndex(idx);bg.computeVertexNormals();
+    const bm=new THREE.Mesh(bg,bedM);bm.material.side=THREE.DoubleSide;scene.add(bm);
+  }
+  const rg=new THREE.BufferGeometry();rg.setAttribute('position',new THREE.Float32BufferAttribute(rails,3));scene.add(new THREE.LineSegments(rg,new THREE.LineBasicMaterial({color:0xb9bec2})));
+  // Garden Road terminus and the upper terminus under the Peak Tower
+  {at(0,tmp);const g=new THREE.Group();g.position.set(tmp.x-Math.sin(tmp.yaw)*9,tmp.y-1,tmp.z-Math.cos(tmp.yaw)*9);g.rotation.y=tmp.yaw;
+   const bm=new THREE.Mesh(new THREE.BoxGeometry(14,7,16).translate(0,3.5,0),cream);g.add(bm);const rf=new THREE.Mesh(new THREE.BoxGeometry(16,.6,18).translate(0,7.3,0),slate);g.add(rf);scene.add(g);
+   L.push(g.position.x,g.position.y+8,g.position.z,1,.88,.6,3,-1)}
+  {at(TL,tmp);const g=new THREE.Group();g.position.set(tmp.x+Math.sin(tmp.yaw)*5,tmp.y-1,tmp.z+Math.cos(tmp.yaw)*5);g.rotation.y=tmp.yaw;
+   g.add(new THREE.Mesh(new THREE.BoxGeometry(11,5,10).translate(0,2.5,0),cream));g.add(new THREE.Mesh(new THREE.BoxGeometry(12,.5,11).translate(0,5.2,0),slate));scene.add(g)}
+  // The four request stops: Kennedy Road, MacDonnell Road, May Road, Barker Road
+  for(const u of[.16,.33,.62,.84]){at(TL*u,tmp);const g=new THREE.Group();g.position.set(tmp.x+tmp.px*3.4,tmp.y-.6,tmp.z+tmp.pz*3.4);g.rotation.y=tmp.yaw;
+   g.add(new THREE.Mesh(new THREE.BoxGeometry(2.6,2.4,6).translate(0,1.2,0),cream));g.add(new THREE.Mesh(new THREE.BoxGeometry(3.4,.3,7).translate(0,2.6,0),slate));scene.add(g)}
+  // Two cars on one cable, stepped so every compartment floor stays level on the slope
+  const cars=[];
+  for(let n=0;n<2;n++){
+    const g=new THREE.Group(),comps=[];
+    for(let k=0;k<4;k++){const c=new THREE.Group();
+      c.add(new THREE.Mesh(new THREE.BoxGeometry(3.04,.9,3.04).translate(0,.45,0),blue));
+      const up=new THREE.Mesh(new THREE.BoxGeometry(3,1.8,3).translate(0,1.8,0),win);if(n===0&&k===0){up.userData.neon=0xffe2a0;landmarkLights.push(up)}c.add(up);
+      c.add(new THREE.Mesh(new THREE.BoxGeometry(3.1,.25,3.1).translate(0,2.8,0),slate));g.add(c);comps.push(c)}
+    const fr=new THREE.Mesh(new THREE.BoxGeometry(2.2,.3,13).translate(0,-.3,0),slate);g.add(fr);
+    scene.add(g);cars.push({g,comps,fr,rev:n===1});
+  }
+  const T=300,D=25,CY=2*(T+D),ease=(u)=>u*u*(3-2*u);
+  const posA=(t)=>{const c=((t%CY)+CY)%CY;if(c<T)return TL*ease(c/T);if(c<T+D)return TL;if(c<2*T+D)return TL*(1-ease((c-T-D)/T));return 0};
+  peakAnim=(dt,t)=>{const sA=posA(t);
+    for(const c of cars){const s=c.rev?TL-sA:sA;at(s,tmp);const w=loopW(s)*LOOP*(c.rev?-1:1);
+      c.g.position.set(tmp.x+tmp.px*w,tmp.y+.2,tmp.z+tmp.pz*w);c.g.rotation.y=tmp.yaw;c.fr.rotation.x=-Math.atan(tmp.slope);
+      for(let k=0;k<4;k++){c.comps[k].position.set(0,(k-1.5)*3.1*tmp.slope+.6,(k-1.5)*3.1)}}
+  };
+  peakAnim(0,0);
+  // The Peak Lookout (1888, Grade II): a stone shelter turned restaurant, hipped roof and a terrace over the harbour
+  {const [x,z]=LK,b=Math.max(terrainAt(x,z),3.5),g=new THREE.Group();g.position.set(x,b,z);g.rotation.y=-.35;
+   const walls=new THREE.Mesh(new THREE.BoxGeometry(24,6,12).translate(0,3,0),new THREE.MeshLambertMaterial({color:0xcdbf9e}));walls.userData.neon=0x4a3c20;landmarkLights.push(walls);g.add(walls);
+   const roof=new THREE.Mesh(new THREE.ConeGeometry(1,1,4,1).rotateY(Math.PI/4).translate(0,.5,0),new THREE.MeshLambertMaterial({color:0xa4503a}));roof.scale.set(19,4,10);roof.position.y=6;g.add(roof);
+   g.add(new THREE.Mesh(new THREE.BoxGeometry(24,.4,4).translate(0,.2,-8),new THREE.MeshLambertMaterial({color:0xb9b2a0})));
+   const rl=[];for(let u=-12;u<=12;u+=2){rl.push(u,.4,-10,u,1.4,-10)}rl.push(-12,1.4,-10,12,1.4,-10);
+   const rgm=new THREE.BufferGeometry();rgm.setAttribute('position',new THREE.Float32BufferAttribute(rl,3));g.add(new THREE.LineSegments(rgm,new THREE.LineBasicMaterial({color:0x7a6f5c})));
+   scene.add(g);addCollider(x-14,x+14,z-10,z+10,b+10,'the Peak Lookout');L.push(x,b+5,z,1,.84,.52,3.5,-1)}
+  scene.add(makeLights(L));
+}
 function buildLandmarks(){
   const L=[];
   // Bank of China Tower (1990): four triangular shafts stepping up, white cross-bracing, twin masts
@@ -1095,6 +1169,9 @@ function buildLandmarks(){
   {const [x,z]=LM.peak,b=gAt(LM.peak);const g=new THREE.Group();g.position.set(x,b,z);
    g.add(new THREE.Mesh(new THREE.CylinderGeometry(9,14,22,12).translate(0,11,0),new THREE.MeshLambertMaterial({color:0xb7b2a6})));
    const bowl=new THREE.Mesh(new THREE.CylinderGeometry(34,16,14,24,1,true).translate(0,30,0),new THREE.MeshLambertMaterial({color:0x8a8a86,side:THREE.DoubleSide}));g.add(bowl);
+   const rr=[];for(let i=0;i<24;i++){const a=i/24*Math.PI*2,a2=(i+1)/24*Math.PI*2;rr.push(Math.cos(a)*33,37,Math.sin(a)*33,Math.cos(a2)*33,37,Math.sin(a2)*33,Math.cos(a)*33,38.2,Math.sin(a)*33,Math.cos(a2)*33,38.2,Math.sin(a2)*33,Math.cos(a)*33,37,Math.sin(a)*33,Math.cos(a)*33,38.2,Math.sin(a)*33)}
+   const rgeo=new THREE.BufferGeometry();rgeo.setAttribute('position',new THREE.Float32BufferAttribute(rr,3));g.add(new THREE.LineSegments(rgeo,new THREE.LineBasicMaterial({color:0x6d6d68})));  // the Sky Terrace rail round the rim
+   SPOTS.peak=[x+23,b+39.6,z-23];  // The Peak: on the Sky Terrace, looking out over the harbour to Kowloon
    scene.add(g);towerCollider(x,z,70,70,b+40,'the Peak Tower');L.push(x,b+40,z,1,.9,.7,4,-1)}
   // Central Star Ferry pier, Edinburgh Place (1998 shoreline)
   {box(26,9,110,new THREE.MeshLambertMaterial({color:0xd8d2c0}),LM.cenPier[0],0,LM.cenPier[1]-40);box(30,4,30,new THREE.MeshLambertMaterial({color:0x2f6b3e}),LM.cenPier[0],9,LM.cenPier[1]-80)}
@@ -2167,7 +2244,7 @@ function updateCamera(dt){
     const sp=SPOTS[V];camera.position.set(sp[0],sp[1]+(V==='boat'?Math.sin(performance.now()/900)*.35:0),sp[2]);_v.set(s.x,s.y+a.cy,s.z);
     const d=camera.position.distanceTo(_v);if(d>2600&&V!=='boat'){const P=PATH.pts;const j=V==='checker'?Math.max(0,PATH.iA-120):V==='street'?PATH.iA:PATH.iB;_v.set(P[j].x,P[j].alt,P[j].z)}else if(d>4500){const q=rwP(-300,0);_v.set(q[0],60,q[1])}
     camera.lookAt(_v);camera.rotateY(look.yaw*.6);camera.rotateX(look.pitch*.6);if(V==='boat')camera.rotateZ(Math.sin(performance.now()/1300)*.02);
-    camera.fov=(V==='carpark'||V==='boat'||V==='checker'?clamp(2*Math.atan(a.span*1.5/Math.max(d,1))*R2D,18,70):78)/look.dist;
+    camera.fov=(V==='carpark'||V==='boat'||V==='checker'||V==='peak'?clamp(2*Math.atan(a.span*1.5/Math.max(d,1))*R2D,18,70):78)/look.dist;
   } else if(V==='tower'){
     camera.position.set(s0.tower[0],s0.tower[1],s0.tower[2]);camera.lookAt(s.x,s.y+a.cy,s.z);
     const dist=camera.position.distanceTo(_v.set(s.x,s.y,s.z));camera.fov=clamp(2*Math.atan(a.span*2.6/dist)*R2D/look.dist,3,60);
@@ -2323,7 +2400,7 @@ window.addEventListener('keydown',e=>{
   keys[e.code]=true;const s=ST;VIA='key';
   switch(e.code){
     case 'KeyG':toggleGear();break;case 'KeyF':setFlaps(1);break;case 'KeyV':setFlaps(-1);break;
-    case 'KeyC':{const o=CFG.game==='watch'?['carpark','ped','street','boat','checker','tower','chase']:['cockpit','chase','tower','street','ped','carpark','boat','checker','cabin'];setView(o[(o.indexOf(CFG.view)+1)%o.length]);break}
+    case 'KeyC':{const o=CFG.game==='watch'?['carpark','ped','street','boat','checker','peak','tower','chase']:['cockpit','chase','tower','street','ped','carpark','boat','checker','peak','cabin'];setView(o[(o.indexOf(CFG.view)+1)%o.length]);break}
     case 'KeyZ':toggleAP();break;case 'KeyR':toggleRadio();break;case 'BracketLeft':timeJump(-10);break;case 'BracketRight':timeJump(10);break;
     case 'KeyT':setTs(CFG.ts>=8?1:CFG.ts*2);break;case 'KeyI':setZoom(Math.min(16,CFG.zoom*2));break;case 'KeyO':setZoom(Math.max(1,CFG.zoom/2));break;case 'KeyK':toggleDeck();break;case 'KeyN':toggleNight();break;case 'KeyU':setClouds_on(!CFG.clouds);break;case 'KeyP':togglePause();break;
   }
@@ -2527,6 +2604,7 @@ function frame(now,manual){
   if(window.__flashNow){flash=1;window.__flashNow=false}
   flash=Math.max(0,flash-dt*3.2);const fl=flash>0?(Math.sin(flash*40)>0?flash:flash*.3):0;amb.intensity=fl*2.2;skyMat.uniforms.flash.value=fl*.7;
   if(parkAnim&&!paused)parkAnim(dt,now/1000);
+  if(peakAnim&&!paused)peakAnim(dt,peakClock!==null?peakClock:now/1000);
   updateRain(dt,mode==='attract'?w.rain*.4:w.rain,ST.wind||[0,0,0],camera.position);
   // PAPI colours
   if(papi){const c=papi.geometry.attributes.color;const pp=papi.geometry.attributes.position;for(let i=0;i<4;i++){const dx=camera.position.x-pp.getX(i),dz=camera.position.z-pp.getZ(i);const ang=Math.atan2(camera.position.y-pp.getY(i),Math.hypot(dx,dz))*R2D;const thr=[3.6,3.27,2.93,2.6][i];const white=ang>thr;c.setXYZ(i,1,white?1:.12,white?1:.1)}c.needsUpdate=true}
@@ -2548,7 +2626,7 @@ async function boot(){
   const ld=document.getElementById('loading');
   try{await loadGeo(t=>ld.textContent=t)}catch(e){ld.textContent='COULD NOT LOAD MAP DATA. OPEN THIS PAGE FROM A WEB SERVER, NOT A FILE.';console.error(e);return}
   ld.textContent='BUILDING HONG KONG…';await new Promise(r=>setTimeout(r,20));
-  buildTerrain();buildRoads();buildLandmarks();buildCity();buildHappyValley();buildOceanPark();buildStreetScene();buildAirport();buildShips();buildRain();
+  buildTerrain();buildRoads();buildLandmarks();buildCity();buildHappyValley();buildOceanPark();buildPeak();buildStreetScene();buildAirport();buildShips();buildRain();
   resize();showSetup();ld.hidden=true;
   requestAnimationFrame(frame);
 }
@@ -2556,7 +2634,7 @@ const fontsReady=document.fonts&&document.fonts.ready?Promise.race([document.fon
 fontsReady.then(()=>setTimeout(boot,30));
 
 /* test hooks */
-window.__kt={CFG,ST,PATH,AC,chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.game}]`).checked=true;document.querySelector(`input[name=tod][value=${CFG.night?'night':'day'}]`).checked=true;startFlight()},
+window.__kt={CFG,ST,PATH,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.game}]`).checked=true;document.querySelector(`input[name=tod][value=${CFG.night?'night':'day'}]`).checked=true;startFlight()},
   run:(sec)=>{if(CFG.game==='watch'){ST.t+=sec;return {t:ST.t}}const h=1/120;for(let i=0;i<sec*120&&!ST.ended;i++){physStep(h);if(i%60===0)recordHistory()}return {ended:ST.ended,td:ST.td,t:ST.t,x:ST.x,y:ST.y,z:ST.z,V:ST.V/KT,d:PATH.pts[ST.pi].d}},
   get mode(){return mode},get CFG(){return CFG},frame:(now)=>frame(now,true),get FOCUS(){return FOCUS},step:()=>physStep(1/120),rwS,setZoom:z=>{CFG.zoom=z},get AI(){return AI},get shipLights(){return shipLights},get SHIPS(){return SHIPS},get DISP(){return DISP},get deck(){return deckGroup},get streetCam(){return STREET_CAM},get water(){return water},get camera(){return camera},get nStreets(){return STREETS.length},drawDisplays,look,setView,terrainAt,buildingAt,groundInfo};
 })();
