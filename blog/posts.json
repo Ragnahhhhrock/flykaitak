@@ -1,5 +1,36 @@
 [
   {
+    "slug": "apron-taxi-lines-and-numbered-stands",
+    "title": "Apron taxi lines and numbered stands",
+    "dek": "Yellow guidance lines, red stand boxes and numbered stands show where to taxi and where to park.",
+    "description": "Fly Kai Tak's apron now has yellow taxi lines, numbered stands, red stand boxes and service road lines, and the other aircraft taxi along them.",
+    "date": "2026-10-03",
+    "tag": "New",
+    "category": "scenery",
+    "keywords": [
+      "Kai Tak",
+      "apron",
+      "taxi lines",
+      "stand numbers",
+      "taxiway"
+    ],
+    "hero": "apron-markings-top",
+    "hero_alt": "The whole apron from above: seven terminal stands in one row, five drive-through stands in another, and the dark lane between them.",
+    "hero_caption": "The apron from above, with its taxi lines and numbered stands.",
+    "card_kicker": "APRON · NEW",
+    "card_title": "Apron markings",
+    "card_sub": "Taxi lines and numbered stands",
+    "card_image": "apron-markings-stands",
+    "card_focus": 50,
+    "zh": {
+      "title": "停機坪滑行標線同編號停機位",
+      "dek": "黃色引導線、紅色停機位框同編號停機位，指示飛機點樣滑行同泊位。",
+      "description": "Fly Kai Tak 嘅停機坪而家有黃色滑行引導線、編號停機位、紅色停機位框同服務道路標線，其他飛機亦跟住標線滑行。",
+      "hero_alt": "由上面望成個停機坪：一排七個客運大樓停機位、一排五個貫通式停機位，中間係深色車道。",
+      "hero_caption": "由上面望停機坪嘅滑行標線同編號停機位。"
+    }
+  },
+  {
     "slug": "blog-categories-search-and-pages",
     "title": "Blog categories, search and pages",
     "dek": "Browse the blog by category, sort by category, page through 20 posts at a time and search every post.",

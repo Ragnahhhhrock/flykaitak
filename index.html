@@ -1483,17 +1483,76 @@ function setWalled(on){walledGroup.visible=on;parkGroup.visible=!on;WALLED.on=on
 
 /* ---------------- airport ---------------- */
 let papi,papi31,rwyLights,rwyLights31,leadIn,leadIn31,approachLights,approachLights31,hoops,hoops13,hoops31,parked=[];
+/* ---------------- apron layout ----------------
+   One table drives both the painted markings and the aircraft that taxi on them. Runway coordinates: s along the runway from the
+   threshold, l toward the apron (negative). Taxiway A runs along l = -96. The east link drops from it to the apron lane (l = -410),
+   which feeds the terminal stands (1-7, nose in toward the terminal) and the remote drive-through stands (11-15: in from the lane,
+   out to the taxiway). Stand 7 sits at the end of the east link. The numbering is the sim's own. */
+const APN={A:-96,M:-410,CE:690,aL:-560,aStop:-584,bL:-270,bStop:-246,
+  standsA:[120,205,290,375,460,545,690],numA:[1,2,3,4,5,6,7],
+  standsB:[230,320,410,500,590],numB:[11,12,13,14,15]};
+const APR_MATS=[];   // marking materials, dimmed at night with the rest of the ground
+function buildApronMarkings(placeAlong){
+  const YEL='#e8b100',RED='#c0352b',WHT='#ecece6',ASP='#3e3f42',A=APN.A,M=APN.M,CE=APN.CE,aS=APN.aStop,bS=APN.bStop,R=TAXI_R;
+  // paint a rectangle of ground (runway coordinates) from a canvas and lay it just above the pavement
+  const paint=(s0,s1,l0,l1,px,draw,lit)=>{
+    const c=document.createElement('canvas');c.width=Math.round((l1-l0)*px);c.height=Math.round((s1-s0)*px);const g=c.getContext('2d');
+    const X=l=>(l-l0)*px,Y=s=>(s1-s)*px;
+    const L=(a,b,w,col,dash)=>{g.beginPath();g.moveTo(X(a[1]),Y(a[0]));g.lineTo(X(b[1]),Y(b[0]));g.lineWidth=w*px;g.strokeStyle=col;g.setLineDash(dash?dash.map(v=>v*px):[]);g.lineCap='butt';g.stroke()};
+    // the rounded corner at p between the leg from a and the leg to b, cut exactly as the taxiing aircraft cut it (see polyPose); returns the cut length
+    const C=(a,p,b,w,col)=>{const ix=p[0]-a[0],iy=p[1]-a[1],ox=b[0]-p[0],oy=b[1]-p[1],li=Math.hypot(ix,iy),lo=Math.hypot(ox,oy),ux=ix/li,uy=iy/li,vx=ox/lo,vy=oy/lo,d=Math.min(R,.45*li,.45*lo);
+      g.beginPath();g.moveTo(X(p[1]-uy*d),Y(p[0]-ux*d));g.quadraticCurveTo(X(p[1]),Y(p[0]),X(p[1]+vy*d),Y(p[0]+vx*d));g.lineWidth=w*px;g.strokeStyle=col;g.setLineDash([]);g.lineCap='butt';g.stroke();return d};
+    const rect=(s0,s1,l0,l1,w,col)=>{g.lineWidth=w*px;g.strokeStyle=col;g.setLineDash([]);g.strokeRect(X(l0),Y(s1),(l1-l0)*px,(s1-s0)*px)};
+    // a stand number on a dark plate, readable by a pilot heading toward -l (sg = -1) or +l (sg = 1)
+    const plate=(s,l,txt,sg)=>{g.save();g.translate(X(l),Y(s));g.fillStyle='#2a2b2e';g.fillRect(-7*px,-10*px,14*px,20*px);g.strokeStyle=YEL;g.lineWidth=.4*px;g.setLineDash([]);g.strokeRect(-7*px,-10*px,14*px,20*px);
+      g.rotate(sg*Math.PI/2);g.fillStyle=YEL;g.font='bold '+(8.5*px)+'px Arial, Helvetica, sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(txt,0,0);g.restore()};
+    draw({L,C,rect,plate});
+    const tx=new THREE.CanvasTexture(c);tx.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
+    // pavement is lit like the rest of the ground; painted lines are unlit so they stay readable at night (dimmed in applyEnvironment)
+    const mat=new (lit?THREE.MeshLambertMaterial:THREE.MeshBasicMaterial)({map:tx,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:lit?-4:-5,polygonOffsetUnits:lit?-4:-5});if(!lit)APR_MATS.push(mat);
+    placeAlong(new THREE.Mesh(new THREE.PlaneGeometry(l1-l0,s1-s0).rotateX(-Math.PI/2),mat),(s0+s1)/2,(l0+l1)/2,RWY.elev+(lit?.06:.07))};
+  // the apron: lane pavement, service road, stand boxes, guidance lines, stop bars and stand numbers
+  const d=R;
+  // pavement of the east link and the apron lane
+  paint(-60,900,-860,-70,2,({L,C})=>{
+    C([CE+150,A],[CE,A],[CE,M],26,ASP);C([CE-150,A],[CE,A],[CE,M],26,ASP);L([CE,A-d],[CE,M+d],26,ASP);C([CE,A],[CE,M],[CE-150,M],26,ASP);L([CE-d,M],[60,M],26,ASP)},true);
+  paint(-60,900,-860,-70,3,({L,C,rect,plate})=>{
+    // service road between the stands and the terminal: white edges, dashed centre
+    for(const l of[-638,-670])L([70,l],[720,l],.4,WHT);L([70,-654],[720,-654],.4,WHT,[3,3]);
+    // stand boxes (red safety lines)
+    for(const g of APN.standsA)rect(g-(g===CE?40:39.5),g+(g===CE?40:39.5),-604,-516,.6,RED);
+    for(const g of APN.standsB)rect(g-42,g+42,-312,-228,.6,RED);
+    // taxi guidance: the east link and the lane
+    C([CE+150,A],[CE,A],[CE,M],.8,YEL);C([CE-150,A],[CE,A],[CE,M],.8,YEL);L([CE,A-d],[CE,aS],.8,YEL);C([CE,A],[CE,M],[CE-150,M],.8,YEL);L([CE-d,M],[60,M],.8,YEL);
+    // terminal stands: lead-in from the lane to the nose-wheel stop bar
+    for(const g of APN.standsA){if(g!==CE){C([g+150,M],[g,M],[g,aS],.8,YEL);C([g-150,M],[g,M],[g,aS],.8,YEL);L([g,M-d],[g,aS],.8,YEL)}L([g-4,aS],[g+4,aS],.8,YEL)}
+    // remote stands: one straight line from the lane through the stop bar to the taxiway, with curves in and out both ways
+    for(const g of APN.standsB){C([g+150,M],[g,M],[g,bS],.8,YEL);C([g-150,M],[g,M],[g,bS],.8,YEL);L([g,M+d],[g,A-d],.8,YEL);
+      C([g,bS],[g,A],[g+150,A],.8,YEL);C([g,bS],[g,A],[g-150,A],.8,YEL);L([g-4,bS],[g+4,bS],.8,YEL)}
+    // stand numbers, on the lead-in just past the lane
+    APN.standsA.forEach((g,i)=>plate(g,-480,String(APN.numA[i]),-1));APN.standsB.forEach((g,i)=>plate(g,-335,String(APN.numB[i]),1));
+  });
+  // where taxiway A meets each end of the runway: curved lead-on lines and the runway holding position (two solid lines, two dashed)
+  const runwayEnd=(s0,s1,sE,from)=>{
+    paint(s0,s1,-140,-36,3,({L,C})=>{const d=C([sE+from,A],[sE,A],[sE,0],26,ASP);L([sE,A+d],[sE,-30],26,ASP)},true);
+    paint(s0,s1,-140,-36,6,({L,C})=>{const d=C([sE+from,A],[sE,A],[sE,0],.8,YEL);L([sE,A+d],[sE,-36],.8,YEL);
+      for(const l of[-46,-44.6])L([sE-13,l],[sE+13,l],.5,YEL);for(const l of[-43.2,-41.8])L([sE-13,l],[sE+13,l],.5,YEL,[2.5,2.5])})};
+  runwayEnd(-40,100,0,150);runwayEnd(RWY.len-100,RWY.len+40,RWY.len,-150);
+  // the centre line of taxiway A between the two lead-on curves
+  const cm=new THREE.MeshBasicMaterial({color:0xe8b100,polygonOffset:true,polygonOffsetFactor:-6,polygonOffsetUnits:-6});APR_MATS.push(cm);
+  const d0=Math.min(R,.45*-A);placeAlong(new THREE.Mesh(new THREE.PlaneGeometry(.8,RWY.len-2*d0).rotateX(-Math.PI/2),cm),RWY.len/2,A,RWY.elev+.08);
+}
 function buildAirport(){
   const grp=new THREE.Group();grp.position.set(0,0,0);
   const placeAlong=(m,s,l,y)=>{const p=rwP(s,l);m.position.set(p[0],y,p[1]);m.rotation.y=-RWY.hdg*D2R;grp.add(m);return m};
   // reclaimed strip & apron (boxes down to the seabed)
   const strip=new THREE.Mesh(new THREE.BoxGeometry(280,22,RWY.len+170).translate(0,-11+RWY.elev,0),new THREE.MeshLambertMaterial({color:0x7b8a62}));placeAlong(strip,RWY.len/2-10,-10,0);
   const sea=new THREE.Mesh(new THREE.BoxGeometry(284,1.2,RWY.len+174).translate(0,RWY.elev-1,0),new THREE.MeshLambertMaterial({color:0x8d8a80}));placeAlong(sea,RWY.len/2-10,-10,0);
-  const apron=new THREE.Mesh(new THREE.BoxGeometry(730,22,960).translate(0,-11+RWY.elev+.02,0),new THREE.MeshLambertMaterial({color:0xa6a49b}));placeAlong(apron,420,-495,0);
+  const apron=new THREE.Mesh(new THREE.BoxGeometry(777,22,960).translate(0,-11+RWY.elev+.02,0),new THREE.MeshLambertMaterial({color:0xa6a49b}));placeAlong(apron,420,-471.5,0);   // out to taxiway A, so there is no grass gap between them
   // runway, shoulders, taxiway
   const asph=new THREE.MeshLambertMaterial({color:0x3e3f42,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1});
   const rw=new THREE.Mesh(new THREE.PlaneGeometry(RWY.wid+14,RWY.len+40).rotateX(-Math.PI/2),asph);placeAlong(rw,RWY.len/2,0,RWY.elev+.05);
-  const tw=new THREE.Mesh(new THREE.PlaneGeometry(26,RWY.len-200).rotateX(-Math.PI/2),asph);placeAlong(tw,RWY.len/2+60,-96,RWY.elev+.05);
+  const tw=new THREE.Mesh(new THREE.PlaneGeometry(26,RWY.len+40).rotateX(-Math.PI/2),asph);placeAlong(tw,RWY.len/2,APN.A,RWY.elev+.05);
   // markings
   const mk=new THREE.MeshBasicMaterial({color:0xe9e9e4,polygonOffset:true,polygonOffsetFactor:-6,polygonOffsetUnits:-6,transparent:true});
   const mkEnd=(num,s,flip)=>{
@@ -1509,6 +1568,7 @@ function buildAirport(){
   const clTex=canvasTex(16,128,(g,w,h)=>{g.clearRect(0,0,w,h);g.fillStyle='#ecece6';g.fillRect(0,0,w,h*.6)},true);clTex.repeat.set(1,(RWY.len-800)/50);
   const cl=new THREE.Mesh(new THREE.PlaneGeometry(.9,RWY.len-800).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({map:clTex,transparent:true,polygonOffset:true,polygonOffsetFactor:-6,polygonOffsetUnits:-6}));placeAlong(cl,RWY.len/2,0,RWY.elev+.08);
   for(const l of[-30,30]){const e=new THREE.Mesh(new THREE.PlaneGeometry(.9,RWY.len-800).rotateX(-Math.PI/2),mk);placeAlong(e,RWY.len/2,l,RWY.elev+.08)}
+  buildApronMarkings(placeAlong);
   scene.add(grp);
   // terminal, tower, hangars
   const term=new THREE.Mesh(new THREE.BoxGeometry(70,22,330).translate(0,11,0),cityMaterial({color:0xd9d5c8}));placeAlong(term,380,-760,RWY.elev);
@@ -2262,6 +2322,7 @@ function applyEnvironment(){
   for(const S of SHIPS)if(S.m.userData.wake){const m=S.m.userData.wake.material;m.opacity=n?.35:over?.6:.85;m.color.setHex(n?0x2a3438:0xffffff)}
   setWater();if(obstructionLights)obstructionLights.visible=n||over||CFG.wx==='fog';
   for(const m of TERRAIN_MATS){const k=n?.11:over?.72:CFG.wx==='fog'?.8:1;if(m.userData.street)m.color.setHex(m.userData.base||(m.userData.base=m.color.getHex())).multiplyScalar(n?.25:k);else m.color.setScalar(k)}
+  for(const m of APR_MATS)m.color.setScalar(n?.55:over?.72:CFG.wx==='fog'?.8:1);
   streetLights.visible=n;carLights&&(carLights.visible=n);shipLights.visible=true;
   if(signMat)signMat.color.setScalar(n?1:over?.6:.8);
   if(BB.paint){BB.paintMat.color.setScalar(n?.85:over?.62:.9);BB.neonMat.color.setScalar(n?1:over?.62:.9);BB.neonDay.visible=!n;BB.neonNight.visible=n;BB.glow.visible=n;BB.lamps.visible=n;BB.frameMat.color.setHex(n?0x1a1c1e:over?0x44484c:0x5a5f64)}
@@ -2483,7 +2544,17 @@ function polyPose(pts,t,v0,v1){
   const at=d=>{d=clamp(d,0,D[D.length-1]);let lo=0,hi=D.length-1;while(hi-lo>1){const m=(lo+hi)>>1;if(D[m]<d)lo=m;else hi=m}const f=(d-D[lo])/Math.max(1e-6,D[hi]-D[lo]);return[lerp(Q[lo][0],Q[hi][0],f),lerp(Q[lo][1],Q[hi][1],f)]};
   const q=at(dist),a=at(dist-TAXI_LOOK),b=at(dist+TAXI_LOOK),w=rwP(q[0],q[1]),d=rwP(b[0]-a[0],b[1]-a[1]);
   return {x:w[0],z:w[1],y:RWY.elev,psi:Math.atan2(d[0],-d[1]),theta:0,phi:0,gear:1,moving:t<T[n-1]}}
-function arrivalPose(t,c0,gateS){gateS=gateS||300;
+// The stands the AI traffic uses: the five drive-through stands and stand 7. Arrivals taxi in along the painted lines
+// (taxiway A, the east link, the apron lane, the stand's lead-in); departures go straight out of the stand to taxiway A.
+const AI_GATES=[...APN.standsB,APN.CE];
+const standL=g=>APN.standsB.includes(g)?APN.bL:APN.aL;
+function taxiLegs(pts,t0,vs){const o=[[pts[0][0],pts[0][1],t0]];let t=t0;for(let i=1;i<pts.length;i++){t+=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1])/vs[i-1];o.push([pts[i][0],pts[i][1],t])}return o}
+function arrTail(x0,t0,g){const A=APN.A,M=APN.M,CE=APN.CE,sL=standL(g);   // from taxiway A at s = x0 (heading west) to the stand
+  return APN.standsB.includes(g)?taxiLegs([[x0,A],[CE,A],[CE,M],[g,M],[g,sL]],t0,[10,7,7,5]):taxiLegs([[x0,A],[CE,A],[CE,M],[g,sL]],t0,[10,7,5])}
+const TAXI_OUT={};
+function taxiOut(g,east){const k=g+(east?'e':'w'),end=east?RWY.len:0;   // stand -> taxiway A -> runway end -> lined up on the runway
+  return TAXI_OUT[k]||(TAXI_OUT[k]=taxiLegs([[g,standL(g)],[g,APN.A],[end,APN.A],[end,0],[east?RWY.len-TAXI_END_S:TAXI_END_S,0]],0,[6,10,6,5]))}
+function arrivalPose(t,c0,gateS){gateS=gateS||AI_GATES[0];
   const v=76,thr=PATH.pts.find(p=>p.d<=0).c;const tdC=thr+300;const tTD=(tdC-c0)/v;
   if(t<0)return null;
   if(t<tTD){const c=c0+v*t;const p=pathAtC(c);const p2=pathAtC(c+v*3);let phi=Math.atan(v*v*(p2.k||0)/G);
@@ -2493,14 +2564,13 @@ function arrivalPose(t,c0,gateS){gateS=gateS||300;
   if(s<1800){const q=rwP(LND.dir>0?s:RWY.len-s,0);return {x:q[0],z:q[1],y:RWY.elev,psi:LND.hdg*D2R,theta:dt<4?(4-dt)*D2R:0,phi:0,gear:1,lights:true,spl:dt<tDec}}
   const t0=tTD+tDec+(1800-300-(v*v-vT*vT)/(2*a))/vT;
   if(LND.dir<0){const E=RWY.len-1800;  // Runway 31: vacate to the parallel taxiway and taxi back along it to the apron
-    return polyPose([[E,0,t0],[E-60,0,t0+6],[E-140,-96,t0+16],[600,-96,t0+16+(E-740)/10],[420,-300,t0+44+(E-740)/10],[gateS,-470,t0+44+(E-740)/10+Math.abs(gateS-420)/8+12]],t,vT,0)}
-  return polyPose([[1800,0,t0],[1840,0,t0+4],[1900,-96,t0+16],[1780,-96,t0+28],[600,-96,t0+146],[420,-300,t0+174],[gateS,-470,t0+174+Math.abs(gateS-420)/8+12]],t,vT,0);
+    return polyPose([[E,0,t0],[E-60,0,t0+6],...arrTail(E-140,t0+16,gateS)],t,vT,0)}
+  return polyPose([[1800,0,t0],[1840,0,t0+4],[1900,-96,t0+16],...arrTail(1780,t0+28,gateS)],t,vT,0);
 }
 const TAXI_END_S=90; // where a departing aircraft lines up on the runway, metres from the threshold
-const lineupT=gate=>94+(gate-40)/9;
+const lineupT=gate=>{const p=taxiOut(gate,false);return p[p.length-1][2]+10};
 function departurePose(t,gate){
-  const tA=48+(gate-40)/9,taxi=[[gate,-560,0],[gate,-300,25],[gate-40,-96,48],[0,-96,tA],[0,0,tA+22],[TAXI_END_S,0,tA+36]];
-  const tLine=lineupT(gate);if(t<tLine)return polyPose(taxi,t);
+  const taxi=taxiOut(gate,false),tLine=lineupT(gate);if(t<tLine)return polyPose(taxi,t);
   const tau=t-tLine,a=2.2,vR=82;const tR=vR/a,sR=.5*a*tR*tR,S0=TAXI_END_S;
   if(tau<tR){const s=.5*a*tau*tau;const q=rwP(S0+s,0);return {x:q[0],z:q[1],y:RWY.elev,psi:RWY.hdg*D2R,theta:0,phi:0,gear:1,lights:true}}
   // climb out over Kowloon Bay, then a right turn toward the south over the harbour
@@ -2512,10 +2582,9 @@ function departurePose(t,gate){
 }
 // Runway 31 departure: taxi along the parallel taxiway to the east end, line up facing north-west, roll, then climb out over Kowloon
 // and turn left toward the harbour
-const lineupT31=gate=>48+(RWY.len-110-gate-40)/9+46;
+const lineupT31=gate=>{const p=taxiOut(gate,true);return p[p.length-1][2]+10};
 function departurePose31(t,gate){
-  const tB=48+(RWY.len-110-gate-40)/9,taxi=[[gate,-560,0],[gate,-300,25],[gate+40,-96,48],[RWY.len,-96,tB],[RWY.len,0,tB+22],[RWY.len-TAXI_END_S,0,tB+36]];
-  const tLine=lineupT31(gate),h0=(RWY.hdg+180)*D2R;if(t<tLine)return polyPose(taxi,t);
+  const taxi=taxiOut(gate,true),tLine=lineupT31(gate),h0=(RWY.hdg+180)*D2R;if(t<tLine)return polyPose(taxi,t);
   const tau=t-tLine,a=2.2,vR=82;const tR=vR/a,sR=.5*a*tR*tR,S0=TAXI_END_S;
   if(tau<tR){const s=.5*a*tau*tau;const q=rwP(RWY.len-(S0+s),0);return {x:q[0],z:q[1],y:RWY.elev,psi:h0,theta:0,phi:0,gear:1,lights:true}}
   const tc=tau-tR,v=vR+Math.min(30,tc*1.2);let s=sR+vR*tc+.6*Math.min(tc,25)**2;const gam=Math.min(8,tc*2.5)*D2R;const alt=RWY.elev+Math.max(0,(s-sR))*Math.tan(gam)*.95;
@@ -2533,23 +2602,23 @@ function buildAI(){
     const ll=makeLights([0,AC[type].cy-1,-AC[type].len*.48,1,.97,.9,9,-1]);m.add(makeLights(L),ll);AI.push({m,fn,ll,type})};
   const c0=PATH.pts[0].c;
   if(LND.id==='31'){  // Runway 31 flow: one departure ahead of you, one arrival two minutes ahead and one behind, holds out to the south-east
-    mk('a333',AI_LIVERIES[0],t=>departurePose31(t+lineupT31(430)-30,430));
+    mk('a333',AI_LIVERIES[0],t=>departurePose31(t+lineupT31(410)-30,410));
     mk('b744',AI_LIVERIES[1],t=>arrivalPose(t,c0+8600));
-    mk('b772',AI_LIVERIES[2],t=>departurePose31(t-24,515));
-    mk('a343',AI_LIVERIES[3],t=>arrivalPose(t-85,c0));
+    mk('b772',AI_LIVERIES[2],t=>departurePose31(t-24,500));
+    mk('a343',AI_LIVERIES[3],t=>arrivalPose(t-85,c0,AI_GATES[1]));
     mk('b744',AI_LIVERIES[4],t=>holdingPose(t,8000,13500,1850,2600,0));
     mk('a333',AI_LIVERIES[5],t=>holdingPose(t,8000,13500,2150,2600,Math.PI));
-    mk('b744',AI_LIVERIES[6],t=>departurePose31(t-330,600));
-    mk('a333',AI_LIVERIES[7],t=>polyPose([[700,-200,0],[700,-110,20],[1500,-110,105],[1500,-200,125]],(t%260)));
+    mk('b744',AI_LIVERIES[6],t=>departurePose31(t-330,590));
+    mk('a333',AI_LIVERIES[7],t=>polyPose([[APN.CE,APN.M,0],[APN.CE,APN.A,22],[1500,APN.A,110]],(t%130)));
     return}
-  mk('a333',AI_LIVERIES[0],t=>departurePose(t+70,430));                       // departs before you arrive
+  mk('a333',AI_LIVERIES[0],t=>departurePose(t+70,410));                       // departs before you arrive
   mk('b744',AI_LIVERIES[1],t=>arrivalPose(t,c0+8600));                         // lands about two minutes ahead of you
-  mk('b772',AI_LIVERIES[2],t=>departurePose(t-24,515));                      // lines up once the runway is clear
-  mk('a343',AI_LIVERIES[3],t=>arrivalPose(t-85,c0));                           // following you in on the IGS
+  mk('b772',AI_LIVERIES[2],t=>departurePose(t-24,500));                      // lines up once the runway is clear
+  mk('a343',AI_LIVERIES[3],t=>arrivalPose(t-85,c0,AI_GATES[1]));                           // following you in on the IGS
   mk('b744',AI_LIVERIES[4],t=>holdingPose(t,-11000,5200,1850,2600,0));         // holding west of the harbour
   mk('a333',AI_LIVERIES[5],t=>holdingPose(t,-11000,5200,2150,2600,Math.PI));   // the next level up
-  mk('b744',AI_LIVERIES[6],t=>departurePose(t-330,600));
-  mk('a333',AI_LIVERIES[7],t=>polyPose([[700,-200,0],[700,-110,20],[1500,-110,105],[1500,-200,125]],(t%260)));  // repositioning on the apron
+  mk('b744',AI_LIVERIES[6],t=>departurePose(t-330,590));
+  mk('a333',AI_LIVERIES[7],t=>polyPose([[APN.CE,APN.M,0],[APN.CE,APN.A,22],[1500,APN.A,110]],(t%130)));  // repositioning on the apron
 }
 function animateSurfaces(m,ail,elev,flap,spl){const S=m.userData.surf;if(!S)return;
   for(const o of S.ail)o.h.rotation.x=-o.sd*clamp(ail,-1,1)*20*D2R;
@@ -2564,7 +2633,7 @@ function buildAISchedule(phase,wrapNeg){
   const E=LND.id==='31',dpf=E?departurePose31:departurePose,lnf=E?lineupT31:lineupT;
   const P=600,thrC=PATH.pts.find(p=>p.d<=0).c,c0=thrC+300-8000;
   const loc=(t,off)=>{let k=t+phase-off;if(k<0&&!wrapNeg)return -1;return ((k%P)+P)%P};
-  const types=['b744','a333','b772','a343','b744','a333'];const gatesA=[150,250,350,450,550,650],gatesD=[430,515,600,680,360,250];
+  const types=['b744','a333','b772','a343','b744','a333'];const gatesA=AI_GATES,gatesD=AI_GATES;
   for(let i=0;i<6;i++){const off=i*100;mk(types[i],AI_LIVERIES[i],t=>{const k=loc(t,off);return k<0?null:arrivalPose(k,c0,gatesA[i])},'arrival')}
   for(let i=0;i<6;i++){const g=gatesD[i];const tLine=lnf(g);const off=145+i*100-tLine;
     mk(types[(i+3)%6],AI_LIVERIES[(i+2)%8],t=>{const k=loc(t,off);return k<0?dpf(0,g):dpf(k,g)},'departure')}
