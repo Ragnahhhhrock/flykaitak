@@ -1594,7 +1594,7 @@ function buildAirport(){
   {const q=rwP(1650,330);const j=shipModel('junk');j.position.set(q[0],0,q[1]);j.rotation.y=-(RWY.hdg-90)*D2R;scene.add(j);const bow=new THREE.Vector3(-11,0,0).applyEuler(j.rotation);SPOTS.boat=[q[0]+bow.x,4.6,q[1]+bow.z];SPOTS.boatShip=j}
   // parked aircraft at the terminal
   const types=['b744','a333','b772','b744','a343','a333'];
-  for(let i=0;i<6;i++){const m=buildAircraftModel(AC[types[i]],{tail:[0x1d6f6a,0xb53a2c,0x23406e,0x6a1f2f,0x1d6f6a,0x3a5f2e][i],gear:true});const p=rwP(120+i*85,-560);m.position.set(p[0],RWY.elev,p[1]);m.rotation.y=-(RWY.hdg-90)*D2R;m.scale.setScalar(1);scene.add(m);parked.push(m)}
+  for(let i=0;i<6;i++){const opt={tail:[0x1d6f6a,0xb53a2c,0x23406e,0x6a1f2f,0x1d6f6a,0x3a5f2e][i],gear:true},m=buildAircraftModel(AC[types[i]],opt);m.userData.spec={type:types[i],opt};m.userData.type=types[i];const p=rwP(120+i*85,-560);m.position.set(p[0],RWY.elev,p[1]);m.rotation.y=-(RWY.hdg-90)*D2R;m.scale.setScalar(1);scene.add(m);parked.push(m)}
   // lights
   // edge lights turn amber over the last 600 m, and the landing threshold is green (red at the far end), for each direction
   const mkRwyLights=dir=>{const Lr=[];
@@ -1862,25 +1862,25 @@ function buildAircraftModel(a,opt={}){
     for(let j=0;j<NC;j++)idx.push(T(NX,j),T(NX,j+1),B(NX,j),T(NX,j+1),B(NX,j+1),B(NX,j));
     const ge=new THREE.BufferGeometry();ge.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));ge.setIndex(idx);ge.computeVertexNormals();return ge};
   const nacM=new THREE.MeshLambertMaterial({color:0xb9bcbf,side:THREE.DoubleSide});
-  const surf={ail:[],elev:[],flap:[],spl:[]};const surfM=new THREE.MeshLambertMaterial({color:0xb5b9bc,side:THREE.DoubleSide});
+  const PT={wing:[],stab:[],eng:[],misc:[]},surf={ail:[],elev:[],flap:[],spl:[]};const surfM=new THREE.MeshLambertMaterial({color:0xb5b9bc,side:THREE.DoubleSide});
   // a hinged surface on a wing-shaped mesh: hinge line along the trailing edge, deflection about the hinge
   const hinged=(parent,semi_,cr_,ct_,zle_,sweep_,x0,len,ch,top,thick)=>{const k=(semi_*sweep_+ct_-cr_)/semi_;const zte=zle_+cr_+x0*k;
     const piv=new THREE.Group();piv.position.set(x0,top?.02:-thick/2,top?zte-ch*2.2:zte-ch);piv.rotation.y=-Math.atan(k);parent.add(piv);
     const h=new THREE.Group();piv.add(h);const m=new THREE.Mesh(new THREE.BoxGeometry(len/Math.cos(Math.atan(k)),top?.12:thick*.8,ch).translate(len/Math.cos(Math.atan(k))/2,top?.06:0,ch/2),surfM);h.add(m);return h};
-  for(const sd of[-1,1]){const w=new THREE.Mesh(wingGeo(semi,cr,ct,zle,cr*.115),wingM);w.scale.x=sd;w.position.y=cy-R*.45;w.rotation.z=sd*5*D2R;g.add(w);
+  for(const sd of[-1,1]){const w=new THREE.Mesh(wingGeo(semi,cr,ct,zle,cr*.115),wingM);w.scale.x=sd;w.position.y=cy-R*.45;w.rotation.z=sd*5*D2R;g.add(w);w.userData.brk={sd,semi,cr,ct,zle,tr:cr*.115};PT.wing.push(w);
     surf.ail.push({h:hinged(w,semi,cr,ct,zle,sweep,semi*.7,semi*.22,ct*.38,false,.2),sd});
     surf.flap.push({h:hinged(w,semi,cr,ct,zle,sweep,R*1.05,semi*.58-R,cr*.16,false,.2),sd});
     surf.spl.push({h:hinged(w,semi,cr,ct,zle,sweep,R*1.3,semi*.42,cr*.11,true,.2),sd});
-    if(a.winglet){const W=a.winglet,wm=new THREE.Mesh(wingletGeo(W.h,ct*W.rc,ct*W.tc,W.sw,W.cant,W.bl,.055),tailC);wm.position.set(sd*(semi*Math.cos(5*D2R)-.5),cy-R*.45+semi*Math.sin(5*D2R)-.45,zle+semi*sweep+ct*.1);wm.scale.x=sd;g.add(wm)}
+    if(a.winglet){const W=a.winglet,wm=new THREE.Mesh(wingletGeo(W.h,ct*W.rc,ct*W.tc,W.sw,W.cant,W.bl,.055),tailC);wm.position.set(sd*(semi*Math.cos(5*D2R)-.5),cy-R*.45+semi*Math.sin(5*D2R)-.45,zle+semi*sweep+ct*.1);wm.scale.x=sd;g.add(wm);PT.misc.push(wm)}
     // engines
     for(const ex of a.engX){const ez=zle+ex*sweep-a.engR*2.6;const ey=cy-R*.45+ex*Math.tan(5*D2R)-a.engR-.6;
-      const nac=new THREE.Mesh(nacelleGeo(a.engR),nacM);nac.position.set(sd*ex,ey,ez);g.add(nac);
-      const inlet=new THREE.Mesh(new THREE.CircleGeometry(a.engR*.86,20),dark);inlet.position.set(sd*ex,ey,ez-a.engR*2.05);inlet.rotation.y=Math.PI;g.add(inlet);
-      const py=new THREE.Mesh(pylonGeo(a.engR),nacM);py.position.set(sd*ex,ey,ez);g.add(py)}
+      const nac=new THREE.Mesh(nacelleGeo(a.engR),nacM);nac.position.set(sd*ex,ey,ez);g.add(nac);nac.userData.ex=ex;PT.eng.push(nac);
+      const inlet=new THREE.Mesh(new THREE.CircleGeometry(a.engR*.86,20),dark);inlet.position.set(sd*ex,ey,ez-a.engR*2.05);inlet.rotation.y=Math.PI;g.add(inlet);inlet.userData.ex=ex;PT.eng.push(inlet);
+      const py=new THREE.Mesh(pylonGeo(a.engR),nacM);py.position.set(sd*ex,ey,ez);g.add(py);py.userData.ex=ex;PT.eng.push(py)}
     // stabiliser
-    const hs=new THREE.Mesh(wingGeo(a.span*.17,L*.1,L*.035,L*.36,.55),wingM);hs.scale.x=sd;hs.position.y=cy+R*.25;hs.rotation.z=sd*7*D2R;g.add(hs);
+    const hs=new THREE.Mesh(wingGeo(a.span*.17,L*.1,L*.035,L*.36,.55),wingM);hs.scale.x=sd;hs.position.y=cy+R*.25;hs.rotation.z=sd*7*D2R;g.add(hs);hs.userData.brk={sd,semi:a.span*.17,cr:L*.1,ct:L*.035,zle:L*.36,tr:.55};PT.stab.push(hs);
     surf.elev.push({h:hinged(hs,a.span*.17,L*.1,L*.035,L*.36,sweep,R*.5,a.span*.17*.85-R*.5,L*.028,false,.2),sd})}
-  g.userData.surf=surf;
+  g.userData.surf=surf;g.userData.parts=PT;g.userData.wingGeo=wingGeo;g.userData.sweep=sweep;
   // fin
   {const sh=new THREE.Shape();const fh=a.tail,fc=L*.14;sh.moveTo(0,0);sh.lineTo(fc,0);sh.lineTo(fc+fh*.95,fh);sh.lineTo(fc*.45+fh*.95,fh);sh.lineTo(0,0);
    const eg=new THREE.ExtrudeGeometry(sh,{depth:.5,bevelEnabled:false});eg.rotateY(-Math.PI/2);const fin=new THREE.Mesh(eg,tailC);fin.position.set(.25,cy+R*.55,L*.3);g.add(fin);
@@ -2301,7 +2301,7 @@ function spawnExplosion(x,y,z,water){
   if(acModel)acModel.visible=false;
 }
 function updateFX(dt){for(let i=FX.length-1;i>=0;i--){const f=FX[i];f.age+=dt;f.m.position.x+=f.vx*dt;f.m.position.y+=f.vy*dt;f.m.position.z+=f.vz*dt;f.vy*=.985;const s=f.m.scale.x+f.grow*dt;f.m.scale.set(s,s,s);f.m.material.opacity=clamp(1-f.age/f.life,0,1);if(f.age>f.life){scene.remove(f.m);f.m.material.dispose();FX.splice(i,1)}}}
-function clearFX(){for(const f of FX){scene.remove(f.m);f.m.material.dispose()}FX.length=0}
+function clearFX(){for(const f of FX){scene.remove(f.m);f.m.material.dispose()}FX.length=0;if(typeof clearDamageFX==='function')clearDamageFX()}
 
 /* =====================================================================
    ENVIRONMENT (day/night, weather)
@@ -2595,29 +2595,30 @@ function departurePose31(t,gate){
 }
 function holdingPose(t,cx,cz,alt,R,ph){const v=105,w=v/R;const a=t*w+ph;return {x:cx+Math.cos(a)*R,z:cz+Math.sin(a)*R,y:alt,psi:a+Math.PI,theta:2*D2R,phi:Math.atan(v*v/(G*R)),gear:0}}
 const AI_LIVERIES=[0x7a1f24,0x23406e,0x3a5f2e,0xc9a23a,0x5b2a6b,0x2b2f34,0x1f6f8a,0x8a5a2b];
+function aiWrap(type,tail){const m=buildAircraftModel(AC[type],{tail,cheat:tail,gear:true});m.rotation.order='YXZ';
+  const L=[];for(const p of m.userData.navPts)L.push(p[0],p[1],p[2],p[3],p[4],p[5],2.4,-1);for(const p of m.userData.strobePts)L.push(p[0],p[1],p[2],1,1,1,4,.37);
+  const ll=makeLights([0,AC[type].cy-1,-AC[type].len*.48,1,.97,.9,9,-1]),lt=makeLights(L);ll.userData.isLights=lt.userData.isLights=true;m.add(lt,ll);m.userData.ll=ll;m.userData.type=type;return m}
 function buildAI(){
   for(const a of AI){scene.remove(a.m)}AI.length=0;
-  const mk=(type,tail,fn)=>{const m=buildAircraftModel(AC[type],{tail,cheat:tail,gear:true});m.rotation.order='YXZ';scene.add(m);
-    const L=[];for(const p of m.userData.navPts)L.push(p[0],p[1],p[2],p[3],p[4],p[5],2.4,-1);for(const p of m.userData.strobePts)L.push(p[0],p[1],p[2],1,1,1,4,.37);
-    const ll=makeLights([0,AC[type].cy-1,-AC[type].len*.48,1,.97,.9,9,-1]);m.add(makeLights(L),ll);AI.push({m,fn,ll,type})};
+  const mk=(type,tail,fn,role)=>{const m=aiWrap(type,tail);scene.add(m);AI.push({m,fn,ll:m.userData.ll,type,tail,role})};
   const c0=PATH.pts[0].c;
   if(LND.id==='31'){  // Runway 31 flow: one departure ahead of you, one arrival two minutes ahead and one behind, holds out to the south-east
-    mk('a333',AI_LIVERIES[0],t=>departurePose31(t+lineupT31(410)-30,410));
-    mk('b744',AI_LIVERIES[1],t=>arrivalPose(t,c0+8600));
-    mk('b772',AI_LIVERIES[2],t=>departurePose31(t-24,500));
-    mk('a343',AI_LIVERIES[3],t=>arrivalPose(t-85,c0,AI_GATES[1]));
-    mk('b744',AI_LIVERIES[4],t=>holdingPose(t,8000,13500,1850,2600,0));
-    mk('a333',AI_LIVERIES[5],t=>holdingPose(t,8000,13500,2150,2600,Math.PI));
-    mk('b744',AI_LIVERIES[6],t=>departurePose31(t-330,590));
+    mk('a333',AI_LIVERIES[0],t=>departurePose31(t+lineupT31(410)-30,410),'departure');
+    mk('b744',AI_LIVERIES[1],t=>arrivalPose(t,c0+8600),'arrival');
+    mk('b772',AI_LIVERIES[2],t=>departurePose31(t-24,500),'departure');
+    mk('a343',AI_LIVERIES[3],t=>arrivalPose(t-85,c0,AI_GATES[1]),'arrival');
+    mk('b744',AI_LIVERIES[4],t=>holdingPose(t,8000,13500,1850,2600,0),'holding');
+    mk('a333',AI_LIVERIES[5],t=>holdingPose(t,8000,13500,2150,2600,Math.PI),'holding');
+    mk('b744',AI_LIVERIES[6],t=>departurePose31(t-330,590),'departure');
     mk('a333',AI_LIVERIES[7],t=>polyPose([[APN.CE,APN.M,0],[APN.CE,APN.A,22],[1500,APN.A,110]],(t%130)));
     return}
-  mk('a333',AI_LIVERIES[0],t=>departurePose(t+70,410));                       // departs before you arrive
-  mk('b744',AI_LIVERIES[1],t=>arrivalPose(t,c0+8600));                         // lands about two minutes ahead of you
-  mk('b772',AI_LIVERIES[2],t=>departurePose(t-24,500));                      // lines up once the runway is clear
-  mk('a343',AI_LIVERIES[3],t=>arrivalPose(t-85,c0,AI_GATES[1]));                           // following you in on the IGS
-  mk('b744',AI_LIVERIES[4],t=>holdingPose(t,-11000,5200,1850,2600,0));         // holding west of the harbour
-  mk('a333',AI_LIVERIES[5],t=>holdingPose(t,-11000,5200,2150,2600,Math.PI));   // the next level up
-  mk('b744',AI_LIVERIES[6],t=>departurePose(t-330,590));
+  mk('a333',AI_LIVERIES[0],t=>departurePose(t+70,410),'departure');                       // departs before you arrive
+  mk('b744',AI_LIVERIES[1],t=>arrivalPose(t,c0+8600),'arrival');                         // lands about two minutes ahead of you
+  mk('b772',AI_LIVERIES[2],t=>departurePose(t-24,500),'departure');                      // lines up once the runway is clear
+  mk('a343',AI_LIVERIES[3],t=>arrivalPose(t-85,c0,AI_GATES[1]),'arrival');                           // following you in on the IGS
+  mk('b744',AI_LIVERIES[4],t=>holdingPose(t,-11000,5200,1850,2600,0),'holding');         // holding west of the harbour
+  mk('a333',AI_LIVERIES[5],t=>holdingPose(t,-11000,5200,2150,2600,Math.PI),'holding');   // the next level up
+  mk('b744',AI_LIVERIES[6],t=>departurePose(t-330,590),'departure');
   mk('a333',AI_LIVERIES[7],t=>polyPose([[APN.CE,APN.M,0],[APN.CE,APN.A,22],[1500,APN.A,110]],(t%130)));  // repositioning on the apron
 }
 function animateSurfaces(m,ail,elev,flap,spl){const S=m.userData.surf;if(!S)return;
@@ -2627,9 +2628,7 @@ function animateSurfaces(m,ail,elev,flap,spl){const S=m.userData.surf;if(!S)retu
   for(const o of S.spl)o.h.rotation.x=-clamp(spl,0,1)*50*D2R}
 function buildAISchedule(phase,wrapNeg){
   for(const a of AI){scene.remove(a.m)}AI.length=0;
-  const mk=(type,tail,fn,role)=>{const m=buildAircraftModel(AC[type],{tail,cheat:tail,gear:true});m.rotation.order='YXZ';scene.add(m);
-    const L=[];for(const p of m.userData.navPts)L.push(p[0],p[1],p[2],p[3],p[4],p[5],2.4,-1);for(const p of m.userData.strobePts)L.push(p[0],p[1],p[2],1,1,1,4,.37);
-    const ll=makeLights([0,AC[type].cy-1,-AC[type].len*.48,1,.97,.9,9,-1]);m.add(makeLights(L),ll);AI.push({m,fn,ll,type,role})};
+  const mk=(type,tail,fn,role)=>{const m=aiWrap(type,tail);scene.add(m);AI.push({m,fn,ll:m.userData.ll,type,tail,role})};
   const E=LND.id==='31',dpf=E?departurePose31:departurePose,lnf=E?lineupT31:lineupT;
   const P=600,thrC=PATH.pts.find(p=>p.d<=0).c,c0=thrC+300-8000;
   const loc=(t,off)=>{let k=t+phase-off;if(k<0&&!wrapNeg)return -1;return ((k%P)+P)%P};
@@ -2642,15 +2641,165 @@ function buildAISchedule(phase,wrapNeg){
   mk('a343',AI_LIVERIES[5],t=>holdingPose(t,hx,hz,2150,2600,Math.PI),'holding');
 }
 function aiPhase(a){const p=a.p;if(!p)return'';if(a.role==='holding')return'holding';if(p.y>RWY.elev+3)return a.role==='arrival'?'on approach':'climbing out';if((a.v||0)>25)return a.role==='arrival'?'landing':'taking off';if((a.v||0)>.5)return'taxiing';return'at the gate'}
+/* =====================================================================
+   AIRCRAFT COLLISIONS. Every aircraft has a footprint (fuselage, two wings, two tailplanes). Ground traffic is under control: an aircraft
+   that would run into a higher-priority one holds where it is, braking and moving off smoothly, until the way is clear. If two
+   aircraft touch anyway (the player is the usual cause) both are damaged: a wing or tailplane breaks off, the skin is scorched, and the wreck
+   burns and smokes where it stopped. Control is stepped from a clock of its own and snapshotted each second, so rewind stays exact.
+   ===================================================================== */
+const FOOT=new Map();
+function footOf(a){let f=FOOT.get(a);if(f)return f;
+  const L=a.len,R=a.R,semi=a.span/2,sw=Math.tan(36*D2R),cr=L*.2,ct=cr*.24,zle=-L*.08,ts=a.span*.17,P=[];
+  P.push({k:'fus',sd:0,p:[[-R,-L/2+L*.06],[-R*.55,-L/2],[R*.55,-L/2],[R,-L/2+L*.06],[R,L/2],[-R,L/2]]});
+  for(const s of[-1,1]){P.push({k:'wing',sd:s,p:[[0,zle],[s*semi,zle+semi*sw],[s*semi,zle+semi*sw+ct],[0,zle+cr]]});
+    P.push({k:'stab',sd:s,p:[[0,L*.36],[s*ts,L*.36+ts*sw],[s*ts,L*.36+ts*sw+L*.035],[0,L*.46]]})}
+  f={P,rad:Math.hypot(semi,L/2)+1,a,h:a.cy+a.R*.55+a.tail};FOOT.set(a,f);return f}
+function fpAt(f,x,z,psi,y){const c=Math.cos(psi),s=Math.sin(psi);return {x,z,y:y||0,psi,f,P:f.P.map(q=>({k:q.k,sd:q.sd,p:q.p.map(v=>[x+v[0]*c-v[1]*s,z+v[0]*s+v[1]*c])}))}}
+function polyOv(A,B){for(let w=0;w<2;w++){const P=w?B:A;for(let i=0,n=P.length;i<n;i++){const p=P[i],q=P[(i+1)%n],nx=p[1]-q[1],nz=q[0]-p[0];let a0=1e18,a1=-1e18,b0=1e18,b1=-1e18;
+    for(const v of A){const d=v[0]*nx+v[1]*nz;if(d<a0)a0=d;if(d>a1)a1=d}for(const v of B){const d=v[0]*nx+v[1]*nz;if(d<b0)b0=d;if(d>b1)b1=d}
+    if(a1<b0||b1<a0)return false}}return true}
+function segD2(px,pz,ax,az,bx,bz){const dx=bx-ax,dz=bz-az,l=dx*dx+dz*dz,t=l?clamp(((px-ax)*dx+(pz-az)*dz)/l,0,1):0,qx=ax+dx*t-px,qz=az+dz*t-pz;return qx*qx+qz*qz}
+function polyD2(A,B){if(polyOv(A,B))return 0;let m=1e18;for(const[X,Y]of[[A,B],[B,A]])for(const v of X)for(let i=0,n=Y.length;i<n;i++){const p=Y[i],q=Y[(i+1)%n],d=segD2(v[0],v[1],p[0],p[1],q[0],q[1]);if(d<m)m=d}return m}
+// the smallest gap between two footprints in metres (0 when they overlap); anything beyond lim reads as far
+const vOver=(A,B)=>A.y<B.y+B.f.h&&B.y<A.y+A.f.h;   // do the two aircraft share any height, wheels to fin tip?
+function fpDist(A,B,lim){const dx=A.x-B.x,dz=A.z-B.z,rr=A.f.rad+B.f.rad+lim;if(dx*dx+dz*dz>rr*rr)return 1e9;let m=1e18;
+  for(const a of A.P)for(const b of B.P){const d=polyD2(a.p,b.p);if(d<m){m=d;if(m===0)return 0}}return Math.sqrt(m)}
+function clipPoly(S,C){const area=P=>{let s=0;for(let i=0;i<P.length;i++){const p=P[i],q=P[(i+1)%P.length];s+=p[0]*q[1]-q[0]*p[1]}return s/2};
+  if(area(C)<0)C=C.slice().reverse();let out=S;
+  for(let i=0;i<C.length&&out.length;i++){const a=C[i],b=C[(i+1)%C.length],inp=out;out=[];
+    const side=p=>(b[0]-a[0])*(p[1]-a[1])-(b[1]-a[1])*(p[0]-a[0]);
+    for(let j=0;j<inp.length;j++){const p=inp[j],q=inp[(j+1)%inp.length],sp=side(p),sq=side(q);
+      if(sp>=0)out.push(p);if((sp>=0)!==(sq>=0)){const t=sp/(sp-sq);out.push([p[0]+(q[0]-p[0])*t,p[1]+(q[1]-p[1])*t])}}}
+  return out}
+function polyArea(P){let s=0,cx=0,cz=0;for(let i=0;i<P.length;i++){const p=P[i],q=P[(i+1)%P.length],c=p[0]*q[1]-q[0]*p[1];s+=c;cx+=(p[0]+q[0])*c;cz+=(p[1]+q[1])*c}
+  s/=2;return Math.abs(s)<1e-6?{a:0,x:P.length?P[0][0]:0,z:P.length?P[0][1]:0}:{a:Math.abs(s),x:cx/(6*s),z:cz/(6*s)}}
+// where footprint A overlaps footprint B: the piece of A that took the hit and the contact point in A's own coordinates (x right, z aft)
+function hitOn(A,B){let best=null;for(const a of A.P)for(const b of B.P){if(!polyOv(a.p,b.p))continue;const o=polyArea(clipPoly(a.p,b.p));if(!best||o.a>best.a)best={a:o.a,k:a.k,sd:a.sd,x:o.x,z:o.z}}
+  if(!best){best={a:0,k:'fus',sd:0,x:A.x,z:A.z}}
+  const dx=best.x-A.x,dz=best.z-A.z,c=Math.cos(A.psi),s=Math.sin(A.psi);return {k:best.k,sd:best.sd,wx:best.x,wz:best.z,lx:dx*c+dz*s,lz:-dx*s+dz*c}}
+
+// ---- damage: a broken wing is a stump plus a loose piece that falls; the skin is scorched; fire and smoke come from the contact point
+const DEBRIS=[],EMIT=[];
+const scorchTex=canvasTex(64,64,g=>{const r=g.createRadialGradient(32,32,2,32,32,32);r.addColorStop(0,'rgba(12,9,7,.96)');r.addColorStop(.55,'rgba(24,18,13,.7)');r.addColorStop(1,'rgba(24,18,13,0)');g.fillStyle=r;g.fillRect(0,0,64,64)});
+function breakPart(m,mesh,xb){const b=mesh.userData.brk;if(!b||mesh.userData.broken)return;mesh.userData.broken=true;
+  const gf=m.userData.wingGeo,sw=m.userData.sweep;xb=clamp(xb,b.semi*.1,b.semi*.94);const cb=b.cr+(b.ct-b.cr)*xb/b.semi,kt=b.ct/b.cr;
+  const loose=new THREE.Mesh(gf(b.semi-xb,cb,b.ct,b.zle+xb*sw,b.tr*(1-(1-kt)*xb/b.semi)).translate(xb,0,0),mesh.material);
+  loose.scale.copy(mesh.scale);loose.position.copy(mesh.position);loose.rotation.copy(mesh.rotation);m.add(loose);
+  mesh.geometry.dispose();mesh.geometry=gf(xb,b.cr,cb,b.zle,b.tr);
+  for(const c of mesh.children)if(c.position.x>xb-1)c.visible=false;
+  for(const w of m.userData.parts.misc)if(w.scale.x===b.sd)w.visible=false;   // winglet
+  for(const e of m.userData.parts.eng)if(Math.sign(e.position.x)===b.sd&&e.userData.ex>xb-1.5)e.visible=false;
+  m.updateMatrixWorld(true);scene.attach(loose);
+  DEBRIS.push({m:loose,vx:b.sd*rr(1.5,4),vz:rr(-1.5,1.5),vy:rr(1,3),spin:b.sd*rr(.1,.5),y0:RWY.elev+.35,age:0});
+}
+function scorch(m,x,y,z,size,sd){const d=new THREE.Mesh(new THREE.PlaneGeometry(size,size*.7),new THREE.MeshBasicMaterial({map:scorchTex,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-3,side:THREE.DoubleSide}));
+  d.position.set(x,y,z);d.rotation.y=Math.PI/2;if(sd<0)d.rotation.y=-Math.PI/2;m.add(d);m.userData.scorch=(m.userData.scorch||[]);m.userData.scorch.push(d)}
+function addEmitter(m,x,y,z,fireSec,smokeSec){EMIT.push({m,p:new THREE.Vector3(x,y,z),t:0,fire:fireSec,dur:smokeSec,acc:0})}
+function puff(w,fire){const m=new THREE.Sprite(new THREE.SpriteMaterial({map:fire?fireTex:smokeTex,transparent:true,depthWrite:false,blending:fire?THREE.AdditiveBlending:THREE.NormalBlending}));
+  const s=fire?5+Math.random()*7:7+Math.random()*7;m.position.set(w.x+(Math.random()-.5)*3,w.y+Math.random()*2,w.z+(Math.random()-.5)*3);m.scale.set(s,s,s);scene.add(m);
+  FX.push({m,vx:(Math.random()-.5)*2+1.2,vy:fire?2+Math.random()*3:3+Math.random()*3,vz:(Math.random()-.5)*2,life:fire?.7+Math.random()*.7:5+Math.random()*4,age:0,grow:fire?5:4})}
+const _ew=new THREE.Vector3();
+function updateDamageFX(dt){
+  for(let i=EMIT.length-1;i>=0;i--){const e=EMIT[i];e.t+=dt;e.acc+=dt;if(e.t>e.dur){EMIT.splice(i,1);continue}
+    if(e.acc>.14&&FX.length<400){e.acc=0;_ew.copy(e.p);e.m.localToWorld(_ew);if(e.t<e.fire)puff(_ew,true);puff(_ew,false)}}
+  for(let i=DEBRIS.length-1;i>=0;i--){const d=DEBRIS[i];d.age+=dt;const p=d.m.position;if(p.y>d.y0||d.vy>0){d.vy-=9.8*dt;p.x+=d.vx*dt;p.z+=d.vz*dt;p.y+=d.vy*dt;d.m.rotation.y+=d.spin*dt;if(p.y<=d.y0){p.y=d.y0;d.vy=0;d.vx=d.vz=0}}}}
+function clearDamageFX(){for(const d of DEBRIS){scene.remove(d.m);d.m.geometry.dispose()}DEBRIS.length=0;EMIT.length=0}
+// the damage itself: hit is {k,sd,lx,lz} from hitOn, sev 0..1.5 scales how much comes off and how long it burns
+function damageModel(m,a,hit,sev){const P=m.userData.parts,L=a.len,R=a.R,semi=a.span/2,ax=Math.abs(hit.lx);
+  m.userData.hit=true;
+  if(hit.k==='wing'&&ax>R+3){breakPart(m,P.wing.find(w=>w.userData.brk.sd===hit.sd)||P.wing[0],ax-2.5-sev*(semi*.18))}
+  else if(hit.k==='stab'&&ax>R+1.5){breakPart(m,P.stab.find(w=>w.userData.brk.sd===hit.sd)||P.stab[0],ax-1.5)}
+  else{const sd=hit.lx<0?-1:1;scorch(m,sd*(R+.05),a.cy+.4,hit.lz,3+sev*3,sd)}
+  const wingHit=hit.k==='wing';scorch(m,Math.sign(hit.lx||1)*(R+.05),a.cy+.2,clamp(hit.lz,-L*.45,L*.45),2.4+sev*2,Math.sign(hit.lx||1));
+  const y=wingHit?a.cy-R*.45:a.cy+R*.2,x=wingHit?clamp(hit.lx,-semi,semi)*.9:hit.lx*.6;
+  addEmitter(m,x,y,hit.lz,8+sev*30,60+sev*60);
+  m.traverse(o=>{if(o.userData.isLights)o.visible=false})}
+// a collision between aircraft A (pose a.p) and B: damage both and freeze both where they stopped
+function aiHit(ea,eb,t){
+  const fa=ea.fp,fb=eb.fp,ha=hitOn(fa,fb),hb=hitOn(fb,fa),va=ea.v||0,vb=eb.v||0,sev=clamp(Math.max(va,vb)/9,.15,1.5);
+  for(const[e,h]of[[ea,ha],[eb,hb]]){if(e.player)continue;damageModel(e.m,e.A,h,sev);e.freeze&&e.freeze(t)}
+  if(!ea.player&&!eb.player&&(CFG.game==='watch'||CFG.game==='free'))toast('Collision: '+ea.A.short+' and '+eb.A.short+' touched on the ground');
+  if(window.__kt)window.__kt.hits=(window.__kt.hits||[]).concat([{t,a:ea.A.short,b:eb.A.short,ka:ha.k,kb:hb.k,ia:ea.i,ib:eb.i,ya:ea.y,yb:eb.y}])}
+
+// ---- ground control
+const AIC={t:null,ref:null,snap:new Map(),step:.5,margin:9,dec:.6,acc:.35,sec:-1,off:false,maxHold:0,OFF:(()=>{const o=[];for(let i=0;i<=20;i++)o.push(i*1.2);for(let t=27;t<=72;t+=3)o.push(t);return o})()};
+const aiRank=i=>(AI[i].role==='arrival'?1:AI[i].role==='departure'?2:3)*100+i;
+function aiCtlInit(t){AIC.t=t;AIC.ref=AI[0]||null;AIC.snap.clear();AIC.sec=Math.floor(t);AIC.maxHold=0;
+  for(const a of AI){a.tau=t;a.r=1;a.hold=0;a.wreck=false;a.wp=null;a.hitT=Infinity}aiSnap()}
+function aiSnap(){AIC.snap.set(AIC.sec,{t:AIC.t,a:AI.map(a=>({tau:a.tau,r:a.r,hold:a.hold,wreck:a.wreck,wp:a.wp,hitT:a.hitT}))});if(AIC.snap.size>900)AIC.snap.delete(AIC.snap.keys().next().value)}
+function aiRestore(t){let k=Math.floor(t);while(k>=0&&!AIC.snap.has(k)&&k>AIC.sec-900)k--;
+  const s=AIC.snap.get(k);if(!s){aiCtlInit(t);return}
+  AI.forEach((a,i)=>{const q=s.a[i];if(a.wreck&&!q.wreck)aiRepair(a);a.tau=q.tau;a.r=q.r;a.hold=q.hold;a.wreck=q.wreck;a.wp=q.wp;a.hitT=q.hitT});
+  AIC.t=s.t;AIC.sec=k;for(const key of[...AIC.snap.keys()])if(key>k)AIC.snap.delete(key)}
+function aiRepair(a){const old=a.m,m=aiWrap(a.type,a.tail);m.position.copy(old.position);m.rotation.copy(old.rotation);m.visible=old.visible;scene.remove(old);scene.add(m);a.m=m;a.ll=m.userData.ll;
+  for(let i=EMIT.length-1;i>=0;i--)if(EMIT[i].m===old)EMIT.splice(i,1);a.wreck=false;a.wp=null;a.hitT=Infinity}
+function aiCtlStep(dt){
+  const n=AI.length,OFF=AIC.OFF,K=OFF.length-1,E=RWY.elev,S=new Array(n),cls=new Array(n),fp=new Array(n),hold=new Array(n).fill(false);
+  for(let i=0;i<n;i++){const a=AI[i];
+    if(a.wreck){S[i]=[a.wp];cls[i]='frozen';continue}
+    let p0=a.fn(a.tau);const vis=!!p0&&Math.hypot(p0.x,p0.z)<=30000;
+    if(vis&&(a.role==='holding'||p0.y>E+250)){S[i]=[p0];cls[i]='air';continue}
+    const s=[vis?p0:null];let mv=false,any=vis;for(let k=1;k<=K;k++){const p=a.fn(a.tau+OFF[k]),ok=p&&Math.hypot(p.x,p.z)<30000;s.push(ok?p:null);if(ok){any=true;if(!vis)mv=true;else if(!mv&&Math.hypot(p.x-p0.x,p.z-p0.z)>1)mv=true}}
+    if(!any){S[i]=[null];cls[i]='gone';continue}
+    S[i]=s;if(!vis){cls[i]='taxi';continue}   // waiting to appear: it holds off while its stand or its way would be in use
+    const p1=s[1],v=p1?Math.hypot(p1.x-p0.x,p1.z-p0.z,p1.y-p0.y)/OFF[1]:0;cls[i]=p0.y>E+1.5||v>12?'fast':mv?'taxi':'frozen'}
+  const at=(i,k)=>{const c=fp[i]||(fp[i]=[]);let f=c[k];if(f===undefined){const s=S[i],p=s[Math.min(k,s.length-1)];f=c[k]=p?fpAt(footOf(AC[AI[i].type]),p.x,p.z,p.psi,p.y):null}return f};
+  if(!AIC.off)for(let i=0;i<n;i++){if(cls[i]!=='taxi')continue;const ri=aiRank(i);
+    for(let j=0;j<n&&!hold[i];j++){if(j===i||cls[j]==='gone'||cls[j]==='air')continue;
+      const cj=cls[j];if(cj==='taxi'&&aiRank(j)>ri)continue;
+      const still=cj==='frozen'||AI[j].r<.3;
+      for(let k=0;k<=K;k++){const A=at(i,k),B=at(j,still?0:k);if(!A||!B||!vOver(A,B))continue;
+        if(fpDist(A,B,AIC.margin)<AIC.margin){hold[i]=true;AI[i].why=j;break}}}}
+  for(let i=0;i<n;i++){const a=AI[i];
+    if(a.wreck){continue}
+    const held=hold[i]&&cls[i]==='taxi',lag=AIC.t-a.tau;
+    a.r+=clamp((held?0:1)-a.r,-dt*AIC.dec,dt*AIC.acc);a.tau+=a.r*dt;
+    // back on schedule: out of sight, or standing still, the lag is dropped at once; in the air it is made up gently
+    if(lag>.4&&!held){if(cls[i]==='gone'||cls[i]==='air'){const q=a.fn(AIC.t);if(!q||Math.hypot(q.x,q.z)>30000||cls[i]==='air')a.tau=cls[i]==='air'?a.tau+Math.min(lag,dt*.15):AIC.t}
+      else if(cls[i]==='frozen'){const q=a.fn(AIC.t),p=S[i][0];if(q&&p&&Math.hypot(q.x-p.x,q.z-p.z)<.5)a.tau=AIC.t}
+      else if(cls[i]==='fast')a.tau+=Math.min(lag,dt*.12)}
+    a.hold=a.r<.05?a.hold+dt:0;if(a.hold>AIC.maxHold)AIC.maxHold=a.hold}
+}
+function aiControl(t){
+  if(!AI.length)return;
+  if(AIC.t===null||AIC.ref!==AI[0]){aiCtlInit(t);return}
+  if(t<AIC.t-1e-6)aiRestore(t);
+  if(t-AIC.t>240){aiCtlInit(t);return}
+  let g=0;while(AIC.t<t-1e-6&&g++<600){const dt=Math.min(AIC.step,t-AIC.t);aiCtlStep(dt);AIC.t+=dt;if(Math.floor(AIC.t+1e-6)>AIC.sec){AIC.sec=Math.floor(AIC.t+1e-6);aiSnap()}}
+}
+
+// ---- touching: AI against AI and AI against the parked aircraft; the player is checked by playerHit
+const PARKED_FP=[];
+function aiCollide(t){
+  const n=AI.length;
+  for(const a of AI){a.fp=a.p&&a.m.visible&&a.p.y<400?fpAt(footOf(AC[a.type]),a.p.x,a.p.z,a.p.psi,a.p.y):null}
+  const ent=a=>({i:AI.indexOf(a),y:a.p.y,fp:a.fp,m:a.m,A:AC[a.type],v:a.v||0,freeze:tt=>{a.wreck=true;a.wp=Object.assign({},a.p,{lights:false,gear:1});a.hitT=tt}});
+  for(let i=0;i<n;i++){const a=AI[i];if(!a.fp)continue;
+    for(let j=i+1;j<n;j++){const b=AI[j];if(!b.fp||(a.wreck&&b.wreck)||!vOver(a.fp,b.fp))continue;
+      if(fpDist(a.fp,b.fp,0)===0)aiHit(ent(a),ent(b),t)}
+    if(a.wreck)continue;
+    parked.forEach((m,pi)=>{if(!a.fp||m.userData.hit)return;const P=PARKED_FP[pi]||(PARKED_FP[pi]=fpAt(footOf(AC[m.userData.type]),m.position.x,m.position.z,-m.rotation.y,RWY.elev));
+      if(vOver(a.fp,P)&&fpDist(a.fp,P,0)===0){m.userData.hitT=t;aiHit(ent(a),{fp:P,m,A:AC[m.userData.type],v:0,freeze:()=>{}},t)}})}
+  parked.forEach((m,pi)=>{if(m.userData.hit&&t<m.userData.hitT-.5)repairParked(pi)})}
+function repairParked(pi){const o=parked[pi],sp=o.userData.spec,m=buildAircraftModel(AC[sp.type],sp.opt);m.userData.spec=sp;m.userData.type=sp.type;m.position.copy(o.position);m.rotation.copy(o.rotation);
+  scene.remove(o);scene.add(m);parked[pi]=m;for(let i=EMIT.length-1;i>=0;i--)if(EMIT[i].m===o)EMIT.splice(i,1);if(CFG.night)m.userData.cabinMat.emissive.setHex(0x7a6440)}
+function playerHit(){const s=ST;if(s.ended||mode!=='fly')return;
+  const A=s.ac,pf=fpAt(footOf(A),s.x,s.z,s.psi,s.y);
+  for(const a of AI){if(!a.p||!a.m.visible||!a.fp||!vOver(pf,a.fp)||fpDist(pf,a.fp,0)>0)continue;
+    const B=AC[a.type],hb=hitOn(a.fp,pf);damageModel(a.m,B,hb,clamp(Math.max(s.V,a.v||0)/30,.4,1.5));a.wreck=true;a.wp=Object.assign({},a.p,{lights:false,gear:1});a.hitT=s.t;
+    return crash('Collided with another aircraft','The '+A.short+' struck a '+B.short+(s.y<RWY.elev+20?' on the ground':' in the air')+'.')}}
+function aiTick(){updateAI();if(CFG.game!=='watch')playerHit()}
+
 function updateAI(){
-  const t=ST.t||0;
-  for(const a of AI){const p=a.fn(t);if(!p||Math.hypot(p.x,p.z)>30000){a.m.visible=false;continue}
+  const t=ST.t||0;aiControl(t);
+  for(const a of AI){const p=a.wreck?a.wp:a.fn(a.tau);if(!p||Math.hypot(p.x,p.z)>30000){a.m.visible=false;a.p=null;continue}
     a.m.visible=true;a.m.position.set(p.x,p.y,p.z);a.m.rotation.set(p.theta||0,-p.psi,-(p.phi||0),'YXZ');
     const gr=a.m.userData.gear;gr.visible=p.gear>.5;a.ll.visible=!!p.lights;
     const dt=Math.max(1e-3,t-(a.pt??t-.016));const dphi=a.pp?angDiff(p.phi||0,a.pp.phi||0)/dt:0,dth=a.pp?((p.theta||0)-(a.pp.theta||0))/dt:0;
     if(a.pp){a.v=Math.hypot(p.x-a.pp.x,p.z-a.pp.z,p.y-a.pp.y)/dt}a.pp={x:p.x,y:p.y,z:p.z,phi:p.phi||0,theta:p.theta||0};a.pt=t;a.p=p;
     a.ail=lerp(a.ail||0,clamp(dphi/(8*D2R),-1,1),.1);a.el=lerp(a.el||0,clamp(dth/(3*D2R),-1,1),.1);
     animateSurfaces(a.m,a.ail,a.el,p.gear>.5?(p.y>RWY.elev+.5?.85:p.spl?.85:.35):(p.y<900?.2:0),p.spl?1:0)}
+  aiCollide(t);
 }
 
 /* =====================================================================
@@ -3477,8 +3626,8 @@ function frame(now,manual){
   atcUpdate(dt);
   const t=now/1000;LIGHT_U.uTime.value=t;WATER_U.uTime.value=t;
   const sdt=dt*(mode==='fly'?CFG.ts:1);
-  if(!paused){updateTraffic(sdt,CFG.night);updateShips(sdt,t);updateFX(dt)}
-  updateAI();if(gseLamps)updateGSE();
+  if(!paused){updateTraffic(sdt,CFG.night);updateShips(sdt,t);updateFX(dt);updateDamageFX(dt)}
+  updateAI();if(mode==='fly'&&!paused&&CFG.game!=='watch')playerHit();if(gseLamps)updateGSE();
   updateAircraftVisual();if(hoops)hoops.visible=CFG.guide&&!SPOTS[CFG.view]&&CFG.view!=='tower';
   if(deckGroup&&deckGroup.visible){drawDisplays(dt);animateDeck()}
   if(mode==='attract'){attractCamera(dt)}else updateCamera(dt);
@@ -3526,9 +3675,9 @@ const fontsReady=document.fonts&&document.fonts.ready?Promise.race([document.fon
 fontsReady.then(()=>setTimeout(boot,30));
 
 /* test hooks */
-window.__kt={CFG,ST,COACH,LESSON,keys,coachUpdate,coachResync,coachGo,rwL,get PATH(){return PATH},LND,setRunway,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,{rwy:'13'},o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.rwy==='31'&&CFG.game!=='learn'?CFG.game+'31':CFG.game}]`).checked=true;document.querySelector(`input[name=tod][value=${CFG.night?'night':'day'}]`).checked=true;startFlight()},
-  run:(sec)=>{if(CFG.game==='watch'){ST.t+=sec;return {t:ST.t}}const h=1/120;for(let i=0;i<sec*120&&!ST.ended;i++){physStep(h);if(i%60===0)recordHistory()}return {ended:ST.ended,td:ST.td,t:ST.t,x:ST.x,y:ST.y,z:ST.z,V:ST.V/KT,d:PATH.pts[ST.pi].d}},
-  get mode(){return mode},get CFG(){return CFG},frame:(now)=>frame(now,true),get FOCUS(){return FOCUS},step:()=>physStep(1/120),rwS,setZoom:z=>{CFG.zoom=z},get AI(){return AI},get GSE(){return GSE},get parked(){return parked},gseAt:(t)=>{ST.t=t;updateGSE();return GSE.map(e=>({k:e.kind,x:e.p.x,z:e.p.z,psi:e.p.psi,lift:e.lift}))},get shipLights(){return shipLights},get SHIPS(){return SHIPS},get DISP(){return DISP},get deck(){return deckGroup},get streetCam(){return STREET_CAM},get BB(){return BB},get water(){return water},get camera(){return camera},get nStreets(){return STREETS.length},drawDisplays,look,setView,terrainAt,buildingAt,groundInfo};
+window.__kt={AI,CFG,ST,COACH,LESSON,keys,coachUpdate,coachResync,coachGo,rwL,get PATH(){return PATH},LND,setRunway,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,{rwy:'13'},o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.rwy==='31'&&CFG.game!=='learn'?CFG.game+'31':CFG.game}]`).checked=true;document.querySelector(`input[name=tod][value=${CFG.night?'night':'day'}]`).checked=true;startFlight()},
+  run:(sec)=>{if(CFG.game==='watch'){ST.t+=sec;return {t:ST.t}}const h=1/120;for(let i=0;i<sec*120&&!ST.ended;i++){physStep(h);if(i%60===0)recordHistory();if(i%12===0)aiTick()}return {ended:ST.ended,td:ST.td,t:ST.t,x:ST.x,y:ST.y,z:ST.z,V:ST.V/KT,d:PATH.pts[ST.pi].d}},
+  get mode(){return mode},get CFG(){return CFG},frame:(now)=>frame(now,true),get FOCUS(){return FOCUS},step:()=>physStep(1/120),rwS,setZoom:z=>{CFG.zoom=z},get AI(){return AI},rwL,updateAI,AIC,footOf,fpAt,fpDist,hitOn,damageModel,aiHit,DEBRIS,EMIT,aiTick,get ctl(){return aiControl},get GSE(){return GSE},get parked(){return parked},gseAt:(t)=>{ST.t=t;updateGSE();return GSE.map(e=>({k:e.kind,x:e.p.x,z:e.p.z,psi:e.p.psi,lift:e.lift}))},get shipLights(){return shipLights},get SHIPS(){return SHIPS},get DISP(){return DISP},get deck(){return deckGroup},get streetCam(){return STREET_CAM},get BB(){return BB},get water(){return water},get camera(){return camera},get nStreets(){return STREETS.length},drawDisplays,look,setView,terrainAt,buildingAt,groundInfo};
 })();
 </script>
 <!--/FRAG:BODY-->
