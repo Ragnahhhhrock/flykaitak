@@ -1,5 +1,31 @@
 [
   {
+    "slug": "cantonese-language-toggle",
+    "title": "Fly Kai Tak in Cantonese: a language toggle on the home screen",
+    "dek": "A new EN / 粵 button on the home screen switches all of the setup text between English and Cantonese, and remembers your choice.",
+    "description": "Fly Kai Tak's home screen now has an English / Cantonese toggle: the whole setup screen switches to written Cantonese and remembers your choice.",
+    "date": "2026-10-03",
+    "tag": "Feature",
+    "keywords": [
+      "Kai Tak",
+      "flight simulator",
+      "Cantonese",
+      "廣東話",
+      "language toggle",
+      "Hong Kong",
+      "browser game",
+      "Hong Kong 1998"
+    ],
+    "hero": "home-cantonese",
+    "hero_alt": "The Fly Kai Tak setup screen in Cantonese, with the EN and 粵 button at the top left.",
+    "hero_caption": "The setup screen in Cantonese. The EN / 粵 button is at the top left.",
+    "card_kicker": "VHHH · LANGUAGE · 1998",
+    "card_title": "Now in Cantonese",
+    "card_sub": "EN / 粵 toggle on the home screen",
+    "card_image": "home-cantonese",
+    "card_focus": 50
+  },
+  {
     "slug": "the-peak-tram-lookout-and-view",
     "title": "The Peak Tram, the Peak Lookout and a view from the Peak",
     "dek": "Ride the Peak Tram up from Garden Road, find the Peak Lookout beside the Peak Tower, and watch the approach from the top of the Peak.",

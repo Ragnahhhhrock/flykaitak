@@ -80,6 +80,12 @@ button,select,input{font-family:inherit}
 #setup[hidden]{display:none!important}
 .topnav{position:absolute;top:16px;left:28px;display:flex;align-items:flex-start;gap:8px;z-index:2}
 .navitem{display:inline-flex;align-items:center;box-sizing:border-box;height:38px;line-height:1;padding:8px 16px;background:var(--panel);border:1px solid var(--line-2);border-radius:3px;color:var(--paper);font-family:var(--f-num);font-size:12px;letter-spacing:.16em;text-transform:uppercase;text-decoration:none;backdrop-filter:blur(6px)}
+button.navitem{cursor:pointer}
+.langtog{gap:0;padding:0;overflow:hidden}
+.langtog span{display:inline-flex;align-items:center;height:100%;padding:0 12px;color:var(--muted)}
+.langtog span.on{background:var(--checker);color:var(--checker-ink)}
+.langtog span[data-l=zh]{font-family:var(--f-han);font-weight:900;letter-spacing:0}
+html:lang(zh) body{font-family:var(--f-ui),"PingFang HK","Microsoft JhengHei","Noto Sans TC","Heiti TC",sans-serif}
 .navitem:hover{border-color:var(--checker)}
 .navitem:focus-visible{outline:2px solid var(--checker);outline-offset:2px}
 .brand{display:flex;align-items:flex-end;gap:22px;padding:32px 28px 40px;min-width:0}
@@ -332,7 +338,7 @@ html,body{overscroll-behavior:none;touch-action:manipulation}
 <div id="radio" aria-live="off" hidden></div>
 
 <section id="setup" hidden>
-  <nav class="topnav" aria-label="Site"><a class="navitem" href="/blog/">Blog</a></nav>
+  <nav class="topnav" aria-label="Site"><a class="navitem" href="/blog/">Blog</a><button class="navitem langtog" id="btnLang" type="button" aria-pressed="false" aria-label="Language: English / 廣東話" title="English / 廣東話"><span data-l="en" class="on">EN</span><span data-l="zh" lang="zh-HK">粵</span></button></nav>
   <div class="brand">
     <h2 class="han" lang="zh-Hant" aria-label="啟德機場 Kai Tak Airport"><span>啟</span><span>德</span><span>機</span><span>場</span></h2>
     <div class="brand-meta">
@@ -2467,7 +2473,80 @@ const wxChips=document.getElementById('wxChips'),wxSel=document.getElementById('
 for(const k in WX){const l=document.createElement('label');l.className='chip';l.innerHTML=`<input type="radio" name="wx" value="${k}" ${k===CFG.wx?'checked':''}><span>${WX[k].label}</span>`;wxChips.appendChild(l);const o=document.createElement('option');o.value=k;o.textContent=WX[k].label;wxSel.appendChild(o)}
 const MODE_TXT={approach:['Begin descent','Start on the IGS at 3,100 ft and land on Runway 13.'],free:['Line up on Runway 13','Start lined up on Runway 13. Full thrust, pull back at about 150 kt, then fly anywhere. Landings are graded but the flight carries on.'],
   watch:['Watch the airport','No flying. Arrivals land every couple of minutes and departures roll in between. Pick a spectator spot, follow a jet, or speed up time.']};
-for(const r of document.querySelectorAll('input[name=game]'))r.addEventListener('change',()=>{const m=document.querySelector('input[name=game]:checked').value;document.getElementById('goLabel').textContent=MODE_TXT[m][0];document.getElementById('modeNote').textContent=MODE_TXT[m][1]});
+for(const r of document.querySelectorAll('input[name=game]'))r.addEventListener('change',()=>{const m=document.querySelector('input[name=game]:checked').value;document.getElementById('goLabel').textContent=MODE_TXT[m][0];document.getElementById('modeNote').textContent=MODE_TXT[m][1];applyLang()});
+/* LANGUAGE: English / Cantonese toggle for the home screen */
+const ZH={
+'Blog':'網誌',
+'Another Mal Gordon project':'Mal Gordon 嘅另一個作品',
+'☕ Buy me a coffee · $5 AUD':'☕ 請我飲杯咖啡 · 5 澳元',
+'Hong Kong · 1998':'香港 · 1998',
+'VHHH · KAI TAK':'VHHH · 啟德',
+'IGS approach · Runway 13':'IGS 進場 · 13 號跑道',
+'Hit the checkerboard, turn right, land before the harbour.':'對正棋盤，向右急轉，喺海旁之前降落。',
+'You start the descent over Tsing Yi at about 3,000 ft, established on the instrument guidance system, heading 088. Follow it toward the orange-and-white checkerboard on the hill, then make the 47° right turn low over Kowloon City and line up with a runway that ends in Kowloon Bay.':'你喺青衣上空約 3,000 呎開始下降，已經對正儀器導航系統（IGS），航向 088。跟住佢飛向山上嘅橙白棋盤，然後喺九龍城上空低飛，向右急轉 47°，對正一條盡頭係九龍灣嘅跑道。',
+'Mode':'模式','Aircraft':'機型','Time of day':'時間','Weather':'天氣','Options':'選項',
+'IGS 13 approach':'IGS 13 進場','Free flight':'自由飛行','Plane Spotter':'觀機',
+'Day':'日間','Night':'夜間',
+'Begin descent':'開始下降',
+'Start on the IGS at 3,100 ft and land on Runway 13.':'喺 3,100 呎對正 IGS 開始，然後降落 13 號跑道。',
+'Line up on Runway 13':'對正 13 號跑道',
+'Start lined up on Runway 13. Full thrust, pull back at about 150 kt, then fly anywhere. Landings are graded but the flight carries on.':'由 13 號跑道起步。推滿油門，約 150 節時拉桿，之後可以飛去任何地方。降落會被評分，但飛行會繼續。',
+'Watch the airport':'觀看機場',
+'No flying. Arrivals land every couple of minutes and departures roll in between. Pick a spectator spot, follow a jet, or speed up time.':'唔使駕駛。每隔幾分鐘就有航班降落，期間亦有航班起飛。揀個觀賞位置、跟住一架客機，或者加快時間。',
+'Four engines · upper-deck hump':'四引擎 · 上層艙隆起',
+'Two engines · new for 1996':'雙引擎 · 1996 年新機',
+'Two engines · regional workhorse':'雙引擎 · 區域主力機',
+'Four engines · long haul':'四引擎 · 長途機',
+'Clear':'晴朗','Rain':'落雨','Typhoon':'颱風','Storm':'雷暴','Low cloud':'低雲','Fog':'大霧',
+'Clouds':'雲層',
+'Cloud layers and flying through them. Untick for a clear sky in any weather.':'雲層，同埋穿過雲層飛行。取消剔選，無論咩天氣都係萬里無雲。',
+'Lightning':'閃電',
+'Adds flashes and thunder to any weather. Storm turns it on anyway.':'任何天氣都加入閃電同雷聲。雷暴天氣會自動開啟。',
+'Approach guide':'進場指引',
+'Magenta gates along the IGS path and the turn.':'沿 IGS 航道同轉彎位置顯示洋紅色指引門。',
+'Computer flies the aircraft':'電腦駕駛',
+'Autopilot and autothrottle fly the approach. Pick a cabin seat and watch.':'自動駕駛同自動油門負責進場。揀個客艙座位坐低睇。',
+'Kowloon Walled City as it stood before 1994':'1994 年前嘅九龍寨城',
+'It was demolished in 1993–94. Untick to see the 1998 park instead.':'寨城喺 1993–94 年拆卸。取消剔選就會睇到 1998 年嘅公園。',
+'Controls':'操作',
+'Pitch: up arrow pushes the nose down, down arrow pulls it up. The on-screen yoke works the same way with touch or mouse: drag down to pull up, drag up to push down':'俯仰：上箭咀向下壓機頭，下箭咀向上拉機頭。螢幕上嘅操縱桿用觸控或滑鼠都一樣：向下拖就拉起，向上拖就壓低',
+'Roll (nosewheel steering on the runway)':'橫滾（喺跑道上就係前輪轉向）',
+'Thrust up / down':'增加 / 減少推力',
+'Landing gear':'起落架',
+'Flaps extend / retract':'襟翼放出 / 收回',
+'Cycle view: cockpit, exterior, tower, cabin':'切換視角：駕駛艙、機外、控制塔、客艙',
+'Autopilot on/off':'自動駕駛 開 / 關',
+'Show or hide the cockpit panel (cockpit view)':'顯示或隱藏駕駛艙儀表板（駕駛艙視角）',
+'Day/night, pause, clouds':'日夜、暫停、雲層',
+'Zoom in / out (1× to 16×)':'放大 / 縮小（1× 至 16×）',
+'Time speed 1×, 2×, 4×, 8×':'時間速度 1×、2×、4×、8×',
+'Jump back / forward 10 seconds (back works after a crash too)':'後退 / 前進 10 秒（撞機之後亦可以後退）',
+'Drag the view':'拖曳畫面',
+'Look around (cockpit, cabin) or orbit (exterior)':'環顧四周（駕駛艙、客艙）或者繞機飛行（機外）',
+'Brakes and reversers work automatically after touchdown. Pull thrust to idle in the flare.':'著陸後煞車同反推力會自動運作。拉平時將推力收到慢車。',
+'Aerial imagery and map data © Lands Department, HKSAR Government (CSDI open data). Elevation: SRTM via AWS Terrain Tiles. Modern imagery is corrected to 1998 around Kai Tak, West Kowloon and the Central waterfront.':'航空影像及地圖資料 © 香港特別行政區政府地政總署（CSDI 開放數據）。高度數據：SRTM，經 AWS Terrain Tiles 提供。啟德、西九龍同中環海旁一帶嘅現代影像已校正為 1998 年嘅面貌。',
+'Contact:':'聯絡：',
+'Coming in later versions':'日後版本',
+'Aircraft: 747-200/300, 767-300, MD-11, A300-600, A320, 737-300, L-1011 TriStar, DC-10.':'機型：747-200/300、767-300、MD-11、A300-600、A320、737-300、L-1011 TriStar、DC-10。',
+'Radio: more crews and voices, taxi and ground calls.':'無線電：更多機組人員同聲線，以及滑行同地面通話。'
+};
+const ZH_RE=[[/^Vref (\S+) kt · span (\S+) m$/,'進場速度 $1 節 · 翼展 $2 米'],[/^Boeing (.+)$/,'波音 $1'],[/^Airbus (.+)$/,'空中巴士 $1']];
+const langOrig=new WeakMap();
+let LANG='en';try{if(localStorage.getItem('fkt-lang')==='zh')LANG='zh'}catch(e){}
+function zhOf(s){const t=s.trim();if(!t)return null;if(Object.prototype.hasOwnProperty.call(ZH,t))return ZH[t];for(const [re,r] of ZH_RE)if(re.test(t))return t.replace(re,r);return null}
+function applyLang(){
+  const w=document.createTreeWalker(document.getElementById('setup'),NodeFilter.SHOW_TEXT);
+  for(let n;n=w.nextNode();){
+    if(n.parentNode.closest('#btnLang'))continue;
+    let o=langOrig.get(n);if(o===undefined){o=n.nodeValue;langOrig.set(n,o)}
+    const z=LANG==='zh'?zhOf(o):null;
+    const v=z===null?o:o.slice(0,o.length-o.trimStart().length)+z+o.slice(o.trimEnd().length);
+    if(n.nodeValue!==v)n.nodeValue=v}
+  document.documentElement.lang=LANG==='zh'?'zh-HK':'en';
+  const b=document.getElementById('btnLang');b.setAttribute('aria-pressed',LANG==='zh');
+  for(const s of b.querySelectorAll('span'))s.classList.toggle('on',s.dataset.l===LANG)}
+document.getElementById('btnLang').addEventListener('click',e=>{LANG=LANG==='zh'?'en':'zh';try{localStorage.setItem('fkt-lang',LANG)}catch(_){}track('language_toggle',{language:LANG==='zh'?'cantonese':'english'});applyLang();e.currentTarget.blur()});
+applyLang();
 function readSetup(){CFG.game=document.querySelector('input[name=game]:checked').value;CFG.ac=document.querySelector('input[name=ac]:checked').value;CFG.night=document.querySelector('input[name=tod]:checked').value==='night';CFG.wx=document.querySelector('input[name=wx]:checked').value;
   CFG.lightning=document.getElementById('optLightning').checked;CFG.clouds=document.getElementById('optClouds').checked;CFG.guide=document.getElementById('optGuide').checked;CFG.ap=document.getElementById('optAP').checked;CFG.walled=document.getElementById('optWalled').checked}
 document.getElementById('setup').addEventListener('change',e=>{const t=e.target;if(!t||t.tagName!=='INPUT')return;
