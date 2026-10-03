@@ -34,8 +34,8 @@ Data: © Lands Department, HKSAR Government (CSDI). Elevation: SRTM via AWS Terr
 - Zoom 1×, 2×, 4×, 8×, 16× (I / O); time 1×, 2×, 4×, 8× (T); jump back or forward 10 seconds ([ / ]), including back from a crash
 - GPWS callouts and warnings, engine, wind, rain and thunder sound
 
-## Background reel
-The home screen opens on a checkerboard screenshot (`assets/home/checkerboard.jpg`), then plays a 58-second muted reel once (`assets/video/reel.mp4`, with a WebM fallback), then settles on an aerial view of the airport (`assets/home/aerial-kai-tak.jpg`). The stills are screenshots of the sim. The reel is rendered from the sim itself: a 747 at night, an A330 breaking out of low cloud, gear and flaps deploying, the turn at the checkerboard, ailerons over Kowloon City, a 747 low over a Kowloon City street, a 777 crabbing in a typhoon, an A340 in a lightning storm, and touchdowns in rain and at night. It's paused during play. Reduced-motion users get the checkerboard still only.
+## Demo reel
+The home screen shows the live sim of the airport in the background, with a 58-second muted demo reel (`assets/video/reel.mp4`, with a WebM fallback) looping in a framed inset beside the title. It's rendered from the sim itself: a 747 at night, an A330 breaking out of low cloud, gear and flaps deploying, the turn at the checkerboard, ailerons over Kowloon City, a 747 low over a Kowloon City street, a 777 crabbing in a typhoon, an A340 in a lightning storm, and touchdowns in rain and at night. It pauses during play; reduced-motion users see the poster frame.
 
 ## Site
 - Contact: contact@flykaitak.com

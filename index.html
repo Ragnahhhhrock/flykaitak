@@ -60,20 +60,11 @@ window.FKT_ANALYTICS={id:'G-7MNP3SBEF8',src:'/metrics/',fallback:'https://www.go
 }
 html,body{height:100%;margin:0;background:var(--ink);color:var(--text);font-family:var(--f-ui);overflow:hidden;-webkit-tap-highlight-color:transparent}
 #gl{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
-#reel{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;background:var(--ink);pointer-events:none}
+/* Home screen: the live sim renders behind; the demo reel plays in a framed inset beside the title. */
+#reel{display:block;width:clamp(220px,26vw,440px);aspect-ratio:16/9;object-fit:cover;background:var(--ink);border:1px solid var(--line-2);border-radius:4px;box-shadow:0 18px 50px rgba(0,0,0,.55);pointer-events:none}
 #reel[hidden]{display:none!important}
-/* Home-screen background: checkerboard still, then the reel (plays once), then the aerial view of the airport. Stills are screenshots of the sim. */
-#homebg{position:fixed;inset:0;overflow:hidden;background:var(--ink);pointer-events:none}
-#homebg[hidden]{display:none!important}
-.hb{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity 1.6s ease}
-.hb-checker{background-image:url(assets/home/checkerboard.jpg)}
-.hb-aerial{background-image:url(assets/home/aerial-kai-tak.jpg)}
-#homebg[data-stage="checker"] .hb-checker,#homebg[data-stage="aerial"] .hb-aerial{opacity:1}
-#homebg[data-stage="checker"] .hb-checker{animation:hbPush 9s ease-out forwards}
-#homebg[data-stage="aerial"] .hb-aerial{animation:hbDrift 50s ease-in-out infinite alternate}
-@keyframes hbPush{from{transform:scale(1)}to{transform:scale(1.06)}}
-@keyframes hbDrift{from{transform:scale(1.02) translate3d(0,0,0)}to{transform:scale(1.1) translate3d(-1.5%,1%,0)}}
-@media (prefers-reduced-motion:reduce){.hb{transition:none}#homebg .hb{animation:none!important}}
+.reelbox{display:grid;gap:0;margin-bottom:10px}
+.reelbox .checkband{height:8px;background-size:8px 8px;width:clamp(220px,26vw,440px);border-radius:2px}
 #hud{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
 button,select,input{font-family:inherit}
 .btn{appearance:none;border:1px solid var(--line-2);background:var(--panel-2);color:var(--text);font-size:12px;letter-spacing:.06em;text-transform:uppercase;padding:8px 11px;border-radius:3px;cursor:pointer;line-height:1}
@@ -187,13 +178,15 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
 .res-actions .go{flex:1;justify-content:center}
 .res-actions .btn{padding:13px 14px}
 
-#loading{position:fixed;inset:0;display:grid;place-items:end center;padding-bottom:12vh;background:linear-gradient(180deg,rgba(10,17,21,.15),rgba(10,17,21,.75));font-family:var(--f-num);font-size:12px;letter-spacing:.2em;color:var(--muted)}
+#loading{position:fixed;inset:0;display:grid;place-items:center;background:var(--ink);font-family:var(--f-num);font-size:12px;letter-spacing:.2em;color:var(--muted)}
 #loading[hidden]{display:none!important}
 
 @media (max-width:820px){
   #setup{grid-template-columns:minmax(0,1fr);background:rgba(10,17,21,.55)}
   .brand{padding:20px 16px 8px;align-items:center}
   .han{grid-auto-flow:column;font-size:clamp(40px,12vw,64px)}
+  .brand{flex-wrap:wrap;gap:12px}.brand-meta{flex:1 1 100%}
+  #reel,.reelbox .checkband{width:100%}
   .sheet{border-left:0}
   .sheet-body{padding:18px 16px 24px}
   #map{width:112px;height:112px}
@@ -208,8 +201,6 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
 <body>
 <!--FRAG:BODY-->
 <canvas id="gl"></canvas>
-<video id="reel" muted playsinline preload="auto" poster="assets/video/reel-poster.jpg" aria-hidden="true"><source src="assets/video/reel.mp4" type="video/mp4"><source src="assets/video/reel.webm" type="video/webm"></video>
-<div id="homebg" data-stage="checker" aria-hidden="true"><div class="hb hb-checker"></div><div class="hb hb-aerial"></div></div>
 <canvas id="hud"></canvas>
 <div id="cabin" hidden><div class="tag" id="seattag">ROW 34 · SEAT A</div></div>
 <canvas id="map" hidden width="336" height="336"></canvas>
@@ -261,6 +252,7 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
   <div class="brand">
     <h2 class="han" lang="zh-Hant" aria-label="啟德機場 Kai Tak Airport"><span>啟</span><span>德</span><span>機</span><span>場</span></h2>
     <div class="brand-meta">
+      <div class="reelbox"><video id="reel" muted autoplay loop playsinline preload="auto" poster="assets/video/reel-poster.jpg" aria-label="Demo reel: approaches into Kai Tak"><source src="assets/video/reel.mp4" type="video/mp4"><source src="assets/video/reel.webm" type="video/webm"></video><div class="checkband" aria-hidden="true"></div></div>
       <div class="code">VHHH · KAI TAK</div>
       <div class="sub">Hong Kong · 1998</div>
       <div class="credit"><a href="https://malgordon.com" target="_blank" rel="noopener">Another Mal Gordon project</a></div>
@@ -2277,18 +2269,10 @@ const reel=document.getElementById('reel');let reelOK=true;
 // Stripe Payment Link for the $5 USD "Buy me a coffee" button. Paste the https://buy.stripe.com/... URL here; the button stays hidden until it is set.
 const STRIPE_LINK='';
 {const c=document.getElementById('btnCoffee');if(/^https:\/\/(buy|donate)\.stripe\.com\//.test(STRIPE_LINK)){c.href=STRIPE_LINK;c.hidden=false}}
-// Home background sequence: checkerboard still (2.5 s) → reel plays once → aerial view of the airport. Reduced motion: checkerboard still only.
-const hb=document.getElementById('homebg');let hbOn=false,hbT=0;
+// Home demo reel: loops in an inset while the live sim renders behind. Reduced motion: poster only.
 const reducedMotion=()=>!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
-reel.addEventListener('ended',()=>{if(hbOn)hb.dataset.stage='aerial'});
-function reelShow(on){
-  clearTimeout(hbT);hbOn=on;hb.hidden=!on;reel.pause();if(!on){reel.hidden=true;return}
-  reel.hidden=!reelOK;hb.dataset.stage='checker';try{reel.currentTime=0}catch(e){}
-  if(reducedMotion())return;
-  hbT=setTimeout(()=>{if(!hbOn)return;
-    if(!reelOK){hb.dataset.stage='aerial';return}
-    reel.hidden=false;reel.play().then(()=>{if(hbOn)hb.dataset.stage='reel'}).catch(()=>{if(hbOn)hb.dataset.stage='aerial'})},2500);
-}
+if(reducedMotion())reel.removeAttribute('autoplay');
+function reelShow(on){if(!reelOK)return;if(on&&!reducedMotion())reel.play().catch(()=>{});else reel.pause()}
 function showSetup(){reelShow(true);flightEnd('quit');mode='attract';paused=false;for(const id of['bar','ctl','map','result','cabin'])document.getElementById(id).hidden=true;document.getElementById('setup').hidden=false;sfx.stopAll();if(synth)synth.cancel();radioClear();
   clearFX();CFG.ap=true;resetFlight();ST.ap=true;spawnAircraftModel();buildAI();CFG.view='chase';applyEnvironment();setWalled(document.getElementById('optWalled').checked)}
 function startFlight(){
@@ -2366,8 +2350,7 @@ function frame(now,manual){
       {rev,brake:on&&s.Gs>6?clamp(s.Gs/70,.05,.4)*.22:0,gearMove:gm&&!s.ended,flapMove:Math.abs(s.flapPos-s.flapIdx)>.01&&!s.ended,gearDrag:s.ended?0:s.gearPos*clamp(s.V/90,0,1)})}
   if(toastT&&now>toastT){document.getElementById('toast').classList.remove('on');toastT=0}
   LIGHT_U.uScale.value=HH*renderer.getPixelRatio()/(2*Math.tan(camera.fov*D2R/2));
-  const reelCovers=mode==='attract'&&hbOn;
-  if(!reelCovers)renderer.render(scene,camera);drawHUD();if(mode==='fly')drawMap();
+  renderer.render(scene,camera);drawHUD();if(mode==='fly')drawMap();
 }
 
 /* =====================================================================
