@@ -175,6 +175,7 @@ def share_box(p, where):
         ("reddit", "Reddit", f"https://www.reddit.com/submit?url={u}&title={urllib.parse.quote(p['title'], safe='')}"),
         ("linkedin", "LinkedIn", f"https://www.linkedin.com/sharing/share-offsite/?url={u}"),
         ("whatsapp", "WhatsApp", f"https://wa.me/?text={t}%20{u}"),
+        ("threads", "Threads", f"https://www.threads.net/intent/post?text={t}%20{u}"),
     ]
     items = "".join(f'<li><a data-method="{m}" href="{h}" target="_blank" rel="noopener noreferrer">{l}</a></li>' for m, l, h in links)
     mail = f"mailto:?subject={urllib.parse.quote(p['title'], safe='')}&body={u}"

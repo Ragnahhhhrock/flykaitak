@@ -1,5 +1,27 @@
 [
   {
+    "slug": "share-on-threads",
+    "title": "Share Fly Kai Tak posts on Threads",
+    "dek": "Every blog post now has a Threads share button alongside X, Facebook, Reddit, LinkedIn, WhatsApp, email and copy link.",
+    "description": "Fly Kai Tak blog posts can now be shared on Threads with one click, with the title and link pre-filled.",
+    "date": "2026-10-03",
+    "tag": "Update",
+    "keywords": [
+      "Threads",
+      "share",
+      "Fly Kai Tak",
+      "blog"
+    ],
+    "hero": "lm-boc",
+    "hero_alt": "The Bank of China Tower and the Central skyline in Fly Kai Tak.",
+    "hero_caption": "Found a view you like? Share the post it came from.",
+    "card_kicker": "BLOG · SHARING",
+    "card_title": "Share on Threads",
+    "card_sub": "A new share button on every post",
+    "card_image": "lm-boc",
+    "card_focus": 50
+  },
+  {
     "slug": "landmarks-ocean-park-happy-valley",
     "title": "Landmarks tour, plus Ocean Park and Happy Valley",
     "dek": "From the Bank of China Tower to the Garden Hill beacon: the landmarks you can spot around Kai Tak, and two new additions, Ocean Park and Happy Valley Racecourse.",

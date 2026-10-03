@@ -15,5 +15,5 @@ When flying routes to create screenshots, toggle the cockpit off. `tools/screens
 4. Run `python3 tools/blog_images.py <slug>` to render the 1200x630 social card, then `python3 tools/blog.py` to build the pages, feed and sitemap.
 5. Commit and push everything, including the generated `blog/` pages.
 
-The generator adds the title, description, canonical, Open Graph and Twitter tags, BlogPosting and breadcrumb JSON-LD, share buttons (X, Facebook, Reddit, LinkedIn, WhatsApp, email, copy link, native share), the RSS feed entry and the sitemap entry.
+The generator adds the title, description, canonical, Open Graph and Twitter tags, BlogPosting and breadcrumb JSON-LD, share buttons (X, Facebook, Reddit, LinkedIn, WhatsApp, Threads, email, copy link, native share), the RSS feed entry and the sitemap entry.
 Only state facts that are in the README or the code. Do not use real airline names or logos.
