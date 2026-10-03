@@ -2003,7 +2003,7 @@ function hsShowResult(g,s){
   rankEl.textContent=rankTitle(e.s)+' · #'+pos;note.textContent=pos===1?'New number one on the table.':'Score '+e.s+'. Ranks: Captain 90+, First Officer 76+, Second Officer 60+, Flight Engineer 45+.';
   tbl.innerHTML=hsTable(e.id,5,true)}
 let HS_ENTRY=null;
-function hsCommitName(){if(!HS_ENTRY)return;const el=document.getElementById('hsName');const n=hsRename(HS_ENTRY,el.value);el.value=n;document.getElementById('hsResTable').innerHTML=hsTable(HS_ENTRY.id,5,true);hsRenderHome()}
+function hsCommitName(){if(!HS_ENTRY)return;const el=document.getElementById('hsName');const n=hsRename(HS_ENTRY,el.value);el.value=n;document.getElementById('hsResTable').innerHTML=hsTable(HS_ENTRY.id,5,true);hsRenderHome();updateShare()}
 
 /* =====================================================================
    SOUND
@@ -2948,11 +2948,14 @@ function showResult(){
 let RES=null;
 const SHARE_URL='https://flykaitak.com/';
 const shareLink=m=>SHARE_URL+'?utm_source='+m+'&utm_medium=social&utm_campaign=report_card';
+const RANK_ZH={'Captain':'機長','First Officer':'副機師','Second Officer':'第二副機師','Flight Engineer':'飛行工程師','Cadet':'學員'};
+function shareRank(){if(!RES||RES.kind!=='landed'||!HS_ENTRY)return null;const e=HS_ENTRY,pos=hsSort(hsLocal().slice()).findIndex(x=>x.id===e.id)+1;return{t:rankTitle(e.s),n:e.n,pos}}
 function shareText(){const r=RES;if(!r)return'Fly Kai Tak: land a jet on Runway 13 at Kai Tak, Hong Kong, 1998.';
+  const rk=shareRank();
   if(LANG==='zh'){
-    if(r.kind==='landed')return`我喺啟德機場 13 號跑道降落咗一架 ${r.ac}：評級 ${r.grade}，${r.pts}/100 分，接地速率 ${r.fpm} fpm。你夠唔夠我叻？`;
+    if(r.kind==='landed')return`我喺啟德機場 13 號跑道降落咗一架 ${r.ac}：評級 ${r.grade}，${r.pts}/100 分，接地速率 ${r.fpm} fpm。${rk?`官階：${RANK_ZH[rk.t]||rk.t}。`:''}你夠唔夠我叻？`;
     return r.kind==='crash'?`我喺啟德進場撞機：${r.title}。你可以做得更好嗎？`:`我放棄咗啟德嘅進場。你可以成功降落嗎？`}
-  if(r.kind==='landed')return`I landed a ${r.ac} on Runway 13 at Kai Tak: grade ${r.grade}, ${r.pts}/100, ${r.fpm} fpm touchdown. Can you beat it?`;
+  if(r.kind==='landed')return`I landed a ${r.ac} on Runway 13 at Kai Tak: grade ${r.grade}, ${r.pts}/100, ${r.fpm} fpm touchdown.${rk?` Rank: ${rk.t}.`:''} Can you beat it?`;
   return r.kind==='crash'?`I crashed on the Kai Tak approach: ${r.title}. Can you do better?`:`I abandoned the Kai Tak approach. Can you land it?`}
 function shareTrack(m){try{track('share',{method:m,content_type:'report_card',result:RES?RES.kind:'',grade:RES?RES.grade:''})}catch(e){}}
 function updateShare(){
@@ -2986,6 +2989,7 @@ async function reportCard(){
   // grade and score
   T(r.grade,W-150,262,190,acc,700,MONO,'center');
   if(r.pts!==null)T(r.pts+' / 100',W-150,322,36,'#e9eee8',400,MONO,'center');
+  const rk=shareRank();if(rk){T(rk.t.toUpperCase(),W-150,374,26,acc,700,MONO,'center');T(rk.n+' · #'+rk.pos,W-150,408,20,'#93a6a2',400,MONO,'center')}
   // stats, two columns
   const sy=lines.length>1?330:290,rs=r.rows.slice(0,6);
   rs.forEach((p,i)=>{const col=i%2,rw=Math.floor(i/2),px=60+col*520,py=sy+rw*62;
