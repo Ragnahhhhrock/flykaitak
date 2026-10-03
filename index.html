@@ -210,9 +210,9 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
 }
 @media (prefers-reduced-motion:reduce){#toast{transition:none}}
 
-/* ---------- mobile: safe areas, compact toolbar, landscape layout, rotate prompt ---------- */
+/* ---------- mobile: safe areas, compact toolbar, landscape layout ---------- */
 html,body{overscroll-behavior:none;touch-action:manipulation}
-#gl,#bar,#ctl,#more,#rotate{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+#gl,#bar,#ctl,#more{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 #bar{left:calc(env(safe-area-inset-left,0px) + 10px);right:calc(env(safe-area-inset-right,0px) + 10px)}
 #map,#radio{left:calc(env(safe-area-inset-left,0px) + 10px)}
 #ctl{padding-left:calc(env(safe-area-inset-left,0px) + 14px);padding-right:calc(env(safe-area-inset-right,0px) + 14px)}
@@ -223,15 +223,6 @@ html,body{overscroll-behavior:none;touch-action:manipulation}
 #more .btn,#more select{display:block;width:100%;min-height:40px;box-sizing:border-box}
 #more select{appearance:none;background:var(--panel-2);color:var(--text);border:1px solid var(--line-2);border-radius:3px;font-size:12px;padding:7px 10px;letter-spacing:.04em}
 #more #btnFs:not([hidden]){display:block}
-#rotate{position:fixed;inset:0;z-index:6;display:grid;place-items:center;padding:24px;background:rgba(6,10,12,.82);text-align:center}
-#rotate[hidden]{display:none!important}
-#rotate .box{max-width:320px;display:grid;gap:14px;justify-items:center}
-#rotate svg{width:84px;height:84px;animation:rotHint 2.6s ease-in-out infinite}
-#rotate h2{margin:0;font-size:20px;line-height:1.2}
-#rotate p{margin:0;color:var(--muted);font-size:13.5px;line-height:1.5}
-#rotate .btn{padding:12px 16px}
-@keyframes rotHint{0%,25%{transform:rotate(0)}65%,100%{transform:rotate(-90deg)}}
-@media (prefers-reduced-motion:reduce){#rotate svg{animation:none}}
 @media (pointer:coarse){
   .btn,.tools select{min-height:40px}
   .cfg .btn{min-height:44px}
@@ -313,15 +304,6 @@ html,body{overscroll-behavior:none;touch-action:manipulation}
   </div>
 </div>
 <div id="more" hidden></div>
-<div id="rotate" role="dialog" aria-modal="true" aria-labelledby="rotH" hidden>
-  <div class="box">
-    <svg viewBox="0 0 84 84" aria-hidden="true"><rect x="26" y="8" width="32" height="68" rx="6" fill="none" stroke="#e9eee8" stroke-width="3"/><rect x="26" y="62" width="32" height="6" fill="#e8571f"/><circle cx="42" cy="71" r="1.6" fill="#e9eee8"/></svg>
-    <h2 id="rotH">Turn your phone sideways</h2>
-    <p>Fly Kai Tak is built for landscape: the instruments, yoke and thrust lever need the width. The flight is paused until you rotate.</p>
-    <p id="rotHint" hidden>Still upright? Turn off Portrait Orientation Lock in Control Centre.</p>
-    <button class="btn" id="btnRotGo" type="button">Fly in portrait anyway</button>
-  </div>
-</div>
 
 <div id="ctl" hidden>
   <div id="stick" aria-label="Control column: drag down to pull the nose up, drag up to push it down, sideways to roll"><div id="knob"></div><div class="lbl">Yoke</div></div>
@@ -2650,10 +2632,10 @@ document.getElementById('seatRow').addEventListener('input',e=>{CFG.seatRow=+e.t
 document.getElementById('seatSide').addEventListener('click',()=>{CFG.seatLeft=!CFG.seatLeft;tog('seat_side',CFG.seatLeft?'left':'right');updateSeatTag()});
 for(const b of document.querySelectorAll('#bar button,#ctl button'))b.addEventListener('click',()=>b.blur());
 
-/* ---------- mobile: compact toolbar, fullscreen + landscape, rotate prompt ---------- */
+/* ---------- mobile: compact toolbar, fullscreen + landscape ---------- */
 const TOUCH=matchMedia('(pointer:coarse)').matches;
-const compactMQ=matchMedia('(max-width:820px),(max-height:520px)'),portraitMQ=matchMedia('(orientation:portrait) and (pointer:coarse) and (max-width:820px)');
-const toolsEl=document.querySelector('#bar .tools'),moreEl=document.getElementById('more'),btnMore=document.getElementById('btnMore'),btnFs=document.getElementById('btnFs'),rotEl=document.getElementById('rotate');
+const compactMQ=matchMedia('(max-width:820px),(max-height:520px)');
+const toolsEl=document.querySelector('#bar .tools'),moreEl=document.getElementById('more'),btnMore=document.getElementById('btnMore'),btnFs=document.getElementById('btnFs');
 const PRIMARY=new Set(['seatbox','viewSel','btnAP','btnPause','btnMore','btnMenu']),TOOL_ELS=[...toolsEl.children];
 function setMore(on){moreEl.hidden=!on;btnMore.setAttribute('aria-expanded',String(on));btnMore.setAttribute('aria-pressed',String(on))}
 function layoutTools(){const c=compactMQ.matches;for(const el of TOOL_ELS)(c&&!PRIMARY.has(el.id)?moreEl:toolsEl).appendChild(el);if(!c)setMore(false)}
@@ -2666,17 +2648,9 @@ function lockLandscape(){try{const o=screen.orientation;if(o&&o.lock&&CFG.game!=
 function goFullscreen(){if(!document.fullscreenEnabled||document.fullscreenElement)return;try{const p=document.documentElement.requestFullscreen({navigationUI:'hide'});if(p&&p.then)p.then(lockLandscape).catch(()=>{})}catch(e){}}
 btnFs.addEventListener('click',()=>{if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});else goFullscreen()});
 document.addEventListener('fullscreenchange',fsLabel);fsLabel();
-// phones: Go goes fullscreen and asks for landscape (Android Chrome honours it; iPhone Safari has no fullscreen or lock, so the rotate prompt covers it)
+// phones: Go goes fullscreen and asks for landscape (Android Chrome honours it; iPhone Safari has neither)
 document.getElementById('btnGo').addEventListener('click',()=>{if(TOUCH&&compactMQ.matches)goFullscreen()});
-let rotPaused=false,rotDismissed=false;
-function rotCheck(){const need=mode==='fly'&&CFG.game!=='watch'&&TOUCH&&innerWidth<=820&&innerHeight>innerWidth&&!rotDismissed&&!ST.ended;
-  if(rotEl.hidden!==need)return;rotEl.hidden=!need;
-  if(need){if(!paused){paused=true;rotPaused=true;syncButtons()}}else if(rotPaused){rotPaused=false;paused=false;syncButtons()}}
-setInterval(rotCheck,300);portraitMQ.addEventListener('change',rotCheck);
-document.getElementById('btnRotGo').addEventListener('click',()=>{rotDismissed=true;rotCheck()});
 window.addEventListener('orientationchange',()=>setTimeout(resize,300));
-window.addEventListener('resize',rotCheck);
-if(/iPhone|iPad|iPod/.test(navigator.userAgent))document.getElementById('rotHint').hidden=false;
 
 const reel=document.getElementById('reel');let reelOK=true;
 {const off=()=>{reelOK=false;reel.hidden=true};reel.addEventListener('error',off);const srcs=reel.querySelectorAll('source');srcs[srcs.length-1].addEventListener('error',off)}

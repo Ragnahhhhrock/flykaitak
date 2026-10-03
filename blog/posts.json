@@ -1,5 +1,29 @@
 [
   {
+    "slug": "rotate-prompt-removed",
+    "title": "Update: the rotate prompt is gone",
+    "dek": "The sim now plays in portrait or landscape with nothing in the way. Landscape is still recommended.",
+    "description": "Fly Kai Tak mobile update: the Turn your phone sideways prompt is removed, so the sim plays in either orientation. Begin descent still asks for landscape full screen.",
+    "date": "2026-10-03",
+    "tag": "Update",
+    "keywords": ["Kai Tak", "mobile", "landscape", "portrait", "full screen"],
+    "hero": "mobile-landscape",
+    "hero_alt": "Landscape phone view of the IGS approach with the yoke bottom left, gear, flaps and thrust lever bottom right, and a compact toolbar.",
+    "hero_caption": "Landscape on a phone, with no prompt in the way.",
+    "card_kicker": "MOBILE · UPDATE",
+    "card_title": "Rotate prompt removed",
+    "card_sub": "Fly in either orientation",
+    "card_image": "mobile-landscape",
+    "card_focus": 50,
+    "zh": {
+      "title": "更新：旋轉提示已移除",
+      "dek": "而家直向橫向都可以直接玩，無提示擋住。橫向仍然係建議嘅玩法。",
+      "description": "Fly Kai Tak 手機版更新：移除「Turn your phone sideways」提示，直向橫向都可以玩。Begin descent 仍然會要求橫向全螢幕。",
+      "hero_alt": "電話橫向畫面，顯示 IGS 進場，左下角係操縱桿，右下角係起落架、襟翼同推力桿，頂部係精簡工具列。",
+      "hero_caption": "電話橫向畫面，唔會有提示擋住。"
+    }
+  },
+  {
     "slug": "rotate-prompt-fix-portrait-lock",
     "title": "Fix: the rotate prompt now clears when you turn your phone",
     "dek": "The portrait prompt follows the real window size, and iPhone players get a tip about Portrait Orientation Lock.",
