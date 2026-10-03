@@ -1126,6 +1126,7 @@ function buildBillboards(){
 
 /* ---------------- buildings (real footprints, 1998 heights estimated by district) ---------------- */
 const BGRID=new Map(),BCELL=250;
+const AIRBOX=[];   // the airport buildings as true (rotated) boxes in runway coordinates, for the traffic: the colliders above are their bounding boxes
 function addCollider(x0,x1,z0,z1,top,name){const b={x0,x1,z0,z1,top,name};for(let i=Math.floor(x0/BCELL);i<=Math.floor(x1/BCELL);i++)for(let j=Math.floor(z0/BCELL);j<=Math.floor(z1/BCELL);j++){const k=i+','+j;if(!BGRID.has(k))BGRID.set(k,[]);BGRID.get(k).push(b)}}
 function buildingAt(x,z,pad){const a=BGRID.get(Math.floor(x/BCELL)+','+Math.floor(z/BCELL));if(!a)return null;let best=null;for(const b of a){if(x>b.x0-pad&&x<b.x1+pad&&z>b.z0-pad&&z<b.z1+pad){if(!best||b.top>best.top)best=b}}return best}
 const DISTRICTS=[
@@ -1639,7 +1640,7 @@ function buildAirport(){
   scene.add(grp);
   // terminal, tower, hangars
   const term=new THREE.Mesh(new THREE.BoxGeometry(70,22,460).translate(0,11,0),cityMaterial({color:0xd9d5c8}));placeAlong(term,330,-760,RWY.elev);
-  {const c=[rwP(100,-795),rwP(100,-725),rwP(560,-795),rwP(560,-725)];addCollider(Math.min(...c.map(q=>q[0])),Math.max(...c.map(q=>q[0])),Math.min(...c.map(q=>q[1])),Math.max(...c.map(q=>q[1])),26,'the Kai Tak terminal')}
+  {const c=[rwP(100,-795),rwP(100,-725),rwP(560,-795),rwP(560,-725)];addCollider(Math.min(...c.map(q=>q[0])),Math.max(...c.map(q=>q[0])),Math.min(...c.map(q=>q[1])),Math.max(...c.map(q=>q[1])),26,'the Kai Tak terminal');AIRBOX.push({s0:100,s1:560,l0:-795,l1:-725,name:'the Kai Tak terminal'})}
   const roofT=new THREE.Mesh(new THREE.BoxGeometry(76,3,466).translate(0,23,0),new THREE.MeshLambertMaterial({color:0x8d8b84}));placeAlong(roofT,330,-760,RWY.elev);
   buildJetBridges(placeAlong);
   for(let i=0;i<3;i++){const hg=new THREE.Mesh(new THREE.BoxGeometry(90,26,80).translate(0,13,0),new THREE.MeshLambertMaterial({color:0xb5b9b7}));placeAlong(hg,780,-300-i*120,RWY.elev)}
@@ -1649,7 +1650,7 @@ function buildAirport(){
   const cabRoof=new THREE.Mesh(new THREE.CylinderGeometry(9,9,1.4,8).translate(0,50.6,0),new THREE.MeshLambertMaterial({color:0xcfcac0}));cabRoof.position.set(TW[0],RWY.elev,TW[1]);scene.add(cabRoof);
   addCollider(TW[0]-9,TW[0]+9,TW[1]-9,TW[1]+9,52,'the control tower');
   // multi-storey car park beside the terminal: the spotters' roof
-  {const cs=170,cl=-330,ch=17;const cp=new THREE.Mesh(new THREE.BoxGeometry(70,ch,110).translate(0,ch/2,0),cityMaterial({color:0xcfcac0}));placeAlong(cp,cs,cl,RWY.elev);
+  {const cs=600,cl=-300,ch=17;const cp=new THREE.Mesh(new THREE.BoxGeometry(70,ch,110).translate(0,ch/2,0),cityMaterial({color:0xcfcac0}));placeAlong(cp,cs,cl,RWY.elev);
    for(let y=3.4;y<ch;y+=3.4){const sl=new THREE.Mesh(new THREE.BoxGeometry(71,.5,111).translate(0,y,0),new THREE.MeshLambertMaterial({color:0x9a968c}));placeAlong(sl,cs,cl,RWY.elev)}
    const par=new THREE.Mesh(new THREE.BoxGeometry(72,1.1,112).translate(0,ch+.55,0),new THREE.MeshLambertMaterial({color:0xbdb8ad,side:THREE.DoubleSide}));placeAlong(par,cs,cl,RWY.elev);
    const roof=new THREE.Mesh(new THREE.BoxGeometry(68,.3,108).translate(0,ch+.15,0),new THREE.MeshLambertMaterial({color:0x6e6c68}));placeAlong(roof,cs,cl,RWY.elev);
@@ -1657,7 +1658,7 @@ function buildAirport(){
    const pm=[0xf0c9c9,0x2f4f8a,0xe9e6dc,0x8a2f2f,0x3a6b3a];for(let i=0;i<9;i++){const q=rwP(cs-40+i*9+rr(-2,2),cl+30);const body=new THREE.Mesh(new THREE.BoxGeometry(.5,1.1,.3).translate(0,.95,0),new THREE.MeshLambertMaterial({color:pick(pm)}));body.position.set(q[0],RWY.elev+ch+.3,q[1]);scene.add(body);
      const legs=new THREE.Mesh(new THREE.BoxGeometry(.4,.8,.25).translate(0,.4,0),new THREE.MeshLambertMaterial({color:0x2b3550}));legs.position.copy(body.position);scene.add(legs);
      const head=new THREE.Mesh(new THREE.SphereGeometry(.13,8,6),new THREE.MeshLambertMaterial({color:0x2a211a}));head.position.set(q[0],RWY.elev+ch+.3+1.65,q[1]);scene.add(head)}
-   const q=rwP(cs+8,cl+35.4);SPOTS.carpark=[q[0],RWY.elev+ch+.3+1.75,q[1]];const p=rwP(cs,cl);addCollider(p[0]-60,p[0]+60,p[1]-60,p[1]+60,RWY.elev+ch+1.2,'the Kai Tak car park')}
+   const q=rwP(cs+8,cl+35.4);SPOTS.carpark=[q[0],RWY.elev+ch+.3+1.75,q[1]];AIRBOX.push({s0:cs-35,s1:cs+35,l0:cl-55,l1:cl+55,name:'the Kai Tak car park'});const p=rwP(cs,cl);addCollider(p[0]-60,p[0]+60,p[1]-60,p[1]+60,RWY.elev+ch+1.2,'the Kai Tak car park')}
   // a junk moored off the runway in the harbour (south-west side)
   {const q=rwP(1650,330);const j=shipModel('junk');j.position.set(q[0],0,q[1]);j.rotation.y=-(RWY.hdg-90)*D2R;scene.add(j);const bow=new THREE.Vector3(-11,0,0).applyEuler(j.rotation);SPOTS.boat=[q[0]+bow.x,4.6,q[1]+bow.z];SPOTS.boatShip=j}
   // parked aircraft at the terminal
@@ -2859,7 +2860,8 @@ function aiCtlStep(dt){
     for(let j=0;j<n&&!hold[i];j++){if(j===i||cls[j]==='gone'||cls[j]==='air')continue;
       const cj=cls[j];if(cj==='taxi'&&aiRank(j)>ri)continue;
       const still=cj==='frozen'||AI[j].r<.3;
-      for(let k=0;k<=K;k++){const A=at(i,k),B=at(j,still?0:k);if(!A||!B||!vOver(A,B))continue;
+      for(let k=0;k<=K;k++){const si=S[i],sj=S[j],pi=si[Math.min(k,si.length-1)],pj=sj[Math.min(still?0:k,sj.length-1)];if(!pi||!pj||Math.abs(pi.x-pj.x)>115||Math.abs(pi.z-pj.z)>115)continue;   // far apart: no footprints needed
+        const A=at(i,k),B=at(j,still?0:k);if(!A||!B||!vOver(A,B))continue;
         if(fpDist(A,B,AIC.margin)<AIC.margin){hold[i]=true;AI[i].why=j;break}}}}
   for(let i=0;i<n;i++){const a=AI[i];
     if(a.wreck){continue}
@@ -2991,12 +2993,13 @@ function gseRun(kind,pts,R,stops,v,ph,o){const route=gseRoute(pts,R),sc=gseSched
 function buildGSE(){
   const place=(m,s,l,y)=>{const p=rwP(s,l);m.position.set(p[0],y,p[1]);m.rotation.y=-RWY.hdg*D2R;scene.add(m);return m};
   const box=(wl,h,ws,mat)=>new THREE.Mesh(new THREE.BoxGeometry(wl,h,ws).translate(0,h/2,0),mat);
-  const rect=(s0,s1,l0,l1,top,name)=>{const c=[rwP(s0,l0),rwP(s0,l1),rwP(s1,l0),rwP(s1,l1)];addCollider(Math.min(...c.map(p=>p[0])),Math.max(...c.map(p=>p[0])),Math.min(...c.map(p=>p[1])),Math.max(...c.map(p=>p[1])),top,name)};
+  const rect=(s0,s1,l0,l1,top,name)=>{const c=[rwP(s0,l0),rwP(s0,l1),rwP(s1,l0),rwP(s1,l1)];addCollider(Math.min(...c.map(p=>p[0])),Math.max(...c.map(p=>p[0])),Math.min(...c.map(p=>p[1])),Math.max(...c.map(p=>p[1])),top,name);AIRBOX.push({s0,s1,l0,l1,name})};
   const dark=new THREE.MeshLambertMaterial({color:0x2d3236}),Y=RWY.elev;
+  const FS=550;   // the fire station stands east of the pushback lanes, beside the car park
   // fire station: four bays facing the apron, and a cargo shed with roller doors on its north face
-  place(box(22,9,60,cityMaterial({color:0xd9d5c8})),60,-205,Y);place(box(24,.8,62,new THREE.MeshLambertMaterial({color:0x8d8b84})),60,-205,Y+9);
-  for(const s of[40,53,66,79])place(box(.4,5.4,9.5,new THREE.MeshLambertMaterial({color:0xc8102e})),s,-194,Y);
-  rect(30,90,-217,-193,Y+10,'the fire station');
+  place(box(22,9,60,cityMaterial({color:0xd9d5c8})),FS+60,-205,Y);place(box(24,.8,62,new THREE.MeshLambertMaterial({color:0x8d8b84})),FS+60,-205,Y+9);
+  for(const s0 of[40,53,66,79])place(box(.4,5.4,9.5,new THREE.MeshLambertMaterial({color:0xc8102e})),FS+s0,-194,Y);
+  rect(FS+30,FS+90,-217,-193,Y+10,'the fire station');
   place(box(50,10,100,cityMaterial({color:0xbfc3bd})),660,-790,Y);place(box(52,.8,102,new THREE.MeshLambertMaterial({color:0x7b7f82})),660,-790,Y+10);
   for(let s=625;s<=700;s+=15)place(box(.4,4.4,8,dark),s,-765,Y);
   rect(610,710,-815,-765,Y+11,'the cargo shed');
@@ -3015,8 +3018,8 @@ function buildGSE(){
   gseRun('lorry',[[80,-806],[120,-806],[520,-806],[560,-806],[560,-822],[520,-822],[120,-822],[80,-822]],6,[{i:1,dw:40,tag:'bay'},{i:2,dw:40,tag:'bay'}],7,60,{});   // service road behind the terminal
   // fire service: three crash tenders and a rescue vehicle outside the bays; one tender runs out to stand by now and then
   const fpsi=(RWY.hdg+90)*D2R;
-  for(const [k,s] of[['tender',44],['tender',58],['rescue',72]]){const p=rwP(s,-186);gseAdd(k,{stat:{x:p[0],z:p[1],psi:fpsi},beacon:[.25,.45,1]})}
-  gseRun('tender',[[100,-200],[100,-186],[100,-170],[165,-170],[180,-170],[180,-200]],10,[{i:1,dw:90,tag:'home'},{i:3,dw:40,tag:'standby'}],8,0,{beacon:[.25,.45,1]});
+  for(const [k,s] of[['tender',44],['tender',58],['rescue',72]]){const p=rwP(FS+s,-186);gseAdd(k,{stat:{x:p[0],z:p[1],psi:fpsi},beacon:[.25,.45,1]})}
+  gseRun('tender',[[650,-200],[650,-186],[650,-170],[658,-170],[662,-170],[662,-200]],10,[{i:1,dw:90,tag:'home'},{i:3,dw:40,tag:'standby'}],8,0,{beacon:[.25,.45,1]});
   // instanced meshes: one per kind and colour group, with vertex colours for the fixed parts
   const tc=new THREE.Color(),mats={};
   for(const kind in GSEK){const K=Object.assign(GSE_KINDS[kind],GSEK[kind]),groups={};K.meshes=[];
@@ -3049,17 +3052,17 @@ function updateGSE(){
     if(e.stat){p=e.stat;e.lift=0}
     else if(e.tug!=null){p=e.fn?e.fn(t):e.p0;e.lift=0}
     else{const L=e.lead||e;if(e.lead){st=L.st}else{st=e.st=e.idle||t<e.tmin?{d:e.route.vd[0],w:-1}:gseState(e.sc,t+e.ph)}
-      p=gsePose(L.route,st.d-e.off);e.lift=st.w>=0&&st.tag==='stand'?sstep(0,7,st.w)*(1-sstep(st.dw-7,st.dw,st.w)):0}
+      p=gsePose(L.route,st.d-e.off);e.hid=(L.stand!=null)&&(L.idle||t<L.tmin||(st.tag==='depot'&&st.w>=0));e.lift=st.w>=0&&st.tag==='stand'?sstep(0,7,st.w)*(1-sstep(st.dw-7,st.dw,st.w)):0}
     e.p=p}
   for(const kind in GSEK){const K=GSE_KINDS[kind];
     for(const m of K.meshes){const g=m.userData.g;
       for(const e of K.list){const p=e.p;_gq.setFromEuler(_ge.set(0,-p.psi,0));const up=g==='lfix'||g==='lbody'?e.lift*K.lift:0;
-        if(g==='scis')_gm.compose(_gv.set(p.x,Y+K.sBase,p.z),_gq,_gs.set(1,Math.max(.001,e.lift*K.lift),1));else _gm.compose(_gv.set(p.x,Y+up,p.z),_gq,_gs.set(1,1,1));
+        if(e.hid)_gm.compose(_gv.set(p.x,Y-30,p.z),_gq,_gs.set(.001,.001,.001));else if(g==='scis')_gm.compose(_gv.set(p.x,Y+K.sBase,p.z),_gq,_gs.set(1,Math.max(.001,e.lift*K.lift),1));else _gm.compose(_gv.set(p.x,Y+up,p.z),_gq,_gs.set(1,1,1));
         m.setMatrixAt(e.i,_gm)}
       m.instanceMatrix.needsUpdate=true}}
   for(const e of GSE){const p=e.p,K=GSE_KINDS[e.kind],fx=Math.sin(p.psi),fz=-Math.cos(p.psi),h=K.len/2;
-    if(e.lamp){lp.setXYZ(e.li*2,p.x+fx*h,Y+.9,p.z+fz*h);lp.setXYZ(e.li*2+1,p.x-fx*h,Y+.9,p.z-fz*h)}
-    if(e.beacon)bp.setXYZ(e.bi,p.x+fx*h*.2,Y+(e.kind==='tug'?2.3:e.kind==='ptug'?2.6:3.8),p.z+fz*h*.2)}
+    const yy=e.hid?Y-60:Y;if(e.lamp){lp.setXYZ(e.li*2,p.x+fx*h,yy+.9,p.z+fz*h);lp.setXYZ(e.li*2+1,p.x-fx*h,yy+.9,p.z-fz*h)}
+    if(e.beacon)bp.setXYZ(e.bi,p.x+fx*h*.2,yy+(e.kind==='tug'?2.3:e.kind==='ptug'?2.6:3.8),p.z+fz*h*.2)}
   lp.needsUpdate=true;bp.needsUpdate=true;gseLamps.visible=CFG.night;
 }
 
@@ -3810,7 +3813,7 @@ fontsReady.then(()=>setTimeout(boot,30));
 /* test hooks */
 window.__kt={AI,CFG,ST,COACH,LESSON,keys,coachUpdate,coachResync,coachGo,rwL,get PATH(){return PATH},LND,setRunway,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,{rwy:'13'},o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.rwy==='31'&&CFG.game!=='learn'?CFG.game+'31':CFG.game}]`).checked=true;document.querySelector(`input[name=tod][value=${CFG.night?'night':'day'}]`).checked=true;startFlight()},
   run:(sec)=>{if(CFG.game==='watch'){ST.t+=sec;return {t:ST.t}}const h=1/120;for(let i=0;i<sec*120&&!ST.ended;i++){physStep(h);if(i%60===0)recordHistory();if(i%12===0)aiTick()}return {ended:ST.ended,td:ST.td,t:ST.t,x:ST.x,y:ST.y,z:ST.z,V:ST.V/KT,d:PATH.pts[ST.pi].d}},
-  get mode(){return mode},updateAI,AIC,footOf,fpAt,fpDist,hitOn,damageModel,aiHit,DEBRIS,EMIT,aiTick,ctl(){return aiControl},get CFG(){return CFG},frame:(now)=>frame(now,true),get FOCUS(){return FOCUS},step:()=>physStep(1/120),rwS,setZoom:z=>{CFG.zoom=z},get AI(){return AI},get GSE(){return GSE},get BRIDGE(){return BRIDGE},STAND_S,STAND_TY,lineupT,lineupT31,arrivalPts,tugAt,standL,PB,get parked(){return parked},gseAt:(t)=>{ST.t=t;updateGSE();return GSE.map(e=>({k:e.kind,x:e.p.x,z:e.p.z,psi:e.p.psi,lift:e.lift}))},get shipLights(){return shipLights},get SHIPS(){return SHIPS},get DISP(){return DISP},get deck(){return deckGroup},get streetCam(){return STREET_CAM},get BB(){return BB},get water(){return water},get camera(){return camera},get nStreets(){return STREETS.length},drawDisplays,look,setView,terrainAt,buildingAt,groundInfo};
+  get mode(){return mode},updateAI,AIC,footOf,GSE,GSE_KINDS,AIRBOX,rwS,BGRID,updateGSE,gseLamps:()=>gseLamps,fpAt,fpDist,hitOn,damageModel,aiHit,DEBRIS,EMIT,aiTick,ctl(){return aiControl},get CFG(){return CFG},frame:(now)=>frame(now,true),get FOCUS(){return FOCUS},step:()=>physStep(1/120),rwS,setZoom:z=>{CFG.zoom=z},get AI(){return AI},get GSE(){return GSE},get BRIDGE(){return BRIDGE},STAND_S,STAND_TY,lineupT,lineupT31,arrivalPts,tugAt,standL,PB,get parked(){return parked},gseAt:(t)=>{ST.t=t;updateGSE();return GSE.map(e=>({k:e.kind,x:e.p.x,z:e.p.z,psi:e.p.psi,lift:e.lift}))},get shipLights(){return shipLights},get SHIPS(){return SHIPS},get DISP(){return DISP},get deck(){return deckGroup},get streetCam(){return STREET_CAM},get BB(){return BB},get water(){return water},get camera(){return camera},get nStreets(){return STREETS.length},drawDisplays,look,setView,terrainAt,buildingAt,groundInfo};
 })();
 </script>
 <!--/FRAG:BODY-->
