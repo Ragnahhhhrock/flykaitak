@@ -285,7 +285,7 @@ html,body{overscroll-behavior:none;touch-action:manipulation}
       <button class="btn" id="seatSide" type="button">Left</button>
     </div>
     <select id="viewSel" aria-label="Camera view">
-      <option value="cockpit">Cockpit</option><option value="chase">Exterior</option><option value="tower">Tower</option><option value="street">Spectator: Kowloon City street</option><option value="ped">Spectator: Prince Edward Road</option><option value="carpark">Spectator: car park roof</option><option value="boat">Spectator: boat in the harbour</option><option value="checker">Spectator: top of Checkerboard Hill</option><option value="peak">Spectator: The Peak</option><option value="cabin">Cabin seat</option>
+      <option value="cockpit">Cockpit</option><option value="chase">Exterior</option><option value="tower">Tower</option><option value="street">Plane Spotter: Kowloon City street</option><option value="ped">Plane Spotter: Prince Edward Road</option><option value="carpark">Plane Spotter: car park roof</option><option value="boat">Plane Spotter: boat in the harbour</option><option value="checker">Plane Spotter: top of Checkerboard Hill</option><option value="peak">Plane Spotter: The Peak</option><option value="cabin">Cabin seat</option>
     </select>
     <select id="zoomSel" aria-label="Zoom"><option value="1">Zoom 1×</option><option value="2">2×</option><option value="4">4×</option><option value="8">8×</option><option value="16">16×</option></select>
     <select id="tsSel" aria-label="Time speed"><option value="1">Time 1×</option><option value="2">2×</option><option value="4">4×</option><option value="8">8×</option></select>
@@ -356,7 +356,7 @@ html,body{overscroll-behavior:none;touch-action:manipulation}
         <div class="chips" id="modeChips">
           <label class="chip"><input type="radio" name="game" value="approach" checked><span>IGS 13 approach</span></label>
           <label class="chip"><input type="radio" name="game" value="free"><span>Free flight</span></label>
-          <label class="chip"><input type="radio" name="game" value="watch"><span>Spectator</span></label>
+          <label class="chip"><input type="radio" name="game" value="watch"><span>Plane Spotter</span></label>
         </div>
         <p id="modeNote" style="font-size:12.5px">Start on the IGS at 3,100 ft and land on Runway 13.</p>
       </fieldset>
@@ -2283,7 +2283,7 @@ function drawHUD(){
       txt(Math.round(Math.max(0,F.p.y-RWY.elev)/FT).toLocaleString('en')+' ft   '+Math.round((F.v||0)/KT)+' kt',HW/2,y0+22*k,14*k,COL.ph,'center')}
     else txt('Waiting for the next movement…',HW/2,y0,15*k,COL.txt,'center');
     const arr=AI.filter(x=>x.role==='arrival'&&x.p&&x.p.y>RWY.elev+3).length,dep=AI.filter(x=>x.role==='departure'&&x.p&&(x.v||0)>.5).length;
-    txt('SPECTATOR · '+arr+' inbound · '+dep+' outbound · time '+CFG.ts+'×',HW/2,HH-28,12*k,COL.dim,'center');
+    txt('PLANE SPOTTER · '+arr+' inbound · '+dep+' outbound · time '+CFG.ts+'×',HW/2,HH-28,12*k,COL.dim,'center');
     if(paused){hc.font=`700 ${30*k}px "B612",sans-serif`;hc.textAlign='center';hc.fillStyle=COL.txt;hc.fillText('PAUSED',HW/2,HH*.32)}hc.shadowBlur=0;return}
   const P=PATH.pts,p=P[s.pi];
   const ias=s.V/KT,alt=(s.y)/FT,vs=s.vy/FT*60,ra=Math.max(0,s.ra/FT),hdg=((s.psi*R2D)%360+360)%360;
@@ -2546,14 +2546,14 @@ function startFlight(){
   if(CFG.game==='watch')buildAISchedule(0,true);else if(CFG.game==='free')buildAISchedule(-100,false);else buildAI();
   applyEnvironment();setWalled(CFG.walled);hoops.visible=CFG.guide&&CFG.game==='approach';wxSel.value=CFG.wx;
   const W=CFG.game==='watch';
-  document.getElementById('flightid').textContent=(W?'SPECTATOR · KAI TAK':ST.ac.short.toUpperCase()+' · '+(CFG.game==='free'?'FREE FLIGHT':'IGS 13'))+' · '+(CFG.night?'NIGHT':'DAY')+' · '+WX[CFG.wx].label.toUpperCase();
+  document.getElementById('flightid').textContent=(W?'PLANE SPOTTER · KAI TAK':ST.ac.short.toUpperCase()+' · '+(CFG.game==='free'?'FREE FLIGHT':'IGS 13'))+' · '+(CFG.night?'NIGHT':'DAY')+' · '+WX[CFG.wx].label.toUpperCase();
   for(const o of document.querySelectorAll('#viewSel option'))o.hidden=W&&(o.value==='cockpit'||o.value==='cabin');
   for(const id of['btnAP','btnHud','btnGuide','btnDeck'])document.getElementById(id).hidden=W;
   if(W){for(const id of['ctl','map'])document.getElementById(id).hidden=true}
   setView(W?'carpark':CFG.game==='free'?'chase':CFG.ap?'chase':'cockpit');
   syncButtons();sfx.start();sfx.mute(CFG.sound);lightningT=rr(4,9);
   track('game_start',{flight_number:FLT.n,game_mode:CFG.game,autopilot:CFG.ap,guide:CFG.guide,walled_city:CFG.walled,lightning:CFG.lightning});
-  toast(W?'Spectator mode. Pick a spot from the view menu, or Exterior to follow the jet. '+(TOUCH?'More > Time speeds up time.':'T speeds up time.'):CFG.game==='free'?(TOUCH?'Lined up on Runway 13. Slide thrust to full, pull back at about 150 kt.':'Lined up on Runway 13. Full thrust (E), pull back at about 150 kt.'):CFG.ap?'Autopilot engaged. Pick a view or a cabin seat.':'Established on the IGS, 3,100 ft. You have control.');
+  toast(W?'Plane Spotter mode. Pick a spot from the view menu, or Exterior to follow the jet. '+(TOUCH?'More > Time speeds up time.':'T speeds up time.'):CFG.game==='free'?(TOUCH?'Lined up on Runway 13. Slide thrust to full, pull back at about 150 kt.':'Lined up on Runway 13. Full thrust (E), pull back at about 150 kt.'):CFG.ap?'Autopilot engaged. Pick a view or a cabin seat.':'Established on the IGS, 3,100 ft. You have control.');
 }
 function showResult(){
   const s=ST,e=s.ended;if(!e||mode!=='fly')return;mode='ended';const card=document.getElementById('resCard');card.classList.toggle('crash',!!e.crash);
