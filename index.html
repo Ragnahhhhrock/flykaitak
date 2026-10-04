@@ -1875,7 +1875,8 @@ function buildAirport(){
    const R=ch+.3,cg=new THREE.Group();placeAlong(cg,cs,cl,RWY.elev);
    const roof=new THREE.Mesh(new THREE.BoxGeometry(W,.3,D).translate(0,ch+.15,0),new THREE.MeshLambertMaterial({color:0x6e6c68}));cg.add(roof);
    const deckTex=canvasTex(880,960,(g,w,h)=>{g.fillStyle='#6f6d69';g.fillRect(0,0,w,h);for(let i=0;i<2600;i++){g.fillStyle='rgba('+(Math.random()<.5?'0,0,0':'255,255,255')+','+(.03+Math.random()*.05)+')';g.fillRect(Math.random()*w,Math.random()*h,2+Math.random()*10,1+Math.random()*3)}
-    g.fillStyle='#e8e6de';for(let y=20;y<h-10;y+=20)g.fillRect(0,y,44,2);g.fillRect(44,20,2,h-40);g.fillRect(0,20,44,2); // parking bays (5 x 2.5 m) along the far side
+    g.fillStyle='#f6f6f2';const bay=(x0,x1,edge)=>{for(let y=20;y<=h-20;y+=20)g.fillRect(x0,y-1,x1-x0,3);if(edge!==false){g.fillRect(x0-1,20,3,h-40);g.fillRect(x1-1,20,3,h-40)}}; // white bay lines: 5 x 2.5 m bays
+    bay(0,40);bay(100,140);bay(140,180,false);g.fillRect(179,20,3,h-40);bay(240,280);bay(280,320,false);g.fillRect(319,20,3,h-40);bay(380,420);bay(420,460,false);g.fillRect(459,20,3,h-40); // a row against the far wall, then three back-to-back double rows with aisles between
     for(let y=40;y<h-40;y+=64)g.fillRect(w/2-1,y,3,32); // lane dashes
     g.fillStyle='#d9b32a';g.fillRect(w-20,0,4,h);g.fillRect(0,0,w,4);g.fillRect(0,h-4,w,4)}); // kerb line inside the crowd barrier
    const deck=new THREE.Mesh(new THREE.PlaneGeometry(W,D).rotateX(-Math.PI/2).translate(0,R+.02,0),new THREE.MeshLambertMaterial({map:deckTex}));cg.add(deck);

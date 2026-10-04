@@ -1,5 +1,36 @@
 [
   {
+    "slug": "car-park-roof-bay-lines",
+    "title": "Bay lines on the car park roof",
+    "dek": "White parking bay lines now mark out rows of 5 m by 2.5 m bays on the Plane Spotter roof.",
+    "description": "The Plane Spotter car park roof now has white parking bay lines: a row against the far wall and three double rows with aisles between them.",
+    "date": "2026-10-04",
+    "tag": "Update",
+    "category": "scenery",
+    "keywords": [
+      "car park roof",
+      "bay lines",
+      "plane spotter",
+      "Kai Tak",
+      "flight simulator"
+    ],
+    "hero": "carpark-roof-bays",
+    "hero_alt": "White parking bay lines in rows across the car park roof, with globe lamps and the apron beyond.",
+    "hero_caption": "The bay rows on the roof, with the globe lamps and the apron beyond.",
+    "card_kicker": "SCENERY · CAR PARK",
+    "card_title": "Bay lines on the roof",
+    "card_sub": "White 5 m by 2.5 m bays",
+    "card_image": "carpark-roof-bays",
+    "card_focus": 50,
+    "zh": {
+      "title": "停車場天台加咗停車位線",
+      "dek": "「飛機觀察」天台而家有白色停車位線，每個車位 5 米乘 2.5 米。",
+      "description": "「飛機觀察」嘅停車場天台而家有白色停車位線：遠邊牆腳一排，加三組雙排車位，中間有車道。",
+      "hero_alt": "停車場天台上一排排白色停車位線，後面有圓球燈同停機坪。",
+      "hero_caption": "天台上嘅停車位線，後面係圓球燈同停機坪。"
+    }
+  },
+  {
     "slug": "car-park-roof-detail",
     "title": "More detail on the car park roof",
     "dek": "Globe lamps, a pipe railing along the parapet and a stairwell head with its exit and caution signs.",
