@@ -1,5 +1,41 @@
 [
   {
+    "slug": "help-build-the-kai-tak-terminal-interior",
+    "title": "Help us build the inside of the Kai Tak terminal",
+    "dek": "We are asking for glTF models of Kai Tak assets and photos of the terminal, so the interior and the rest of the sim can be as authentic as possible.",
+    "description": "Fly Kai Tak is asking for glTF (.glb) models of Kai Tak terminal assets and images of the 1998 airport to recreate the terminal interior as authentically as possible.",
+    "date": "2026-10-04",
+    "tag": "Behind the scenes",
+    "category": "scenery",
+    "keywords": [
+      "Kai Tak",
+      "terminal interior",
+      "glTF",
+      "glb",
+      "3D models",
+      "photos",
+      "submissions",
+      "contribute",
+      "flight simulator",
+      "Hong Kong 1998"
+    ],
+    "hero": "kai-tak-terminal-pier",
+    "hero_alt": "Oblique view of the long Kai Tak terminal pier with a row of aircraft parked nose-in along it and a jet bridge at every stand.",
+    "hero_caption": "The pier from outside: the interior is what we need your help to build.",
+    "card_kicker": "CALL FOR SUBMISSIONS",
+    "card_title": "Help build the terminal interior",
+    "card_sub": "Send glTF models and photos of Kai Tak",
+    "card_image": "kai-tak-terminal-pier",
+    "card_focus": 50,
+    "zh": {
+      "title": "幫手起啟德客運大樓入面",
+      "dek": "我哋想收集啟德設施嘅 glTF 模型同客運大樓相片，等內部同成個模擬器盡量貼近真實。",
+      "description": "Fly Kai Tak 徵集啟德客運大樓設施嘅 glTF（.glb）模型同 1998 年機場圖片，盡量真實咁重現客運大樓內部。",
+      "hero_alt": "斜角睇啟德客運指廊，一排飛機機頭向內停喺前面，每個機位都有登機橋。",
+      "hero_caption": "指廊外面嘅樣：入面就要靠你幫手起。"
+    }
+  },
+  {
     "slug": "faa-airfield-signs-and-markings",
     "title": "FAA signs and markings on the airfield",
     "dek": "Runway holding positions, taxiway lines, distance-remaining boards and the red, yellow and black signs, all from the FAA Aeronautical Information Manual.",
