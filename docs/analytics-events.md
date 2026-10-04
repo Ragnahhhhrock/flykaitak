@@ -12,7 +12,7 @@ Every event also carries `aircraft`, `weather` and `time_of_day`. Events only se
 | `landing_attempt` | Wheels touch, or a crash / missed approach with gear down | `attempt_number`, `how` (`touchdown`, `crash`, `missed`), `flight_seconds` |
 | `landing` | Successful landing (approach: rolled out; free flight: stopped) | `runway`, `grade`, `score`, `touchdown_fpm`, `touchdown_m`, `flight_number`, `flight_seconds`, `sim_seconds` |
 | `crash` / `missed_approach` | Flight ended badly | `cause`, `distance_nm`, `flight_seconds`, `sim_seconds` |
-| `control_toggle` | Gear, flaps, autopilot, HUD, deck, guide, sound, clouds, night, pause, seat side, flight board (`flight_board`, Plane Spotter) | `control`, `state`, `via` (`button`, `key`, `auto`), `flight_seconds` |
+| `control_toggle` | Gear, flaps, autopilot, HUD, deck, guide, sound, clouds, night, pause, seat side, flight board (`flight_board`, Plane Spotter), flight board flap sound (`flight_board_sound`, Plane Spotter) | `control`, `state`, `via` (`button`, `key`, `auto`), `flight_seconds` |
 | `view_change`, `zoom`, `time_speed`, `weather_change`, `rewind`, `fast_forward` | In-flight controls | per event |
 | `flight_end` | Result screen, back to menu, restart, or page close | `outcome`, `flight_seconds`, `sim_seconds`, `landing_attempts`, `successful_landings`, `controls_toggled`, `flight_number` |
 | `session_summary` | Tab hidden or page closed | `flights`, `landing_attempts`, `successful_landings`, `crashes`, `missed_approaches`, `landing_success_pct`, `total_flight_seconds`, `session_seconds` |

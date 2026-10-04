@@ -1,5 +1,37 @@
 [
   {
+    "slug": "flight-board-flap-sound",
+    "title": "The Flight Board Clatters",
+    "dek": "Every flap that turns on the flight information board now makes the old clack-clack-clack, with an on/off button.",
+    "description": "The Fly Kai Tak flight information board now clatters like a real split-flap board whenever a letter changes, on the home screen and in Plane Spotter, with its own on/off button.",
+    "date": "2026-10-04",
+    "tag": "Update",
+    "category": "scenery",
+    "keywords": [
+      "Kai Tak",
+      "flight information board",
+      "split-flap",
+      "sound",
+      "clack",
+      "plane spotter"
+    ],
+    "hero": "fids-clack-night",
+    "hero_alt": "Plane Spotter at night from the tower with the split-flap flight board at the top right.",
+    "hero_caption": "The board at night, from the tower.",
+    "card_kicker": "SCENERY · UPDATE",
+    "card_title": "Flap clatter",
+    "card_sub": "Clack-clack-clack, on or off",
+    "card_image": "fids-clack-night",
+    "card_focus": 50,
+    "zh": {
+      "title": "航班資訊板有翻牌聲",
+      "dek": "航班資訊板每塊翻牌轉動都會發出舊式「咔咔咔」聲，仲有開關掣。",
+      "description": "Fly Kai Tak 嘅航班資訊板而家喺字母轉動時會發出翻牌聲，主畫面同觀機模式都有，亦有獨立開關掣。",
+      "hero_alt": "夜晚喺塔台觀機，右上角有翻牌式航班資訊板。",
+      "hero_caption": "夜晚喺塔台睇資訊板。"
+    }
+  },
+  {
     "slug": "sun-moon-and-time-of-day",
     "title": "New: Sun, Moon and Time of Day",
     "dek": "A real sun and moon cross the sky, and the light, sky and city follow the clock.",

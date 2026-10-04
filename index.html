@@ -232,6 +232,9 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
 .fids[hidden]{display:none!important}
 .fids-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:5px;padding-bottom:5px;border-bottom:2px solid var(--checker);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#f1ede2}
 .fids-h b{font-weight:700}
+.fids-r{display:inline-flex;align-items:center;gap:10px}
+.fids-snd{font:inherit;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#f1ede2;background:#1b1d1f;border:1px solid #3d4143;border-radius:2px;padding:2px 7px;cursor:pointer;white-space:nowrap}
+.fids-snd[aria-pressed=false]{color:#8c9291}.fids-snd:hover{border-color:var(--checker)}.fids-snd:focus-visible{outline:2px solid var(--checker);outline-offset:1px}
 .fids-clock{display:inline-flex;gap:2px;align-items:center;letter-spacing:.06em;white-space:nowrap}
 .fids-cap{margin:7px 0 3px;font-family:var(--f-ui);font-weight:700;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#f5c518}
 .fr{display:flex;gap:9px;margin:0 0 2px;white-space:nowrap;align-items:center}
@@ -2348,6 +2351,8 @@ const sfx=(()=>{
     thump(k){this.burst(.6,140,.9*k);this.burst(.25,420,.35*k)},
     screech(k){this.burst(.55,1500,.32*k,.02,'bandpass',4);this.burst(.4,2300,.18*k,.06,'bandpass',5)},
     clunk(){this.burst(.18,260,.5);this.burst(.08,900,.15,.01)},
+    // split-flap clatter: n flaps turning over, as a run of tiny clicks and soft thunks spread over the flip (.34 s)
+    clack(n){if(!ctx||!n)return;const m=Math.min(n,22),v=m>12?.8:1;for(let i=0;i<m;i++){const d=Math.random()*.3;this.burst(.016,2200+Math.random()*2200,.12*v*(.6+Math.random()*.6),d,'bandpass',1.3);if(Math.random()<.55)this.burst(.03,650+Math.random()*350,.09*v,d+.004,'lowpass')}},
     crash(){this.burst(3.5,500,1.0);this.burst(2.5,120,1.0,.1);this.stopAll()},
     thunder(d){this.burst(3.8,140,.7,d);this.burst(1.2,600,.25,d)},
     shaker(){if(!ctx)return;const o=ctx.createOscillator();o.type='square';o.frequency.value=28;const g=gain(.05);o.connect(g);g.connect(master);o.start();o.stop(ctx.currentTime+.25)}
@@ -2897,12 +2902,12 @@ function fidsMe(t){
   const thr=PATH.pts.find(q=>q.d<=0).c,eta=(thr+300-PATH.pts[0].c)/76,L=fidsLong(CFG.ac)?FIDS_LONG:FIDS_REG;
   const k=ST.td?'ldg':eta-t<75?'fin':'app';
   return {role:'arr',t:eta,no:'FKT 13',car:['FKT','Fly Kai Tak','Fly Kai Tak'],city:L[fidsH(CFG.ac.length,CFG.ac.charCodeAt(1)||0,5)%L.length],stand:'RWY 13',k,li:-1,done:k==='ldg',me:true}}
-let fidsOn=true,fidsLast=-1e9;
-const FL_W=c=>c.charCodeAt(0)>255;
+let fidsOn=true,fidsLast=-1e9,fidsSnd=true;try{if(localStorage.getItem('fkt-fids-snd')==='0')fidsSnd=false}catch(e){}
+const FL_W=c=>c.charCodeAt(0)>255;let fidsFlips=0;
 // n flaps for a string (pad with blanks; Cantonese characters sit in wider flaps and count as two columns)
 function fidsFlaps(str,n,cls,key,prev,next){let o='',used=0,i=0;const ch=[...String(str)];
-  for(const c0 of ch){const w=FL_W(c0)?2:1;if(used+w>n)break;const c=FL_W(c0)?c0:c0.toUpperCase();const k=key+':'+i;next[k]=c;const f=prev&&prev[k]!==c&&prev[k]!==undefined?' flip':'';o+=`<b class="fl${w>1?' w':''}${cls?' '+cls:''}${f}">${c===' '?'&nbsp;':c}</b>`;used+=w;i++}
-  while(used<n){const k=key+':'+i;next[k]=' ';const f=prev&&prev[k]!==' '&&prev[k]!==undefined?' flip':'';o+=`<b class="fl sp${f}">&nbsp;</b>`;used++;i++}
+  for(const c0 of ch){const w=FL_W(c0)?2:1;if(used+w>n)break;const c=FL_W(c0)?c0:c0.toUpperCase();const k=key+':'+i;next[k]=c;const f=prev&&prev[k]!==c&&prev[k]!==undefined?' flip':'';if(f)fidsFlips++;o+=`<b class="fl${w>1?' w':''}${cls?' '+cls:''}${f}">${c===' '?'&nbsp;':c}</b>`;used+=w;i++}
+  while(used<n){const k=key+':'+i;next[k]=' ';const f=prev&&prev[k]!==' '&&prev[k]!==undefined?' flip':'';if(f)fidsFlips++;o+=`<b class="fl sp${f}">&nbsp;</b>`;used++;i++}
   return o}
 function fidsHTML(max,prev,next){
   const t=ST.t||0,zh=LANG==='zh',rows=[];
@@ -2915,15 +2920,19 @@ function fidsHTML(max,prev,next){
       const stand=r.stand==='RWY 13'?(zh?'13':'13'):r.stand,key=role+ri,hm=fidsHM(fidsT0()+r.t);
       return `<div class="fr${r.done?' done':''}${r.me?' me':''}" title="${zh?r.car[2]:r.car[1]}"><span class="fg t">${fidsFlaps(hm,5,'',key+'t',prev,next)}</span><i class="lv" style="background:${sw}"></i><span class="fg f">${fidsFlaps(r.no,7,'',key+'f',prev,next)}</span><span class="fg c" style="width:${cn*10+cn-1}px">${fidsFlaps(zh?r.city[1]:r.city[0],cn,'',key+'c',prev,next)}</span>${narrow?'':`<span class="fg k">${fidsFlaps(stand,4,'',key+'k',prev,next)}</span>`}<span class="fg s">${fidsFlaps(zh?S[1]:S[0],SN,'s-'+S[2],key+'s',prev,next)}</span></div>`}).join('');
   const clk=fidsHM(fidsT0()+t),ck={};
-  return `<div class="fids-h"><b>${zh?'航班資訊 · 啟德':'Flight information · Kai Tak'}</b><span class="fids-clock">${zh?'香港時間':'HKT'}&nbsp;${fidsFlaps(clk,5,'s-warn','clk',prev,next)}</span></div>`+
+  return `<div class="fids-h"><b>${zh?'航班資訊 · 啟德':'Flight information · Kai Tak'}</b><span class="fids-r"><button type="button" class="fids-snd" aria-pressed="${fidsSnd}" title="${zh?'翻牌聲':'Flap sound'}">${zh?(fidsSnd?'翻牌聲：開':'翻牌聲：關'):(fidsSnd?'Sound on':'Sound off')}</button><span class="fids-clock">${zh?'香港時間':'HKT'}&nbsp;${fidsFlaps(clk,5,'s-warn','clk',prev,next)}</span></span></div>`+
     sec('arr',zh?'抵港航班 · Arrivals':'Arrivals · 抵港航班',zh?'來自':'From')+sec('dep',zh?'離港航班 · Departures':'Departures · 離港航班',zh?'前往':'To')}
-function fidsDraw(el,max){if(!el||(paused&&el._h))return;const next={},h=fidsHTML(max,el._g,next);if(h!==el._h){el._h=h;el._g=next;el.innerHTML=h}el.setAttribute('aria-label',LANG==='zh'?'航班資訊':'Flight information')}
+function fidsDraw(el,max){if(!el||(paused&&el._h))return;const next={};fidsFlips=0;const h=fidsHTML(max,el._g,next);if(h!==el._h){el._h=h;el._g=next;el.innerHTML=h;if(fidsFlips&&fidsSnd&&CFG.sound&&!document.hidden)sfx.clack(fidsFlips)}el.setAttribute('aria-label',LANG==='zh'?'航班資訊':'Flight information')}
 function fidsTick(now){
   const pl=document.getElementById('fidsPlay');if(pl.hidden===(mode==='fly'&&CFG.game==='watch'&&fidsOn))fidsShow();
   if(now-fidsLast<400)return;fidsLast=now;const H=window.innerHeight;
   if(mode==='attract')fidsDraw(document.getElementById('fidsHome'),clamp(Math.floor((H-500)/44),2,8));
   else if(mode==='fly'&&CFG.game==='watch'&&fidsOn)fidsDraw(document.getElementById('fidsPlay'),clamp(Math.floor((H-190)/46),2,8))}
+// browsers keep audio locked until the first tap or key: start it then, so the home screen board clacks too
+{let on=false;const arm=()=>{if(on)return;on=true;sfx.start();sfx.mute(CFG.sound)};for(const ev of['pointerdown','keydown'])window.addEventListener(ev,arm,{passive:true})}
 function fidsShow(){const W=mode==='fly'&&CFG.game==='watch',b=document.getElementById('btnFids');document.getElementById('fidsPlay').hidden=!(W&&fidsOn);b.hidden=!W;b.setAttribute('aria-pressed',String(fidsOn));fidsLast=-1e9}
+function toggleFidsSound(){fidsSnd=!fidsSnd;try{localStorage.setItem('fkt-fids-snd',fidsSnd?'1':'0')}catch(e){}if(fidsSnd&&CFG.sound){sfx.start();sfx.mute(true);sfx.clack(8)}tog('flight_board_sound',fidsSnd?'on':'off','button');fidsLast=-1e9}
+for(const id of['fidsHome','fidsPlay'])document.getElementById(id).addEventListener('click',e=>{if(e.target.closest('.fids-snd')){toggleFidsSound();e.stopPropagation()}});
 function toggleFids(via){if(mode!=='fly'||CFG.game!=='watch')return;fidsOn=!fidsOn;fidsShow();tog('flight_board',fidsOn?'on':'off',via)}
 
 /* =====================================================================
