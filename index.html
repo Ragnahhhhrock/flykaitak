@@ -120,6 +120,10 @@ legend{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--
 .chip input{position:absolute;opacity:0;pointer-events:none}
 .chip span{display:inline-block;border:1px solid var(--line-2);border-radius:999px;padding:7px 12px;font-size:12.5px;cursor:pointer;color:var(--text)}
 .chip input:checked+span{background:var(--paper);color:#13191c;border-color:var(--paper);font-weight:700}
+.clock{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:12.5px;color:var(--muted)}
+.clock input{flex:1;min-width:0;accent-color:var(--jade)}
+.clock output{font-family:var(--f-num);color:var(--text);min-width:3.4em;text-align:right}
+.hint{display:block;margin-top:6px;color:var(--muted);font-size:12px}
 .toggles{display:grid;gap:8px}
 .tog{display:flex;gap:10px;align-items:flex-start;font-size:13px;cursor:pointer;line-height:1.4}
 .tog input{accent-color:var(--jade);margin-top:2px;width:16px;height:16px;flex:none}
@@ -385,7 +389,7 @@ html,body{overscroll-behavior:none;touch-action:manipulation}
     <button class="btn" id="btnBack" type="button" title="Back 10 seconds ( [ )">−10 s</button>
     <button class="btn" id="btnFwd" type="button" title="Forward 10 seconds ( ] )">+10 s</button>
     <select id="wxSel" aria-label="Weather"></select>
-    <button class="btn" id="btnNight" type="button" aria-pressed="false">Night</button>
+    <button class="btn" id="btnNight" type="button" aria-pressed="false" title="Time of day: dawn, day, dusk, night ( N )">Day</button>
     <button class="btn" id="btnClouds" type="button" aria-pressed="true" title="Cloud layers on/off ( U )">Clouds</button>
     <button class="btn" id="btnAP" type="button" aria-pressed="false">Autopilot</button>
     <button class="btn" id="btnDeck" type="button" aria-pressed="false">Cockpit</button>
@@ -469,9 +473,13 @@ html,body{overscroll-behavior:none;touch-action:manipulation}
       <fieldset>
         <legend>Time of day</legend>
         <div class="chips">
-          <label class="chip"><input type="radio" name="tod" value="day" checked><span>Day</span></label>
-          <label class="chip"><input type="radio" name="tod" value="night"><span>Night</span></label>
+          <label class="chip"><input type="radio" name="tod" value="5.25"><span>Dawn</span></label>
+          <label class="chip"><input type="radio" name="tod" value="15" checked><span>Day</span></label>
+          <label class="chip"><input type="radio" name="tod" value="18.75"><span>Dusk</span></label>
+          <label class="chip"><input type="radio" name="tod" value="22"><span>Night</span></label>
         </div>
+        <label class="clock"><span>Clock</span><input id="optHour" type="range" min="0" max="23.75" step="0.25" value="15" aria-label="Time of day, local time"><output id="hourOut" for="optHour">15:00</output></label>
+        <small class="hint">The sun and moon sit where they were over Hong Kong on a July day in 1998.</small>
       </fieldset>
       <fieldset>
         <legend>Weather</legend>
@@ -499,7 +507,7 @@ html,body{overscroll-behavior:none;touch-action:manipulation}
           <span><kbd>C</kbd></span><span>Cycle view: cockpit, exterior, tower, cabin</span>
           <span><kbd>Z</kbd></span><span>Autopilot on/off</span>
           <span><kbd>K</kbd></span><span>Show or hide the cockpit panel (cockpit view)</span>
-          <span><kbd>N</kbd> <kbd>P</kbd> <kbd>U</kbd></span><span>Day/night, pause, clouds</span>
+          <span><kbd>N</kbd> <kbd>P</kbd> <kbd>U</kbd></span><span>Time of day, pause, clouds</span>
           <span><kbd>I</kbd> <kbd>O</kbd> / mouse wheel</span><span>Zoom in / out (1× to 16×). Scroll up to zoom in, down to zoom out</span>
           <span><kbd>T</kbd></span><span>Time speed 1×, 2×, 4×, 8×</span>
           <span><kbd>B</kbd></span><span>Flight information board on/off (Plane Spotter)</span>
@@ -677,7 +685,7 @@ const WX={
 };
 
 /* ---------------- state & settings ---------------- */
-const CFG={game:'approach',lesson:false,rwy:'13',zoom:1,ts:1,deck:false,hud:true,ac:'b744',night:false,wx:'clear',lightning:false,clouds:true,guide:true,ap:false,walled:true,view:'cockpit',sound:true,radio:true,seatRow:34,seatLeft:true};
+const CFG={game:'approach',lesson:false,rwy:'13',zoom:1,ts:1,deck:false,hud:true,ac:'b744',night:false,hour:15,wx:'clear',lightning:false,clouds:true,guide:true,ap:false,walled:true,view:'cockpit',sound:true,radio:true,seatRow:34,seatLeft:true};
 const ST={};let mode='loading'; // loading | attract | fly | ended
 let paused=false;
 
@@ -693,17 +701,56 @@ const camera=new THREE.PerspectiveCamera(60,1,1,90000);
 scene.fog=new THREE.FogExp2(0xc8d4dc,0.00006);
 const hemi=new THREE.HemisphereLight(0xbcd6ef,0x5f5a4d,0.8);scene.add(hemi);
 const sun=new THREE.DirectionalLight(0xfff1dc,1.0);sun.position.set(-0.45,0.75,0.5);scene.add(sun);
+const moonL=new THREE.DirectionalLight(0x9fb2d9,0);scene.add(moonL);
 const amb=new THREE.AmbientLight(0xffffff,0);scene.add(amb); // lightning flash
 const LIGHT_U={uScale:{value:900},uTime:{value:0},uFogD:{value:0.00006},uI:{value:1},uMinPx:{value:2.2}};
 const CITY_U={uNight:{value:0}};
 
-/* sky dome */
+/* sun and moon over Hong Kong, early July 1998 (Kai Tak closed on 6 July). hour = local solar time.
+   Sun: declination +22.8 deg. Moon: a waxing gibbous (120 deg east of the sun), declination -12 deg. World axes: x east, y up, z south. */
+const SOLAR={lat:22.33*D2R,dec:22.8*D2R,moonDec:-12*D2R,moonElong:120*D2R};
+const SUN_DIR=new THREE.Vector3(0,1,0),MOON_DIR=new THREE.Vector3(0,1,0),POLE=new THREE.Vector3(0,Math.sin(SOLAR.lat),-Math.cos(SOLAR.lat));
+function celestial(H,dec,out){const L=SOLAR.lat,cd=Math.cos(dec),sd=Math.sin(dec);
+  return out.set(-cd*Math.sin(H),sd*Math.sin(L)+cd*Math.cos(L)*Math.cos(H),-(sd*Math.cos(L)-cd*Math.sin(L)*Math.cos(H)))}
+function solarState(hour){const H=(hour-12)*15*D2R;celestial(H,SOLAR.dec,SUN_DIR);celestial(H-SOLAR.moonElong,SOLAR.moonDec,MOON_DIR);
+  return{H,sunEl:Math.asin(SUN_DIR.y)*R2D,moonEl:Math.asin(MOON_DIR.y)*R2D}}
+
+/* sky dome: gradient, twilight glow, sun disc and glare, moon disc with its phase */
 const skyMat=new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,depthTest:false,fog:false,
-  uniforms:{top:{value:new THREE.Color(0x5f8fc6)},hor:{value:new THREE.Color(0xcfdae0)},bot:{value:new THREE.Color(0x8a9aa2)},sunDir:{value:new THREE.Vector3(-.45,.75,.5).normalize()},sunCol:{value:new THREE.Color(0xfff2d6)},sunAmt:{value:.6},flash:{value:0}},
+  uniforms:{top:{value:new THREE.Color(0x5f8fc6)},hor:{value:new THREE.Color(0xcfdae0)},bot:{value:new THREE.Color(0x8a9aa2)},sunDir:{value:new THREE.Vector3(-.45,.75,.5).normalize()},sunCol:{value:new THREE.Color(0xfff2d6)},sunAmt:{value:.6},
+    moonDir:{value:new THREE.Vector3(0,1,0)},moonAmt:{value:0},nightAmt:{value:0},glowCol:{value:new THREE.Color(0xff8040)},glowAmt:{value:0},flash:{value:0}},
   vertexShader:'varying vec3 vD;void main(){vD=normalize(position);vec4 p=projectionMatrix*modelViewMatrix*vec4(position,1.);gl_Position=p.xyww;}',
-  fragmentShader:'uniform vec3 top,hor,bot,sunCol,sunDir;uniform float sunAmt,flash;varying vec3 vD;void main(){float y=vD.y;vec3 c=y>0.?mix(hor,top,pow(clamp(y,0.,1.),.55)):mix(hor,bot,clamp(-y*6.,0.,1.));float s=max(dot(vD,normalize(sunDir)),0.);c+=sunCol*(pow(s,600.)*2.+pow(s,8.)*.25)*sunAmt;c+=vec3(.75,.8,1.)*flash;gl_FragColor=vec4(c,1.);}'});
+  fragmentShader:`uniform vec3 top,hor,bot,sunCol,sunDir,moonDir,glowCol;uniform float sunAmt,moonAmt,nightAmt,glowAmt,flash;varying vec3 vD;
+  void main(){
+    vec3 v=normalize(vD);float y=v.y;
+    vec3 c=y>0.?mix(hor,top,pow(clamp(y,0.,1.),.55)):mix(hor,bot,clamp(-y*6.,0.,1.));
+    float up=smoothstep(-.004,.0,y);
+    // twilight: a warm band along the horizon under the sun
+    vec3 sh=normalize(vec3(sunDir.x,0.,sunDir.z)+vec3(1e-5,0.,0.));vec3 vh=normalize(vec3(v.x,0.,v.z)+vec3(1e-5,0.,0.));
+    float az=max(dot(vh,sh),0.);
+    c+=glowCol*glowAmt*(pow(az,3.)*exp(-abs(y)*5.)+exp(-abs(y)*9.)*.2);
+    // sun: disc, close glare and a wide halo
+    float s=dot(v,sunDir),sp=max(s,0.);
+    c+=sunCol*(smoothstep(.99995,.99997,s)*2.5+pow(sp,700.)*1.5+pow(sp,64.)*.35+pow(sp,8.)*.25)*sunAmt*up;
+    // moon: a disc with maria, lit on the side that faces the sun
+    float m=dot(v,moonDir);
+    c+=vec3(.55,.62,.8)*pow(max(m,0.),1500.)*.14*moonAmt*up;
+    if(m>.9985&&moonAmt>0.){
+      vec3 t=normalize(cross(moonDir,vec3(0.,1.,0.)));vec3 b=cross(t,moonDir);
+      vec3 p=v-moonDir*m;vec2 q=vec2(dot(p,t),dot(p,b))/.021;float r2=dot(q,q);
+      float edge=1.-smoothstep(.9,1.,sqrt(r2));
+      vec3 L=normalize(vec3(dot(sunDir,t),dot(sunDir,b),dot(sunDir,moonDir)));
+      vec3 n=vec3(q,-sqrt(max(1.-r2,0.)));
+      float lit=smoothstep(-.03,.07,dot(n,L));
+      float tex=.78+.22*(.5+.5*sin(q.x*6.5+2.*sin(q.y*4.7))*sin(q.y*5.3-q.x*2.9));
+      vec3 mc=vec3(.96,.94,.86)*tex*(.85+.15*(-n.z));
+      c=mix(c,mc,edge*lit*moonAmt*up);
+      c+=vec3(.018,.022,.036)*edge*(1.-lit)*nightAmt*moonAmt*up;   // earthshine on the dark side
+    }
+    c+=vec3(.75,.8,1.)*flash;
+    gl_FragColor=vec4(c,1.);}`});
 const sky=new THREE.Mesh(new THREE.SphereGeometry(80000,32,16),skyMat);sky.renderOrder=-10;sky.frustumCulled=false;scene.add(sky);
-/* stars */
+/* stars: they turn about the celestial pole with the hour */
 const stars=(()=>{const n=1500,p=new Float32Array(n*3);for(let i=0;i<n;i++){const a=rnd()*Math.PI*2,e=Math.asin(rnd()*.95+.05);p[i*3]=Math.cos(e)*Math.sin(a)*70000;p[i*3+1]=Math.sin(e)*70000;p[i*3+2]=Math.cos(e)*Math.cos(a)*70000}
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(p,3));const m=new THREE.PointsMaterial({color:0xdde6ff,size:1.4,sizeAttenuation:false,fog:false,transparent:true,opacity:.8,depthWrite:false});const o=new THREE.Points(g,m);o.renderOrder=-9;o.frustumCulled=false;scene.add(o);return o})();
 
@@ -765,7 +812,7 @@ function canvasTex(w,h,draw,rep){const c=document.createElement('canvas');c.widt
 
 /* ---------------- water: waves, whitecaps, depth, shore foam, sky reflection ---------------- */
 const WATER_U={uTime:{value:0},uCaps:{value:.2},uWindDir:{value:new THREE.Vector2(1,0)},uDeep:{value:new THREE.Color(0x0f3a44)},uShallow:{value:new THREE.Color(0x3f7f78)},
-  uNight:{value:0},uSunAmt:{value:1},uChop:{value:.5},uShore:{value:null},uShoreBox:{value:new THREE.Vector4(-28000,-17000,42000,31000)}};
+  uNight:{value:0},uSunAmt:{value:1},uMoonDir:{value:new THREE.Vector3(0,1,0)},uMoonAmt:{value:0},uChop:{value:.5},uShore:{value:null},uShoreBox:{value:new THREE.Vector4(-28000,-17000,42000,31000)}};
 function buildShoreTexture(){
   // distance from land on a 25-50 m grid, used for depth tint and surf
   const R=GEO.outer,W=1024,H=768,sx=(R.x1-R.x0)/W,sz=(R.z1-R.z0)/H;const land=new Uint8Array(W*H),D=new Float32Array(W*H);
@@ -793,7 +840,7 @@ function waterMaterial(){
     fragmentShader:`#include <common>
     #include <fog_pars_fragment>
     #include <logdepthbuf_pars_fragment>
-    uniform float uTime,uCaps,uNight,uSunAmt,uChop,flash;uniform vec2 uWindDir;uniform vec3 uDeep,uShallow,top,hor,sunDir,sunCol;uniform sampler2D uShore;uniform vec4 uShoreBox;
+    uniform float uTime,uCaps,uNight,uSunAmt,uMoonAmt,uChop,flash;uniform vec2 uWindDir;uniform vec3 uDeep,uShallow,top,hor,sunDir,sunCol,uMoonDir;uniform sampler2D uShore;uniform vec4 uShoreBox;
     varying vec3 vWP;
     float h21(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}
     float vn(vec2 p){vec2 i=floor(p),f=fract(p);vec2 u=f*f*(3.-2.*f);return mix(mix(h21(i),h21(i+vec2(1,0)),u.x),mix(h21(i+vec2(0,1)),h21(i+vec2(1,1)),u.x),u.y);}
@@ -817,6 +864,7 @@ function waterMaterial(){
       vec3 body=mix(uDeep,uShallow,shallow*.85);body*=.75+.35*(1.-uNight);
       vec3 col=mix(body,sky,clamp(fr,0.,1.)*.85);
       float s=pow(max(dot(R,normalize(sunDir)),0.),320.)*3.+pow(max(dot(R,normalize(sunDir)),0.),40.)*.15;col+=sunCol*s*uSunAmt;
+      float mg=max(dot(R,normalize(uMoonDir)),0.);col+=vec3(.7,.78,1.)*(pow(mg,260.)*2.2+pow(mg,30.)*.05)*uMoonAmt;   // moonlight on the water
       // whitecaps: crests of the wind waves, more with stronger wind
       float crest=fbm(p*.035+uWindDir*t*.6)*.6+fbm(p*.11-uWindDir*t*.9)*.4;
       float cap=smoothstep(1.-uCaps*.55,1.-uCaps*.55+.08,crest)*smoothstep(.25,.65,fbm(p*.6+t*.2));
@@ -830,10 +878,13 @@ function waterMaterial(){
       #include <fog_fragment>
     }`});
 }
-function setWater(){const w=WX[CFG.wx],n=CFG.night,over=w.cloud&&w.cloud.cov>.8;
+function setWater(){const w=WX[CFG.wx],over=w.cloud&&w.cloud.cov>.8,k=ENV.k;
   const ws=w.ws+w.gust*.5;WATER_U.uCaps.value=clamp((ws-6)/32,0,1);WATER_U.uChop.value=clamp(ws/30,.15,1.4);
-  const wr=wxDir()*D2R;WATER_U.uWindDir.value.set(-Math.sin(wr),Math.cos(wr));WATER_U.uNight.value=n?1:0;WATER_U.uSunAmt.value=n?.0:over||CFG.wx==='fog'?.1:1;
-  if(n){WATER_U.uDeep.value.setHex(0x03090c);WATER_U.uShallow.value.setHex(0x0b1d20)}else if(over){WATER_U.uDeep.value.setHex(0x1e3436);WATER_U.uShallow.value.setHex(0x4a6a62)}else{WATER_U.uDeep.value.setHex(0x0f3a44);WATER_U.uShallow.value.setHex(0x3f7f78)}}
+  const wr=wxDir()*D2R;WATER_U.uWindDir.value.set(-Math.sin(wr),Math.cos(wr));WATER_U.uNight.value=1-k;
+  WATER_U.uSunAmt.value=(over||CFG.wx==='fog'?.1:1)*sstep(Math.sin(-2*D2R),Math.sin(6*D2R),SUN_DIR.y);
+  WATER_U.uMoonDir.value.copy(MOON_DIR);WATER_U.uMoonAmt.value=(1-k)*sstep(0,Math.sin(8*D2R),MOON_DIR.y)*(over||CFG.wx==='fog'?.15:1);
+  WATER_U.uDeep.value.setHex(0x03090c).lerp(_wc.setHex(over?0x1e3436:0x0f3a44),k);WATER_U.uShallow.value.setHex(0x0b1d20).lerp(_wc.setHex(over?0x4a6a62:0x3f7f78),k)}
+const _wc=new THREE.Color();
 
 /* ---------------- terrain ---------------- */
 let water,TERRAIN_MATS=[];
@@ -2413,22 +2464,45 @@ function clearFX(){for(const f of FX){scene.remove(f.m);f.m.material.dispose()}F
    ENVIRONMENT (day/night, weather)
    ===================================================================== */
 let lightningT=5,flash=0;
+// sky colours by sun elevation (degrees): top, horizon, below the horizon, fog
+const SKY_KEYS=[[-14,0x050911,0x1d2436,0x0a0c10,0x141a26],[-7,0x0e1630,0x3a3558,0x0f1115,0x262a40],[-2,0x24396b,0xc9704f,0x3a3032,0x8a5f55],
+  [3,0x3d6aa8,0xf0b383,0x7a7470,0xd9b79c],[10,0x5489c4,0xe6d3bf,0x8a949a,0xd3cfc9],[22,0x5e8fc8,0xd2dce2,0x8e9aa0,0xc9d4dc]];
+const SK=[0,1,2,3].map(()=>new THREE.Color()),_k1=new THREE.Color(),_k2=new THREE.Color(),_k3=new THREE.Color();
+function skyAt(el){let i=0;while(i<SKY_KEYS.length-2&&el>SKY_KEYS[i+1][0])i++;const a=SKY_KEYS[i],b=SKY_KEYS[i+1],t=clamp((el-a[0])/(b[0]-a[0]),0,1);
+  for(let j=0;j<4;j++)SK[j].setHex(a[j+1]).lerp(_k1.setHex(b[j+1]),t)}
+function hexMix(a,b,t){return _k3.setHex(a).lerp(_k2.setHex(b),t).getHex()}
+// the label for the clock: Dawn and Dusk while the sun is within a few degrees of the horizon
+function todLabel(){const e=ENV.sunEl;if(e<-6)return'Night';if(e<8)return CFG.hour<12?'Dawn':'Dusk';return'Day'}
 function applyEnvironment(){
-  const w=WX[CFG.wx],n=CFG.night,over=w.cloud&&w.cloud.cov>.8;
+  const w=WX[CFG.wx],over=w.cloud&&w.cloud.cov>.8,fogW=CFG.wx==='fog';
+  const S=solarState(CFG.hour),sinEl=SUN_DIR.y,el=S.sunEl;
+  const k=sstep(Math.sin(-8*D2R),Math.sin(8*D2R),sinEl);          // daylight, 0 (night) to 1 (day)
+  const n=el<0;CFG.night=n;                                         // lights come on at sunset
+  const tw=Math.exp(-Math.pow((el+1)/5,2));                         // twilight, strongest as the sun crosses the horizon
+  const mUp=sstep(Math.sin(-2*D2R),Math.sin(10*D2R),MOON_DIR.y);
+  Object.assign(ENV,{k,sunEl:el,moonEl:S.moonEl,tw,cloudFog:hexMix(0x241e1a,0xb9bfc2,k)});
   const dens=1.98/w.vis;scene.fog.density=dens;LIGHT_U.uFogD.value=dens;
-  let top,hor,bot,fog;
-  if(!n){top=over?0x8c969c:0x5e8fc8;hor=over?0xa9b1b5:0xd2dce2;bot=over?0x7d8689:0x8e9aa0;fog=over?0xa3abaf:0xc9d4dc;if(CFG.wx==='fog'){fog=hor=0xc3c8ca;top=0xb0b8bc}
-    hemi.intensity=over?.85:.75;hemi.color.setHex(over?0xc5ccd0:0xbcd6ef);hemi.groundColor.setHex(0x5f5a4d);sun.intensity=over?.25:1.0;sun.color.setHex(0xfff1dc);skyMat.uniforms.sunAmt.value=over||CFG.wx==='fog'?0:.6;
-    CITY_U.uNight.value=0;LIGHT_U.uI.value=.55;stars.visible=false}
-  else{top=over?0x1a1612:0x050911;hor=over?0x3a2b20:0x1d2436;bot=0x0a0c10;fog=over?0x2e241c:0x141a26;if(CFG.wx==='fog'){fog=hor=0x2c2620;top=0x15120f}
-    hemi.intensity=.2;hemi.color.setHex(0x51608a);hemi.groundColor.setHex(0x1b1a1c);sun.intensity=.12;sun.color.setHex(0x9fb2d9);skyMat.uniforms.sunAmt.value=0;
-    CITY_U.uNight.value=1;LIGHT_U.uI.value=1;stars.visible=!over&&CFG.wx!=='fog'}
+  // sky and fog colours
+  skyAt(el);let top=SK[0].getHex(),hor=SK[1].getHex(),bot=SK[2].getHex(),fog=SK[3].getHex();
+  if(over){top=hexMix(0x1a1612,0x8c969c,k);hor=hexMix(0x3a2b20,0xa9b1b5,k);bot=hexMix(0x0a0c10,0x7d8689,k);fog=hexMix(0x2e241c,0xa3abaf,k);hor=hexMix(hor,0xc98f6a,tw*.3);fog=hexMix(fog,0xb08462,tw*.25)}
+  else if(fogW){top=hexMix(0x15120f,0xb0b8bc,k);hor=fog=hexMix(0x2c2620,0xc3c8ca,k);hor=hexMix(hor,0xc99a78,tw*.25);fog=hor}
   skyMat.uniforms.top.value.setHex(top);skyMat.uniforms.hor.value.setHex(hor);skyMat.uniforms.bot.value.setHex(bot);scene.fog.color.setHex(fog);
+  // sun, moon and the glow along the horizon
+  const clear=!over&&!fogW;
+  skyMat.uniforms.sunDir.value.copy(SUN_DIR);skyMat.uniforms.sunCol.value.setHex(hexMix(0xff7f3f,0xfff2d6,clamp(el/20,0,1)));skyMat.uniforms.sunAmt.value=clear?1:0;
+  skyMat.uniforms.moonDir.value.copy(MOON_DIR);skyMat.uniforms.moonAmt.value=clear?(.42+.58*(1-k))*sstep(-.02,.06,MOON_DIR.y):0;skyMat.uniforms.nightAmt.value=1-k;
+  skyMat.uniforms.glowCol.value.setHex(hexMix(0xff6a30,0xffa060,clamp((el+4)/10,0,1)));skyMat.uniforms.glowAmt.value=tw*(clear?.8:over?.22:.2);
+  stars.quaternion.setFromAxisAngle(POLE,-S.H);stars.material.opacity=.8*clamp(1-k*1.5,0,1);stars.visible=clear&&k<.65;
+  // light: the sun by day (warm and low near the horizon), the moon by night
+  hemi.intensity=lerp(.2,over?.85:.75,k)+.03*mUp*(1-k);hemi.color.setHex(hexMix(0x51608a,over?0xc5ccd0:0xbcd6ef,k));hemi.groundColor.setHex(hexMix(0x1b1a1c,0x5f5a4d,k));
+  sun.position.copy(SUN_DIR);sun.color.setHex(hexMix(0xff9a55,0xfff1dc,clamp(el/22,0,1)));sun.intensity=(over?.25:1.0)*sstep(Math.sin(-2*D2R),Math.sin(10*D2R),sinEl);
+  moonL.position.set(MOON_DIR.x,Math.max(MOON_DIR.y,.3),MOON_DIR.z);moonL.intensity=(.05+.1*mUp)*(1-k)*(over?.7:1);
+  CITY_U.uNight.value=1-sstep(Math.sin(-7*D2R),Math.sin(1*D2R),sinEl);LIGHT_U.uI.value=lerp(1,.55,k);
   ENV.fogBase=fog;ENV.dens=dens;
-  for(const S of SHIPS)if(S.m.userData.wake){const m=S.m.userData.wake.material;m.opacity=n?.35:over?.6:.85;m.color.setHex(n?0x2a3438:0xffffff)}
-  setWater();if(obstructionLights)obstructionLights.visible=n||over||CFG.wx==='fog';
-  for(const m of TERRAIN_MATS){const k=n?.11:over?.72:CFG.wx==='fog'?.8:1;if(m.userData.street)m.color.setHex(m.userData.base||(m.userData.base=m.color.getHex())).multiplyScalar(n?.25:k);else m.color.setScalar(k)}
-  for(const m of APR_MATS)m.color.setScalar(n?.55:over?.72:CFG.wx==='fog'?.8:1);
+  for(const S of SHIPS)if(S.m.userData.wake){const m=S.m.userData.wake.material;m.opacity=lerp(.35,over?.6:.85,k);m.color.setHex(hexMix(0x2a3438,0xffffff,k))}
+  setWater();if(obstructionLights)obstructionLights.visible=n||over||fogW;
+  for(const m of TERRAIN_MATS){const kd=over?.72:fogW?.8:1;if(m.userData.street)m.color.setHex(m.userData.base||(m.userData.base=m.color.getHex())).multiplyScalar(lerp(.25,kd,k));else m.color.setScalar(lerp(.11,kd,k))}
+  for(const m of APR_MATS)m.color.setScalar(lerp(.55,over?.72:fogW?.8:1,k));
   streetLights.visible=n;carLights&&(carLights.visible=n);shipLights.visible=true;
   if(signMat)signMat.color.setScalar(n?1:over?.6:.8);
   if(BB.paint){BB.paintMat.color.setScalar(n?.85:over?.62:.9);BB.neonMat.color.setScalar(n?1:over?.62:.9);BB.neonDay.visible=!n;BB.neonNight.visible=n;BB.glow.visible=n;BB.lamps.visible=n;BB.frameMat.color.setHex(n?0x1a1c1e:over?0x44484c:0x5a5f64)}
@@ -2437,11 +2511,11 @@ function applyEnvironment(){
   if(acModel)acModel.userData.cabinMat.emissive.setHex(n?0xffd79a:0x000000);
   for(const p of parked)p.userData.cabinMat.emissive.setHex(n?0x7a6440:0);
   setClouds(w);applyInteriorLight();
-  for(const c of cloudLayers)c.material.color.setHex(n?(over?0x3b3028:0x2a2e38):(over?0xbfc4c6:0xffffff));
+  for(const c of cloudLayers){const base=hexMix(over?0x3b3028:0x2a2e38,over?0xbfc4c6:0xffffff,k);c.material.color.setHex(over?base:hexMix(base,0xffb08a,tw*.55))}
   updateRunwayScenery();
-  document.getElementById('btnNight').setAttribute('aria-pressed',String(n));
+  const bn=document.getElementById('btnNight');bn.setAttribute('aria-pressed',String(n));bn.textContent=todLabel();
 }
-const ENV={fogBase:0xc9d4dc,dens:.00006};
+const ENV={fogBase:0xc9d4dc,dens:.00006,k:1,sunEl:50,moonEl:0,tw:0,cloudFog:0xb9bfc2};
 // the weather presets blow from the east (the Runway 13 days); for the Runway 31 approach the wind comes from the opposite quarter, as a headwind
 function wxDir(){const d=WX[CFG.wx].wd;return LND.id==='31'?(d+180)%360:d}
 
@@ -3169,7 +3243,7 @@ function updateGSE(){
    VIEWS & CAMERA
    ===================================================================== */
 let acModel=null,navLights=null,strobeLights=null,landingLight=null,shadow=null,deckGroup=null,cabinGroup=null;
-function applyInteriorLight(){const n=CFG.night,over=WX[CFG.wx].cloud&&WX[CFG.wx].cloud.cov>.8;const kc=n?.32:over?.8:1,kb=n?.62:over?.9:1;
+function applyInteriorLight(){const n=CFG.night,over=WX[CFG.wx].cloud&&WX[CFG.wx].cloud.cov>.8,k=ENV.k;const kc=lerp(.32,over?.8:1,k),kb=lerp(.62,over?.9:1,k);
   for(const m of COCKPIT_MATS)m.color.setHex(m.userData.base).multiplyScalar(kc);for(const m of CABIN_MATS){m.color.setHex(m.userData.base).multiplyScalar(kb);if(n)m.color.multiply(_tint)}}
 const _tint=new THREE.Color(1,.93,.8);
 const look={yaw:0,pitch:0,orbitYaw:0,orbitPitch:.18,dist:1};
@@ -3444,7 +3518,9 @@ function toggleDeck(){CFG.deck=!CFG.deck;tog('deck',CFG.deck?'on':'off');syncBut
 function toggleHud(){CFG.hud=!CFG.hud;tog('hud',CFG.hud?'on':'off');syncButtons()}
 function toggleGuide(){CFG.guide=!CFG.guide;hoops.visible=CFG.guide;tog('guide',CFG.guide?'on':'off');syncButtons()}
 function toggleSound(){CFG.sound=!CFG.sound;sfx.mute(CFG.sound);if(!CFG.sound&&synth)synth.cancel();tog('sound',CFG.sound?'on':'off');syncButtons()}
-function toggleNight(){CFG.night=!CFG.night;tog('night',CFG.night?'night':'day');applyEnvironment()}
+const TOD_PRESETS=[5.25,15,18.75,22];
+function setHour(h){CFG.hour=((h%24)+24)%24;applyEnvironment()}
+function toggleNight(){const next=TOD_PRESETS.find(p=>p>CFG.hour+.01);setHour(next===undefined?TOD_PRESETS[0]:next);tog('night',todLabel().toLowerCase())}
 function toggleAP(on){ST.ap=on===undefined?!ST.ap:on;if(ST.ap)ST.apUsed=true;ST.apT=null;if(ST.ap&&ST.onGround&&CFG.game!=='approach'){ST.ap=false;toast('Autopilot engages once you are airborne');syncButtons();return}tog('autopilot',ST.ap?'on':'off',on===undefined?VIA:'auto');if(ST.ap){ST.apI=0;toast('Autopilot and autothrottle engaged')}else toast('Autopilot off: you have control');syncButtons()}
 function setClouds_on(on){CFG.clouds=on;for(const c of cloudLayers)c.visible=on;tog('clouds',on?'on':'off');syncButtons();toast('Clouds '+(on?'on':'off'))}
 function togglePause(){paused=!paused;tog('pause',paused?'on':'off');syncButtons()}
@@ -3605,7 +3681,7 @@ const ZH={
 'You start the descent over Tsing Yi at about 3,000 ft, established on the instrument guidance system, heading 088. Follow it toward the orange-and-white checkerboard on the hill, then make the 47° right turn low over Kowloon City and line up with a runway that ends in Kowloon Bay.':'你喺青衣上空約 3,000 呎開始下降，已經對正儀器導航系統（IGS），航向 088。跟住佢飛向山上嘅橙白棋盤，然後喺九龍城上空低飛，向右急轉 47°，對正一條盡頭係九龍灣嘅跑道。',
 'Mode':'模式','Aircraft':'機型','Time of day':'時間','Weather':'天氣','Options':'選項',
 'IGS 13 approach':'IGS 13 進場','Runway 31 approach':'31 號跑道進場','Free flight':'自由飛行','Plane Spotter':'觀機','Take-off lesson':'起飛教學',
-'Day':'日間','Night':'夜間',
+'Dawn':'黎明','Day':'日間','Dusk':'黃昏','Night':'夜間','Clock':'時鐘','The sun and moon sit where they were over Hong Kong on a July day in 1998.':'日頭同月亮嘅位置，同1998年7月某日香港上空一樣。',
 'Begin descent':'開始下降',
 'Start the lesson':'開始教學',
 'New to flying? A guided take-off on Runway 13, one step at a time: full power, stay straight, lift the nose, wheels up. No experience needed.':'初次接觸飛行？喺 13 號跑道一步一步跟住教你起飛：推滿油門、保持直線、拉起機頭、收起落架。唔使有任何經驗。',
@@ -3645,7 +3721,7 @@ const ZH={
 'Cycle view: cockpit, exterior, tower, cabin':'切換視角：駕駛艙、機外、控制塔、客艙',
 'Autopilot on/off':'自動駕駛 開 / 關',
 'Show or hide the cockpit panel (cockpit view)':'顯示或隱藏駕駛艙儀表板（駕駛艙視角）',
-'Day/night, pause, clouds':'日夜、暫停、雲層',
+'Time of day, pause, clouds':'時間、暫停、雲層',
 'Zoom in / out (1× to 16×). Scroll up to zoom in, down to zoom out':'放大 / 縮小（1× 至 16×）。滑鼠滾輪向上放大，向下縮小',
 'Time speed 1×, 2×, 4×, 8×':'時間速度 1×、2×、4×、8×','Flight information board on/off (Plane Spotter)':'航班資訊板開／關（觀機）',
 'Jump back / forward 10 seconds (back works after a crash too)':'後退 / 前進 10 秒（撞機之後亦可以後退）',
@@ -3674,16 +3750,21 @@ function applyLang(){
   for(const s of b.querySelectorAll('span'))s.classList.toggle('on',s.dataset.l===LANG)}
 document.getElementById('btnLang').addEventListener('click',e=>{LANG=LANG==='zh'?'en':'zh';try{localStorage.setItem('fkt-lang',LANG)}catch(_){}track('language_toggle',{language:LANG==='zh'?'cantonese':'english'});applyLang();fidsLast=-1e9;e.currentTarget.blur()});
 applyLang();
-function readSetup(){const gv=document.querySelector('input[name=game]:checked').value;CFG.lesson=gv==='learn';CFG.game=gv==='approach31'?'approach':gv==='free31'?'free':gv==='watch31'?'watch':CFG.lesson?'free':gv;CFG.rwy=gv==='approach31'||gv==='free31'||gv==='watch31'?'31':'13';CFG.ac=document.querySelector('input[name=ac]:checked').value;CFG.night=document.querySelector('input[name=tod]:checked').value==='night';CFG.wx=document.querySelector('input[name=wx]:checked').value;
+function readSetup(){const gv=document.querySelector('input[name=game]:checked').value;CFG.lesson=gv==='learn';CFG.game=gv==='approach31'?'approach':gv==='free31'?'free':gv==='watch31'?'watch':CFG.lesson?'free':gv;CFG.rwy=gv==='approach31'||gv==='free31'||gv==='watch31'?'31':'13';CFG.ac=document.querySelector('input[name=ac]:checked').value;CFG.hour=parseFloat(document.getElementById('optHour').value)||0;CFG.night=solarState(CFG.hour).sunEl<0;CFG.wx=document.querySelector('input[name=wx]:checked').value;
   CFG.lightning=document.getElementById('optLightning').checked;CFG.clouds=document.getElementById('optClouds').checked;CFG.guide=document.getElementById('optGuide').checked;CFG.ap=document.getElementById('optAP').checked;CFG.walled=document.getElementById('optWalled').checked}
 // Home screen: Day/Night, Weather, Clouds and Lightning change the live sim rendering behind the menu straight away.
-function applyHomeEnv(){if(mode!=='attract')return;const q=n=>document.querySelector('input[name='+n+']:checked');const td=q('tod'),wx=q('wx');
-  if(td)CFG.night=td.value==='night';if(wx&&WX[wx.value])CFG.wx=wx.value;CFG.clouds=document.getElementById('optClouds').checked;CFG.lightning=document.getElementById('optLightning').checked;
+function applyHomeEnv(){if(mode!=='attract')return;const q=n=>document.querySelector('input[name='+n+']:checked');const wx=q('wx');
+  CFG.hour=parseFloat(document.getElementById('optHour').value)||0;if(wx&&WX[wx.value])CFG.wx=wx.value;CFG.clouds=document.getElementById('optClouds').checked;CFG.lightning=document.getElementById('optLightning').checked;
   wxSel.value=CFG.wx;applyEnvironment();if(CFG.lightning||WX[CFG.wx].light)lightningT=Math.min(lightningT,.4)}
 document.getElementById('setup').addEventListener('change',e=>{const t=e.target;if(!t||t.tagName!=='INPUT')return;
-  if(t.name==='tod'||t.name==='wx'||t.id==='optClouds'||t.id==='optLightning')applyHomeEnv();
+  if(t.name==='tod'||t.id==='optHour'||t.name==='wx'||t.id==='optClouds'||t.id==='optLightning')applyHomeEnv();
   if(t.name==='ac')track('aircraft_select',{aircraft:t.value});
   else track('setup_option',{option:t.name||t.id,value:t.type==='checkbox'?(t.checked?'on':'off'):t.value})});
+const hourIn=document.getElementById('optHour'),hourOut=document.getElementById('hourOut');
+function showHour(){const v=parseFloat(hourIn.value)||0,h=Math.floor(v),m=Math.round((v-h)*60);hourOut.textContent=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+  for(const r of document.querySelectorAll('input[name=tod]'))r.checked=Math.abs(parseFloat(r.value)-v)<.01}
+hourIn.addEventListener('input',()=>{showHour();applyHomeEnv()});
+for(const r of document.querySelectorAll('input[name=tod]'))r.addEventListener('change',()=>{if(r.checked){hourIn.value=r.value;showHour()}});
 document.getElementById('btnGo').addEventListener('click',startFlight);
 document.getElementById('btnAgain').addEventListener('click',startFlight);
 document.getElementById('btnSetup').addEventListener('click',showSetup);
@@ -3758,7 +3839,7 @@ function startFlight(){
   if(CFG.game==='watch')buildAISchedule(0,true);else if(CFG.game==='free')buildAISchedule(-100,false);else buildAI();
   applyEnvironment();setWalled(CFG.walled);hoops.visible=CFG.guide&&CFG.game==='approach';wxSel.value=CFG.wx;
   const W=CFG.game==='watch';
-  document.getElementById('flightid').textContent=(W?'PLANE SPOTTER · KAI TAK'+(LND.id==='31'?' · RWY 31':''):ST.ac.short.toUpperCase()+' · '+(CFG.lesson?'TAKE-OFF LESSON':CFG.game==='free'?'FREE FLIGHT'+(LND.id==='31'?' · RWY 31':''):LND.id==='31'?'RWY 31':'IGS 13'))+' · '+(CFG.night?'NIGHT':'DAY')+' · '+WX[CFG.wx].label.toUpperCase();
+  document.getElementById('flightid').textContent=(W?'PLANE SPOTTER · KAI TAK'+(LND.id==='31'?' · RWY 31':''):ST.ac.short.toUpperCase()+' · '+(CFG.lesson?'TAKE-OFF LESSON':CFG.game==='free'?'FREE FLIGHT'+(LND.id==='31'?' · RWY 31':''):LND.id==='31'?'RWY 31':'IGS 13'))+' · '+todLabel().toUpperCase()+' · '+WX[CFG.wx].label.toUpperCase();
   for(const o of document.querySelectorAll('#viewSel option'))o.hidden=(W&&(o.value==='cockpit'||o.value==='cabin'))||(o.value==='lym'&&LND.id!=='31');
   for(const id of['btnAP','btnHud','btnGuide','btnDeck'])document.getElementById(id).hidden=W;if(W)fidsOn=!compactMQ.matches;
   if(W){for(const id of['ctl','map'])document.getElementById(id).hidden=true}
@@ -3882,7 +3963,7 @@ function frame(now,manual){
   // in-cloud fog
   const w=WX[CFG.wx];let dens=ENV.dens;if(CFG.clouds&&w.cloud&&w.cloud.cov>.8){const cb=w.cloud.base;const y=camera.position.y;if(y>cb-25&&y<cb+180){dens=Math.max(dens,.0075*sstep(cb-25,cb+20,y))}}
   scene.fog.density=dens;LIGHT_U.uFogD.value=dens;
-  if(dens>ENV.dens*1.5)scene.fog.color.setHex(CFG.night?0x241e1a:0xb9bfc2);else scene.fog.color.setHex(ENV.fogBase);
+  if(dens>ENV.dens*1.5)scene.fog.color.setHex(ENV.cloudFog);else scene.fog.color.setHex(ENV.fogBase);
   // lightning
   if((w.light||CFG.lightning)&&!paused){lightningT-=dt;if(lightningT<0){lightningT=rr(3,11);flash=1;if(mode==='fly')sfx.thunder(rr(.4,2.5))}}
   if(window.__flashNow){flash=1;window.__flashNow=false}
@@ -3918,7 +3999,7 @@ const fontsReady=document.fonts&&document.fonts.ready?Promise.race([document.fon
 fontsReady.then(()=>setTimeout(boot,30));
 
 /* test hooks */
-window.__kt={AI,CFG,ST,COACH,LESSON,keys,coachUpdate,coachResync,coachGo,rwL,get PATH(){return PATH},LND,setRunway,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,{rwy:'13'},o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.rwy==='31'&&CFG.game!=='learn'?CFG.game+'31':CFG.game}]`).checked=true;document.querySelector(`input[name=tod][value=${CFG.night?'night':'day'}]`).checked=true;startFlight()},
+window.__kt={setHour,solarState,SUN_DIR,MOON_DIR,ENV,AI,CFG,ST,COACH,LESSON,keys,coachUpdate,coachResync,coachGo,rwL,get PATH(){return PATH},LND,setRunway,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,{rwy:'13'},o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.rwy==='31'&&CFG.game!=='learn'?CFG.game+'31':CFG.game}]`).checked=true;hourIn.value=o.hour!==undefined?o.hour:CFG.night?22:15;showHour();startFlight()},
   run:(sec)=>{if(CFG.game==='watch'){ST.t+=sec;return {t:ST.t}}const h=1/120;for(let i=0;i<sec*120&&!ST.ended;i++){physStep(h);if(i%60===0)recordHistory();if(i%12===0)aiTick()}return {ended:ST.ended,td:ST.td,t:ST.t,x:ST.x,y:ST.y,z:ST.z,V:ST.V/KT,d:PATH.pts[ST.pi].d}},
   get mode(){return mode},updateAI,AIC,footOf,GSE,GSE_KINDS,AIRBOX,rwS,BGRID,updateGSE,gseLamps:()=>gseLamps,fpAt,fpDist,hitOn,damageModel,aiHit,DEBRIS,EMIT,aiTick,ctl(){return aiControl},get CFG(){return CFG},frame:(now)=>frame(now,true),get FOCUS(){return FOCUS},step:()=>physStep(1/120),rwS,setZoom:z=>{CFG.zoom=z},get AI(){return AI},get GSE(){return GSE},get BRIDGE(){return BRIDGE},STAND_S,STAND_TY,lineupT,lineupT31,arrivalPts,tugAt,standL,PB,get parked(){return parked},gseAt:(t)=>{ST.t=t;updateGSE();return GSE.map(e=>({k:e.kind,x:e.p.x,z:e.p.z,psi:e.p.psi,lift:e.lift}))},get shipLights(){return shipLights},get SHIPS(){return SHIPS},get DISP(){return DISP},get deck(){return deckGroup},get streetCam(){return STREET_CAM},get BB(){return BB},get water(){return water},get camera(){return camera},get nStreets(){return STREETS.length},drawDisplays,look,setView,terrainAt,buildingAt,groundInfo};
 })();

@@ -16,6 +16,7 @@ Data: © Lands Department, HKSAR Government (CSDI). Elevation: SRTM via AWS Terr
 
 ## MVP features
 - Aircraft: 747-400, 777-200, A330-300, A340-300, each with its own flight model (mass, wing area, thrust, Vref, roll rate, flap labels and limits)
+- Sun, moon and time of day: a 24-hour clock (Dawn, Day, Dusk, Night presets) with the sun and moon placed for Hong Kong in early July 1998, a moon with phase, turning stars, twilight colours and lights that come on at sunset
 - Day / night: lit windows, street lights, neon signs, runway, approach and lead-in strobe lights, PAPI
 - Weather: clear, rain, typhoon, storm, low cloud, fog, plus a lightning toggle. Wind, gusts and turbulence affect the flight
 - Landmarks: the checkerboard (red and white on two concrete retaining walls, with the striped mast and IGS lamp housings, from period photos), Kowloon Walled City (pre-1994, or the 1998 park), Bank of China Tower, Central Plaza, The Center, HSBC, Jardine House, Exchange Square, One IFC, Lippo Centre, Hopewell Centre, the Convention Centre extension, the TST Clock Tower, the Cultural Centre, Ocean Terminal, the Hung Hom Coliseum, the Kai Tak terminal and tower, Happy Valley Racecourse (floodlights, stand canopy, infield screen) Ocean Park (Waterfront Ferris wheel, Summit tower, Dragon-style coaster, Space Wheel and the cable car between the Waterfront and the Summit) and the Peak (the Peak Tower, the Peak Tram from Garden Road with two cars on one cable and four request stops, and the Peak Lookout)
@@ -71,7 +72,7 @@ The home screen shows the live sim of the airport in the background, with a 58-s
 | Drag | Look around (cockpit, cabin) / orbit (exterior) |
 | Z | Autopilot |
 | R | ATC radio on/off |
-| N, P | Day/night, pause |
+| N, P | Time of day (Dawn, Day, Dusk, Night), pause |
 | I / O, mouse wheel | Zoom in / out (scroll up zooms in, scroll down zooms out) |
 | B | Flight information board on/off (Plane Spotter) |
 | T | Time speed |

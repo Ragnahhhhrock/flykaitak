@@ -1,5 +1,36 @@
 [
   {
+    "slug": "sun-moon-and-time-of-day",
+    "title": "New: Sun, Moon and Time of Day",
+    "dek": "A real sun and moon cross the sky, and the light, sky and city follow the clock.",
+    "description": "Fly Kai Tak now has a sun and moon placed for Hong Kong in 1998, a 24-hour clock with Dawn, Day, Dusk and Night presets, and lighting that follows the sun.",
+    "date": "2026-10-04",
+    "tag": "Feature",
+    "keywords": [
+      "Kai Tak",
+      "time of day",
+      "sunrise",
+      "sunset",
+      "moon"
+    ],
+    "hero": "tod-sunset",
+    "hero_alt": "The sun low over the hills west of Kowloon with a pale orange sky.",
+    "hero_caption": "Sunset at 18:15, looking west.",
+    "card_kicker": "SCENERY · FEATURE",
+    "card_title": "Sun, Moon and Time of Day",
+    "card_sub": "Dawn to night, any hour",
+    "card_image": "tod-sunset",
+    "card_focus": 50,
+    "zh": {
+      "title": "新功能：日頭、月亮同時間",
+      "dek": "真正嘅日頭同月亮喺天空移動，光線、天空同城市跟住時鐘變。",
+      "description": "Fly Kai Tak 而家有按 1998 年香港位置嘅日頭同月亮、24 小時時鐘（黎明、日間、黃昏、夜間預設），同埋跟住日頭變化嘅光線。",
+      "hero_alt": "日頭低低掛喺九龍西面嘅山上，天空係淡橙色。",
+      "hero_caption": "18:15 日落，向西望。"
+    },
+    "category": "scenery"
+  },
+  {
     "slug": "split-flap-flight-information-board",
     "title": "The Kai Tak Flight Information Board",
     "dek": "An old split-flap board lists every arrival and departure, on the home screen and in Plane Spotter.",
