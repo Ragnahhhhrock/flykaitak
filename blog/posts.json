@@ -1,5 +1,38 @@
 [
   {
+    "slug": "map-off-by-default",
+    "title": "The map is off until you turn it on",
+    "dek": "The corner map no longer switches itself on when the home screen loads. Press M or tick the option to show it.",
+    "description": "Fly Kai Tak's corner map now starts hidden on the home screen and in flights. Press M or tick Map with live aircraft under Options to show it.",
+    "date": "2026-10-04",
+    "tag": "Update",
+    "category": "controls",
+    "keywords": [
+      "map",
+      "home screen",
+      "M key",
+      "default",
+      "options",
+      "Kai Tak",
+      "flight simulator"
+    ],
+    "hero": "map-home-default-off",
+    "hero_alt": "The home screen on load with no map showing.",
+    "hero_caption": "The home screen on load: no map until you press M.",
+    "card_kicker": "MAP · DEFAULT",
+    "card_title": "Map off until you turn it on",
+    "card_sub": "Press M to show it",
+    "card_image": "map-home-default-off",
+    "card_focus": 50,
+    "zh": {
+      "title": "地圖預設關閉，要開先自己開",
+      "dek": "主畫面載入時，角落地圖唔會再自動開啟。㩒 M 鍵或者剔選項就會顯示。",
+      "description": "Fly Kai Tak 嘅角落地圖而家喺主畫面同飛行入面預設收埋；㩒 M 鍵或者喺「選項」剔選「即時飛機地圖」就會顯示。",
+      "hero_alt": "主畫面一載入，冇顯示地圖。",
+      "hero_caption": "主畫面一載入：㩒 M 之前冇地圖。"
+    }
+  },
+  {
     "slug": "longer-throttle-bar",
     "title": "A longer thrust bar for finer control",
     "dek": "The touch thrust bar is up to 260 px tall, so small thrust changes are easier to set.",

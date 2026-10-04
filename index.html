@@ -506,7 +506,7 @@ body.bigmap #radio{top:calc(env(safe-area-inset-top,0px) + 396px)}
         <div class="toggles">
           <label class="tog"><input type="checkbox" id="optGuide" checked><span>Approach guide<small>Magenta gates along the IGS path and the turn.</small></span></label>
           <label class="tog"><input type="checkbox" id="optAP"><span>Computer flies the aircraft<small>Autopilot and autothrottle fly the approach. Pick a cabin seat and watch.</small></span></label>
-          <label class="tog"><input type="checkbox" id="optMap" checked><span>Map with live aircraft<small>The corner map shows you and the other traffic. Untick to hide it. M toggles it here and in flight.</small></span></label>
+          <label class="tog"><input type="checkbox" id="optMap"><span>Map with live aircraft<small>The corner map shows you and the other traffic. Tick to show it. M toggles it here and in flight.</small></span></label>
           <label class="tog"><input type="checkbox" id="optWalled" checked><span>Kowloon Walled City as it stood before 1994<small>It was demolished in 1993–94. Untick to see the 1998 park instead.</small></span></label>
         </div>
       </fieldset>
@@ -702,7 +702,7 @@ const WX={
 };
 
 /* ---------------- state & settings ---------------- */
-const CFG={conc:false,game:'approach',lesson:false,lland:false,rwy:'13',zoom:1,ts:1,deck:false,hud:true,map:true,ac:'b744',night:false,hour:15,wx:'clear',lightning:false,clouds:true,guide:true,ap:false,walled:true,view:'cockpit',sound:true,radio:true,seatRow:34,seatLeft:true};
+const CFG={conc:false,game:'approach',lesson:false,lland:false,rwy:'13',zoom:1,ts:1,deck:false,hud:true,map:false,ac:'b744',night:false,hour:15,wx:'clear',lightning:false,clouds:true,guide:true,ap:false,walled:true,view:'cockpit',sound:true,radio:true,seatRow:34,seatLeft:true};
 const ST={};let mode='loading'; // loading | attract | fly | ended
 let paused=false;
 
@@ -3894,7 +3894,7 @@ const ZH={
 'Clouds':'雲層',
 'Map':'地圖',
 'Map with live aircraft':'即時飛機地圖',
-'The corner map shows you and the other traffic. Untick to hide it. M toggles it here and in flight.':'角落地圖會顯示你同其他飛機。取消剔選就收埋。飛行時可以用 M 鍵開關。',
+'The corner map shows you and the other traffic. Tick to show it. M toggles it here and in flight.':'角落地圖會顯示你同其他飛機。剔選就會顯示。飛行時可以用 M 鍵開關。',
 'Show or hide the map with live aircraft':'顯示或隱藏地圖同即時航機位置',
 'Cloud layers and flying through them. Untick for a clear sky in any weather.':'雲層，同埋穿過雲層飛行。取消剔選，無論咩天氣都係萬里無雲。',
 'Lightning':'閃電',
