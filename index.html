@@ -461,6 +461,7 @@ html,body{overscroll-behavior:none;touch-action:manipulation}
         <legend>Mode</legend>
         <div class="chips" id="modeChips">
           <label class="chip"><input type="radio" name="game" value="learn"><span>Take-off lesson</span></label>
+          <label class="chip"><input type="radio" name="game" value="learnland"><span>Landing lesson</span></label>
           <label class="chip"><input type="radio" name="game" value="approach" checked><span>IGS 13 approach</span></label>
           <label class="chip"><input type="radio" name="game" value="approach31"><span>Runway 31 approach</span></label>
           <label class="chip"><input type="radio" name="game" value="free"><span>Free flight</span></label>
@@ -624,7 +625,7 @@ const LND={id:'13',hdg:RWY.hdg,dir:1};
 let PATH=PATH13;
 const lS=(x,z)=>LND.dir>0?rwS(x,z):RWY.len-rwS(x,z);   // metres past the landing threshold, along the landing direction
 const lL=(x,z)=>LND.dir>0?rwL(x,z):-rwL(x,z);            // metres right of the landing centreline
-const modeId=()=>CFG.lesson?'lesson':LND.id==='31'&&CFG.game!=='learn'?CFG.game+'31':CFG.game;
+const modeId=()=>CFG.lesson?'lesson':CFG.lland?'lesson_land':LND.id==='31'&&CFG.game!=='learn'?CFG.game+'31':CFG.game;
 function pathNearest(x,z,hint){
   const P=PATH.pts;let best=hint|0,bd=1e18;const a=Math.max(0,best-260),b=Math.min(P.length-1,best+260);
   for(let i=a;i<=b;i++){const dx=P[i].x-x,dz=P[i].z-z,d=dx*dx+dz*dz;if(d<bd){bd=d;best=i}}
@@ -691,7 +692,7 @@ const WX={
 };
 
 /* ---------------- state & settings ---------------- */
-const CFG={game:'approach',lesson:false,rwy:'13',zoom:1,ts:1,deck:false,hud:true,map:true,ac:'b744',night:false,hour:15,wx:'clear',lightning:false,clouds:true,guide:true,ap:false,walled:true,view:'cockpit',sound:true,radio:true,seatRow:34,seatLeft:true};
+const CFG={game:'approach',lesson:false,lland:false,rwy:'13',zoom:1,ts:1,deck:false,hud:true,map:true,ac:'b744',night:false,hour:15,wx:'clear',lightning:false,clouds:true,guide:true,ap:false,walled:true,view:'cockpit',sound:true,radio:true,seatRow:34,seatLeft:true};
 const ST={};let mode='loading'; // loading | attract | fly | ended
 let paused=false;
 
@@ -2312,9 +2313,9 @@ function hsTable(mineId,limit,cap){
   return `<table class="hst">${cap?'<caption>High scores</caption>':''}<thead><tr><th>#</th><th>Rank</th><th>Callsign</th><th class="sc">Score</th><th class="opt">Aircraft</th><th class="opt">Weather</th></tr></thead><tbody>${rows}</tbody></table>`}
 function hsRenderHome(){const el=document.getElementById('hsHomeTable');if(!el)return;el.innerHTML=hsTable(null,10,true);if(typeof applyLang==='function')applyLang()}
 function hsShowResult(g,s){
-  const box=document.getElementById('resHs');const ranked=!(CFG.ap||s.apUsed||s.rewound||CFG.game!=='approach');
+  const box=document.getElementById('resHs');const ranked=!(CFG.ap||s.apUsed||s.rewound||CFG.game!=='approach'||CFG.lland);
   box.hidden=false;const nameEl=document.getElementById('hsName'),rankEl=document.getElementById('hsRank'),note=document.getElementById('hsNote'),tbl=document.getElementById('hsResTable');
-  if(!ranked){nameEl.parentNode.hidden=true;rankEl.textContent='';note.textContent=CFG.ap||s.apUsed?'Landings with the autopilot are not ranked.':s.rewound?'Landings after a rewind are not ranked.':'Only IGS 13 approach landings are ranked.';tbl.innerHTML=hsTable(null,5,true);HS_ENTRY=null;return}
+  if(!ranked){nameEl.parentNode.hidden=true;rankEl.textContent='';note.textContent=CFG.ap||s.apUsed?'Landings with the autopilot are not ranked.':s.rewound?'Landings after a rewind are not ranked.':CFG.lland?'Lesson landings are not ranked.':'Only IGS 13 approach landings are ranked.';tbl.innerHTML=hsTable(null,5,true);HS_ENTRY=null;return}
   nameEl.parentNode.hidden=false;nameEl.value=hsCallsign()||'';nameEl.placeholder='PILOT';
   const e=hsAdd(g,s);HS_ENTRY=e;
   const pos=hsSort(hsLocal().slice()).findIndex(x=>x.id===e.id)+1;
@@ -3499,7 +3500,7 @@ window.addEventListener('keydown',e=>{
   if(e.target&&(e.target.tagName==='INPUT'||e.target.tagName==='SELECT')&&e.key!=='Enter')return;
   if(mode==='attract'&&e.key==='Enter'&&!document.getElementById('setup').hidden){startFlight();return}
   if(mode!=='fly')return;
-  if(COACH.on&&LESSON[COACH.i].manual&&(e.code==='Enter'||e.code==='NumpadEnter')&&!(e.target&&e.target.tagName==='BUTTON')){e.preventDefault();coachNext();return}
+  if(COACH.on&&LS[COACH.i].manual&&(e.code==='Enter'||e.code==='NumpadEnter')&&!(e.target&&e.target.tagName==='BUTTON')){e.preventDefault();coachNext();return}
   keys[e.code]=true;const s=ST;VIA='key';
   switch(e.code){
     case 'KeyG':toggleGear();break;case 'KeyF':setFlaps(1);break;case 'KeyV':setFlaps(-1);break;
@@ -3577,7 +3578,7 @@ function ctlVisible(){return !document.getElementById('ctl').hidden}
    (mode "Take-off lesson"): each step names one control, shows a live meter, and moves on by itself
    when the aircraft does what the step asked.
    ===================================================================== */
-const COACH={on:false,i:0,okAt:0,skipped:false,sig:'',hl:null};
+const COACH={on:false,i:0,okAt:0,skipped:false,sig:'',hl:null,k:'takeoff',zt:0};
 const VR=150;                                   // rotate speed, kt: all four types lift off at about 155 kt
 const KB=(a,b)=>TOUCH?b:a;                      // keyboard wording / touch wording
 const NOSE=()=>ST.theta*R2D;
@@ -3612,9 +3613,11 @@ const LESSON=[
   body:()=>KB('Press <kbd>Z</kbd> to switch on the autopilot. It holds your height, speed and heading, so you can relax.','Tap <b>Autopilot</b>. It holds your height, speed and heading, so you can relax.'),
   done:()=>ST.ap},
  {id:'finish',title:'Take-off complete',final:true,
-  body:()=>'You took off from Runway 13 at Kai Tak and the autopilot has the jet. Look around with the view menu, or turn the autopilot off ('+KB('<kbd>Z</kbd>','tap Autopilot')+') and fly it yourself. When you are ready, try landing back at Kai Tak.'}
+  body:()=>'You took off from Runway 13 at Kai Tak and the autopilot has the jet. Look around with the view menu, or turn the autopilot off ('+KB('<kbd>Z</kbd>','tap Autopilot')+') and fly it yourself. When you are ready, try the landing lesson.'}
 ];
-const LESSON_STEPS=LESSON.filter(l=>!l.final).length;
+let LS=LESSON;
+const lsSteps=()=>LS.filter(l=>!l.final).length;
+const mz=m=>typeof m.zone==='function'?m.zone():m.zone;
 const coachEl=document.getElementById('coach');
 function coachWarn(){
   const s=ST,kt=s.V/KT,nose=NOSE();
@@ -3631,21 +3634,21 @@ function coachWarn(){
   return '';
 }
 function coachRender(){
-  const L=LESSON[COACH.i];COACH.sig='';
-  document.getElementById('coachStep').textContent=L.final?'Take-off lesson · complete':'Take-off lesson · step '+(COACH.i+1)+' of '+LESSON_STEPS;
+  const L=LS[COACH.i];COACH.sig='';const LN=COACH.k==='landing'?'Landing lesson':'Take-off lesson';
+  document.getElementById('coachStep').textContent=L.final?LN+' · complete':LN+' · step '+(COACH.i+1)+' of '+lsSteps();
   document.getElementById('coachStep').classList.remove('ok');
   document.getElementById('coachTitle').textContent=L.title;
   document.getElementById('coachBody').innerHTML=L.body();
   document.getElementById('coachMeter').hidden=!L.meter;
   if(L.meter){document.getElementById('cmLabel').textContent=L.meter.label;const z=document.getElementById('cmZone'),m=L.meter;
-    if(m.zone){z.hidden=false;z.style.left=((m.zone[0]-m.min)/(m.max-m.min)*100)+'%';z.style.width=Math.max(1.5,(m.zone[1]-m.zone[0])/(m.max-m.min)*100)+'%'}else z.hidden=true}
+    const zn=mz(m);if(zn){z.hidden=false;z.style.left=((zn[0]-m.min)/(m.max-m.min)*100)+'%';z.style.width=Math.max(1.5,(zn[1]-zn[0])/(m.max-m.min)*100)+'%'}else z.hidden=true}
   const act=document.getElementById('coachActions');act.hidden=!(L.manual||L.final);act.innerHTML='';
   if(L.manual){const b=document.createElement('button');b.className='go';b.type='button';b.innerHTML='<span>'+L.manual+'</span><span class="k">ENTER</span>';b.addEventListener('click',coachNext);act.appendChild(b)}
   if(L.final){
-    const keep=document.createElement('button');keep.className='go';keep.type='button';keep.innerHTML='<span>Keep flying</span>';keep.addEventListener('click',()=>{track('lesson_action',{action:'keep_flying'});coachHide()});act.appendChild(keep);
-    const land=document.createElement('button');land.className='btn';land.type='button';land.textContent='Try the landing';land.addEventListener('click',()=>{track('lesson_action',{action:'try_landing'});document.querySelector('input[name=game][value=approach]').checked=true;startFlight()});act.appendChild(land)}
+    const keep=document.createElement('button');keep.className='go';keep.type='button';keep.innerHTML='<span>Keep flying</span>';keep.addEventListener('click',()=>{track('lesson_action',{lesson:COACH.k,action:'keep_flying'});coachHide()});act.appendChild(keep);
+    const land=document.createElement('button');land.className='btn';land.type='button';land.textContent='Landing lesson';land.addEventListener('click',()=>{track('lesson_action',{lesson:COACH.k,action:'try_landing'});document.querySelector('input[name=game][value=learnland]').checked=true;startFlight()});act.appendChild(land)}
   document.getElementById('coachSkip').hidden=!!L.final;
-  document.getElementById('coachDots').innerHTML=LESSON.filter(l=>!l.final).map((l,j)=>'<i class="'+(j<COACH.i||L.final?'d':j===COACH.i?'c':'')+'"></i>').join('');
+  document.getElementById('coachDots').innerHTML=LS.filter(l=>!l.final).map((l,j)=>'<i class="'+(j<COACH.i||L.final?'d':j===COACH.i?'c':'')+'"></i>').join('');
   coachHighlight(L.hl);
   document.getElementById('coachWarn').hidden=true;
 }
@@ -3653,35 +3656,112 @@ function coachHighlight(sel){
   if(COACH.hl){for(const e of document.querySelectorAll('.hl'))e.classList.remove('hl')}COACH.hl=sel||null;
   if(sel)for(const e of document.querySelectorAll(sel))e.classList.add('hl')}
 function coachStart(){
-  COACH.on=true;COACH.i=0;COACH.okAt=0;COACH.skipped=false;coachEl.hidden=false;document.body.classList.add('lessonon');coachRender();
-  document.getElementById('toast').classList.remove('on');track('lesson_start',{});
+  COACH.k=CFG.lland?'landing':'takeoff';LS=CFG.lland?LESSON_LAND:LESSON;COACH.on=true;COACH.i=0;COACH.okAt=0;COACH.skipped=false;coachEl.hidden=false;document.body.classList.add('lessonon');coachRender();
+  document.getElementById('toast').classList.remove('on');track('lesson_start',{lesson:COACH.k});
 }
 function coachHide(keepState){
   coachEl.hidden=true;coachHighlight(null);document.body.classList.remove('lessonon');
   if(!keepState){COACH.on=false}}
 function coachGo(n){
-  if(!COACH.on)return;COACH.i=Math.min(LESSON.length-1,n);COACH.okAt=0;coachRender();
-  const L=LESSON[COACH.i];if(L.final)track('lesson_complete',{flight_seconds:Math.round(FLT?FLT.active:0)});else track('lesson_step',{step:L.id,index:COACH.i+1})}
+  if(!COACH.on)return;COACH.i=Math.min(LS.length-1,n);COACH.okAt=0;coachRender();
+  const L=LS[COACH.i];if(L.final)track('lesson_complete',{lesson:COACH.k,flight_seconds:Math.round(FLT?FLT.active:0)});else track('lesson_step',{lesson:COACH.k,step:L.id,index:COACH.i+1})}
 function coachNext(){coachGo(COACH.i+1)}
-document.getElementById('coachSkip').addEventListener('click',()=>{track('lesson_skip',{step:LESSON[COACH.i].id,index:COACH.i+1});COACH.skipped=true;coachHide();toast(KB('Lesson skipped. You are in free flight: full thrust (E), pull back at 150 kt.','Lesson skipped. You are in free flight: slide thrust to full, pull back at 150 kt.'))});
+document.getElementById('coachSkip').addEventListener('click',()=>{track('lesson_skip',{lesson:COACH.k,step:LS[COACH.i].id,index:COACH.i+1});COACH.skipped=true;coachHide();toast(COACH.k==='landing'?KB('Lesson skipped. Follow the hoops to the runway, or press Z for the autopilot.','Lesson skipped. Follow the hoops to the runway, or tap Autopilot.'):KB('Lesson skipped. You are in free flight: full thrust (E), pull back at 150 kt.','Lesson skipped. You are in free flight: slide thrust to full, pull back at 150 kt.'))});
 function coachUpdate(now){
   if(mode!=='fly'||!COACH.on||coachEl.hidden&&!ST.ended)return;
   if(ST.ended){coachEl.hidden=true;return}
-  const L=LESSON[COACH.i];
+  const L=LS[COACH.i];
   if(L.done&&!COACH.okAt&&L.done()){COACH.okAt=now;const e=document.getElementById('coachStep');e.classList.add('ok');e.textContent='✓ '+e.textContent}
   if(COACH.okAt&&now-COACH.okAt>700){coachNext();return}
-  if(L.meter){const m=L.meter,v=m.get(),f=clamp((v-m.min)/(m.max-m.min),0,1),inZ=m.zone&&v>=m.zone[0]&&(v<=m.zone[1]||m.zone[0]===m.zone[1]||m.zone[1]>=m.max);
+  if(L.meter){const m=L.meter,v=m.get(),zn=mz(m),f=clamp((v-m.min)/(m.max-m.min),0,1),inZ=zn&&v>=zn[0]&&(v<=zn[1]||zn[0]===zn[1]||zn[1]>=m.max);
     const bar=document.getElementById('cmBar');bar.classList.toggle('in',!!inZ||!!COACH.okAt);bar.classList.toggle('bad',!!(m.bad&&m.bad(v)));
     document.getElementById('cmFill').style.width=(f*100)+'%';document.getElementById('cmVal').textContent=m.fmt(v)}
-  const w=L.final||L.manual?'':coachWarn(),ww=document.getElementById('coachWarn');
+  const w=L.final||L.manual?'':(COACH.k==='landing'?landWarn():coachWarn()),ww=document.getElementById('coachWarn');
   if(w!==COACH.sig){COACH.sig=w;ww.hidden=!w;ww.textContent=w}
 }
 function coachResync(){
   // after a rewind: pick the step that matches the aircraft's state again
   if(!COACH.on||COACH.skipped)return;const s=ST;let i;
+  if(COACH.k==='landing'){i=landResync();coachEl.hidden=false;document.body.classList.add('lessonon');if(i!==COACH.i){COACH.i=i;COACH.okAt=0;coachRender()}else COACH.okAt=0;return}
   if(s.onGround)i=s.t<1?0:s.throttle<.97?1:2;
   else if(s.gearDown)i=4;else if(s.flapIdx>0)i=5;else if(s.y/FT<2000)i=6;else i=s.ap?8:7;
   coachEl.hidden=false;document.body.classList.add('lessonon');if(i!==COACH.i){COACH.i=i;COACH.okAt=0;coachRender()}else COACH.okAt=0}
+/* LANDING LESSON: the same coach on the IGS 13 approach (hand-flown, hoops on). */
+const LVREF=()=>ST.ac.vref;
+const lP=()=>PATH.pts[ST.pi];
+const lTurn=()=>{let d=(ST.psi-LND.hdg*D2R)%(2*Math.PI);if(d>Math.PI)d-=2*Math.PI;if(d<-Math.PI)d+=2*Math.PI;return Math.abs(d)*R2D};
+const lLat=()=>pathLateral(ST.pi,ST.x,ST.z);
+const LESSON_LAND=[
+ {id:'welcome',title:'Welcome to the approach',manual:'Start the lesson',
+  body:()=>'You are on the instrument approach to Runway 13 at Kai Tak, <b>3,100 ft</b>, heading east. The jet is already set to descend along the glidepath. A landing is: <b>wheels down</b>, <b>flaps</b>, <b>slow down</b>, <b>turn at the checkerboard</b>, <b>flare</b>, <b>stop</b>. Lost? '+KB('Press <kbd>Z</kbd>','Tap <b>Autopilot</b>')+' and it flies the approach for you.'},
+ {id:'gear',title:'Lower the landing gear',hl:'#btnGear',
+  body:()=>KB('Wheels down first, so the jet is ready to land. Press <kbd>G</kbd>.','Wheels down first, so the jet is ready to land. Tap <b>Gear</b>.'),
+  done:()=>ST.gearDown},
+ {id:'flaps',title:'Set the landing flaps',hl:'#btnFlapDn',
+  body:()=>KB('Flaps are wing panels that add lift, so the jet can fly slower. Press <kbd>F</kbd> twice, to <b>'+ST.ac.flaps[4]+'</b>.','Flaps are wing panels that add lift, so the jet can fly slower. Tap <b>Flaps +</b> twice, to <b>'+ST.ac.flaps[4]+'</b>.'),
+  done:()=>ST.flapIdx>=4},
+ {id:'speed',title:'Hold your approach speed',hl:'.thr',
+  body:()=>KB('Gear and flaps add drag, so the jet now slows down by itself. Your landing speed (Vref) is <b>'+LVREF()+' kt</b>. Use the thrust to settle at about <b>'+(LVREF()+10)+' kt</b>: hold <kbd>E</kbd> to add, <kbd>Q</kbd> to reduce.','Gear and flaps add drag, so the jet now slows down by itself. Your landing speed (Vref) is <b>'+LVREF()+' kt</b>. Use the thrust lever to settle at about <b>'+(LVREF()+10)+' kt</b>: slide it up to add, down to reduce.'),
+  meter:{label:'Speed',get:()=>ST.V/KT,min:120,max:200,zone:()=>[LVREF(),LVREF()+15],fmt:v=>Math.round(v)+' kt'},
+  done:()=>{const k=ST.V/KT,ok=k>=LVREF()&&k<=LVREF()+15;if(!ok)COACH.zt=0;else if(!COACH.zt)COACH.zt=performance.now();return ok&&performance.now()-COACH.zt>2500}},
+ {id:'track',title:'Follow the hoops to the checkerboard',hl:'#stick',
+  body:()=>KB('Fly through the hoops. Tap <kbd>←</kbd> <kbd>→</kbd> to stay on the line, and <kbd>↑</kbd> <kbd>↓</kbd> to stay on the glidepath, while the thrust holds your speed. Small taps work best. The orange-and-white checkerboard on the hill is where you turn.','Fly through the hoops. Drag the yoke sideways to stay on the line, and up or down to stay on the glidepath, while the thrust holds your speed. Small moves work best. The orange-and-white checkerboard on the hill is where you turn.'),
+  meter:{label:'Left / right of the line',get:lLat,min:-300,max:300,zone:()=>[-60,60],fmt:v=>Math.round(Math.abs(v))+' m '+(v>=0?'right':'left')},
+  done:()=>lP().d<=PATH.turnD+250},
+ {id:'turn',title:'Turn right over the checkerboard',hl:'#stick',
+  body:()=>KB('Bank right with <kbd>→</kbd> and follow the curve of the hoops, about <b>47°</b> of turn. When the runway is dead ahead, level the wings with <kbd>←</kbd>.','Drag the yoke right to bank, and follow the curve of the hoops, about <b>47°</b> of turn. When the runway is dead ahead, drag the yoke left to level the wings.'),
+  meter:{label:'Turn still to go',get:lTurn,min:0,max:60,zone:()=>[0,6],fmt:v=>Math.round(v)+'°'},
+  done:()=>lP().d<PATH.turnD&&lTurn()<=8},
+ {id:'final',title:'Stay on the glidepath to the runway',
+  body:()=>'Keep the runway in the middle of the windscreen and the hoops lined up. Make small corrections and hold about <b>'+(LVREF()+5)+' kt</b>. At <b>50 ft</b> you will flare.',
+  meter:{label:'Height above the runway',get:()=>ST.ra/FT,min:0,max:500,zone:()=>[0,50],fmt:v=>Math.round(v/10)*10+' ft'},
+  done:()=>ST.ra/FT<=50||ST.onGround||!!ST.td},
+ {id:'flare',title:'Flare: ease the nose up, thrust to idle',
+  body:()=>KB('Pull back gently (a short press of <kbd>↓</kbd>) to slow the sink, and hold <kbd>Q</kbd> to bring the thrust to idle. Touch down softly, under <b>300 ft/min</b>. Pull too hard and the tail can scrape.','Drag the yoke down a little to slow the sink, and slide the thrust lever to idle. Touch down softly, under <b>300 ft/min</b>. Pull too hard and the tail can scrape.'),
+  meter:{label:'Descent rate',get:()=>-ST.vy/FT*60,min:0,max:1000,zone:()=>[0,300],fmt:v=>Math.round(v/10)*10+' ft/min',bad:v=>v>900},
+  done:()=>!!ST.td},
+ {id:'rollout',title:'Brake to a stop',
+  body:()=>KB('Keep the thrust at idle (hold <kbd>Q</kbd>): the brakes and reverse thrust slow the jet. Stay on the white centre line with <kbd>←</kbd> <kbd>→</kbd> until you stop.','Keep the thrust lever at idle: the brakes and reverse thrust slow the jet. Stay on the white centre line by dragging the yoke sideways a little until you stop.'),
+  meter:{label:'Ground speed',get:()=>ST.Gs/KT,min:0,max:150,zone:()=>[0,3],fmt:v=>Math.round(v)+' kt'},
+  done:()=>false}
+];
+function landWarn(){
+  const s=ST,kt=s.V/KT,p=lP(),lat=lLat(),i=COACH.i;
+  if(s.onGround){
+    const lr=rwL(s.x,s.z);
+    if(Math.abs(lr)>16&&s.Gs>8)return 'Drifting '+(lr>0?'right':'left')+' of the centre line. Steer '+(lr>0?'left':'right')+' a little.';
+    if(s.td&&s.throttle>.12)return 'Thrust to idle: '+KB('hold Q.','slide the thrust lever down.');
+    return '';
+  }
+  if(s.stall)return 'Stall warning! Ease the nose down and add thrust.';
+  if(Math.abs(s.phi)>32*D2R)return 'Bank too steep. Level the wings: '+KB('tap the opposite arrow key','drag the yoke the other way')+'.';
+  if(i>=3&&i<=6){
+    if(kt<LVREF()-6)return 'Too slow. Add thrust: '+KB('hold E.','slide the thrust lever up.');
+    if(i>=4&&kt>LVREF()+30)return 'Too fast. Reduce thrust: '+KB('hold Q.','slide the thrust lever down.');
+  }
+  if(i>=3&&i<=6&&p.d>-50){
+    if(s.y<p.alt-55)return 'Below the glidepath. '+KB('Tap ↓ (or S)','Drag the yoke down a little')+' to climb back up to the hoops.';
+    if(s.y>p.alt+70&&i>=6)return 'Above the glidepath. '+KB('Tap ↑ (or W)','Drag the yoke up a little')+' to descend to the hoops.';
+    if(i>=3&&i<=4&&Math.abs(lat)>150)return 'Off the line to the '+(lat>0?'right':'left')+'. Steer '+(lat>0?'left':'right')+' toward the hoops.';
+  }
+  return '';
+}
+function landResync(){
+  const s=ST,p=lP();
+  if(s.td||s.onGround)return 8;
+  if(!s.gearDown)return 1;
+  if(s.flapIdx<4)return 2;
+  if(p.d>PATH.turnD+250)return s.V/KT>LVREF()+15?3:4;
+  if(lTurn()>8)return 5;
+  return s.ra/FT>50?6:7;
+}
+const LAND_TIPS=[[/gear/i,'Lesson tip: put the wheels down early, before the turn at the checkerboard. A landing on the belly is a crash.'],
+  [/hard|collapsed/i,'Lesson tip: flare a little higher and hold the thrust at idle so the sink rate is under 300 ft/min.'],
+  [/excursion/i,'Lesson tip: steer gently with the left and right controls and keep the nose on the white centre line.'],
+  [/overran|overrun/i,'Lesson tip: touch down early on the runway and keep the thrust at idle so the brakes can stop you.'],
+  [/stall/i,'Lesson tip: do not let the speed fall below Vref. Add thrust and keep the nose from rising too far.'],
+  [/wing|struck|building|ground|hill|water|ditch|terrain|short/i,'Lesson tip: follow the hoops, turn right at the checkerboard, and stay on the glidepath down to the runway.']];
+function landTip(e){for(const [re,t] of LAND_TIPS)if(re.test(e.title))return t;return 'Lesson tip: follow the steps on screen: wheels down, flaps, slow down, turn at the checkerboard, flare, stop.'}
 const LESSON_TIPS=[[/excursion/i,'Lesson tip: steer gently with the left and right controls and keep the nose on the white centre line.'],
   [/overran/i,'Lesson tip: lift the nose at 150 kt. If you wait too long, the runway runs out.'],
   [/stall/i,'Lesson tip: the nose went up too far. Hold it at 10 to 12°, then let go.'],
@@ -3696,7 +3776,7 @@ const acCards=document.getElementById('acCards');
 for(const k in AC){const a=AC[k];const l=document.createElement('label');l.className='card';l.innerHTML=`<input type="radio" name="ac" value="${k}" ${k===CFG.ac?'checked':''}><b>${a.name}</b><span>${a.note}<br>Vref ${a.vref} kt · span ${a.span} m</span>`;acCards.appendChild(l)}
 const wxChips=document.getElementById('wxChips'),wxSel=document.getElementById('wxSel');
 for(const k in WX){const l=document.createElement('label');l.className='chip';l.innerHTML=`<input type="radio" name="wx" value="${k}" ${k===CFG.wx?'checked':''}><span>${WX[k].label}</span>`;wxChips.appendChild(l);const o=document.createElement('option');o.value=k;o.textContent=WX[k].label;wxSel.appendChild(o)}
-const MODE_TXT={learn:['Start the lesson','New to flying? A guided take-off on Runway 13, one step at a time: full power, stay straight, lift the nose, wheels up. No experience needed.'],approach:['Begin descent','Start on the IGS at 3,100 ft and land on Runway 13.'],approach31:['Begin descent','Start eight miles out over the sea at 2,700 ft, fly through the Lei Yue Mun gap and land on Runway 31.'],free31:['Line up on Runway 31','Start lined up on Runway 31, pointing at Kowloon City. Full thrust, pull back at about 150 kt, climb and turn left, then fly anywhere. Landings are graded but the flight carries on.'],free:['Line up on Runway 13','Start lined up on Runway 13. Full thrust, pull back at about 150 kt, then fly anywhere. Landings are graded but the flight carries on.'],
+const MODE_TXT={learnland:['Start the lesson','Ready to land? A guided IGS 13 approach, one step at a time: wheels down, flaps, speed, the turn at the checkerboard, the flare and the stop. No experience needed.'],learn:['Start the lesson','New to flying? A guided take-off on Runway 13, one step at a time: full power, stay straight, lift the nose, wheels up. No experience needed.'],approach:['Begin descent','Start on the IGS at 3,100 ft and land on Runway 13.'],approach31:['Begin descent','Start eight miles out over the sea at 2,700 ft, fly through the Lei Yue Mun gap and land on Runway 31.'],free31:['Line up on Runway 31','Start lined up on Runway 31, pointing at Kowloon City. Full thrust, pull back at about 150 kt, climb and turn left, then fly anywhere. Landings are graded but the flight carries on.'],free:['Line up on Runway 13','Start lined up on Runway 13. Full thrust, pull back at about 150 kt, then fly anywhere. Landings are graded but the flight carries on.'],
   watch31:['Watch the airport','No flying. Runway 31 is in use: arrivals come in over Lei Yue Mun and departures roll toward Kowloon City. Pick a spectator spot, follow a jet, or speed up time.'],watch:['Watch the airport','No flying. Arrivals land every couple of minutes and departures roll in between. Pick a spectator spot, follow a jet, or speed up time.']};
 const HERO13=['IGS approach · Runway 13','Hit the checkerboard, turn right, land before the harbour.',document.getElementById('heroText').textContent];
 const HERO31=['Easterly approach · Runway 31','Through the Lei Yue Mun gap, then down onto the runway in the bay.','You start the descent about eight nautical miles out over the sea east of Kowloon at 2,700 ft, heading 314 on the runway line. Fly through the narrow Lei Yue Mun channel between the hills, cross Kowloon Bay low over the water and land on Runway 31.'];
@@ -3717,7 +3797,8 @@ const ZH={
 'IGS 13 approach':'IGS 13 進場','Runway 31 approach':'31 號跑道進場','Free flight':'自由飛行','Plane Spotter':'觀機','Take-off lesson':'起飛教學',
 'Dawn':'黎明','Day':'日間','Dusk':'黃昏','Night':'夜間','Clock':'時鐘','The sun and moon sit where they were over Hong Kong on a July day in 1998.':'日頭同月亮嘅位置，同1998年7月某日香港上空一樣。',
 'Begin descent':'開始下降',
-'Start the lesson':'開始教學',
+'Start the lesson':'開始教學','Landing lesson':'降落教學',
+'Ready to land? A guided IGS 13 approach, one step at a time: wheels down, flaps, speed, the turn at the checkerboard, the flare and the stop. No experience needed.':'準備降落？跟住 IGS 13 進場一步一步教你：放起落架、襟翼、速度、喺棋盤轉彎、拉平同埋停機。唔使有任何經驗。',
 'New to flying? A guided take-off on Runway 13, one step at a time: full power, stay straight, lift the nose, wheels up. No experience needed.':'初次接觸飛行？喺 13 號跑道一步一步跟住教你起飛：推滿油門、保持直線、拉起機頭、收起落架。唔使有任何經驗。',
 'Easterly approach · Runway 31':'東面進場 · 31 號跑道',
 'Through the Lei Yue Mun gap, then down onto the runway in the bay.':'飛過鯉魚門，然後降落喺海灣入面嘅跑道。',
@@ -3788,8 +3869,8 @@ function applyLang(){
   for(const s of b.querySelectorAll('span'))s.classList.toggle('on',s.dataset.l===LANG)}
 document.getElementById('btnLang').addEventListener('click',e=>{LANG=LANG==='zh'?'en':'zh';try{localStorage.setItem('fkt-lang',LANG)}catch(_){}track('language_toggle',{language:LANG==='zh'?'cantonese':'english'});applyLang();fidsLast=-1e9;e.currentTarget.blur()});
 applyLang();
-function readSetup(){const gv=document.querySelector('input[name=game]:checked').value;CFG.lesson=gv==='learn';CFG.game=gv==='approach31'?'approach':gv==='free31'?'free':gv==='watch31'?'watch':CFG.lesson?'free':gv;CFG.rwy=gv==='approach31'||gv==='free31'||gv==='watch31'?'31':'13';CFG.ac=document.querySelector('input[name=ac]:checked').value;CFG.hour=parseFloat(document.getElementById('optHour').value)||0;CFG.night=solarState(CFG.hour).sunEl<0;CFG.wx=document.querySelector('input[name=wx]:checked').value;
-  CFG.lightning=document.getElementById('optLightning').checked;CFG.clouds=document.getElementById('optClouds').checked;CFG.map=document.getElementById('optMap').checked;CFG.guide=document.getElementById('optGuide').checked;CFG.ap=document.getElementById('optAP').checked;CFG.walled=document.getElementById('optWalled').checked}
+function readSetup(){const gv=document.querySelector('input[name=game]:checked').value;CFG.lesson=gv==='learn';CFG.lland=gv==='learnland';CFG.game=gv==='learnland'||gv==='approach31'?'approach':gv==='free31'?'free':gv==='watch31'?'watch':CFG.lesson?'free':gv;CFG.rwy=gv==='approach31'||gv==='free31'||gv==='watch31'?'31':'13';CFG.ac=document.querySelector('input[name=ac]:checked').value;CFG.hour=parseFloat(document.getElementById('optHour').value)||0;CFG.night=solarState(CFG.hour).sunEl<0;CFG.wx=document.querySelector('input[name=wx]:checked').value;
+  CFG.lightning=document.getElementById('optLightning').checked;CFG.clouds=document.getElementById('optClouds').checked;CFG.map=document.getElementById('optMap').checked;CFG.guide=document.getElementById('optGuide').checked;CFG.ap=document.getElementById('optAP').checked;CFG.walled=document.getElementById('optWalled').checked;if(CFG.lland){CFG.ap=false;CFG.guide=true}}
 // Home screen: Day/Night, Weather, Clouds and Lightning change the live sim rendering behind the menu straight away.
 function applyHomeEnv(){if(mode!=='attract')return;const q=n=>document.querySelector('input[name='+n+']:checked');const wx=q('wx');
   CFG.hour=parseFloat(document.getElementById('optHour').value)||0;if(wx&&WX[wx.value])CFG.wx=wx.value;CFG.clouds=document.getElementById('optClouds').checked;CFG.lightning=document.getElementById('optLightning').checked;
@@ -3878,25 +3959,25 @@ function startFlight(){
   if(CFG.game==='watch')buildAISchedule(0,true);else if(CFG.game==='free')buildAISchedule(-100,false);else buildAI();
   applyEnvironment();setWalled(CFG.walled);hoops.visible=CFG.guide&&CFG.game==='approach';wxSel.value=CFG.wx;
   const W=CFG.game==='watch';
-  document.getElementById('flightid').textContent=(W?'PLANE SPOTTER · KAI TAK'+(LND.id==='31'?' · RWY 31':''):ST.ac.short.toUpperCase()+' · '+(CFG.lesson?'TAKE-OFF LESSON':CFG.game==='free'?'FREE FLIGHT'+(LND.id==='31'?' · RWY 31':''):LND.id==='31'?'RWY 31':'IGS 13'))+' · '+todLabel().toUpperCase()+' · '+WX[CFG.wx].label.toUpperCase();
+  document.getElementById('flightid').textContent=(W?'PLANE SPOTTER · KAI TAK'+(LND.id==='31'?' · RWY 31':''):ST.ac.short.toUpperCase()+' · '+(CFG.lesson?'TAKE-OFF LESSON':CFG.lland?'LANDING LESSON':CFG.game==='free'?'FREE FLIGHT'+(LND.id==='31'?' · RWY 31':''):LND.id==='31'?'RWY 31':'IGS 13'))+' · '+todLabel().toUpperCase()+' · '+WX[CFG.wx].label.toUpperCase();
   for(const o of document.querySelectorAll('#viewSel option'))o.hidden=(W&&(o.value==='cockpit'||o.value==='cabin'))||(o.value==='lym'&&LND.id!=='31');
   for(const id of['btnAP','btnHud','btnGuide','btnDeck','btnMap'])document.getElementById(id).hidden=W;if(W)fidsOn=!compactMQ.matches;
   if(W){for(const id of['ctl','map'])document.getElementById(id).hidden=true}
   setView(W?'carpark':CFG.game==='free'?'chase':CFG.ap?'chase':'cockpit');
   syncButtons();sfx.start();sfx.mute(CFG.sound);lightningT=rr(4,9);
   track('game_start',{flight_number:FLT.n,game_mode:modeId(),runway:LND.id,autopilot:CFG.ap,guide:CFG.guide,walled_city:CFG.walled,lightning:CFG.lightning});
-  if(CFG.lesson)coachStart();else{coachHide();toast(W?'Plane Spotter mode. Pick a spot from the view menu, or Exterior to follow the jet. '+(TOUCH?'More > Time speeds up time.':'T speeds up time.'):CFG.game==='free'?(LND.id==='31'?(TOUCH?'Lined up on Runway 31. Slide thrust to full, pull back at about 150 kt. Kowloon City is dead ahead, so climb and turn left.':'Lined up on Runway 31. Full thrust (E), pull back at about 150 kt. Kowloon City is dead ahead, so climb and turn left.'):TOUCH?'Lined up on Runway 13. Slide thrust to full, pull back at about 150 kt.':'Lined up on Runway 13. Full thrust (E), pull back at about 150 kt.'):CFG.ap?'Autopilot engaged. Pick a view or a cabin seat.':LND.id==='31'?'Eight miles out over the sea, 2,700 ft, heading 314. Runway 31 is dead ahead. You have control.':'Established on the IGS, 3,100 ft. You have control.')}
+  if(CFG.lesson||CFG.lland)coachStart();else{coachHide();toast(W?'Plane Spotter mode. Pick a spot from the view menu, or Exterior to follow the jet. '+(TOUCH?'More > Time speeds up time.':'T speeds up time.'):CFG.game==='free'?(LND.id==='31'?(TOUCH?'Lined up on Runway 31. Slide thrust to full, pull back at about 150 kt. Kowloon City is dead ahead, so climb and turn left.':'Lined up on Runway 31. Full thrust (E), pull back at about 150 kt. Kowloon City is dead ahead, so climb and turn left.'):TOUCH?'Lined up on Runway 13. Slide thrust to full, pull back at about 150 kt.':'Lined up on Runway 13. Full thrust (E), pull back at about 150 kt.'):CFG.ap?'Autopilot engaged. Pick a view or a cabin seat.':LND.id==='31'?'Eight miles out over the sea, 2,700 ft, heading 314. Runway 31 is dead ahead. You have control.':'Established on the IGS, 3,100 ft. You have control.')}
 }
 function showResult(){
   const s=ST,e=s.ended;if(!e||mode!=='fly')return;mode='ended';const card=document.getElementById('resCard');card.classList.toggle('crash',!!e.crash);
   document.getElementById('ctl').hidden=true;coachHide(true);
   const st=document.getElementById('resStats');st.innerHTML='';const rows=[];const row=(a,b)=>{rows.push([a,b]);st.insertAdjacentHTML('beforeend',`<dt>${a}</dt><dd>${b}</dd>`)};
-  if(e.landed){const g=gradeLanding(s.td);trackLanding({grade:g.g,score:Math.max(0,g.pts),touchdown_fpm:Math.round(g.fpm),touchdown_m:Math.round(s.td.s),sim_seconds:Math.round(e.t),autopilot_used:!!s.ap,mode:modeId(),runway:LND.id});flightEnd('landed');document.getElementById('resEyebrow').textContent='Landed · Runway '+LND.id;document.getElementById('resTitle').textContent='Welcome to Hong Kong';document.getElementById('resGrade').textContent=g.g;
-    document.getElementById('resWhy').textContent=g.feel+(s.tailstrike?' Tail strike on touchdown: the aft fuselage touched the runway.':'')+' Score '+Math.max(0,g.pts)+'/100.';
+  if(e.landed){const g=gradeLanding(s.td);trackLanding({grade:g.g,score:Math.max(0,g.pts),touchdown_fpm:Math.round(g.fpm),touchdown_m:Math.round(s.td.s),sim_seconds:Math.round(e.t),autopilot_used:!!s.ap,mode:modeId(),runway:LND.id});if(CFG.lland&&!COACH.skipped)track('lesson_complete',{lesson:'landing',flight_seconds:Math.round(FLT?FLT.active:0)});flightEnd('landed');document.getElementById('resEyebrow').textContent='Landed · Runway '+LND.id;document.getElementById('resTitle').textContent='Welcome to Hong Kong';document.getElementById('resGrade').textContent=g.g;
+    document.getElementById('resWhy').textContent=g.feel+(s.tailstrike?' Tail strike on touchdown: the aft fuselage touched the runway.':'')+' Score '+Math.max(0,g.pts)+'/100.'+(CFG.lland&&!COACH.skipped?' Landing lesson complete.':'');
     row('Touchdown rate',Math.round(g.fpm)+' fpm');row('Touchdown past threshold',Math.round(s.td.s)+' m');row('Off centreline',Math.abs(s.td.l).toFixed(1)+' m '+(s.td.l>0?'right':'left'));
     row('Bank at touchdown',s.td.bank.toFixed(1)+'°');row('Airspeed',Math.round(s.td.ias)+' kt (target '+(s.ac.vref+5)+')');row('Stopped with runway left',Math.round(RWY.len-lS(s.x,s.z))+' m');hsShowResult(g,s);}
   else{document.getElementById('resHs').hidden=true;HS_ENTRY=null;if(CFG.game==='approach'||(s.gearDown&&!s.onGround))attemptStart(e.crash?'crash':'missed');trackFail(e.crash?'crash':'missed_approach',{cause:e.title,sim_seconds:Math.round(e.t),distance_nm:+(PATH.pts[s.pi].d/1852).toFixed(2)});flightEnd(e.crash?'crash':'missed_approach');document.getElementById('resEyebrow').textContent=e.crash?'Accident':'Approach abandoned';document.getElementById('resTitle').textContent=e.title;document.getElementById('resGrade').textContent=e.crash?'✕':'↺';
-    document.getElementById('resWhy').textContent=e.why+(CFG.lesson&&!COACH.skipped?' '+lessonTip(e):'');const p=PATH.pts[s.pi];row('Distance to threshold',p.d>0?(p.d/1852).toFixed(2)+' nm':'past threshold');row('Altitude',fmtFt(s.y));row('Airspeed',Math.round(s.V/KT)+' kt');row('Time flown',Math.floor(e.t/60)+':'+String(Math.floor(e.t%60)).padStart(2,'0'))}
+    document.getElementById('resWhy').textContent=e.why+(CFG.lesson&&!COACH.skipped?' '+lessonTip(e):CFG.lland&&!COACH.skipped?' '+(e.landed?'Lesson complete: you landed at Kai Tak.':landTip(e)):'');const p=PATH.pts[s.pi];row('Distance to threshold',p.d>0?(p.d/1852).toFixed(2)+' nm':'past threshold');row('Altitude',fmtFt(s.y));row('Airspeed',Math.round(s.V/KT)+' kt');row('Time flown',Math.floor(e.t/60)+':'+String(Math.floor(e.t%60)).padStart(2,'0'))}
   RES={kind:e.landed?'landed':e.crash?'crash':'missed',grade:document.getElementById('resGrade').textContent,pts:e.landed?Math.max(0,gradeLanding(s.td).pts):null,
     eyebrow:document.getElementById('resEyebrow').textContent,title:document.getElementById('resTitle').textContent,rows,ac:s.ac.short,fpm:e.landed?Math.round(gradeLanding(s.td).fpm):null,
     ctx:document.getElementById('flightid').textContent};

@@ -1,5 +1,38 @@
 [
   {
+    "slug": "landing-lesson-for-first-time-pilots",
+    "title": "New: a landing lesson for first-time pilots",
+    "dek": "A guided IGS 13 approach: wheels down, flaps, speed, the checkerboard turn, the flare and the stop. No experience needed.",
+    "description": "Fly Kai Tak now has a Landing lesson: a coach panel walks first-time pilots through the Runway 13 IGS approach in nine steps with live meters and plain-language tips.",
+    "date": "2026-10-04",
+    "tag": "Feature",
+    "category": "flying",
+    "keywords": [
+      "Kai Tak",
+      "landing lesson",
+      "tutorial",
+      "beginner",
+      "IGS 13",
+      "flight simulator",
+      "onboarding"
+    ],
+    "hero": "landing-lesson-welcome",
+    "hero_alt": "The Landing lesson welcome panel above a 747 on the IGS approach to Kai Tak, with a Start the lesson button.",
+    "hero_caption": "The lesson starts on the approach at 3,100 ft with a plain-language welcome.",
+    "card_kicker": "LEARN TO FLY · NEW",
+    "card_title": "Landing lesson",
+    "card_sub": "A guided approach for non-pilots",
+    "card_image": "landing-lesson-flare",
+    "card_focus": 50,
+    "zh": {
+      "title": "新增：俾初學者嘅降落教學",
+      "dek": "跟住 IGS 13 進場一步一步學：放起落架、襟翼、速度、棋盤轉彎、拉平同停機。唔使有經驗。",
+      "description": "Fly Kai Tak 新增降落教學：教練面板分九步帶初學者飛 13 號跑道嘅 IGS 進場，有實時量表同淺白提示。",
+      "hero_alt": "降落教學嘅歡迎面板，下面係一架喺啟德 IGS 進場嘅 747，有「Start the lesson」按鈕。",
+      "hero_caption": "教學由 3,100 呎進場開始，先有一段淺白嘅歡迎。"
+    }
+  },
+  {
     "slug": "map-option-on-the-home-screen",
     "title": "A Map option on the home screen",
     "dek": "Choose whether the corner map is on before you start a flight, with a new tick box in the home screen Options.",

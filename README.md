@@ -54,7 +54,8 @@ The home screen shows the live sim of the airport in the background, with a 58-s
 - The "Buy me a coffee" button ($5 AUD) opens a Stripe Payment Link, set in `STRIPE_LINK` in `index.html`
 
 ## Modes
-- **Take-off lesson**: a guided take-off for people who have never flown. A coach panel gives one step at a time (full thrust, stay on the centre line, rotate at 150 kt, gear up, flaps up, climb to 2,000 ft, autopilot), with a live meter for each step, plain-language warnings (drifting off the centre line, nose too high or low, stall) and a highlight on the control to use. It moves on by itself when you do the step; Skip lesson hands you free flight at any time. It ends with a choice to keep flying or try the IGS 13 approach
+- **Take-off lesson**: a guided take-off for people who have never flown. A coach panel gives one step at a time (full thrust, stay on the centre line, rotate at 150 kt, gear up, flaps up, climb to 2,000 ft, autopilot), with a live meter for each step, plain-language warnings (drifting off the centre line, nose too high or low, stall) and a highlight on the control to use. It moves on by itself when you do the step; Skip lesson hands you free flight at any time. It ends with a choice to keep flying or start the Landing lesson
+- **Landing lesson**: the same coach on the IGS 13 approach, hand-flown with the guide hoops on. Nine steps: gear down, landing flaps, hold the approach speed (Vref + 10 kt), follow the hoops, the 47° right turn at the checkerboard, final, flare, brake to a stop. Live meters (speed, distance left or right of the line, turn to go, height, descent rate, ground speed), warnings (too slow or fast, below or above the glidepath, off the line, bank, stall, drifting after touchdown) and a lesson tip on the result card after a crash. Lesson landings are not ranked on the high score table
 - **IGS 13 approach**: the original game. Start on the IGS at 3,100 ft and land.
 - **Runway 31 approach**: the easterly approach. Start about 8 NM out over the sea at 2,700 ft, heading 314, fly through the Lei Yue Mun gap and land on Runway 31 (own approach lights, PAPI, radio calls and traffic; a Lei Yue Mun spotter view).
 - **Free flight**: start lined up on Runway 13. Take off over Kowloon Bay and fly anywhere; landings are graded but the flight carries on (touch-and-go with full thrust). The autopilot holds heading, altitude and speed once airborne.
@@ -92,7 +93,7 @@ The on-screen yoke works with touch or a mouse and is inverted like a real contr
 Google Analytics 4 with game events. See docs/analytics.md.
 
 ## Roadmap
-- Learn to fly, next: a landing lesson that follows the take-off lesson
+- Learn to fly, next: ground and taxi lessons, and a Runway 31 landing lesson
 - ATC radio, next: ground and taxi calls, more voices, go-around instructions, crews that match the AI traffic
 - More aircraft: 747-200/300, 767-300, MD-11, A300-600, A320, 737-300, L-1011, DC-10
 - Higher-fidelity terrain and coastline, more hand-built landmarks
