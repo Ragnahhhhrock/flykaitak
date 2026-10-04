@@ -1742,8 +1742,72 @@ function buildApronMarkings(placeAlong){
       for(const l of[-46,-44.6])L([sE-13,l],[sE+13,l],.5,YEL);for(const l of[-43.2,-41.8])L([sE-13,l],[sE+13,l],.5,YEL,[2.5,2.5])})};
   runwayEnd(-40,100,0,150);runwayEnd(RWY.len-100,RWY.len+40,RWY.len,-150);
   // the centre line of taxiway A between the two lead-on curves
-  const cm=new THREE.MeshBasicMaterial({color:0xe8b100,polygonOffset:true,polygonOffsetFactor:-6,polygonOffsetUnits:-6});APR_MATS.push(cm);
+  const cm=new THREE.MeshBasicMaterial({color:0xe8b100,polygonOffset:true,polygonOffsetFactor:-6,polygonOffsetUnits:-6});cm.userData.tint=new THREE.Color(0xe8b100);APR_MATS.push(cm);
   const d0=Math.min(R,.45*-A);placeAlong(new THREE.Mesh(new THREE.PlaneGeometry(.8,RWY.len-2*d0).rotateX(-Math.PI/2),cm),RWY.len/2,A,RWY.elev+.08);
+}
+/* ---------------- airfield signs and taxiway markings (FAA AIM 2-3) ----------------
+   Mandatory instruction signs are white on red (runway holding positions), location signs yellow on black with a yellow border,
+   direction and destination signs black on yellow, runway distance remaining signs a white numeral on black (thousands of feet).
+   Taxiway markings are yellow: a centre line with enhanced dashes before a runway holding position, a double-line edge, and the
+   runway holding position itself (two solid lines on the taxiway side, two dashed). Link taxiways are named B1-B6 from the 13 end. */
+const SIGN_STY={mandatory:['#c0352b','#f4f4ef',null],location:['#111214','#e8b100','#e8b100'],direction:['#e8b100','#111214',null],destination:['#e8b100','#111214',null],distance:['#111214','#f4f4ef',null]};
+// cells: a string is lettering, {a:deg} an arrow (0 up, 90 right, 180 down, -90 left, 45 up-right ...)
+function airfieldSignTex(type,cells){
+  const [bg,fg,bd]=SIGN_STY[type],H=128,P=H*.16,cw=c=>typeof c==='string'?c.length*H*.5+H*.14:H*.72;
+  const W=Math.round(cells.reduce((a,c)=>a+cw(c),0)+P*2),cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d');
+  g.fillStyle=bg;g.fillRect(0,0,W,H);
+  if(bd){g.strokeStyle=bd;g.lineWidth=H*.05;g.setLineDash([]);g.strokeRect(H*.07,H*.07,W-H*.14,H-H*.14)}
+  g.fillStyle=fg;g.strokeStyle=fg;g.font='bold '+(H*.62)+'px Arial, Helvetica, sans-serif';g.textAlign='center';g.textBaseline='middle';
+  let x=P;
+  for(const c of cells){const w=cw(c),cx=x+w/2;
+    if(typeof c==='string')g.fillText(c,cx,H*.54);
+    else{const s=H*.34;g.save();g.translate(cx,H/2);g.rotate(c.a*Math.PI/180);g.lineWidth=H*.1;g.lineCap='butt';g.beginPath();g.moveTo(0,s);g.lineTo(0,-s*.2);g.stroke();
+      g.beginPath();g.moveTo(0,-s);g.lineTo(s*.64,-s*.1);g.lineTo(-s*.64,-s*.1);g.closePath();g.fill();g.restore()}
+    x+=w}
+  const tx=new THREE.CanvasTexture(cv);tx.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());return tx}
+function buildAirfieldSigns(placeAlong){
+  const A=APN.A,LW=PAVE.link.w,LN=LINKS.map((L,i)=>'B'+(i+1)),post=new THREE.MeshLambertMaterial({color:0x2a2b2e}),back=new THREE.MeshLambertMaterial({color:0x3a3b3e});
+  // face: the way the sign's front points. 0 toward -s (read by a pilot moving +s), PI toward +s, -PI/2 toward -l (read by a pilot moving toward the runway)
+  const sign=(type,cells,s,l,face,h)=>{h=h||1.7;const tx=airfieldSignTex(type,cells),w=h*tx.image.width/tx.image.height,g=new THREE.Group();
+    const panel=new THREE.Mesh(new THREE.BoxGeometry(w,h,.16).translate(0,.7+h/2,0),[back,back,back,back,new THREE.MeshBasicMaterial({map:tx}),back]);
+    const leg=new THREE.Mesh(new THREE.BoxGeometry(.14,.8,.14).translate(0,.4,0),post);g.add(panel,leg);placeAlong(g,s,l,RWY.elev);g.rotation.y+=face;return g};
+  const linkS=(i,l)=>linkMid(LINKS[i],l);   // centre of link i along s at distance l from the runway centre line (links lean either way, see LINKS)
+  // runway distance remaining: thousands of feet, on the left edge for each landing direction (13 left = apron side, 31 left = harbour side)
+  const clear=s=>LINKS.some((L,i)=>Math.abs(s-linkS(i,-42))<22);
+  for(let n=1;n<=10;n++){const s13=RWY.len-n*304.8,s31=n*304.8;
+    sign('distance',[String(n)],clear(s13)?s13+30:s13,-42,0);sign('distance',[String(n)],s31,42,Math.PI)}
+  // runway holding positions on each link taxiway: hold lines, the 13-31 mandatory sign on both sides, a location sign, enhanced centre line
+  const YEL=0xe8b100,ym=new THREE.MeshBasicMaterial({color:YEL,polygonOffset:true,polygonOffsetFactor:-6,polygonOffsetUnits:-6});ym.userData.tint=new THREE.Color(YEL);APR_MATS.push(ym);
+  const strip=(l0,l1,s0,s1,w,mat)=>{ // a straight painted strip between two (s,l) points, w metres wide
+    const dl=l1-l0,ds=s1-s0,len=Math.hypot(dl,ds),m=new THREE.Mesh(new THREE.PlaneGeometry(len,w).rotateX(-Math.PI/2),mat);
+    placeAlong(m,(s0+s1)/2,(l0+l1)/2,RWY.elev+.09);m.rotation.y+=Math.atan2(ds,dl);return m};
+  LINKS.forEach((L,i)=>{const c=l=>linkS(i,l),k=L.k;
+    // centre line from taxiway A to the runway edge, and the enhanced dashes over the 40 m before the hold line
+    strip(A,-30,c(A),c(-30),.5,ym);
+    {const l0=-92,l1=-50,s0=c(l0),s1=c(l1),len=Math.hypot(l1-l0,s1-s0),
+        tx=canvasTex(128,32,(g,w,h)=>{g.clearRect(0,0,w,h);g.fillStyle='#e8b100';g.fillRect(0,0,w*.5,h*.16);g.fillRect(0,h*.84,w*.5,h*.16)},true);tx.repeat.set(len/6,1);
+      const mt=new THREE.MeshBasicMaterial({map:tx,transparent:true,polygonOffset:true,polygonOffsetFactor:-6,polygonOffsetUnits:-6});APR_MATS.push(mt);
+      const m=new THREE.Mesh(new THREE.PlaneGeometry(len,1.5).rotateX(-Math.PI/2),mt);
+      placeAlong(m,(s0+s1)/2,(l0+l1)/2,RWY.elev+.09);m.rotation.y+=Math.atan2(s1-s0,l1-l0)}
+    // hold position: solid lines on the taxiway side, dashed on the runway side (Pattern A)
+    for(const l of[-46,-44.6])strip(l,l,c(l)-LW/2,c(l)+LW/2,.5,ym);
+    for(const l of[-43.2,-41.8]){for(let k=0;k<LW/5;k++)strip(l,l,c(l)-LW/2+k*5,c(l)-LW/2+k*5+2.5,.5,ym)}
+    sign('mandatory',['13-31'],c(-52)-19,-52,-Math.PI/2);sign('mandatory',['13-31'],c(-52)+19,-52,-Math.PI/2);
+    sign('location',[LN[i]],c(-58)+19,-58,-Math.PI/2);
+    // direction signs on taxiway A, one for each direction of travel. A link with k = +1 leans toward the 31 end (it leaves ahead-left of a pilot
+    // moving toward the 13 end, behind-right of one moving toward 31); k = -1 is the mirror image
+    sign('direction',[LN[i],{a:k>0?-45:-135}],c(A+12)+34,A+16,Math.PI);
+    sign('direction',[LN[i],{a:k>0?135:45}],c(A+12)-34,A+16,0)});
+  // taxiway A, runway side: double continuous edge line, broken where a link taxiway joins
+  {const edge=A+12.2,skip=LINKS.map((L,i)=>[linkS(i,A+12)-26,linkS(i,A+12)+26]).sort((a,b)=>a[0]-b[0]);let s0=130;
+    const put=(a,b)=>{if(b-a<4)return;for(const dl of[-.2,.2])strip(edge+dl,edge+dl,a,b,.18,ym)};
+    for(const[a,b]of skip){put(s0,a);s0=b}put(s0,RWY.len-130)}
+  // runway holding position signs at the two ends of taxiway A, with a location sign, and a destination sign for the apron
+  for(const[num,sE]of[['13',0],['31',RWY.len]]){
+    for(const d of[-19,19])sign('mandatory',[num],sE+d,-49,-Math.PI/2);
+    sign('location',['A'],sE+19,-55,-Math.PI/2)}
+  // destination signs where the apron lanes leave taxiway A: lane D3 serves stands 1-8, D2 the remote stands 11-19, D1 the far apron
+  for(const[ls,txt]of[[APN.D3,'1-8'],[APN.D2,'11-19'],[APN.D1,'APRON']]){sign('destination',[{a:-90},txt],ls-30,A+16,0,1.5);sign('destination',[txt,{a:90}],ls+30,A+16,Math.PI,1.5)}
 }
 function buildAirport(){
   const grp=new THREE.Group();grp.position.set(0,0,0);
@@ -1766,19 +1830,20 @@ function buildAirport(){
   // markings
   const mk=new THREE.MeshBasicMaterial({color:0xe9e9e4,polygonOffset:true,polygonOffsetFactor:-6,polygonOffsetUnits:-6,transparent:true});
   const mkEnd=(num,s,flip)=>{
-    const c=document.createElement('canvas');c.width=256;c.height=1680;const g=c.getContext('2d');const sx=256/61,sy=1680/400;g.fillStyle='#ecece6';
-    for(let i=0;i<16;i++){const lx=3.5+i*3.4+(i>=8?3.2:0);g.fillRect(lx*sx,1680-(6+30)*sy,1.8*sx,30*sy)}
-    g.save();g.translate(128,1680-(6+30+16+10)*sy);g.font='bold '+(30*sx)+'px Arial, sans-serif';g.textAlign='center';g.textBaseline='middle';g.scale(1,sy/sx*.75);g.fillText(num,0,0);g.restore();
-    for(const ss of[150,300,450,600]){if(ss===300){g.fillRect((30.5-12-5)*sx,1680-(ss+45)*sy,5*sx,45*sy);g.fillRect((30.5+12)*sx,1680-(ss+45)*sy,5*sx,45*sy)}else{const nb=ss===150?3:2;for(let k=0;k<nb;k++){g.fillRect((30.5-12.5-k*2.6)*sx,1680-(ss+22)*sy,1.6*sx,22*sy);g.fillRect((30.5+10.9+k*2.6)*sx,1680-(ss+22)*sy,1.6*sx,22*sy)}}}
-    g.fillRect(0,0,1*sx,1680);g.fillRect(256-1*sx,0,1*sx,1680);
+    const H=4200,LEN=1000,c=document.createElement('canvas');c.width=256;c.height=H;const g=c.getContext('2d');const sx=256/61,sy=H/LEN;g.fillStyle='#ecece6';
+    for(let i=0;i<16;i++){const lx=3.5+i*3.4+(i>=8?3.2:0);g.fillRect(lx*sx,H-(6+30)*sy,1.8*sx,30*sy)}
+    g.save();g.translate(128,H-(6+30+16+10)*sy);g.font='bold '+(30*sx)+'px Arial, sans-serif';g.textAlign='center';g.textBaseline='middle';g.scale(1,sy/sx*.75);g.fillText(num,0,0);g.restore();
+    for(const ss of[150,300,450,600,762,914]){if(ss===300){g.fillRect((30.5-12-5)*sx,H-(ss+45)*sy,5*sx,45*sy);g.fillRect((30.5+12)*sx,H-(ss+45)*sy,5*sx,45*sy)}else{const nb=ss===150?3:ss>700?1:2;for(let k=0;k<nb;k++){g.fillRect((30.5-12.5-k*2.6)*sx,H-(ss+22)*sy,1.6*sx,22*sy);g.fillRect((30.5+10.9+k*2.6)*sx,H-(ss+22)*sy,1.6*sx,22*sy)}}}
+    g.fillRect(0,0,1*sx,H);g.fillRect(256-1*sx,0,1*sx,H);
     const tx=new THREE.CanvasTexture(c);tx.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
-    const m=new THREE.Mesh(new THREE.PlaneGeometry(61,400).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({map:tx,transparent:true,polygonOffset:true,polygonOffsetFactor:-6,polygonOffsetUnits:-6}));
+    const m=new THREE.Mesh(new THREE.PlaneGeometry(61,LEN).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({map:tx,transparent:true,polygonOffset:true,polygonOffsetFactor:-6,polygonOffsetUnits:-6}));
     const p=rwP(s,0);m.position.set(p[0],RWY.elev+.08,p[1]);m.rotation.y=-RWY.hdg*D2R+(flip?Math.PI:0);grp.add(m)};
-  mkEnd('13',200,false);mkEnd('31',RWY.len-200,true);
-  const clTex=canvasTex(16,128,(g,w,h)=>{g.clearRect(0,0,w,h);g.fillStyle='#ecece6';g.fillRect(0,0,w,h*.6)},true);clTex.repeat.set(1,(RWY.len-800)/50);
+  mkEnd('13',500,false);mkEnd('31',RWY.len-500,true);   // threshold bars, designator, aiming point and touchdown-zone bars to 3,000 ft (AIM 2-3-3)
+  const clTex=canvasTex(16,128,(g,w,h)=>{g.clearRect(0,0,w,h);g.fillStyle='#ecece6';g.fillRect(0,0,w,h*.6)},true);clTex.repeat.set(1,(RWY.len-800)/61);
   const cl=new THREE.Mesh(new THREE.PlaneGeometry(.9,RWY.len-800).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({map:clTex,transparent:true,polygonOffset:true,polygonOffsetFactor:-6,polygonOffsetUnits:-6}));placeAlong(cl,RWY.len/2,0,RWY.elev+.08);
   for(const l of[-30,30]){const e=new THREE.Mesh(new THREE.PlaneGeometry(.9,RWY.len-800).rotateX(-Math.PI/2),mk);placeAlong(e,RWY.len/2,l,RWY.elev+.08)}
   buildApronMarkings(placeAlong);
+  buildAirfieldSigns(placeAlong);
   scene.add(grp);
   // terminal: the pier runs along l, at right angles to the runway, its face (s = -78) toward the apron; the main block and the car park lie beyond its west end
   const termM=cityMaterial({color:0xd9d5c8}),roofM=new THREE.MeshLambertMaterial({color:0x8d8b84});
@@ -2598,7 +2663,7 @@ function applyEnvironment(){
   for(const S of SHIPS)if(S.m.userData.wake){const m=S.m.userData.wake.material;m.opacity=lerp(.35,over?.6:.85,k);m.color.setHex(hexMix(0x2a3438,0xffffff,k))}
   setWater();if(obstructionLights)obstructionLights.visible=n||over||fogW;
   for(const m of TERRAIN_MATS){const kd=over?.72:fogW?.8:1;if(m.userData.street)m.color.setHex(m.userData.base||(m.userData.base=m.color.getHex())).multiplyScalar(lerp(.25,kd,k));else m.color.setScalar(lerp(.11,kd,k))}
-  for(const m of APR_MATS)m.color.setScalar(lerp(.55,over?.72:fogW?.8:1,k));
+  for(const m of APR_MATS){const f=lerp(.55,over?.72:fogW?.8:1,k);if(m.userData.tint)m.color.copy(m.userData.tint).multiplyScalar(f);else m.color.setScalar(f)}   // textured paint is white times its map; flat-colour paint keeps its tint
   streetLights.visible=n;carLights&&(carLights.visible=n);shipLights.visible=true;
   if(signMat)signMat.color.setScalar(n?1:over?.6:.8);
   if(BB.paint){BB.paintMat.color.setScalar(n?.85:over?.62:.9);BB.neonMat.color.setScalar(n?1:over?.62:.9);BB.neonDay.visible=!n;BB.neonNight.visible=n;BB.glow.visible=n;BB.lamps.visible=n;BB.frameMat.color.setHex(n?0x1a1c1e:over?0x44484c:0x5a5f64)}

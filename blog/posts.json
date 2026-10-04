@@ -1,5 +1,41 @@
 [
   {
+    "slug": "faa-airfield-signs-and-markings",
+    "title": "FAA signs and markings on the airfield",
+    "dek": "Runway holding positions, taxiway lines, distance-remaining boards and the red, yellow and black signs, all from the FAA Aeronautical Information Manual.",
+    "description": "Fly Kai Tak now has FAA-style airfield signs and markings: touchdown-zone bars, hold lines, link taxiways B1 to B6, and mandatory, location, direction and distance signs.",
+    "date": "2026-10-04",
+    "tag": "New",
+    "category": "scenery",
+    "keywords": [
+      "signs",
+      "markings",
+      "FAA",
+      "AIM",
+      "taxiway",
+      "runway",
+      "hold short",
+      "touchdown zone",
+      "Kai Tak",
+      "flight simulator"
+    ],
+    "hero": "airfield-signs-hold",
+    "hero_alt": "Link taxiway B1 meeting the runway, with a red 13-31 holding sign, a yellow B1 direction sign and yellow lines across the taxiway.",
+    "hero_caption": "B1 at the runway: red holding signs, a yellow direction sign and the four-line holding position.",
+    "card_kicker": "AIRFIELD · SIGNS",
+    "card_title": "FAA signs and markings",
+    "card_sub": "Hold lines, B1 to B6, distance boards",
+    "card_image": "airfield-signs-hold",
+    "card_focus": 50,
+    "zh": {
+      "title": "機場加咗 FAA 標誌同標記",
+      "dek": "跑道等候位置、滑行道線、剩餘距離牌，仲有紅、黃、黑三色標誌牌，全部跟 FAA《航空資訊手冊》。",
+      "description": "Fly Kai Tak 而家有 FAA 款機場標誌同標記：接地區標記、等候線、B1 至 B6 連接滑行道，仲有強制、位置、方向同距離標誌牌。",
+      "hero_alt": "B1 連接滑行道接駁跑道：紅色 13-31 等候牌、黃色 B1 方向牌，同橫過滑行道嘅黃線。",
+      "hero_caption": "B1 接跑道處：紅色等候牌、黃色方向牌同四線等候位置。"
+    }
+  },
+  {
     "slug": "aircraft-stay-on-the-tarmac",
     "title": "Fix: Aircraft Stay on the Tarmac",
     "dek": "Taxiing aircraft use the link taxiways and never cross the grass.",
