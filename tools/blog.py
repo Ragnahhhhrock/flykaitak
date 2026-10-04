@@ -174,7 +174,7 @@ def site_footer(scripts=""):
     return f"""<footer class="foot"><div class="wrap">
   <div class="row">
     <span>&copy; {NAME}. <a href="https://malgordon.com" target="_blank" rel="noopener">Another Mal Gordon project</a></span>
-    <span><a href="mailto:contact@flykaitak.com">contact@flykaitak.com</a> &middot; <a href="/blog/feed.xml">RSS</a> &middot; <a href="https://github.com/Ragnahhhhrock/flykaitak" target="_blank" rel="noopener">GitHub</a></span>
+    <span><a href="mailto:contact@flykaitak.com">contact@flykaitak.com</a> &middot; <a href="/blog/feed.xml">RSS</a> &middot; <a href="https://www.facebook.com/flykaitak" target="_blank" rel="noopener">Facebook</a> &middot; <a href="https://www.instagram.com/flykaitak" target="_blank" rel="noopener">Instagram</a> &middot; <a href="https://github.com/Ragnahhhhrock/flykaitak" target="_blank" rel="noopener">GitHub</a></span>
   </div>
   <div>Map data &copy; Lands Department, HKSAR Government. Elevation: SRTM via AWS Terrain Tiles. Aircraft and liveries are not real airlines.</div>
 </div></footer>

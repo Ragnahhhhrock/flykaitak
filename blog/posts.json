@@ -1,5 +1,37 @@
 [
   {
+    "slug": "follow-fly-kai-tak-on-facebook-and-instagram",
+    "title": "Follow Fly Kai Tak on Facebook and Instagram",
+    "dek": "Fly Kai Tak now has a Facebook page and an Instagram account, linked from the home screen and the blog footer.",
+    "description": "Follow Fly Kai Tak on Facebook and Instagram at @flykaitak. Both are now linked from the home screen and every blog page.",
+    "date": "2026-10-05",
+    "tag": "New",
+    "category": "site",
+    "keywords": [
+      "Facebook",
+      "Instagram",
+      "follow",
+      "social media",
+      "Fly Kai Tak",
+      "@flykaitak"
+    ],
+    "hero": "home-follow-links",
+    "hero_alt": "The Fly Kai Tak home screen with Follow Fly Kai Tak links to Facebook and Instagram.",
+    "hero_caption": "Follow links on the home screen.",
+    "card_kicker": "SITE · SOCIAL",
+    "card_title": "Follow us",
+    "card_sub": "Facebook and Instagram, @flykaitak",
+    "card_image": "home-follow-links",
+    "card_focus": 50,
+    "zh": {
+      "title": "喺 Facebook 同 Instagram 追蹤 Fly Kai Tak",
+      "dek": "Fly Kai Tak 而家有 Facebook 專頁同 Instagram 帳戶，主畫面同網誌頁底都有連結。",
+      "description": "喺 Facebook 同 Instagram 追蹤 Fly Kai Tak（@flykaitak），主畫面同每個網誌頁都有連結。",
+      "hero_alt": "Fly Kai Tak 主畫面，有去 Facebook 同 Instagram 嘅追蹤連結。",
+      "hero_caption": "主畫面嘅追蹤連結。"
+    }
+  },
+  {
     "slug": "harbour-shipping-follows-the-fairways",
     "title": "Harbour shipping follows the fairways",
     "dek": "Ships now sail one way along the charted fairways, keeping right, and most of the harbour's vessels are moored or at anchor.",

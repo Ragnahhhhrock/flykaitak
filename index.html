@@ -42,7 +42,7 @@ window.FKT_ANALYTICS={id:'G-7MNP3SBEF8',src:'/metrics/',fallback:'https://www.go
 <meta name="twitter:description" content="Hit the checkerboard, turn right, land before the harbour. Kai Tak's famous approach, in your browser.">
 <meta name="twitter:image" content="https://flykaitak.com/assets/social/twitter-card.jpg">
 <meta name="twitter:image:alt" content="A 747 passes low over a Kowloon City street sign on the final turn into Kai Tak.">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Fly Kai Tak","alternateName":"啟德機場","url":"https://flykaitak.com/","description":"A browser flight simulator of the 1998 Runway 13 IGS approach into Hong Kong Kai Tak.","genre":["Flight simulator"],"gamePlatform":"Web browser","applicationCategory":"Game","operatingSystem":"Any","image":"https://flykaitak.com/assets/social/og-image.jpg","inLanguage":"en","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Fly Kai Tak","alternateName":"啟德機場","url":"https://flykaitak.com/","description":"A browser flight simulator of the 1998 Runway 13 IGS approach into Hong Kong Kai Tak.","genre":["Flight simulator"],"gamePlatform":"Web browser","applicationCategory":"Game","operatingSystem":"Any","image":"https://flykaitak.com/assets/social/og-image.jpg","sameAs":["https://www.facebook.com/flykaitak","https://www.instagram.com/flykaitak"],"inLanguage":"en","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
 <!--FRAG:HEAD-->
 <title>Fly Kai Tak</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -296,6 +296,7 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
 .res-share svg{width:15px;height:15px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .res-share .done{border-color:var(--jade-bright);color:var(--phosphor)}
 .home-share{margin-top:14px;max-width:420px}
+.home-follow+.home-share{margin-top:10px}
 .home-share h3{color:var(--text);text-shadow:0 1px 3px rgba(0,0,0,.85)}
 
 #loading{position:fixed;inset:0;display:grid;place-items:center;background:var(--ink);font-family:var(--f-num);font-size:12px;letter-spacing:.2em;color:var(--muted)}
@@ -462,6 +463,13 @@ body.bigmap #radio{top:calc(env(safe-area-inset-top,0px) + 396px)}
       <div class="sub">Hong Kong · 1998</div>
       <div class="credit"><a href="https://malgordon.com" target="_blank" rel="noopener">Another Mal Gordon project</a></div>
       <a class="coffee" id="btnCoffee" href="#" target="_blank" rel="noopener" hidden>☕ Buy me a coffee · $5 AUD</a>
+      <section class="res-share home-share home-follow" id="homeFollow" aria-label="Follow Fly Kai Tak">
+        <h3>Follow Fly Kai Tak</h3>
+        <ul>
+          <li><a data-f="facebook" href="https://www.facebook.com/flykaitak" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>Facebook</a></li>
+          <li><a data-f="instagram" href="https://www.instagram.com/flykaitak" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.5 6.5h.01"/></svg>Instagram</a></li>
+        </ul>
+      </section>
       <section class="res-share home-share" id="homeShare" aria-label="Share Fly Kai Tak">
         <h3>Share Fly Kai Tak</h3>
         <ul>
@@ -4814,7 +4822,7 @@ const ZH={
 'Blog':'網誌',
 'Another Mal Gordon project':'Mal Gordon 嘅另一個作品',
 '☕ Buy me a coffee · $5 AUD':'☕ 請我飲杯咖啡 · 5 澳元',
-'Share Fly Kai Tak':'分享 Fly Kai Tak','Copy link':'複製連結','Share…':'分享…','Email':'電郵',
+'Follow Fly Kai Tak':'追蹤 Fly Kai Tak','Share Fly Kai Tak':'分享 Fly Kai Tak','Copy link':'複製連結','Share…':'分享…','Email':'電郵',
 'Terminal interior':'客運大樓內部','Plane spotter':'觀機位置','Flight views':'飛行視角','Departures hall':'客運大樓：離境大堂','Departure immigration':'客運大樓：離境入境檢查','Shop arcade':'客運大樓：商店街','Gate lounge':'客運大樓：登機閘口候機室','Ground floor and stairs':'客運大樓：地下大堂及樓梯','Arrivals hall':'客運大樓：抵港大堂','Front entrance':'客運大樓：正門',
 'Hong Kong · 1998':'香港 · 1998',
 'VHHH · KAI TAK':'VHHH · 啟德',
@@ -5100,6 +5108,7 @@ function updateHomeShare(){
   document.getElementById('hsNatLi').hidden=!navigator.share}
 updateHomeShare();
 document.getElementById('btnLang').addEventListener('click',updateHomeShare);
+document.getElementById('homeFollow').addEventListener('click',e=>{const a=e.target.closest('a[data-f]');if(a)try{track('follow',{method:a.dataset.f,content_type:'home'})}catch(_){}});
 document.getElementById('homeShare').addEventListener('click',async e=>{
   const a=e.target.closest('a[data-m]');if(a){homeTrack(a.dataset.m);return}
   const b=e.target.closest('button');if(!b)return;
