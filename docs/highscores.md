@@ -13,6 +13,9 @@ Every hand-flown IGS 13 landing is scored out of 100 (see `gradeLanding` in `ind
 Not ranked: autopilot landings (the autopilot was on at any point), landings after a rewind, free flight, Plane Spotter and crashes.
 The table is sorted by score, earlier landing first on a tie. The player's callsign (up to 12 letters, digits, space, `. _ -`) is set on the result screen and remembered.
 
+## Starter scores
+The table always includes ten fictional starter scores (`HS_SEED` in `index.html`, ids `seed1` to `seed10`, 58 down to 15). They are easy to beat and drop off once real landings fill the table.
+
 ## Where it is stored
 - **This browser** (always): `localStorage` keys `fkt-scores` (top 100) and `fkt-callsign`. Works offline and with no backend.
 - **Shared table** (optional): a Cloudflare Worker with a D1 database in `server/`. Set `HS_API` near the top of the high score block in `index.html` to the Worker URL and every browser sees one table. Local scores are merged with the shared ones.

@@ -2313,7 +2313,9 @@ const HS_RANKS=[[90,'Captain'],[76,'First Officer'],[60,'Second Officer'],[45,'F
 const rankTitle=pts=>{for(const [m,t] of HS_RANKS)if(pts>=m)return t;return 'Cadet'};
 const hsEsc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const hsClean=n=>String(n||'').replace(/[^A-Za-z0-9 _.\-]/g,'').trim().slice(0,12).toUpperCase()||'PILOT';
-function hsLocal(){let a=[];try{a=JSON.parse(localStorage.getItem(HS_KEY)||'[]');if(!Array.isArray(a))a=[]}catch(e){a=[]}return a.filter(e=>e&&typeof e.id==='string'&&Number.isFinite(e.s))}
+// Fictional starter scores so the table is never empty. They are easy to beat and fall off the table once enough real landings are on it.
+const HS_SEED=[['seed1','CAPT HO',58,'D','747-400','clear'],['seed2','LEE K',54,'D','A330-300','clear'],['seed3','MR CHAN',49,'D','777-200','rain'],['seed4','SKY PIG',44,'E','A340-300','lowcloud'],['seed5','WONG',39,'E','747-400','rain'],['seed6','TAI TAK',35,'E','Concorde','clear'],['seed7','FO FUNG',31,'E','777-200','fog'],['seed8','COOKIE',26,'E','747-400','storm'],['seed9','LOW AND SLOW',21,'E','A330-300','typhoon'],['seed10','NEWBIE',15,'E','747-400','typhoon']].map((r,i)=>({id:r[0],n:r[1],s:r[2],g:r[3],ac:r[4],wx:r[5],tod:'day',d:1+i}));
+function hsLocal(){let a=[];try{a=JSON.parse(localStorage.getItem(HS_KEY)||'[]');if(!Array.isArray(a))a=[]}catch(e){a=[]}a=a.filter(e=>e&&typeof e.id==='string'&&Number.isFinite(e.s));const ids=new Set(a.map(e=>e.id));for(const e of HS_SEED)if(!ids.has(e.id))a.push(Object.assign({},e));return a}
 function hsSort(a){return a.sort((x,y)=>y.s-x.s||x.d-y.d)}
 function hsStore(a){hsSort(a);a.length=Math.min(a.length,HS_MAX);try{localStorage.setItem(HS_KEY,JSON.stringify(a))}catch(e){}}
 function hsMerge(remote){if(!Array.isArray(remote))return;const a=hsLocal(),ids=new Set(a.map(e=>e.id));for(const r of remote)if(r&&r.id&&!ids.has(r.id)&&Number.isFinite(r.s))a.push({id:String(r.id),n:hsClean(r.n),s:r.s|0,g:String(r.g||'').slice(0,1),ac:String(r.ac||'').slice(0,20),wx:String(r.wx||'').slice(0,12),tod:r.tod==='night'?'night':'day',d:+r.d||0});hsStore(a)}
