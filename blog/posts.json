@@ -1,5 +1,40 @@
 [
   {
+    "slug": "rudder-and-crosswind-landings",
+    "title": "A rudder for crosswind landings",
+    "dek": "Kick out the crab before touchdown with the new rudder, try the Crosswind weather, or let auto-rudder do it.",
+    "description": "Fly Kai Tak adds a rudder: de-crab before touchdown with , and . or the on-screen bar, a Crosswind weather preset, crab scoring and auto-rudder.",
+    "date": "2026-10-04",
+    "tag": "Feature",
+    "category": "controls",
+    "keywords": [
+      "rudder",
+      "crosswind",
+      "crab",
+      "de-crab",
+      "sideslip",
+      "auto-rudder",
+      "crosswind landing",
+      "Kai Tak",
+      "flight simulator"
+    ],
+    "hero": "rudder-crab-chase",
+    "hero_alt": "A 747 on short final to Runway 13 over Kowloon City, its nose pointed left of the runway into a crosswind from 050.",
+    "hero_caption": "Crabbed on short final: the 747 points left of the runway, into the wind.",
+    "card_kicker": "RUDDER · CROSSWIND",
+    "card_title": "Kick out the crab",
+    "card_sub": "Rudder, crab scoring and Crosswind weather",
+    "card_image": "rudder-crab-chase",
+    "card_focus": 50,
+    "zh": {
+      "title": "方向舵：側風降落",
+      "dek": "用新嘅方向舵喺接地前消除蟹行角，試吓「側風」天氣，或者交俾自動方向舵。",
+      "description": "Fly Kai Tak 加入方向舵：用 , 同 . 或者屏幕方向舵條喺接地前消除蟹行角，仲有側風天氣、蟹行角評分同自動方向舵。",
+      "hero_alt": "一架 747 喺九龍城上空短五邊進場 13 號跑道，機頭偏向跑道左邊，迎住由 050 吹嚟嘅側風。",
+      "hero_caption": "短五邊蟹行緊：747 機頭指向跑道左邊，迎住風。"
+    }
+  },
+  {
     "slug": "bigger-map-home-and-plane-spotter",
     "title": "A bigger map on the home screen and in Plane Spotter",
     "dek": "The corner map is twice the size on the home screen and in Plane Spotter, and it steps aside when High scores is open.",

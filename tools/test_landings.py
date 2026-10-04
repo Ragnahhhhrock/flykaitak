@@ -6,7 +6,8 @@ Usage:  python3 tools/test_landings.py [--rwy 13|31|both] [--night] [--ac b744,b
 Serves the repo, opens it in headless Chromium and uses the sim's test hooks (window.__kt) to check, for each
 runway and weather preset:
   1. the autopilot lands the aircraft (no crash, no missed approach), touching down on the runway;
-  2. with no input at all (autopilot off) the aircraft crashes.
+  2. with no input at all (autopilot off) the aircraft crashes (in clear weather and in the crosswind);
+  3. a free-flight take-off with no steering gets airborne (clear and crosswind).
 Exit code 0 means every check passed.
 """
 import argparse
@@ -20,7 +21,7 @@ import threading
 from playwright.sync_api import sync_playwright
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-WX = ["clear", "rain", "typhoon", "storm", "lowcloud", "fog"]
+WX = ["clear", "rain", "typhoon", "storm", "lowcloud", "fog", "xwind"]
 
 
 def serve():
@@ -117,14 +118,15 @@ def main():
                     ok = r["kind"] == "landed"
                     print(f"RWY {rwy} {ac} {wx:9s} autopilot   -> {r['kind']:7s} t={r['t']}s td={r['td']} {'' if ok else r['title']}", flush=True)
                     fails += 0 if ok else 1
-                r = pg.evaluate(RUN, [{**base, "wx": "clear", "ap": False}, a.sec])
-                ok = r["kind"] == "crash"
-                print(f"RWY {rwy} {ac} no input             -> {r['kind']:7s} t={r['t']}s {r['title']}", flush=True)
-                fails += 0 if ok else 1
-        for rwy in rwys:
-            r = pg.evaluate(TAKEOFF, [{"game": "free", "rwy": rwy, "ac": "b744", "wx": "clear", "night": a.night, "deck": False, "ap": False}, 200])
+                for wx in ("clear", "xwind"):
+                    r = pg.evaluate(RUN, [{**base, "wx": wx, "ap": False}, a.sec])
+                    ok = r["kind"] == "crash"
+                    print(f"RWY {rwy} {ac} {wx:9s} no input    -> {r['kind']:7s} t={r['t']}s {r['title']}", flush=True)
+                    fails += 0 if ok else 1
+        for rwy, wx in [(r, w) for r in rwys for w in ("clear", "xwind")]:
+            r = pg.evaluate(TAKEOFF, [{"game": "free", "rwy": rwy, "ac": "b744", "wx": wx, "night": a.night, "deck": False, "ap": False}, 200])
             ok = r["kind"] == "airborne" and r["alt"] > 500
-            print(f"RWY {rwy} take-off (free flight)    -> {r['kind']:8s} airborne at {r['air']}s, alt {r['alt']} m, {r['V']} kt {'' if ok else r['title']} {'' if ok else r['why']}", flush=True)
+            print(f"RWY {rwy} {wx:9s} take-off (free) -> {r['kind']:8s} airborne at {r['air']}s, alt {r['alt']} m, {r['V']} kt {'' if ok else r['title']} {'' if ok else r['why']}", flush=True)
             fails += 0 if ok else 1
         for rwy in rwys:
             r = pg.evaluate(SPOTTER, {"game": "watch", "rwy": rwy, "wx": "clear", "night": False, "deck": False})

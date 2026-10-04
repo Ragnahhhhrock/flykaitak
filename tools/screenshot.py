@@ -12,7 +12,7 @@ shots.json is a list of shots:
 
   start   settings passed to __kt.start. The cockpit (deck) is OFF by default for screenshots; set "deck": true
           only for a shot that is meant to show the cockpit. (ac: b744|b772|a333|a343, game: approach|free|watch,
-          wx: clear|rain|typhoon|storm|lowcloud|fog, night, deck, lightning, ap ...)
+          wx: clear|rain|typhoon|storm|lowcloud|fog|xwind, night, deck, lightning, ap ...)
   run     seconds of simulation to advance first (the approach turn is at about 190 s,
           the Kowloon City street camera sees the jet overhead at about 204 s)
   view    cockpit, chase, tower, street, ped, carpark, boat, checker, lym (Runway 31 only), cabin

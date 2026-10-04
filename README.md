@@ -18,7 +18,7 @@ Data: © Lands Department, HKSAR Government (CSDI). Elevation: SRTM via AWS Terr
 - Aircraft: 747-400, 777-200, A330-300, A340-300 (plus a delta-wing supersonic jet that only visits Plane Spotter), each with its own flight model (mass, wing area, thrust, Vref, roll rate, flap labels and limits)
 - Sun, moon and time of day: a 24-hour clock (Dawn, Day, Dusk, Night presets) with the sun and moon placed for Hong Kong in early July 1998, a moon with phase, turning stars, twilight colours and lights that come on at sunset
 - Day / night: lit windows, street lights, neon signs, runway, approach and lead-in strobe lights, PAPI
-- Weather: clear, rain, typhoon, storm, low cloud, fog, plus a lightning toggle. Wind, gusts and turbulence affect the flight
+- Weather: clear, rain, typhoon, storm, low cloud, fog, crosswind (050/32G46, nearly straight across the runway), plus a lightning toggle. Wind, gusts and turbulence affect the flight
 - Landmarks: the checkerboard (red and white on two concrete retaining walls, with the striped mast and IGS lamp housings, from period photos), Kowloon Walled City (pre-1994, or the 1998 park), Bank of China Tower, Central Plaza, The Center, HSBC, Jardine House, Exchange Square, One IFC, Lippo Centre, Hopewell Centre, the Convention Centre extension, the TST Clock Tower, the Cultural Centre, Ocean Terminal, the Hung Hom Coliseum, the Kai Tak terminal and tower, Happy Valley Racecourse (floodlights, stand canopy, infield screen) Ocean Park (Waterfront Ferris wheel, Summit tower, Dragon-style coaster, Space Wheel and the cable car between the Waterfront and the Summit) and the Peak (the Peak Tower, the Peak Tram from Garden Road with two cars on one cable and four request stops, and the Peak Lookout)
 - Traffic: about 6,900 vehicles on the real main roads and the Kowloon City streets: red Crown Comfort-style taxis with silver roofs (and green New Territories taxis), cream minibuses, double-decker buses, lorries and cars. In the harbour: container ships, Star Ferries, junks, tugs, and two liners at Ocean Terminal
 - Kowloon City street scene: shop signs from period photos (新澧傢俬, 鳳香園, 金輝粥麵專家, 珍珍珠寶金行, 君皇酒樓, 黃珍珍 and more), signs hung across the streets, rooftop billboard frames, air-conditioners, laundry poles, bamboo scaffolding, and Nathan Road neon. Corporate logos are left out
@@ -30,7 +30,8 @@ Data: © Lands Department, HKSAR Government (CSDI). Elevation: SRTM via AWS Terr
 - Views: cockpit, exterior, control tower, four spectator spots, cabin seat
 - Sound: engines, wind, rain, a touchdown thud with tyre chirp, brake squeal, reverser roar, gear hydraulics with a lock clunk, flap motor, gear-down rumble, thunder, GPWS
 - ATC radio: Hong Kong Approach (119.1) clears you for the IGS 13 approach and hands you to Kai Tak Tower (118.7), who clears you to land after you report the checkerboard. Calls follow your position and the live weather (wind, QNH, visibility), your readbacks are automatic, and other crews chatter on frequency. Free flight gets a takeoff clearance and the hand-off to Approach; Spectator plays the tower and approach traffic. Captions show on screen, voices use the browser's speech synthesis, and R turns the radio off
-- Autopilot and autothrottle that fly the full approach and autoland
+- Autopilot and autothrottle that fly the full approach and autoland (de-crabbing in the flare)
+- Rudder: the pedals hold a sideslip, so you can straighten a crosswind crab just before touchdown (, and . keys, or the on-screen Rudder bar). Sideslip swings the path slowly toward the nose, rolls the jet a little and adds drag. On the runway the pedals steer the nosewheel and a crosswind weathervanes the nose. The HUD shows the pedal position and the crab angle. Landing crabbed costs points (crab is 10 of the 100); more than 15° collapses the gear. The Auto-rudder option (always on in the lessons) does it for you
 - High score table: every hand-flown IGS 13 landing is scored out of 100 and ranked by score: Captain (90+), First Officer (76+), Second Officer (60+), Flight Engineer (45+), Cadet. Saved in the browser with a callsign; an optional Cloudflare Worker + D1 database in `server/` shares one table (see `docs/highscores.md`)
 - Map toggle: the corner map (a home screen option, the Map button or M) shows your aircraft and the live position of the other traffic, in the sim's own time: airborne aircraft in amber with their altitude in hundreds of feet, aircraft on the ground in grey. It is shown at double size on the home screen over the live demo (moving clear of the High scores panel when that is open) and in Plane Spotter (centred on the runway, with a dot where you are watching from), where M toggles it. It follows rewind and fast-forward, and is off in the cabin view
 - Moving control surfaces: ailerons and elevators follow the controls, flaps follow the flap setting, spoilers deploy on touchdown (on the AI traffic too)
@@ -69,6 +70,7 @@ The home screen shows the live sim of the airport in the background, with a 58-s
 |---|---|
 | ↑ ↓ / W S | Pitch (↑ pushes the nose down) |
 | ← → / A D | Roll / nosewheel steering |
+| , . | Rudder left / right (nosewheel steering on the runway) |
 | E Q / = − | Thrust |
 | G | Gear |
 | F V | Flaps extend / retract |
