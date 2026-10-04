@@ -1,5 +1,37 @@
 [
   {
+    "slug": "flight-board-key-and-button",
+    "title": "Flight Board Key and Button",
+    "dek": "Press B on the home screen to hide or show the flight board, or use the new Flights button.",
+    "description": "Switch the Fly Kai Tak flight information board on and off with the B key on the home screen as well as in Plane Spotter, or with the new Flights button.",
+    "date": "2026-10-04",
+    "tag": "Update",
+    "category": "controls",
+    "keywords": [
+      "Kai Tak",
+      "flight information board",
+      "keyboard",
+      "B key",
+      "home screen",
+      "controls"
+    ],
+    "hero": "fids-home-hidden",
+    "hero_alt": "The home screen with the flight board hidden and the Flights button dimmed.",
+    "hero_caption": "The home screen with the board hidden.",
+    "card_kicker": "CONTROLS · UPDATE",
+    "card_title": "Board on/off",
+    "card_sub": "B key and a Flights button",
+    "card_image": "fids-home-hidden",
+    "card_focus": 50,
+    "zh": {
+      "title": "航班資訊板鍵同掣",
+      "dek": "喺主畫面㩒 B 就可以收埋或者顯示航班資訊板，亦可以用新嘅航班掣。",
+      "description": "Fly Kai Tak 嘅航班資訊板而家喺主畫面都可以用 B 鍵開關，同觀機模式一樣，亦多咗航班掣。",
+      "hero_alt": "收埋咗航班資訊板嘅主畫面，航班掣變暗。",
+      "hero_caption": "收埋資訊板嘅主畫面。"
+    }
+  },
+  {
     "slug": "link-taxiways-between-runway-and-taxiway-a",
     "title": "New: link taxiways between the runway and taxiway A",
     "dek": "Five angled bitumen strips now cross the grass between the runway and the parallel taxiway.",

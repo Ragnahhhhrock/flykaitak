@@ -38,7 +38,7 @@ Data: © Lands Department, HKSAR Government (CSDI). Elevation: SRTM via AWS Terr
 - Jet bridges and pushback: arrivals leave taxiway A, follow apron lane D3 to the stand's yellow lead-in line and stop at the bridge. A departure waits at the stand, the bridge retracts, a pushback tug drives out from its bay to the nose gear, pushes the aircraft straight back and turns it a quarter circle toward taxiway A, then drives back to its bay. In Plane Spotter and Free flight each stand has an arriving aircraft that docks and an identical aircraft that later departs, so it reads as a turnaround
 - Apron markings: yellow taxi guidance lines along taxiway A and the three apron lanes (D3 at the stands, D2 and D1 behind it; corners drawn with the same curve the taxiing aircraft follow), numbered stands (1 to 8 nose-in at the pier, 11 to 19 remote stands along lane D2) with lead-in lines, nose-wheel stop bars and red stand boxes, and curved lead-on lines and runway holding positions at both ends of taxiway A. The stand numbers beyond 8 are the sim's own. Arrivals taxi in along the lines, and the markings dim at night
 - Airport ground vehicles: catering trucks whose boxes lift to the door of a docked aircraft, baggage tractors towing loaded carts under the wing, container and box freight trucks around a cargo shed, a lorry on the service road at the far end of the apron, and a fire station with crash tenders and a rescue vehicle. They run on the sim clock, so rewind and fast-forward work. At night they show headlights, tail lamps and beacons
-- Flight information board: an old split-flap board of every arrival and departure (made-up airlines and flight numbers, 1998 destinations, Hong Kong clock, status read from the aircraft). It is on the home screen and in Plane Spotter (B or the Flights button toggles it there), clatters like the real thing when letters change (a button on the board switches the sound on or off), and follows the English / Cantonese button
+- Flight information board: an old split-flap board of every arrival and departure (made-up airlines and flight numbers, 1998 destinations, Hong Kong clock, status read from the aircraft). It is on the home screen and in Plane Spotter (B or the Flights button toggles it in both), clatters like the real thing when letters change (a button on the board switches the sound on or off), and follows the English / Cantonese button
 - Other airliners: a 747 landing two minutes ahead of you, an A340 following you in on the IGS, departures pushed back from the bridges, taxiing out and climbing over Kowloon Bay, two aircraft in the hold west of the harbour, and apron movements
 - Zoom 1×, 2×, 4×, 8×, 16× (I / O); time 1×, 2×, 4×, 8× (T); jump back or forward 10 seconds ([ / ]), including back from a crash
 - GPWS callouts and warnings (gear and flap calls only while descending, so take-offs stay quiet), engine, wind, rain and thunder sound
@@ -78,7 +78,7 @@ The home screen shows the live sim of the airport in the background, with a 58-s
 | R | ATC radio on/off |
 | N, P | Time of day (Dawn, Day, Dusk, Night), pause |
 | I / O, mouse wheel | Zoom in / out (scroll up zooms in, scroll down zooms out) |
-| B | Flight information board on/off (Plane Spotter) |
+| B | Flight information board on/off (home screen and Plane Spotter) |
 | T | Time speed |
 | [ / ] | Back / forward 10 s |
 | K | Cockpit panel on/off |
