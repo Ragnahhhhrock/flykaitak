@@ -394,8 +394,14 @@ body.bigmap #radio{top:calc(env(safe-area-inset-top,0px) + 396px)}
       <label for="seatRow">Row</label><input id="seatRow" type="range" min="4" max="64" value="34">
       <button class="btn" id="seatSide" type="button">Left</button>
     </div>
-    <select id="viewSel" aria-label="Camera view">
-      <option value="cockpit">Cockpit</option><option value="chase">Exterior</option><option value="tower">Tower</option><option value="street">Plane Spotter: Kowloon City street</option><option value="ped">Plane Spotter: Prince Edward Road</option><option value="carpark">Plane Spotter: car park roof</option><option value="boat">Plane Spotter: boat in the harbour</option><option value="checker">Plane Spotter: top of Checkerboard Hill</option><option value="lym">Plane Spotter: Lei Yue Mun (Runway 31)</option><option value="peak">Plane Spotter: The Peak</option><option value="hall">Terminal: departures hall</option><option value="immig">Terminal: departure immigration</option><option value="shops">Terminal: shop arcade</option><option value="gate">Terminal: gate lounge</option><option value="stairs">Terminal: ground floor and stairs</option><option value="arrivals">Terminal: arrivals hall</option><option value="kerb">Terminal: front entrance</option><option value="cabin">Cabin seat</option>
+    <select id="viewSel" aria-label="Flight views">
+      <option value="" disabled selected>Flight views</option><option value="cockpit">Cockpit</option><option value="chase">Exterior</option><option value="tower">Tower</option><option value="cabin">Cabin seat</option>
+    </select>
+    <select id="spotSel" aria-label="Plane spotter views">
+      <option value="" disabled selected>Plane spotter</option><option value="street">Kowloon City street</option><option value="ped">Prince Edward Road</option><option value="carpark">Car park roof</option><option value="boat">Boat in the harbour</option><option value="checker">Top of Checkerboard Hill</option><option value="lym">Lei Yue Mun (Runway 31)</option><option value="peak">The Peak</option>
+    </select>
+    <select id="termSel" aria-label="Terminal interior">
+      <option value="" disabled selected>Terminal interior</option><option value="hall">Departures hall</option><option value="immig">Departure immigration</option><option value="shops">Shop arcade</option><option value="gate">Gate lounge</option><option value="stairs">Ground floor and stairs</option><option value="arrivals">Arrivals hall</option><option value="kerb">Front entrance</option>
     </select>
     <select id="zoomSel" aria-label="Zoom"><option value="1">Zoom 1×</option><option value="2">2×</option><option value="4">4×</option><option value="8">8×</option><option value="16">16×</option></select>
     <select id="tsSel" aria-label="Time speed"><option value="1">Time 1×</option><option value="2">2×</option><option value="4">4×</option><option value="8">8×</option></select>
@@ -4528,7 +4534,10 @@ function toggleNight(){const next=TOD_PRESETS.find(p=>p>CFG.hour+.01);setHour(ne
 function toggleAP(on){ST.ap=on===undefined?!ST.ap:on;if(ST.ap)ST.apUsed=true;ST.apT=null;if(ST.ap&&ST.onGround&&CFG.game!=='approach'){ST.ap=false;toast('Autopilot engages once you are airborne');syncButtons();return}tog('autopilot',ST.ap?'on':'off',on===undefined?VIA:'auto');if(ST.ap){ST.apI=0;toast('Autopilot and autothrottle engaged')}else toast('Autopilot off: you have control');syncButtons()}
 function setClouds_on(on){CFG.clouds=on;for(const c of cloudLayers)c.visible=on;tog('clouds',on?'on':'off');syncButtons();toast('Clouds '+(on?'on':'off'))}
 function togglePause(){paused=!paused;tog('pause',paused?'on':'off');syncButtons()}
-function setView(v){if(CFG.game==='watch'&&(v==='cockpit'||v==='cabin'))v='carpark';if(mode==='fly'&&v!==CFG.view)track('view_change',{view:v});CFG.view=v;document.getElementById('viewSel').value=v;look.yaw=look.pitch=0;look.dist=1;camera.userData.snap=true;
+function syncViewMenus(v){const f=document.getElementById('viewSel'),s=document.getElementById('spotSel'),m=document.getElementById('termSel');
+  f.value=['cockpit','chase','tower','cabin'].includes(v)?v:'';
+  s.value=SPOTS[v]?v:'';m.value=TVIEWS[v]?v:''}
+function setView(v){if(CFG.game==='watch'&&(v==='cockpit'||v==='cabin'))v='carpark';if(mode==='fly'&&v!==CFG.view)track('view_change',{view:v});CFG.view=v;syncViewMenus(v);look.yaw=look.pitch=0;look.dist=1;camera.userData.snap=true;
   document.getElementById('cabin').hidden=v!=='cabin';document.getElementById('seatbox').hidden=v!=='cabin';
   if(mode==='fly'){const W=CFG.game==='watch';applyMap();document.getElementById('ctl').hidden=W||v==='cabin'||!!ST.ended}
   if(v==='cabin'&&!ST.ap&&!ST.onGround&&mode==='fly'&&CFG.game==='approach'){toggleAP(true);toast('The computer is flying. Enjoy the view from your seat.')}
@@ -4759,7 +4768,7 @@ const ZH={
 'Another Mal Gordon project':'Mal Gordon 嘅另一個作品',
 '☕ Buy me a coffee · $5 AUD':'☕ 請我飲杯咖啡 · 5 澳元',
 'Share Fly Kai Tak':'分享 Fly Kai Tak','Copy link':'複製連結','Share…':'分享…','Email':'電郵',
-'Terminal: departures hall':'客運大樓：離境大堂','Terminal: departure immigration':'客運大樓：離境入境檢查','Terminal: shop arcade':'客運大樓：商店街','Terminal: gate lounge':'客運大樓：登機閘口候機室','Terminal: ground floor and stairs':'客運大樓：地下大堂及樓梯','Terminal: arrivals hall':'客運大樓：抵港大堂','Terminal: front entrance':'客運大樓：正門',
+'Terminal interior':'客運大樓內部','Plane spotter':'觀機位置','Flight views':'飛行視角','Departures hall':'客運大樓：離境大堂','Departure immigration':'客運大樓：離境入境檢查','Shop arcade':'客運大樓：商店街','Gate lounge':'客運大樓：登機閘口候機室','Ground floor and stairs':'客運大樓：地下大堂及樓梯','Arrivals hall':'客運大樓：抵港大堂','Front entrance':'客運大樓：正門',
 'Hong Kong · 1998':'香港 · 1998',
 'VHHH · KAI TAK':'VHHH · 啟德',
 'IGS approach · Runway 13':'IGS 進場 · 13 號跑道',
@@ -4870,6 +4879,7 @@ hsRenderHome();hsSync().then(hsRenderHome);
  try{if(localStorage.getItem('fkt-hs-open')==='1')set(true)}catch(_){}}
 document.getElementById('btnMenu').addEventListener('click',showSetup);
 document.getElementById('viewSel').addEventListener('change',e=>setView(e.target.value));
+for(const id of['spotSel','termSel'])document.getElementById(id).addEventListener('change',e=>{if(e.target.value)setView(e.target.value)});
 function setZoom(z){CFG.zoom=z;track('zoom',{level:z});document.getElementById('zoomSel').value=String(z);toast('Zoom '+z+'×')}
 function setTs(v){CFG.ts=v;track('time_speed',{speed:v});document.getElementById('tsSel').value=String(v);toast('Time '+v+'×')}
 document.getElementById('zoomSel').addEventListener('change',e=>{setZoom(+e.target.value);e.target.blur()});
@@ -4934,13 +4944,13 @@ function startFlight(){
   applyEnvironment();setWalled(CFG.walled);hoops.visible=CFG.guide&&CFG.game==='approach';wxSel.value=CFG.wx;
   const W=CFG.game==='watch';
   RC.base=(W?'PLANE SPOTTER · KAI TAK'+(LND.id==='31'?' · RWY 31':''):ST.ac.short.toUpperCase()+' · '+(CFG.lesson?'TAKE-OFF LESSON':CFG.lland?'LANDING LESSON':CFG.game==='free'?'FREE FLIGHT'+(LND.id==='31'?' · RWY 31':''):LND.id==='31'?'RWY 31':'IGS 13'))+' · '+todLabel().toUpperCase()+' · '+WX[CFG.wx].label.toUpperCase();RC.stat={k:'clear',t:'CLEAR'};RC.V=null;RC.pl=null;RC.log.length=0;RC.viol=0;rcHud();
-  for(const o of document.querySelectorAll('#viewSel option'))o.hidden=(W&&(o.value==='cockpit'||o.value==='cabin'))||(o.value==='lym'&&LND.id!=='31');
+  for(const o of document.querySelectorAll('#viewSel option,#spotSel option'))o.hidden=(W&&(o.value==='cockpit'||o.value==='cabin'))||(o.value==='lym'&&LND.id!=='31');
   for(const id of['btnAP','btnHud','btnGuide','btnDeck'])document.getElementById(id).hidden=W;if(W)fidsOn=!compactMQ.matches;
   if(W){for(const id of['ctl','map'])document.getElementById(id).hidden=true}
   setView(W?'carpark':CFG.game==='free'?'chase':CFG.ap?'chase':'cockpit');
   syncButtons();sfx.start();sfx.mute(CFG.sound);lightningT=rr(4,9);
   track('game_start',{flight_number:FLT.n,game_mode:modeId(),runway:LND.id,autopilot:CFG.ap,guide:CFG.guide,walled_city:CFG.walled,lightning:CFG.lightning});
-  if(CFG.lesson||CFG.lland)coachStart();else{coachHide();toast(W?'Plane Spotter mode. Pick a spot from the view menu, or Exterior to follow the jet. '+(TOUCH?'More > Time speeds up time.':'T speeds up time.'):CFG.game==='free'?(LND.id==='31'?(TOUCH?'Lined up on Runway 31. Slide thrust to full, pull back at about 150 kt. Kowloon City is dead ahead, so climb and turn left.':'Lined up on Runway 31. Full thrust (E), pull back at about 150 kt. Kowloon City is dead ahead, so climb and turn left.'):TOUCH?'Lined up on Runway 13. Slide thrust to full, pull back at about 150 kt.':'Lined up on Runway 13. Full thrust (E), pull back at about 150 kt.'):CFG.ap?'Autopilot engaged. Pick a view or a cabin seat.':LND.id==='31'?'Eight miles out over the sea, 2,700 ft, heading 314. Runway 31 is dead ahead. You have control.':'Established on the IGS, 3,100 ft. You have control.')}
+  if(CFG.lesson||CFG.lland)coachStart();else{coachHide();toast(W?'Plane Spotter mode. Pick a spot from the Plane spotter or Terminal interior menu, or Exterior to follow the jet. '+(TOUCH?'More > Time speeds up time.':'T speeds up time.'):CFG.game==='free'?(LND.id==='31'?(TOUCH?'Lined up on Runway 31. Slide thrust to full, pull back at about 150 kt. Kowloon City is dead ahead, so climb and turn left.':'Lined up on Runway 31. Full thrust (E), pull back at about 150 kt. Kowloon City is dead ahead, so climb and turn left.'):TOUCH?'Lined up on Runway 13. Slide thrust to full, pull back at about 150 kt.':'Lined up on Runway 13. Full thrust (E), pull back at about 150 kt.'):CFG.ap?'Autopilot engaged. Pick a view or a cabin seat.':LND.id==='31'?'Eight miles out over the sea, 2,700 ft, heading 314. Runway 31 is dead ahead. You have control.':'Established on the IGS, 3,100 ft. You have control.')}
 }
 function showResult(){
   const s=ST,e=s.ended;if(!e||mode!=='fly')return;mode='ended';const card=document.getElementById('resCard');card.classList.toggle('crash',!!e.crash);
