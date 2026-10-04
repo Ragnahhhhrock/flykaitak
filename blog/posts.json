@@ -1,5 +1,39 @@
 [
   {
+    "slug": "kai-tak-terminal-and-apron-layout",
+    "title": "The Kai Tak terminal, rebuilt to match the chart",
+    "dek": "The terminal pier now stands at the north-west end of the apron, at right angles to the runway, with eight nose-in stands and three apron lanes.",
+    "description": "Fly Kai Tak's terminal and apron now follow the Kai Tak chart: a pier at right angles to the runway, eight nose-in stands, lanes D3, D2 and D1, and new taxi routes.",
+    "date": "2026-10-04",
+    "tag": "Update",
+    "category": "scenery",
+    "keywords": [
+      "Kai Tak",
+      "terminal",
+      "apron",
+      "stands",
+      "jet bridge",
+      "pushback",
+      "flight simulator",
+      "Hong Kong 1998"
+    ],
+    "hero": "kai-tak-terminal-layout",
+    "hero_alt": "Top-down view of the Kai Tak apron with the terminal pier, eight nose-in stands and three apron lanes.",
+    "hero_caption": "The new layout from above: pier at the north-west end, eight stands and lanes D3, D2 and D1.",
+    "card_kicker": "TERMINAL · APRON",
+    "card_title": "New terminal layout",
+    "card_sub": "Pier, stands and apron lanes",
+    "card_image": "kai-tak-terminal-layout",
+    "card_focus": 50,
+    "zh": {
+      "title": "按啟德機場圖重建嘅客運大樓",
+      "dek": "客運指廊而家企喺停機坪西北端，同跑道成直角，有八個機頭向內停機位同三條停機坪滑行道。",
+      "description": "Fly Kai Tak 嘅客運大樓同停機坪跟返啟德機場圖：同跑道成直角嘅指廊、八個機頭向內停機位、D3、D2、D1 滑行道，同新嘅滑行路線。",
+      "hero_alt": "啟德停機坪俯瞰圖，有客運指廊、八個機頭向內停機位同三條停機坪滑行道。",
+      "hero_caption": "新佈局俯瞰：西北端指廊、八個機位，同 D3、D2、D1 滑行道。"
+    }
+  },
+  {
     "slug": "flight-board-flap-sound",
     "title": "The Flight Board Clatters",
     "dek": "Every flap that turns on the flight information board now makes the old clack-clack-clack, with an on/off button.",

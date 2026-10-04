@@ -647,7 +647,7 @@ function gridSample(G,x,z){const fx=(x-G.x0)/G.d,fz=(z-G.z0)/G.d;const i=Math.fl
 function inInner(x,z){const g=GEO.inner;return x>g.x0+80&&x<g.x1-80&&z>g.z0+80&&z<g.z1-80}
 function terrainAt(x,z){if(!GEO.O)return 0;let h=inInner(x,z)?gridSample(GEO.I,x,z):gridSample(GEO.O,x,z);if(h>0.5)h+=chkH(x,z);return h}
 function landAt(x,z){return terrainAt(x,z)>0.5}
-const APRON=(s,l)=>s>-60&&s<900&&l<=-130&&l>-860;
+const APRON=(s,l)=>s>-150&&s<780&&l<=-130&&l>-1180;   // the apron, terminal pier, main terminal block and the maintenance apron behind it
 function inAirport(x,z){const s=rwS(x,z),l=rwL(x,z);return (s>-90&&s<RWY.len+70&&l>-150&&l<130)||APRON(s,l)}
 const TEX={};
 async function loadGeo(progress){
@@ -1241,7 +1241,7 @@ const WALLED={x:-229,z:-721,w:210,d:125};
 const LANDMARK_CLEAR=[];
 function clearanceCap(x,z){const i=pathNearestGlobal(x,z);const p=PATH.pts[i];if(p.d<-60)return 999;const lat=Math.abs(pathLateral(i,x,z));return (p.alt-24)+Math.max(0,lat-200)*.55}
 function skipFootprint(x,z){
-  const s=rwS(x,z),l=rwL(x,z);if(s>-80&&s<RWY.len+200&&l>-900&&l<200)return true;        // Kai Tak airport (modern development there)
+  const s=rwS(x,z),l=rwL(x,z);if(s>-170&&s<RWY.len+200&&l>-1240&&l<200)return true;        // Kai Tak airport (modern development there)
   if(x>-4400&&x<-2750&&z>500&&z<3150)return true;                                        // West Kowloon: 1998 reclamation, not yet built on
   for(const w of WATER1998)if(x>w[0]&&x<w[1]&&z>w[2]&&z<w[3])return true;
   if(Math.abs(x-WALLED.x)<WALLED.w/2+25&&Math.abs(z-WALLED.z)<WALLED.d/2+25)return true;
@@ -1580,24 +1580,31 @@ let papi,papi31,rwyLights,rwyLights31,leadIn,leadIn31,approachLights,approachLig
    Six contact stands along the terminal face. Aircraft park nose-in with the forward left door level with a jet bridge cab.
    Runway coordinates: s along the runway, l toward the apron (negative). The terminal face is at l = -725.
    ===================================================================== */
-const STAND_S=[120,205,290,375,460,545];          // stand centre lines (s)
-const STAND_TY=['b744','a333','b772','b744','a343','a333'];   // the aircraft parked at the stands when no traffic is using them
-const DOOR_L=-703,DOOR_BACK=9,NOSE_GEAR=.39;      // door position (l), door distance behind the nose, nose gear as a fraction of the length ahead of the centre
-const standL=ty=>DOOR_L+AC[ty].len/2-DOOR_BACK;   // aircraft centre (l) that puts the forward door at the bridge cab
-const PB={T:52,hold:3,d1:60,R:18,v:2.8,hitch:6.4,tug:[30,-719.5]};  // pushback: seconds, connect time, straight run (m), turn radius (m), speed, tug centre to nose gear, tug bay (s offset, l)
-const PB_D=PB.d1+Math.PI*PB.R;                    // the main gear is pushed straight back, then round a half circle to face the runway
+/* The terminal is the real Kai Tak layout: a pier at the north-west end of the apron, at right angles to the runway, its face at s = -78
+   and the aircraft parked nose-in along it (stands 1-8 from the taxiway outward). Stand logic is written in a "stand frame":
+   S metres along the pier (outward from taxiway A) and L metres from the pier face toward the apron, as the sim first had them.
+   G2W turns a stand-frame point into runway coordinates (s,l); V2 does the same for a direction. */
+const STAND_S=[166,237,313,380,448,533,620,702];  // stand centre lines (S), as measured from the airport chart
+const STAND_TY=['b744','a333','b772','a333','b744','a343','b772','a333'];   // the aircraft parked at the stands when no traffic is using them
+const NST=8,NACT=6;                               // stands built, and stands used by the scheduled turnarounds (7 and 8 always hold a parked aircraft)
+const G2W=(S,L)=>[L+647,-S],V2=(a,b)=>[b,-a];
+const DOOR_L=-703,DOOR_BACK=9,NOSE_GEAR=.39;      // door position (L), door distance behind the nose, nose gear as a fraction of the length ahead of the centre
+const standL=ty=>DOOR_L+AC[ty].len/2-DOOR_BACK;   // aircraft centre (L) that puts the forward door at the bridge cab
+const GAP=STAND_S.map((S,j)=>{const n=STAND_S[j+1];return n==null?42.5:Math.min(42.5,(AC[STAND_TY[j]].span/2+n-S-AC[STAND_TY[j+1]].span/2)/2)});   // service lane between this stand's wingtip and the next
+const PB={T:52,hold:3,d1:85,R:18,v:2.8,hitch:6.4,tug:[30,-719.5]};  // pushback: seconds, connect time, straight run (m), turn radius (m), speed, tug centre to nose gear, tug bay (S offset, L)
+const PB_D=PB.d1+Math.PI/2*PB.R;                  // the main gear is pushed straight back, then round a quarter circle so the nose points along the pier toward taxiway A
 const BRIDGE=[];
 const hdgOf=(ds,dl)=>{const w=rwP(ds,dl);return Math.atan2(w[0],-w[1])};
-function pushAt(ty,S,d){ // aircraft centre O and heading h (runway coordinates) once the main gear has been pushed d metres; the turn is toward -s
+function pushAt(ty,S,d){ // aircraft centre O and heading h (stand frame) once the main gear has been pushed d metres; the turn is toward +S (taxiway A is then ahead)
   const l0=standL(ty);if(d<=PB.d1)return {O:[S,l0+d],h:[0,-1]};
-  const th=Math.min(Math.PI,(d-PB.d1)/PB.R);
-  return {O:[S-PB.R*(1-Math.cos(th)),l0+PB.d1+PB.R*Math.sin(th)],h:[Math.sin(th),-Math.cos(th)]}}
+  const th=Math.min(Math.PI/2,(d-PB.d1)/PB.R);
+  return {O:[S+PB.R*(1-Math.cos(th)),l0+PB.d1+PB.R*Math.sin(th)],h:[-Math.sin(th),-Math.cos(th)]}}
 function pushPose(ty,S,tau){ // aircraft and the tug at the nose gear, tau seconds after the pushback began
   const Lw=NOSE_GEAR*AC[ty].len,d=gseTrapD(PB_D,PB.v,tau-PB.hold),a=pushAt(ty,S,d),N=p=>[p.O[0]+Lw*p.h[0],p.O[1]+Lw*p.h[1]];
   const d0=clamp(d,.3,PB_D-.3),n1=N(pushAt(ty,S,d0-.3)),n2=N(pushAt(ty,S,d0+.3));let tx=n2[0]-n1[0],tl=n2[1]-n1[1];const tn=Math.hypot(tx,tl);tx/=tn;tl/=tn;
   const n=N(a);return {a,tug:{s:n[0]-PB.hitch*tx,l:n[1]-PB.hitch*tl,ds:tx,dl:tl}}}
-function pushbackPose(ty,S,k){const r=pushPose(ty,S,k).a,q=rwP(r.O[0],r.O[1]);
-  return {x:q[0],z:q[1],y:RWY.elev,psi:hdgOf(r.h[0],r.h[1]),theta:0,phi:0,gear:1,push:true}}
+function pushbackPose(ty,S,k){const r=pushPose(ty,S,k).a,o=G2W(r.O[0],r.O[1]),hv=V2(r.h[0],r.h[1]),q=rwP(o[0],o[1]);
+  return {x:q[0],z:q[1],y:RWY.elev,psi:hdgOf(hv[0],hv[1]),theta:0,phi:0,gear:1,push:true}}
 // Jet bridges: a rotunda on the terminal wall, two telescoping tunnel sections and a cab with a canopy that meets the door.
 // bridgeSet(b,e,R) moves one: e 0 = swung back against the terminal, 1 = docked on an aircraft of fuselage radius R.
 const BR_FLOOR=4.9;
@@ -1612,7 +1619,7 @@ function buildJetBridges(placeAlong){
     const r=new THREE.Mesh(new THREE.BoxGeometry(len+.04,.25,w+.3).translate(0,h+.12,0),roofM);g.add(r);
     if(glass){for(const sd of[-1,1]){const gl=new THREE.Mesh(new THREE.BoxGeometry(len*.8,.7,.06).translate(0,h*.62,sd*(w/2+.02)),glassM);g.add(gl)}}
     G.add(g);return g};
-  for(let j=0;j<6;j++){const S=STAND_S[j],b={S,e:-1,R:3.25,le:-1,lR:0};
+  for(let j=0;j<NST;j++){const S=STAND_S[j],b={S,e:-1,R:3.25,le:-1,lR:0};
     b.rot=new THREE.Group();const rc=new THREE.Mesh(new THREE.CylinderGeometry(2.9,2.9,3.2,16).translate(0,1.6,0),bodyM2);b.rot.add(rc);
     const rr=new THREE.Mesh(new THREE.CylinderGeometry(3.0,3.0,.3,16).translate(0,3.3,0),roofM);b.rot.add(rr);
     const rg=new THREE.Mesh(new THREE.CylinderGeometry(2.93,2.93,.8,16,1,true).translate(0,1.9,0),glassM);b.rot.add(rg);
@@ -1636,7 +1643,7 @@ function buildJetBridges(placeAlong){
 }
 function bridgeSet(b,e,R){
   if(b.le===e&&b.lR===R)return;b.le=e;b.lR=R;const S=b.S,ee=e*e*(3-2*e);
-  const rp=[S-12,-722.4],c0=[S-17,-716.4],c1=[S-R-1.8,DOOR_L],ce=[lerp(c0[0],c1[0],ee),lerp(c0[1],c1[1],ee)];
+  const rp=G2W(S-12,-722.4),c0=[S-17,-716.4],c1=[S-R-1.8,DOOR_L],ce=G2W(lerp(c0[0],c1[0],ee),lerp(c0[1],c1[1],ee));
   const set=(o,s,l,y)=>{o.position.set(l,y,-s)};                   // runway (s,l) to the bridge group's local x = l, z = -s
   set(b.rot,rp[0],rp[1],BR_FLOOR-.3);
   const vs=ce[0]-rp[0],vl=ce[1]-rp[1],dist=Math.hypot(vs,vl),th=Math.atan2(vs,vl);
@@ -1646,15 +1653,14 @@ function bridgeSet(b,e,R){
 }
 /* ---------------- apron layout ----------------
    One table drives both the painted markings and the aircraft that taxi on them. Runway coordinates: s along the runway from the
-   threshold, l toward the apron (negative). Taxiway A runs along l = -96. The east link drops from it to the apron lane (l = -410),
-   which feeds the terminal stands (1-7, nose in toward the terminal) and the remote drive-through stands (11-15: in from the lane,
-   out to the taxiway). Stand 7 sits at the end of the east link. The numbering is the sim's own. */
-const APN={A:-96,M:-410,CE:690,aL:-560,aStop:-584,bL:-270,bStop:-246,
-  standsA:[120,205,290,375,460,545,690],numA:[1,2,3,4,5,6,7],
-  standsB:[230,320,410,500,590],numB:[11,12,13,14,15]};
+   threshold, l toward the apron (negative). Taxiway A runs along l = -96. Three apron lanes run out from it, at right angles to the
+   runway: D3 (s = 73) serves the terminal stands 1-8, whose aircraft are pushed back onto it, D2 (s = 283) and D1 (s = 497) the remote stands.
+   The positions are measured from the Kai Tak chart. */
+const APN={A:-96,D3:73,D2:283,D1:497,stop:-44,end:-862,
+  remote:[0,1,2,3,4,5,6,7,8].map(i=>-170-i*75)};
 const APR_MATS=[];   // marking materials, dimmed at night with the rest of the ground
 function buildApronMarkings(placeAlong){
-  const YEL='#e8b100',RED='#c0352b',WHT='#ecece6',ASP='#3e3f42',A=APN.A,M=APN.M,CE=APN.CE,bS=APN.bStop,R=TAXI_R;
+  const YEL='#e8b100',RED='#c0352b',WHT='#ecece6',ASP='#3e3f42',A=APN.A,R=TAXI_R,LANES=[APN.D3,APN.D2,APN.D1],E=APN.end;
   // paint a rectangle of ground (runway coordinates) from a canvas and lay it just above the pavement
   const paint=(s0,s1,l0,l1,px,draw,lit)=>{
     const c=document.createElement('canvas');c.width=Math.round((l1-l0)*px);c.height=Math.round((s1-s0)*px);const g=c.getContext('2d');
@@ -1664,32 +1670,28 @@ function buildApronMarkings(placeAlong){
     const C=(a,p,b,w,col)=>{const ix=p[0]-a[0],iy=p[1]-a[1],ox=b[0]-p[0],oy=b[1]-p[1],li=Math.hypot(ix,iy),lo=Math.hypot(ox,oy),ux=ix/li,uy=iy/li,vx=ox/lo,vy=oy/lo,d=Math.min(R,.45*li,.45*lo);
       g.beginPath();g.moveTo(X(p[1]-uy*d),Y(p[0]-ux*d));g.quadraticCurveTo(X(p[1]),Y(p[0]),X(p[1]+vy*d),Y(p[0]+vx*d));g.lineWidth=w*px;g.strokeStyle=col;g.setLineDash([]);g.lineCap='butt';g.stroke();return d};
     const rect=(s0,s1,l0,l1,w,col)=>{g.lineWidth=w*px;g.strokeStyle=col;g.setLineDash([]);g.strokeRect(X(l0),Y(s1),(l1-l0)*px,(s1-s0)*px)};
-    // a stand number on a dark plate, readable by a pilot heading toward -l (sg = -1) or +l (sg = 1)
-    const plate=(s,l,txt,sg)=>{g.save();g.translate(X(l),Y(s));g.fillStyle='#2a2b2e';g.fillRect(-7*px,-10*px,14*px,20*px);g.strokeStyle=YEL;g.lineWidth=.4*px;g.setLineDash([]);g.strokeRect(-7*px,-10*px,14*px,20*px);
-      g.rotate(sg*Math.PI/2);g.fillStyle=YEL;g.font='bold '+(8.5*px)+'px Arial, Helvetica, sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(txt,0,0);g.restore()};
+    // a stand number on a dark plate, upright for a pilot heading along ang (0 = toward +s, PI = toward -s)
+    const plate=(s,l,txt,ang)=>{g.save();g.translate(X(l),Y(s));g.fillStyle='#2a2b2e';g.fillRect(-7*px,-10*px,14*px,20*px);g.strokeStyle=YEL;g.lineWidth=.4*px;g.setLineDash([]);g.strokeRect(-7*px,-10*px,14*px,20*px);
+      g.rotate(ang);g.fillStyle=YEL;g.font='bold '+(8.5*px)+'px Arial, Helvetica, sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(txt,0,0);g.restore()};
     draw({L,C,rect,plate});
     const tx=new THREE.CanvasTexture(c);tx.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
     // pavement is lit like the rest of the ground; painted lines are unlit so they stay readable at night (dimmed in applyEnvironment)
     const mat=new (lit?THREE.MeshLambertMaterial:THREE.MeshBasicMaterial)({map:tx,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:lit?-4:-5,polygonOffsetUnits:lit?-4:-5});if(!lit)APR_MATS.push(mat);
     placeAlong(new THREE.Mesh(new THREE.PlaneGeometry(l1-l0,s1-s0).rotateX(-Math.PI/2),mat),(s0+s1)/2,(l0+l1)/2,RWY.elev+(lit?.06:.07))};
-  // the apron: lane pavement, service road, stand boxes, guidance lines, stop bars and stand numbers
-  const d=R,aSg=g=>g===CE?APN.aStop:-704.5;   // nose-wheel stop bar: stand 7 keeps its own, stands 1-6 stop at the terminal jet bridges
-  // pavement of the east link and the apron lane
-  paint(-60,900,-860,-70,2,({L,C})=>{
-    C([CE+150,A],[CE,A],[CE,M],26,ASP);C([CE-150,A],[CE,A],[CE,M],26,ASP);L([CE,A-d],[CE,M+d],26,ASP);C([CE,A],[CE,M],[CE-150,M],26,ASP);L([CE-d,M],[60,M],26,ASP)},true);
-  paint(-60,900,-860,-70,3,({L,C,rect,plate})=>{
-    // stand boxes (red safety lines)
-    for(const g of APN.standsA)g===CE?rect(g-40,g+40,-604,-516,.6,RED):rect(g-39.5,g+39.5,-718,-622,.6,RED);
-    for(const g of APN.standsB)rect(g-42,g+42,-312,-228,.6,RED);
-    // taxi guidance: the east link and the lane
-    C([CE+150,A],[CE,A],[CE,M],.8,YEL);C([CE-150,A],[CE,A],[CE,M],.8,YEL);L([CE,A-d],[CE,APN.aStop],.8,YEL);C([CE,A],[CE,M],[CE-150,M],.8,YEL);L([CE-d,M],[60,M],.8,YEL);
-    // terminal stands: lead-in from the lane to the nose-wheel stop bar
-    for(const g of APN.standsA){const aS=aSg(g);if(g!==CE){C([g+150,M],[g,M],[g,aS],.8,YEL);C([g-150,M],[g,M],[g,aS],.8,YEL);L([g,M-d],[g,aS],.8,YEL)}L([g-4,aS],[g+4,aS],.8,YEL)}
-    // remote stands: one straight line from the lane through the stop bar to the taxiway, with curves in and out both ways
-    for(const g of APN.standsB){C([g+150,M],[g,M],[g,bS],.8,YEL);C([g-150,M],[g,M],[g,bS],.8,YEL);L([g,M+d],[g,A-d],.8,YEL);
-      C([g,bS],[g,A],[g+150,A],.8,YEL);C([g,bS],[g,A],[g-150,A],.8,YEL);L([g-4,bS],[g+4,bS],.8,YEL)}
-    // stand numbers, on the lead-in just past the lane
-    APN.standsA.forEach((g,i)=>plate(g,-480,String(APN.numA[i]),-1));APN.standsB.forEach((g,i)=>plate(g,-335,String(APN.numB[i]),1));
+  const S0=-90,S1=560,L0=-880,L1=-70;
+  // lane pavement: the three apron lanes run from taxiway A to the far end of the apron
+  paint(S0,S1,L0,L1,2,({L})=>{for(const ls of LANES)L([ls,A],[ls,E],26,ASP)},true);
+  paint(S0,S1,L0,L1,3,({L,C,rect,plate})=>{
+    const d=R;
+    // lane centre lines, curving off taxiway A both ways
+    for(const ls of LANES){C([ls+150,A],[ls,A],[ls,E],.8,YEL);C([ls-150,A],[ls,A],[ls,E],.8,YEL);L([ls,A-d],[ls,E],.8,YEL)}
+    // terminal stands: red stand box, lead-in from lane D3 to the nose-wheel stop bar, bar and number
+    for(let j=0;j<NST;j++){const lS=-STAND_S[j],half=Math.min(34,(STAND_S[j+1]!=null?STAND_S[j+1]-STAND_S[j]:80)/2+2);
+      rect(-68,14,lS-half,lS+half,.6,RED);
+      C([APN.D3,lS+150],[APN.D3,lS],[APN.stop,lS],.8,YEL);C([APN.D3,lS-150],[APN.D3,lS],[APN.stop,lS],.8,YEL);L([APN.D3-d,lS],[APN.stop,lS],.8,YEL);L([APN.stop,lS-4],[APN.stop,lS+4],.8,YEL);
+      plate(22,lS,String(j+1),Math.PI)}
+    // remote stands along lane D2 (numbers 11-19): a box on the far side of the lane with a short lead-in
+    APN.remote.forEach((lS,i)=>{rect(APN.D2+18,APN.D2+104,lS-33,lS+33,.6,RED);L([APN.D2+13,lS],[APN.D2+62,lS],.8,YEL);L([APN.D2+62,lS-4],[APN.D2+62,lS+4],.8,YEL);plate(APN.D2+84,lS,String(11+i),0)});
   });
   // where taxiway A meets each end of the runway: curved lead-on lines and the runway holding position (two solid lines, two dashed)
   const runwayEnd=(s0,s1,sE,from)=>{
@@ -1707,7 +1709,7 @@ function buildAirport(){
   // reclaimed strip & apron (boxes down to the seabed)
   const strip=new THREE.Mesh(new THREE.BoxGeometry(280,22,RWY.len+170).translate(0,-11+RWY.elev,0),new THREE.MeshLambertMaterial({color:0x7b8a62}));placeAlong(strip,RWY.len/2-10,-10,0);
   const sea=new THREE.Mesh(new THREE.BoxGeometry(284,1.2,RWY.len+174).translate(0,RWY.elev-1,0),new THREE.MeshLambertMaterial({color:0x8d8a80}));placeAlong(sea,RWY.len/2-10,-10,0);
-  const apron=new THREE.Mesh(new THREE.BoxGeometry(777,22,960).translate(0,-11+RWY.elev+.02,0),new THREE.MeshLambertMaterial({color:0xa6a49b}));placeAlong(apron,420,-471.5,0);   // out to taxiway A, so there is no grass gap between them
+  const apron=new THREE.Mesh(new THREE.BoxGeometry(1097,22,930).translate(0,-11+RWY.elev+.02,0),new THREE.MeshLambertMaterial({color:0xa6a49b}));placeAlong(apron,315,-631.5,0);   // out to taxiway A, so there is no grass gap between them
   // runway, shoulders, taxiway
   const asph=new THREE.MeshLambertMaterial({color:0x3e3f42,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1});
   const rw=new THREE.Mesh(new THREE.PlaneGeometry(RWY.wid+14,RWY.len+40).rotateX(-Math.PI/2),asph);placeAlong(rw,RWY.len/2,0,RWY.elev+.05);
@@ -1729,32 +1731,44 @@ function buildAirport(){
   for(const l of[-30,30]){const e=new THREE.Mesh(new THREE.PlaneGeometry(.9,RWY.len-800).rotateX(-Math.PI/2),mk);placeAlong(e,RWY.len/2,l,RWY.elev+.08)}
   buildApronMarkings(placeAlong);
   scene.add(grp);
-  // terminal, tower, hangars
-  const term=new THREE.Mesh(new THREE.BoxGeometry(70,22,460).translate(0,11,0),cityMaterial({color:0xd9d5c8}));placeAlong(term,330,-760,RWY.elev);
-  {const c=[rwP(100,-795),rwP(100,-725),rwP(560,-795),rwP(560,-725)];addCollider(Math.min(...c.map(q=>q[0])),Math.max(...c.map(q=>q[0])),Math.min(...c.map(q=>q[1])),Math.max(...c.map(q=>q[1])),26,'the Kai Tak terminal');AIRBOX.push({s0:100,s1:560,l0:-795,l1:-725,name:'the Kai Tak terminal'})}
-  const roofT=new THREE.Mesh(new THREE.BoxGeometry(76,3,466).translate(0,23,0),new THREE.MeshLambertMaterial({color:0x8d8b84}));placeAlong(roofT,330,-760,RWY.elev);
+  // terminal: the pier runs along l, at right angles to the runway, its face (s = -78) toward the apron; the main block and the car park lie beyond its west end
+  const termM=cityMaterial({color:0xd9d5c8}),roofM=new THREE.MeshLambertMaterial({color:0x8d8b84});
+  const solid=(s0,s1,l0,l1,h,name,mat,roofCol)=>{ // a building as a box in runway coordinates, with its collider (split along the longer side so the bounding boxes stay tight)
+    const ds=s1-s0,dl=l1-l0,m=new THREE.Mesh(new THREE.BoxGeometry(dl,h,ds).translate(0,h/2,0),mat||termM);placeAlong(m,(s0+s1)/2,(l0+l1)/2,RWY.elev);
+    const r=new THREE.Mesh(new THREE.BoxGeometry(dl+4,2.4,ds+4).translate(0,h+1.2,0),roofCol||roofM);placeAlong(r,(s0+s1)/2,(l0+l1)/2,RWY.elev);
+    const n=Math.max(1,Math.ceil(Math.max(ds,dl)/110));
+    for(let k=0;k<n;k++){const a0=l0+dl*k/n,a1=l0+dl*(k+1)/n,b0=s0+ds*k/n,b1=s0+ds*(k+1)/n,sp=dl>ds?[s0,s1,a0,a1]:[b0,b1,l0,l1];
+      const c=[rwP(sp[0],sp[2]),rwP(sp[0],sp[3]),rwP(sp[1],sp[2]),rwP(sp[1],sp[3])];addCollider(Math.min(...c.map(q=>q[0])),Math.max(...c.map(q=>q[0])),Math.min(...c.map(q=>q[1])),Math.max(...c.map(q=>q[1])),h+3,name);
+      AIRBOX.push({s0:sp[0],s1:sp[1],l0:sp[2],l1:sp[3],name})}
+    return m};
+  solid(-140,-78,-866,-144,22,'the Kai Tak terminal');                       // the pier, stands 1-8 along its face
+  solid(-134,-24,-1012,-866,26,'the Kai Tak terminal');                      // main terminal block
+  solid(-134,-96,-286,-144,12,'the Kai Tak terminal',termM);                 // the airline offices at the root of the pier
   buildJetBridges(placeAlong);
-  for(let i=0;i<3;i++){const hg=new THREE.Mesh(new THREE.BoxGeometry(90,26,80).translate(0,13,0),new THREE.MeshLambertMaterial({color:0xb5b9b7}));placeAlong(hg,780,-300-i*120,RWY.elev)}
-  const TW=rwP(620,-470);ST.tower=[TW[0],RWY.elev+50,TW[1]];
+  // maintenance hangars and cargo terminal on the far side of the apron, as on the chart
+  for(const l of[-935,-1068]){const hg=new THREE.Mesh(new THREE.BoxGeometry(120,28,112).translate(0,14,0),new THREE.MeshLambertMaterial({color:0xb5b9b7}));placeAlong(hg,645,l,RWY.elev);
+    const p=rwP(645,l);addCollider(p[0]-80,p[0]+80,p[1]-80,p[1]+80,RWY.elev+31,'the Kai Tak hangar');AIRBOX.push({s0:589,s1:701,l0:l-60,l1:l+60,name:'the Kai Tak hangar'})}
+  const TW=rwP(556,-473);ST.tower=[TW[0],RWY.elev+50,TW[1]];
+  {const bb=new THREE.Mesh(new THREE.BoxGeometry(90,7,80).translate(0,3.5,0),cityMaterial({color:0xcfcac0}));placeAlong(bb,556,-473,RWY.elev)}   // the tower's base building, an island in the apron
   const shaft=new THREE.Mesh(new THREE.CylinderGeometry(4,5,44,8).translate(0,22,0),new THREE.MeshLambertMaterial({color:0xd9d5c8}));shaft.position.set(TW[0],RWY.elev,TW[1]);scene.add(shaft);
   const cab=new THREE.Mesh(new THREE.CylinderGeometry(8,6,6,8).translate(0,47,0),new THREE.MeshLambertMaterial({color:0x2c3b44,emissive:0x0}));cab.position.set(TW[0],RWY.elev,TW[1]);cab.userData.neon=0x5c7f78;landmarkLights.push(cab);scene.add(cab);
   const cabRoof=new THREE.Mesh(new THREE.CylinderGeometry(9,9,1.4,8).translate(0,50.6,0),new THREE.MeshLambertMaterial({color:0xcfcac0}));cabRoof.position.set(TW[0],RWY.elev,TW[1]);scene.add(cabRoof);
   addCollider(TW[0]-9,TW[0]+9,TW[1]-9,TW[1]+9,52,'the control tower');
-  // multi-storey car park beside the terminal: the spotters' roof
-  {const cs=600,cl=-300,ch=17;const cp=new THREE.Mesh(new THREE.BoxGeometry(70,ch,110).translate(0,ch/2,0),cityMaterial({color:0xcfcac0}));placeAlong(cp,cs,cl,RWY.elev);
-   for(let y=3.4;y<ch;y+=3.4){const sl=new THREE.Mesh(new THREE.BoxGeometry(71,.5,111).translate(0,y,0),new THREE.MeshLambertMaterial({color:0x9a968c}));placeAlong(sl,cs,cl,RWY.elev)}
-   const par=new THREE.Mesh(new THREE.BoxGeometry(72,1.1,112).translate(0,ch+.55,0),new THREE.MeshLambertMaterial({color:0xbdb8ad,side:THREE.DoubleSide}));placeAlong(par,cs,cl,RWY.elev);
-   const roof=new THREE.Mesh(new THREE.BoxGeometry(68,.3,108).translate(0,ch+.15,0),new THREE.MeshLambertMaterial({color:0x6e6c68}));placeAlong(roof,cs,cl,RWY.elev);
+  // multi-storey car park beside the main terminal block: the spotters' roof
+  {const cs=36,cl=-955,ch=17,W=110,D=120;const cp=new THREE.Mesh(new THREE.BoxGeometry(W,ch,D).translate(0,ch/2,0),cityMaterial({color:0xcfcac0}));placeAlong(cp,cs,cl,RWY.elev);
+   for(let y=3.4;y<ch;y+=3.4){const sl=new THREE.Mesh(new THREE.BoxGeometry(W+1,.5,D+1).translate(0,y,0),new THREE.MeshLambertMaterial({color:0x9a968c}));placeAlong(sl,cs,cl,RWY.elev)}
+   const par=new THREE.Mesh(new THREE.BoxGeometry(W+2,1.1,D+2).translate(0,ch+.55,0),new THREE.MeshLambertMaterial({color:0xbdb8ad,side:THREE.DoubleSide}));placeAlong(par,cs,cl,RWY.elev);
+   const roof=new THREE.Mesh(new THREE.BoxGeometry(W-2,.3,D-2).translate(0,ch+.15,0),new THREE.MeshLambertMaterial({color:0x6e6c68}));placeAlong(roof,cs,cl,RWY.elev);
    // spotters with cameras along the runway-side parapet
-   const pm=[0xf0c9c9,0x2f4f8a,0xe9e6dc,0x8a2f2f,0x3a6b3a];for(let i=0;i<9;i++){const q=rwP(cs-40+i*9+rr(-2,2),cl+30);const body=new THREE.Mesh(new THREE.BoxGeometry(.5,1.1,.3).translate(0,.95,0),new THREE.MeshLambertMaterial({color:pick(pm)}));body.position.set(q[0],RWY.elev+ch+.3,q[1]);scene.add(body);
+   const pm=[0xf0c9c9,0x2f4f8a,0xe9e6dc,0x8a2f2f,0x3a6b3a];for(let i=0;i<9;i++){const q=rwP(cs-44+i*11+rr(-2,2),cl+W/2-5);const body=new THREE.Mesh(new THREE.BoxGeometry(.5,1.1,.3).translate(0,.95,0),new THREE.MeshLambertMaterial({color:pick(pm)}));body.position.set(q[0],RWY.elev+ch+.3,q[1]);scene.add(body);
      const legs=new THREE.Mesh(new THREE.BoxGeometry(.4,.8,.25).translate(0,.4,0),new THREE.MeshLambertMaterial({color:0x2b3550}));legs.position.copy(body.position);scene.add(legs);
      const head=new THREE.Mesh(new THREE.SphereGeometry(.13,8,6),new THREE.MeshLambertMaterial({color:0x2a211a}));head.position.set(q[0],RWY.elev+ch+.3+1.65,q[1]);scene.add(head)}
-   const q=rwP(cs+8,cl+35.4);SPOTS.carpark=[q[0],RWY.elev+ch+.3+1.75,q[1]];AIRBOX.push({s0:cs-35,s1:cs+35,l0:cl-55,l1:cl+55,name:'the Kai Tak car park'});const p=rwP(cs,cl);addCollider(p[0]-60,p[0]+60,p[1]-60,p[1]+60,RWY.elev+ch+1.2,'the Kai Tak car park')}
+   const q=rwP(cs+8,cl+W/2-.6);SPOTS.carpark=[q[0],RWY.elev+ch+.3+1.75,q[1]];AIRBOX.push({s0:cs-D/2,s1:cs+D/2,l0:cl-W/2,l1:cl+W/2,name:'the Kai Tak car park'});const p=rwP(cs,cl);addCollider(p[0]-80,p[0]+80,p[1]-80,p[1]+80,RWY.elev+ch+1.2,'the Kai Tak car park')}
   // a junk moored off the runway in the harbour (south-west side)
   {const q=rwP(1650,330);const j=shipModel('junk');j.position.set(q[0],0,q[1]);j.rotation.y=-(RWY.hdg-90)*D2R;scene.add(j);const bow=new THREE.Vector3(-11,0,0).applyEuler(j.rotation);SPOTS.boat=[q[0]+bow.x,4.6,q[1]+bow.z];SPOTS.boatShip=j}
-  // parked aircraft at the terminal
-  const types=STAND_TY;
-  for(let i=0;i<6;i++){const opt={tail:[0x1d6f6a,0xb53a2c,0x23406e,0x6a1f2f,0x1d6f6a,0x3a5f2e][i],gear:true},m=buildAircraftModel(AC[types[i]],opt);m.userData.spec={type:types[i],opt};m.userData.type=types[i];const p=rwP(STAND_S[i],standL(types[i]));m.position.set(p[0],RWY.elev,p[1]);m.rotation.y=-(RWY.hdg-90)*D2R;m.scale.setScalar(1);scene.add(m);parked.push(m)}
+  // parked aircraft at the terminal, nose toward the pier
+  const types=STAND_TY,TAILS=[0x1d6f6a,0xb53a2c,0x23406e,0x6a1f2f,0x1d6f6a,0x3a5f2e,0x23406e,0xb53a2c];
+  for(let i=0;i<NST;i++){const opt={tail:TAILS[i],gear:true},m=buildAircraftModel(AC[types[i]],opt);m.userData.spec={type:types[i],opt};m.userData.type=types[i];const w=G2W(STAND_S[i],standL(types[i])),p=rwP(w[0],w[1]);m.position.set(p[0],RWY.elev,p[1]);m.rotation.y=-(RWY.hdg+180)*D2R;m.scale.setScalar(1);scene.add(m);parked.push(m)}
   // lights
   // edge lights turn amber over the last 600 m, and the landing threshold is green (red at the far end), for each direction
   const mkRwyLights=dir=>{const Lr=[];
@@ -2732,9 +2746,9 @@ function polyPose(pts,t,v0,v1,TR,TL){TR=TR||TAXI_R;TL=TL||TAXI_LOOK;
 function arrivalT0(c0){const v=76,a=2,vT=10,thr=PATH.pts.find(p=>p.d<=0).c,tTD=(thr+300-c0)/v;return tTD+(v-vT)/a+(1800-300-(v*v-vT*vT)/(2*a))/vT}   // time the aircraft leaves the runway
 // the taxi route from the runway to a stand: along the parallel taxiway, then straight down the stand's lead-in line to the bridge
 function taxiLegs(pts,t0,vs){const o=[[pts[0][0],pts[0][1],t0]];let t=t0;for(let i=1;i<pts.length;i++){t+=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1])/vs[i-1];o.push([pts[i][0],pts[i][1],t])}return o}
-function arrivalPts(c0,S,ty){   // taxiway A, the east link, the apron lane, then down the stand's painted lead-in
-  const t0=arrivalT0(c0),ld=standL(ty),A=APN.A,CE=APN.CE,M=APN.M;
-  const tail=(x0,tx)=>taxiLegs([[x0,A],[CE,A],[CE,M],[S,M],[S,ld]],tx,[10,7,7,5]);
+function arrivalPts(c0,S,ty){   // taxiway A, apron lane D3 out to the stand, then in along the stand's painted lead-in to the bridge
+  const t0=arrivalT0(c0),A=APN.A,D3=APN.D3,sd=standL(ty)+647;
+  const tail=(x0,tx)=>taxiLegs([[x0,A],[D3,A],[D3,-S],[sd,-S]],tx,[10,7,5]);
   let head,tl;
   if(LND.dir<0){const E=RWY.len-1800;head=[[E,0,t0],[E-60,0,t0+6]];tl=tail(E-140,t0+16)}
   else{head=[[1800,0,t0],[1840,0,t0+4],[1900,-96,t0+16]];tl=tail(1780,t0+28)}
@@ -2754,9 +2768,9 @@ const TAXI_END_S=90; // where a departing aircraft lines up on the runway, metre
 // pl.pts is the taxi route from the end of the pushback; pl.tl the time from there to lining up.
 const DEP_PLAN={};
 function depPlan(ty,S,dir){const key=ty+S+dir;if(DEP_PLAN[key])return DEP_PLAN[key];
-  const e=pushAt(ty,S,PB_D).O,Sx=e[0],le=e[1],T1=(-300-le)/10.4;let pts,tl;
-  if(dir>0){const tA=T1+23+(Sx-40)/9;pts=[[Sx,le,0],[Sx,-300,T1],[Sx-40,-96,T1+23],[0,-96,tA],[0,0,tA+22],[TAXI_END_S,0,tA+36]];tl=tA+46}
-  else{const tB=T1+23+(RWY.len-(Sx+40))/12;pts=[[Sx,le,0],[Sx,-300,T1],[Sx+40,-96,T1+23],[RWY.len,-96,tB],[RWY.len,0,tB+22],[RWY.len-TAXI_END_S,0,tB+36]];tl=tB+46}
+  const e=pushAt(ty,S,PB_D).O,w=G2W(e[0],e[1]),se=w[0],le=w[1],A=APN.A,T1=(A-le)/10.4;let pts,tl;
+  if(dir>0){const tA=T1+se/9;pts=[[se,le,0],[se,A,T1],[0,A,tA],[0,0,tA+22],[TAXI_END_S,0,tA+36]];tl=tA+46}
+  else{const tB=T1+(RWY.len-se)/12;pts=[[se,le,0],[se,A,T1],[RWY.len,A,tB],[RWY.len,0,tB+22],[RWY.len-TAXI_END_S,0,tB+36]];tl=tB+46}
   return DEP_PLAN[key]={pts,tl}}
 const lineupT=(ty,S)=>PB.T+depPlan(ty,S,1).tl;     // seconds from the start of the pushback to lining up on Runway 13
 const lineupT31=(ty,S)=>PB.T+depPlan(ty,S,-1).tl;  // and on Runway 31
@@ -2789,19 +2803,20 @@ function departurePose31(t,ty,S,hold){hold=hold||0;
 // turns round and drives back to its bay. Returns the tug's pose in world coordinates at tau seconds after the pushback began.
 const TUG_PLAN={};
 function tugPlan(ty,S){const key=ty+S;if(TUG_PLAN[key])return TUG_PLAN[key];
-  const dep=[S+PB.tug[0],PB.tug[1]],T0=pushPose(ty,S,0).tug,tRel=PB.hold+gseTrapT(PB_D,PB.v)+1,Te=pushPose(ty,S,tRel).tug;
+  const j=STAND_S.indexOf(S),gp=GAP[j],dep=[S+PB.tug[0],PB.tug[1]],T0=pushPose(ty,S,0).tug,tRel=PB.hold+gseTrapT(PB_D,PB.v)+1,Te=pushPose(ty,S,tRel).tug;
+  const cv=(q,t)=>{const w=G2W(q[0],q[1]);return [w[0],w[1],t]};
   const lenA=Math.hypot(dep[0]-S,0)+Math.hypot(T0.l-dep[1],0),TA=lenA/2.4;
-  const approach=[[dep[0],dep[1],0],[S,dep[1],TA*Math.hypot(dep[0]-S,0)/lenA],[S,T0.l,TA]];
+  const approach=[cv(dep,0),cv([S,dep[1]],TA*Math.hypot(dep[0]-S,0)/lenA),cv([S,T0.l],TA)];
   const ax=-Te.ds,al=-Te.dl,p1=[Te.s+8*ax,Te.l+8*al];       // drive off facing away from the aircraft
-  const pts=[[Te.s,Te.l],p1,[S+42.5,p1[1]],[S+42.5,dep[1]],dep];let L=0;const ret=pts.map((q,i)=>{if(i)L+=Math.hypot(q[0]-pts[i-1][0],q[1]-pts[i-1][1]);return [q[0],q[1],L/3.1]});
+  const pts=[[Te.s,Te.l],p1,[S+gp,p1[1]],[S+gp,dep[1]],dep];let L=0;const ret=pts.map((q,i)=>{if(i)L+=Math.hypot(q[0]-pts[i-1][0],q[1]-pts[i-1][1]);return cv(q,L/3.1)});
   return TUG_PLAN[key]={dep,TA,tRel,Te,approach,ret,TR:L/3.1}}
 function tugAt(ty,S,tau){
-  const P=tugPlan(ty,S),w=(s,l,ds,dl)=>{const q=rwP(s,l);return {x:q[0],z:q[1],psi:hdgOf(ds,dl)}};
+  const P=tugPlan(ty,S),w=(S_,L_,dS,dL)=>{const o=G2W(S_,L_),v=V2(dS,dL),q=rwP(o[0],o[1]);return {x:q[0],z:q[1],psi:hdgOf(v[0],v[1])}};
   if(tau<-PB.hold-15)return w(P.dep[0],P.dep[1],-1,0);                           // in its bay
   if(tau<-PB.hold+1){return polyPose(P.approach,tau+PB.hold+15,0,0,4,3)}         // out to the nose gear
   if(tau<P.tRel){const u=pushPose(ty,S,tau).tug;return w(u.s,u.l,u.ds,u.dl)}      // pushing
   const e=P.Te,u=tau-P.tRel;
-  if(u<2){const f=u/2,f2=f*f*(3-2*f),q=rwP(e.s,e.l),a0=hdgOf(e.ds,e.dl);return {x:q[0],z:q[1],psi:a0+Math.PI*f2}}   // turn round on the spot
+  if(u<2){const f=u/2,f2=f*f*(3-2*f),o=G2W(e.s,e.l),q=rwP(o[0],o[1]),v=V2(e.ds,e.dl),a0=hdgOf(v[0],v[1]);return {x:q[0],z:q[1],psi:a0+Math.PI*f2}}   // turn round on the spot
   if(u<2+P.TR)return polyPose(P.ret,u-2,0,0,4,3);
   return w(P.dep[0],P.dep[1],-1,0);
 }
@@ -2857,8 +2872,8 @@ function buildAISchedule(phase,wrapNeg){
   // Six turnarounds, one per stand. The arriving aircraft taxis in, docks at the bridge and sits there; when its cycle restarts an
   // identical aircraft takes its place, waits, is pushed back and departs. The wait puts the line-up in its usual slot
   // (145 s after the arrival slot, 100 s apart), so the runway sequence is the same as before.
-  const m=E?0:1,docks=[];parked.forEach(q=>{q.visible=false});
-  for(let j=0;j<6;j++){const off=j*100,ty=STAND_TY[j],S=STAND_S[j],tail=AI_LIVERIES[j];
+  const m=E?0:1,docks=[];parked.forEach((q,i)=>{if(i<NACT)q.visible=false});
+  for(let j=0;j<NACT;j++){const off=j*100,ty=STAND_TY[j],S=STAND_S[j],tail=AI_LIVERIES[j];
     const dk=arrivalPts(c0,S,ty).dock;docks[j]=100*j-phase+dk;
     const A=mk(ty,tail,t=>{const k=loc(t,off);return k<0?null:arrivalPose(k,c0,j,ty)},'arrival');A.stand=j;A.fid={role:'arrival',j,li:j,sched:true,off,P,ph:phase,k:(thrC+300-c0)/76};A.bridge=t=>{const k=loc(t,off);return k<0?0:sstep(dk+4,dk+20,k)};
     const hold=145+100*m-lnf(ty,S);
@@ -2890,12 +2905,12 @@ function fidsRow(a,t){
   if(f.role==='holding'){t0=Math.ceil((t+420+f.hi*240)/300)*300}
   else if(f.sched){n=Math.floor((tn+f.ph-f.off)/f.P);t0=n*f.P+f.off-f.ph+f.k}else t0=f.t;
   const H=fidsH(f.li,f.role==='arrival'?1:f.role==='departure'?2:3,n),L=fidsLong(a.type)?FIDS_LONG:FIDS_REG,car=FIDS_CAR[f.li%FIDS_CAR.length];
-  const atStand=!!p&&f.j!=null&&Math.hypot(rwS(p.x,p.z)-STAND_S[f.j],rwL(p.x,p.z)-standL(a.type))<6,onRwy=!!p&&Math.abs(rwL(p.x,p.z))<25;
+  const atStand=!!p&&f.j!=null&&Math.hypot(rwS(p.x,p.z)-(standL(a.type)+647),rwL(p.x,p.z)+STAND_S[f.j])<6,onRwy=!!p&&Math.abs(rwL(p.x,p.z))<25;
   let k;
   if(f.role==='arrival')k=!p?'exp':air?(t0-tn<75?'fin':'app'):v>25?'ldg':(v>.5||!atStand)?'txi':'stn';
   else if(f.role==='departure')k=!p||air?'dep':onRwy&&v>.5?'tko':p.push?(atStand&&v<.5?'brd':'psh'):v>.5?'txi':'wait';
   else k='hld';
-  return {role:f.role==='departure'?'dep':'arr',t:t0,no:car[0]+' '+(100+H%900),car,city:L[(H>>>8)%L.length],stand:f.j!=null?String(APN.numA[f.j]):'',k,li:f.li,
+  return {role:f.role==='departure'?'dep':'arr',t:t0,no:car[0]+' '+(100+H%900),car,city:L[(H>>>8)%L.length],stand:f.j!=null?String(f.j+1):'',k,li:f.li,
     done:f.role==='arrival'?(k==='ldg'||k==='txi'||k==='stn'):k==='dep'}}
 // the demo aircraft on the home screen, listed as an arrival
 function fidsMe(t){
@@ -3167,7 +3182,7 @@ function gseSched(R,stops,v){ // stops: [{i: point index, dw: dwell seconds, tag
 function gseState(sc,t){let u=((t%sc.P)+sc.P)%sc.P;for(const g of sc.segs){if(u<g.T)return {d:g.d0+gseTrapD(g.len,sc.v,u),w:-1};u-=g.T;if(u<g.dw)return {d:g.d0+g.len,w:u,dw:g.dw,tag:g.tag};u-=g.dw}return {d:sc.segs[0].d0,w:-1}}
 // A vehicle serving an aircraft docked at a stand (the right side: the bridge is on the left): depot behind the tail -> forward along the gap
 // between the wingtips -> across to the door (stop) -> back aft along the fuselage under the wing -> depot
-function gseStandLoop(S,lStop){return [[S+30,-628],[S+38.5,-628],[S+38.5,lStop],[S+6.2,lStop],[S+6.2,-628]]}
+function gseStandLoop(j,lStop){const S=STAND_S[j],g=GAP[j];return [[S+30,-628],[S+g,-628],[S+g,lStop],[S+6.2,lStop],[S+6.2,-628]].map(q=>G2W(q[0],q[1]))}
 let gseSeed=77;const gseR=()=>(gseSeed=(gseSeed*16807)%2147483647)/2147483647;
 function gseAdd(kind,o){const K=GSE_KINDS[kind],e=Object.assign({kind,off:0,ph:0,lamp:false,beacon:null,lift:0},o);GSEK[kind]=GSEK[kind]||{list:[]};
   e.body=K.cols?K.cols[Math.floor(gseR()*K.cols.length)]:0xffffff;e.alt=K.alts?K.alts[Math.floor(gseR()*K.alts.length)]:0xffffff;GSEK[kind].list.push(e);GSE.push(e);return e}
@@ -3188,7 +3203,7 @@ function buildGSE(){
   // routes
   // stand vehicles: a catering truck and a baggage tractor with three carts serve each docked aircraft. They wait at a depot behind the tail
   // and run once per 600 s cycle; gseSyncStands() times the run to start just after the aircraft docks.
-  const standRun=(j,kind,lStop,dwS,v,o)=>{const pts=gseStandLoop(STAND_S[j],lStop),P0=gseSched(gseRoute(pts,12),[{i:0,dw:0,tag:'depot'},{i:3,dw:dwS,tag:'stand'}],v).P;
+  const standRun=(j,kind,lStop,dwS,v,o)=>{const pts=gseStandLoop(j,lStop),P0=gseSched(gseRoute(pts,12),[{i:0,dw:0,tag:'depot'},{i:3,dw:dwS,tag:'stand'}],v).P;
     return gseRun(kind,pts,12,[{i:0,dw:600-P0,tag:'depot'},{i:3,dw:dwS,tag:'stand'}],v,0,Object.assign({stand:j},o))};
   for(let j=0;j<6;j++){
     standRun(j,'cater',DOOR_L,70,6,{});                                                                                   // the catering truck lifts to the door
