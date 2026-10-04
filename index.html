@@ -2607,26 +2607,73 @@ function randomRoute(box,clear,n){
       let ok=true;for(let s=0;s<=d;s+=40){const x=lerp(a[0],b[0],s/d),z=lerp(a[1],b[1],s/d);if(!waterAt(x,z,clear)){ok=false;break}}if(ok)pts.push(b)}
     if(pts.length>=2)return pts}
   return null}
+// Traffic lanes traced from the Marine Department charts "Traffic Separation Schemes and Principal Fairways" and "Ma Wan Marine Traffic Control"
+// (sim metres, x east, z south, listed in the charted order). Traffic keeps to starboard, so every fairway gives one lane each way.
+const FAIRWAYS=[
+  {n:'Victoria Harbour and Lei Yue Mun TSS',w:100,gap:2400,liner:1,p:[[-8800,4100],[-7000,3400],[-5500,3000],[-4000,3550],[-3000,3850],[-2500,4000],[-2000,4000],[-1000,4000],[-500,3700],[0,3150],[500,2950],[1000,2800],[2000,2850],[2500,3050],[3000,3650],[3500,4000],[4000,3950],[4500,4300],[5000,4800],[6000,5200],[7000,5800],[8000,7000],[9000,7600],[10000,7000],[10500,7050],[11000,7700],[11500,8000],[12500,8000]]},
+  {n:'Ma Wan and Western Fairway',w:130,gap:2600,p:[[-12400,-3700],[-12300,-2000],[-11800,0],[-10600,1800],[-9500,2800],[-8800,4100]]},
+  {n:'Castle Peak Fairway',w:100,gap:3200,p:[[-26800,-2100],[-26000,-1850],[-25000,-1700],[-24000,-2800],[-23000,-2300],[-22000,-2400],[-21000,-2300],[-20000,-2100],[-19000,-2000],[-18000,-2100],[-17000,-2100],[-16000,-2600],[-15000,-3200],[-14000,-3800],[-13000,-3500],[-12400,-3700]]},
+  {n:'Rambler Channel and Kwai Chung',w:120,gap:2600,p:[[-10300,1500],[-9000,1900],[-7500,2400],[-6000,2700],[-4400,3300]]},
+  {n:'East Lamma Channel TSS',w:220,gap:2200,p:[[-8500,5000],[-8600,5600],[-8200,6500],[-7600,7500],[-7000,8500],[-6500,9000]]},
+];
+const LANE_SMALL=1.5;
+const LANE_KINDS=[['freighter',.38],['container',.34],['junk',.09],['yacht',.09],['liner',.1]],LANE_V={freighter:6,container:6.5,liner:8,junk:2.5,yacht:4};
+// a polyline moved to its starboard (right-hand) side
+function laneOffset(p,off){return p.map((a,i)=>{const b=p[Math.min(i+1,p.length-1)],c=p[Math.max(i-1,0)];const dx=b[0]-c[0],dz=b[1]-c[1],l=Math.hypot(dx,dz)||1;return [a[0]-dz/l*off,a[1]+dx/l*off]})}
+function mkLn(p,v,loop){const c=[0];for(let i=1;i<p.length;i++)c.push(c[i-1]+Math.hypot(p[i][0]-p[i-1][0],p[i][1]-p[i-1][1]));return {p,c,L:c[c.length-1],v,loop}}
+function nearLane(x,z,r){for(const f of FAIRWAYS){const p=f.p;for(let i=1;i<p.length;i++){const ax=p[i-1][0],az=p[i-1][1],bx=p[i][0],bz=p[i][1],dx=bx-ax,dz=bz-az;const t=clamp(((x-ax)*dx+(z-az)*dz)/(dx*dx+dz*dz),0,1);if(Math.hypot(x-ax-dx*t,z-az-dz*t)<r)return true}}return false}
+function landW(x,z){return terrainAt(x,z)>-0.3||inAirport(x,z)}
+// alongside a quay or shore: clear water at rIn, land within rOut; heading runs along the shore
+function shoreSpot(box,rIn,rOut,avoid,placed,rad){
+  for(let t=0;t<400;t++){const x=rr(box[0],box[2]),z=rr(box[1],box[3]);if(landW(x,z)||nearLane(x,z,avoid))continue;
+    let ok=true,lx=0,lz=0;for(let k=0;k<12;k++){const a=k/12*6.2832,c=Math.cos(a),s=Math.sin(a);if(landW(x+c*rIn,z+s*rIn)){ok=false;break}if(landW(x+c*rOut,z+s*rOut)){lx+=c;lz+=s}}
+    if(!ok||(!lx&&!lz))continue;if(placed.some(q=>Math.hypot(q[0]-x,q[1]-z)<q[2]+rad))continue;
+    placed.push([x,z,rad]);return [x,z,Math.atan2(lz,lx)+Math.PI/2+(rnd()<.5?Math.PI:0)]}
+  return null}
+// at anchor in open water: ships lie to the tide, all roughly the same way
+function anchorSpot(box,clear,avoid,placed,rad){
+  for(let t=0;t<200;t++){const x=rr(box[0],box[2]),z=rr(box[1],box[3]);if(!waterAt(x,z,clear)||nearLane(x,z,avoid))continue;
+    if(placed.some(q=>Math.hypot(q[0]-x,q[1]-z)<q[2]+rad))continue;placed.push([x,z,rad]);return [x,z,.3+rr(-.3,.3)+(rnd()<.5?Math.PI:0)]}
+  return null}
+// a vessel that is not going anywhere: anchor lights only, no wake
+function moor(kind,spot){if(!spot)return;const m=shipModel(kind);const L=m.userData.len,big=L>60;m.position.set(spot[0],0,spot[1]);m.rotation.y=-spot[2];scene.add(m);
+  m.userData.lights=big?[[L*.45,14,0,1,.97,.88],[-L*.38,20,0,1,.9,.7]]:[[0,kind==='junk'?10:6,0,1,.97,.88]];SHIPS.push({ln:{v:0,static:true},m,s:0,dir:1})}
 function buildShips(){
+  // Star Ferries cross the harbour between their piers, in both directions
   const lanes=[
-    {k:'container',p:[[-9000,3800],[-6500,3300],[-4600,3500],[-3000,3850],[-1500,4000],[0,3600],[2500,3400],[4000,3750],[4500,4300],[5000,4812],[6000,5000],[7000,4825]],v:6,n:4},
     {k:'ferry',p:[[-2540,3600],[-3150,4520]],v:7,n:3,stop:true},
     {k:'ferry',p:[[-2470,3610],[-1820,4520]],v:6.5,n:2,stop:true},
     {k:'ferry',p:[[-1400,3700],[-1820,4520]],v:7,n:2,stop:true},
     {k:'ferry',p:[[-1400,3700],[-3150,4520]],v:7.5,n:2,stop:true},
     {k:'ferry',p:[[-1400,3700],[0,4300],[1200,4500]],v:8,n:1},
   ];
-  const HARB=[-9500,2500,7600,5700],BAY=[300,-400,4300,3300],WEST=[-17000,-2500,-8500,5200];
-  const plan=[['freighter',14,HARB,40,6],['freighter',4,WEST,40,4.5],['container',6,HARB,45,6],['container',4,WEST,45,6],['liner',3,HARB,40,4],['junk',16,HARB,10,2.5],['junk',6,BAY,10,2.2],
-    ['yacht',18,HARB,8,4],['yacht',8,BAY,8,3.5],['police',4,HARB,10,9],['police',2,BAY,10,8],['tug',8,HARB,12,5],['tug',3,BAY,12,4.5],['launch',16,HARB,6,6],['launch',6,BAY,6,5.5]];
+  const HARB=[-9500,2500,7600,5700],BAY=[300,-400,4300,3300],CWB=[-1200,3300,1200,4400];
+  // working craft that cross and roam: tugs, walla-walla launches and the marine police
+  const plan=[['tug',3,HARB,12,5],['tug',2,BAY,12,4.5],['launch',6,HARB,6,6],['launch',3,BAY,6,5.5],['police',3,HARB,10,9],['police',1,BAY,10,8]];
   for(const [k,n,box,clear,v] of plan)for(let i=0;i<n;i++){const p=randomRoute(box,clear,Math.floor(rr(3,6)));if(p)lanes.push({k,p,v:v*rr(.8,1.2),n:1})}
   for(const ln of lanes){ln.c=[0];for(let i=1;i<ln.p.length;i++)ln.c.push(ln.c[i-1]+Math.hypot(ln.p[i][0]-ln.p[i-1][0],ln.p[i][1]-ln.p[i-1][1]));ln.L=ln.c[ln.c.length-1];
     for(let i=0;i<ln.n;i++){const m=shipModel(ln.k);addWake(m);scene.add(m);SHIPS.push({ln,m,s:ln.L*(i/ln.n)+rr(0,ln.L*.2),dir:i%2?-1:1,wait:0})}}
+  // through traffic: one-way, starboard side of each fairway, in both directions, never turning round (ships re-enter at the far end of the chart)
+  for(const f of FAIRWAYS)for(const sgn of[1,-1]){const base=sgn>0?f.p:f.p.slice().reverse();const len=mkLn(base,1).L;const n=Math.max(2,Math.round(len/f.gap));
+    for(let i=0;i<n;i++){let r=rnd()*(f.liner?1:.9),k='freighter';for(const [kk,w] of LANE_KINDS){if(kk==='liner'&&!f.liner)continue;r-=w;if(r<=0){k=kk;break}}
+      const small=k==='junk'||k==='yacht';const ln=mkLn(laneOffset(base,f.w*(small?LANE_SMALL:1)),LANE_V[k]*rr(.85,1.15),true);
+      const m=shipModel(k);addWake(m);scene.add(m);SHIPS.push({ln,m,s:ln.L*(i+rnd()*.6)/n,dir:1,wait:0})}}
+  // moored and anchored: most of the harbour's shipping is going nowhere
+  const placed=[];const BERTH=[-10400,-200,-6000,1500];
+  for(let i=0;i<7;i++)moor('container',shoreSpot(BERTH,45,150,300,placed,150));
+  for(let i=0;i<4;i++)moor('freighter',shoreSpot(BERTH,40,140,300,placed,130));
+  for(let i=0;i<6;i++)moor('tug',shoreSpot(BERTH,16,60,150,placed,35));
+  const ANCH=[[-12400,1200,-9800,3500],[-9500,1500,-6500,2400],[-15500,-1800,-13200,3000]];
+  for(let i=0;i<16;i++)moor(i%5<3?'freighter':'container',anchorSpot(ANCH[i%3],150,500,placed,260));
+  for(let i=0;i<5;i++)moor('junk',shoreSpot(BAY,14,50,120,placed,40));
+  for(let i=0;i<5;i++)moor('junk',shoreSpot(CWB,14,50,120,placed,40));
+  for(let i=0;i<8;i++)moor('yacht',shoreSpot(BAY,16,55,120,placed,45));
+  for(let i=0;i<8;i++)moor('yacht',shoreSpot(CWB,16,55,120,placed,45));
+  for(let i=0;i<8;i++)moor('launch',shoreSpot(HARB,10,40,120,placed,30));
+  for(let i=0;i<2;i++)moor('police',shoreSpot(HARB,12,45,120,placed,40));
   // two classic liners berthed either side of Ocean Terminal (as in March 1997)
   const ot0=[-2560,3345],ot1=[-2990,3425];const ang=Math.atan2(ot1[1]-ot0[1],ot1[0]-ot0[0]);const nx=-Math.sin(ang),nz=Math.cos(ang);const mid=[(ot0[0]+ot1[0])/2,(ot0[1]+ot1[1])/2];
   for(const [k,sd] of[[1,1],[0,-1]]){const m=liner(k);m.position.set(mid[0]+nx*48*sd,0,mid[1]+nz*48*sd);m.rotation.y=-ang;scene.add(m);SHIPS.push({ln:{v:0,static:true},m,s:0,dir:1})}
-  // ships at anchor off Stonecutters and in the western anchorage, riding lights only
-  for(let i=0;i<10;i++){const p=randomRoute([-9000,1500,-4500,3600],80,1);if(!p)continue;const m=shipModel(rnd()<.6?'freighter':'container');m.position.set(p[0][0],0,p[0][1]);m.rotation.y=rnd()*Math.PI*2;const L=m.userData.len;m.userData.lights=[[L*.45,14,0,1,.97,.88],[-L*.45,10,0,1,.97,.88],[-L*.38,20,0,1,.9,.7]];scene.add(m);SHIPS.push({ln:{v:0,static:true},m,s:0,dir:1})}
   const arr=[];for(const s of SHIPS)for(const l of s.m.userData.lights)arr.push(0,0,0,l[3]*1.4,l[4]*1.4,l[5]*1.4,l[6]===undefined?11:12,l[6]===undefined?-1:l[6]);
   shipLights=makeLights(arr);scene.add(shipLights);
 }
@@ -2634,7 +2681,7 @@ function updateShips(dt,t){
   const lp=shipLights.geometry.attributes.position;let li=0;
   for(const S of SHIPS){const ln=S.ln;
     if(!ln.static){
-      if(S.wait>0)S.wait-=dt;else{S.s+=ln.v*S.dir*dt;if(S.s>ln.L){S.s=ln.L;S.dir=-1;if(ln.stop)S.wait=rr(20,40)}if(S.s<0){S.s=0;S.dir=1;if(ln.stop)S.wait=rr(20,40)}}
+      if(S.wait>0)S.wait-=dt;else if(ln.loop){S.s+=ln.v*dt;if(S.s>=ln.L)S.s-=ln.L}else{S.s+=ln.v*S.dir*dt;if(S.s>ln.L){S.s=ln.L;S.dir=-1;if(ln.stop)S.wait=rr(20,40)}if(S.s<0){S.s=0;S.dir=1;if(ln.stop)S.wait=rr(20,40)}}
       let i=1;while(i<ln.c.length-1&&ln.c[i]<S.s)i++;const t2=(S.s-ln.c[i-1])/Math.max(1,ln.c[i]-ln.c[i-1]);const a=ln.p[i-1],b=ln.p[i];
       const x=lerp(a[0],b[0],t2),z=lerp(a[1],b[1],t2);let hd=Math.atan2(b[1]-a[1],b[0]-a[0]);if(S.dir<0)hd+=Math.PI;
       if(S.m.userData.len===40&&S.dir<0)hd-=Math.PI; // Star Ferries are double-ended: they never turn round
@@ -5129,7 +5176,7 @@ const fontsReady=document.fonts&&document.fonts.ready?Promise.race([document.fon
 fontsReady.then(()=>setTimeout(boot,30));
 
 /* test hooks */
-window.__kt={rwP,STAND_C,CTY,stS,NCG,ESTATES,RC,rcEv,rcVac,rcRoll,rcStrip,rcClearBy,rcTakeoffWhy,rcView,rcPlayer,CYC,onPaved,gearPaved,rwS,LINKS,rb:()=>rbMasts13,bat:buildingAt,setHour,solarState,SUN_DIR,MOON_DIR,ENV,AI,CFG,ST,COACH,LESSON,keys,coachUpdate,coachResync,coachGo,rwL,get PATH(){return PATH},LND,setRunway,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,{rwy:'13',conc:false},o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.conc&&CFG.game==='watch'?'watchC':CFG.rwy==='31'&&CFG.game!=='learn'?CFG.game+'31':CFG.game}]`).checked=true;hourIn.value=o.hour!==undefined?o.hour:CFG.night?22:15;showHour();startFlight()},
+window.__kt={SHIPS,FAIRWAYS,waterAt,laneOffset,rwP,STAND_C,CTY,stS,NCG,ESTATES,RC,rcEv,rcVac,rcRoll,rcStrip,rcClearBy,rcTakeoffWhy,rcView,rcPlayer,CYC,onPaved,gearPaved,rwS,LINKS,rb:()=>rbMasts13,bat:buildingAt,setHour,solarState,SUN_DIR,MOON_DIR,ENV,AI,CFG,ST,COACH,LESSON,keys,coachUpdate,coachResync,coachGo,rwL,get PATH(){return PATH},LND,setRunway,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,{rwy:'13',conc:false},o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.conc&&CFG.game==='watch'?'watchC':CFG.rwy==='31'&&CFG.game!=='learn'?CFG.game+'31':CFG.game}]`).checked=true;hourIn.value=o.hour!==undefined?o.hour:CFG.night?22:15;showHour();startFlight()},
   run:(sec)=>{if(CFG.game==='watch'){ST.t+=sec;return {t:ST.t}}const h=1/120;for(let i=0;i<sec*120&&!ST.ended;i++){physStep(h);if(i%60===0)recordHistory();if(i%12===0)aiTick()}return {ended:ST.ended,td:ST.td,t:ST.t,x:ST.x,y:ST.y,z:ST.z,V:ST.V/KT,d:PATH.pts[ST.pi].d}},
   get mode(){return mode},updateAI,AIC,footOf,GSE,GSE_KINDS,AIRBOX,rwS,BGRID,updateGSE,gseLamps:()=>gseLamps,fpAt,fpDist,hitOn,damageModel,aiHit,DEBRIS,EMIT,aiTick,ctl(){return aiControl},get CFG(){return CFG},frame:(now)=>frame(now,true),get FOCUS(){return FOCUS},step:()=>physStep(1/120),rwS,setZoom:z=>{CFG.zoom=z},get AI(){return AI},get GSE(){return GSE},get BRIDGE(){return BRIDGE},STAND_S,STAND_TY,lineupT,lineupT31,arrivalPts,tugAt,standL,PB,get parked(){return parked},gseAt:(t)=>{ST.t=t;updateGSE();return GSE.map(e=>({k:e.kind,x:e.p.x,z:e.p.z,psi:e.p.psi,lift:e.lift}))},get shipLights(){return shipLights},get SHIPS(){return SHIPS},get DISP(){return DISP},get deck(){return deckGroup},get streetCam(){return STREET_CAM},get BB(){return BB},get water(){return water},get camera(){return camera},get nStreets(){return STREETS.length},drawDisplays,look,setView,terrainAt,buildingAt,groundInfo};
 })();

@@ -92,7 +92,7 @@ The home screen shows the live sim of the airport in the background, with a 58-s
 The on-screen yoke works with touch or a mouse and is inverted like a real control column: drag down to pull the nose up, drag up to push it down. On touch screens, use the on-screen yoke, thrust lever and gear/flap buttons. Landscape is recommended: on phones Begin descent goes full screen and asks for landscape where the browser allows it. The toolbar is one row with a More drawer for the rest.
 
 ## Shipping and water
-- About 134 vessels: Star Ferries on four routes, freighters, container ships, moving and berthed ocean liners, junks, yachts, marine police launches, tugs, walla-walla launches, and ships at anchor. All carry navigation lights (masthead, stern, red port, green starboard), and police launches flash blue
+- About 140 vessels: Star Ferries on four routes, freighters, container ships, ocean liners, junks, yachts, marine police launches, tugs, walla-walla launches, and ships at anchor. Moving ships follow one-way, keep-right lanes along the charted fairways and traffic separation schemes (Victoria Harbour and Lei Yue Mun, Ma Wan and Western Fairway, Castle Peak, Rambler Channel, East Lamma Channel) and never turn round; about half the fleet is moored or at anchor with anchor lights only. All carry navigation lights (masthead, stern, red port, green starboard), and police launches flash blue
 - Water shader: wind-driven waves and whitecaps (calm on clear days, white-streaked in a typhoon), deep and shallow colour from distance to shore, surf on the sea walls, sky reflection with sun glitter, and city glow at night. V-shaped wakes
 - Red obstruction lights on the rooftops of tall buildings, some flashing under the approach
 
