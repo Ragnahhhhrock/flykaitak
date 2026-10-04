@@ -1,5 +1,38 @@
 [
   {
+    "slug": "concorde-at-kai-tak-history",
+    "title": "Concorde at Kai Tak: The Rare Visits",
+    "dek": "A 1976 sales tour and a 1985 charter: the Concorde visits on record, with the sim's Concorde landing, taxiing and taking off.",
+    "description": "Concorde's rare visits to Kai Tak: the 1976 sales tour, a 1985 charter, and how Fly Kai Tak's Concorde special lands, taxis and takes off.",
+    "date": "2026-10-04",
+    "tag": "History",
+    "category": "aircraft",
+    "keywords": [
+      "Kai Tak",
+      "Concorde",
+      "1976",
+      "1985",
+      "supersonic",
+      "history",
+      "plane spotter"
+    ],
+    "hero": "concorde-history-takeoff-climb",
+    "hero_alt": "The delta-wing jet climbing steeply over Kowloon Bay after take-off.",
+    "hero_caption": "Climbing out over Kowloon Bay.",
+    "card_kicker": "AIRCRAFT · HISTORY",
+    "card_title": "Concorde at Kai Tak",
+    "card_sub": "The rare visits, 1976 and 1985",
+    "card_image": "concorde-history-takeoff-climb",
+    "card_focus": 40,
+    "zh": {
+      "title": "協和式客機喺啟德：罕見訪問",
+      "dek": "1976 年推廣旅程同 1985 年包機：有記錄嘅協和式到訪，加上模擬器入面協和式降落、滑行同起飛。",
+      "description": "協和式客機罕見到訪啟德：1976 年推廣旅程、1985 年包機，以及 Fly Kai Tak 協和式特別訪客點降落、滑行同起飛。",
+      "hero_alt": "三角翼客機起飛後喺九龍灣上空陡爬。",
+      "hero_caption": "喺九龍灣上空爬升。"
+    }
+  },
+  {
     "slug": "concorde-special-plane-spotters",
     "title": "A Concorde Visits Kai Tak",
     "dek": "A rare special for plane spotters: a supersonic delta-wing jet lands, parks at stand 6 and departs.",
