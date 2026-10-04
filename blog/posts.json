@@ -1,5 +1,39 @@
 [
   {
+    "slug": "bigger-map-home-and-plane-spotter",
+    "title": "A bigger map on the home screen and in Plane Spotter",
+    "dek": "The corner map is twice the size on the home screen and in Plane Spotter, and it steps aside when High scores is open.",
+    "description": "Fly Kai Tak's corner map is now double size on the home screen and in Plane Spotter, and the home screen map moves clear of the High scores panel.",
+    "date": "2026-10-04",
+    "tag": "Update",
+    "category": "controls",
+    "keywords": [
+      "map",
+      "home screen",
+      "Plane Spotter",
+      "high scores",
+      "live aircraft",
+      "M key",
+      "Kai Tak",
+      "flight simulator"
+    ],
+    "hero": "map-home-big-scores",
+    "hero_alt": "The home screen with High scores open and the larger map at the bottom right, clear of the panel.",
+    "hero_caption": "High scores open: the map moves clear of the panel.",
+    "card_kicker": "MAP · SPOTTER",
+    "card_title": "Bigger map, clear of scores",
+    "card_sub": "Home screen and Plane Spotter",
+    "card_image": "map-home-big-scores",
+    "card_focus": 70,
+    "zh": {
+      "title": "主畫面同 Plane Spotter 嘅大啲地圖",
+      "dek": "主畫面同 Plane Spotter 嘅角落地圖大咗一倍，開咗 High scores 就會自動讓開。",
+      "description": "Fly Kai Tak 嘅角落地圖喺主畫面同 Plane Spotter 而家大兩倍，主畫面嘅地圖會避開 High scores 面板。",
+      "hero_alt": "主畫面開咗 High scores，放大咗嘅地圖移去右下角，冇俾面板遮住。",
+      "hero_caption": "開咗 High scores，地圖移開，唔會被面板遮住。"
+    }
+  },
+  {
     "slug": "flight-board-key-and-button",
     "title": "Flight Board Key and Button",
     "dek": "Press B on the home screen to hide or show the flight board, or use the new Flights button.",
