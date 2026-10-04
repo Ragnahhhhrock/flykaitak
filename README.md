@@ -15,7 +15,7 @@ Play at https://flykaitak.com, or serve the folder with any static web server (`
 Data: © Lands Department, HKSAR Government (CSDI). Elevation: SRTM via AWS Terrain Tiles.
 
 ## MVP features
-- Aircraft: 747-400, 777-200, A330-300, A340-300, each with its own flight model (mass, wing area, thrust, Vref, roll rate, flap labels and limits)
+- Aircraft: 747-400, 777-200, A330-300, A340-300 (plus a delta-wing supersonic jet that only visits Plane Spotter), each with its own flight model (mass, wing area, thrust, Vref, roll rate, flap labels and limits)
 - Sun, moon and time of day: a 24-hour clock (Dawn, Day, Dusk, Night presets) with the sun and moon placed for Hong Kong in early July 1998, a moon with phase, turning stars, twilight colours and lights that come on at sunset
 - Day / night: lit windows, street lights, neon signs, runway, approach and lead-in strobe lights, PAPI
 - Weather: clear, rain, typhoon, storm, low cloud, fog, plus a lightning toggle. Wind, gusts and turbulence affect the flight
@@ -61,6 +61,7 @@ The home screen shows the live sim of the airport in the background, with a 58-s
 - **Free flight**: start lined up on Runway 13. Take off over Kowloon Bay and fly anywhere; landings are graded but the flight carries on (touch-and-go with full thrust). The autopilot holds heading, altitude and speed once airborne.
 - **Runway 31 take-off**: free flight lined up on Runway 31 at the Kowloon Bay end, pointing at Kowloon City. Climb and turn left; radio calls and traffic follow Runway 31.
 - **Spotter · Runway 31**: Plane Spotter with Runway 31 in use; the Lei Yue Mun spectator view (C cycles to it) follows the jet nearest to it.
+- **Spotter · Concorde special**: Plane Spotter with a rare supersonic delta-wing visitor (nose droops for landing) that lands on the hour, parks at stand 6 and departs about 10 minutes later. The flight board lists it in gold as a special (made-up charter, no real airline). Plane Spotter on its own shows the visit once an hour too.
 - **Plane Spotter**: no flying. A continuous schedule of arrivals every 100 s with departures in between, plus aircraft in the hold. Watch from the car park roof, Prince Edward Road, a Kowloon City street, a harbour junk or the tower, or follow the active jet.
 
 ## Controls
