@@ -1871,8 +1871,46 @@ function buildAirport(){
   // multi-storey car park beside the main terminal block: the spotters' roof
   {const cs=36,cl=-955,ch=17,W=110,D=120;const cp=new THREE.Mesh(new THREE.BoxGeometry(W,ch,D).translate(0,ch/2,0),cityMaterial({color:0xcfcac0}));placeAlong(cp,cs,cl,RWY.elev);
    for(let y=3.4;y<ch;y+=3.4){const sl=new THREE.Mesh(new THREE.BoxGeometry(W+1,.5,D+1).translate(0,y,0),new THREE.MeshLambertMaterial({color:0x9a968c}));placeAlong(sl,cs,cl,RWY.elev)}
-   const par=new THREE.Mesh(new THREE.BoxGeometry(W+2,1.1,D+2).translate(0,ch+.55,0),new THREE.MeshLambertMaterial({color:0xbdb8ad,side:THREE.DoubleSide}));placeAlong(par,cs,cl,RWY.elev);
-   const roof=new THREE.Mesh(new THREE.BoxGeometry(W-2,.3,D-2).translate(0,ch+.15,0),new THREE.MeshLambertMaterial({color:0x6e6c68}));placeAlong(roof,cs,cl,RWY.elev);
+   // roof deck: asphalt with painted bays on the far side, a yellow kerb line and lane dashes
+   const R=ch+.3,cg=new THREE.Group();placeAlong(cg,cs,cl,RWY.elev);
+   const roof=new THREE.Mesh(new THREE.BoxGeometry(W,.3,D).translate(0,ch+.15,0),new THREE.MeshLambertMaterial({color:0x6e6c68}));cg.add(roof);
+   const deckTex=canvasTex(880,960,(g,w,h)=>{g.fillStyle='#6f6d69';g.fillRect(0,0,w,h);for(let i=0;i<2600;i++){g.fillStyle='rgba('+(Math.random()<.5?'0,0,0':'255,255,255')+','+(.03+Math.random()*.05)+')';g.fillRect(Math.random()*w,Math.random()*h,2+Math.random()*10,1+Math.random()*3)}
+    g.fillStyle='#e8e6de';for(let y=20;y<h-10;y+=20)g.fillRect(0,y,44,2);g.fillRect(44,20,2,h-40);g.fillRect(0,20,44,2); // parking bays (5 x 2.5 m) along the far side
+    for(let y=40;y<h-40;y+=64)g.fillRect(w/2-1,y,3,32); // lane dashes
+    g.fillStyle='#d9b32a';g.fillRect(w-20,0,4,h);g.fillRect(0,0,w,4);g.fillRect(0,h-4,w,4)}); // kerb line inside the crowd barrier
+   const deck=new THREE.Mesh(new THREE.PlaneGeometry(W,D).rotateX(-Math.PI/2).translate(0,R+.02,0),new THREE.MeshLambertMaterial({map:deckTex}));cg.add(deck);
+   // parapet: four walls (outer edge W+1 x D+1), 1 m above the deck
+   const wallM=new THREE.MeshLambertMaterial({color:0xbdb8ad}),capM=new THREE.MeshLambertMaterial({color:0xd2cec3}),pH=.7;
+   for(const [x,z,w,d] of [[W/2+.25,0,.5,D+1],[-W/2-.25,0,.5,D+1],[0,D/2+.25,W+1,.5],[0,-D/2-.25,W+1,.5]]){const wl=new THREE.Mesh(new THREE.BoxGeometry(w,pH+.3,d).translate(x,ch+(pH+.3)/2,z),wallM);cg.add(wl);const cp2=new THREE.Mesh(new THREE.BoxGeometry(w+.12,.08,d+.12).translate(x,R+pH+.04,z),capM);cg.add(cp2)}
+   // railings: a pipe rail on posts along the top of the parapet (white on the runway side, as in the 1990s photos), plus grey crowd barriers set back 2.2 m
+   const dm=new THREE.Object3D(),railM=new THREE.MeshLambertMaterial({color:0xeeeeea}),barM=new THREE.MeshLambertMaterial({color:0x8b9094}),railPosts=[],barPosts=[];
+   const rail=(x0,z0,x1,z1,y,t,m,posts,step,ph)=>{const L=Math.hypot(x1-x0,z1-z0),a=Math.atan2(x1-x0,z1-z0);const r=new THREE.Mesh(new THREE.BoxGeometry(t,t,L).translate(0,y,0),m);r.position.set((x0+x1)/2,0,(z0+z1)/2);r.rotation.y=a;cg.add(r);
+    if(posts){const n=Math.max(1,Math.round(L/step));for(let i=0;i<=n;i++){const f=i/n;posts.push([x0+(x1-x0)*f,z0+(z1-z0)*f,ph])}}};
+   const topY=R+pH+.04;
+   for(const [x0,z0,x1,z1] of [[W/2+.25,-D/2,W/2+.25,D/2],[-W/2-.25,-D/2,-W/2-.25,D/2],[-W/2,D/2+.25,W/2,D/2+.25],[-W/2,-D/2-.25,W/2,-D/2-.25]]){rail(x0,z0,x1,z1,topY+.5,.07,railM,railPosts,2.6,.5);rail(x0,z0,x1,z1,topY+.25,.05,railM,null)}
+   rail(W/2-2.2,-D/2+2,W/2-2.2,D/2-2,R+1.05,.06,barM,barPosts,2.4,1.05);rail(W/2-2.2,-D/2+2,W/2-2.2,D/2-2,R+.55,.05,barM,null); // crowd barrier
+   const mkInst=(geo,mat,arr,fn)=>{const im=new THREE.InstancedMesh(geo,mat,arr.length);arr.forEach((p,i)=>{dm.position.set(p[0],fn(p),p[1]);dm.rotation.set(0,0,0);dm.scale.set(1,p[2]||1,1);dm.updateMatrix();im.setMatrixAt(i,dm.matrix)});cg.add(im);return im};
+   mkInst(new THREE.BoxGeometry(.07,1,.07),railM,railPosts,p=>topY+p[2]/2);mkInst(new THREE.BoxGeometry(.06,1,.06),barM,barPosts,p=>R+p[2]/2);
+   // lamp standards: black poles with white globes. Two staggered rows on the runway side (the nearer row 7 m in from the parapet), one row along the far edge
+   const lampPts=[];for(let z=-50;z<=50;z+=20)lampPts.push([W/2-7,z]);for(let z=-40;z<=40;z+=20)lampPts.push([W/2-30,z]);for(let z=-50;z<=50;z+=25)lampPts.push([-W/2+6,z]);
+   const poleM=new THREE.MeshLambertMaterial({color:0x1b1b1d}),globeM=new THREE.MeshLambertMaterial({color:0xf4f1e6});
+   mkInst(new THREE.CylinderGeometry(.07,.09,1,8),poleM,lampPts.map(p=>[p[0],p[1],5.2]),p=>R+p[2]/2);
+   mkInst(new THREE.CylinderGeometry(.22,.12,.3,10),poleM,lampPts,p=>R+5.3); // cap under the globe
+   const gl=mkInst(new THREE.SphereGeometry(.55,14,10),globeM,lampPts,p=>R+5.9);gl.material.userData={};gl.userData.neon=0xfff0c0;landmarkLights.push(gl);
+   // stairwell head at the north-east corner: white block, flat roof slab, steel door, green exit sign and a yellow caution board
+   {const sx=W/2-9,sz=-(D/2-8.5),SX=10,SZ=6,SH=3.6,fz=sz+SZ/2; // fz: the door face, looking back along the roof (local z runs against the runway's s axis)
+    const wm=new THREE.MeshLambertMaterial({color:0xe6e3da}),blk=new THREE.Mesh(new THREE.BoxGeometry(SX,SH,SZ).translate(sx,R+SH/2,sz),wm);cg.add(blk);
+    const slab=new THREE.Mesh(new THREE.BoxGeometry(SX+.7,.25,SZ+.7).translate(sx,R+SH+.12,sz),new THREE.MeshLambertMaterial({color:0xa9a69e}));cg.add(slab);
+    const frame=new THREE.Mesh(new THREE.BoxGeometry(2.7,2.7,.2).translate(sx,R+1.35,fz+.05),new THREE.MeshLambertMaterial({color:0x8f8c84}));cg.add(frame);
+    const door=new THREE.Mesh(new THREE.BoxGeometry(2.3,2.5,.3).translate(sx,R+1.25,fz-.02),new THREE.MeshLambertMaterial({color:0x1e2124}));cg.add(door);
+    const step2=new THREE.Mesh(new THREE.BoxGeometry(3.4,.18,.8).translate(sx,R+.09,fz+.4),new THREE.MeshLambertMaterial({color:0x9c998f}));cg.add(step2);
+    const exitTex=canvasTex(256,80,(g,w,h)=>{g.fillStyle='#0b7a3b';g.fillRect(0,0,w,h);g.strokeStyle='#fff';g.lineWidth=4;g.strokeRect(5,5,w-10,h-10);g.fillStyle='#fff';g.textAlign='center';g.textBaseline='middle';g.font='bold 34px sans-serif';g.fillText('出口  EXIT',w/2,h/2+2)});
+    const ex=new THREE.Mesh(new THREE.PlaneGeometry(1.9,.6),new THREE.MeshBasicMaterial({map:exitTex}));ex.position.set(sx,R+3.0,fz+.17);cg.add(ex);
+    const yTex=canvasTex(128,208,(g,w,h)=>{g.fillStyle='#f0c514';g.fillRect(0,0,w,h);g.strokeStyle='#222';g.lineWidth=5;g.strokeRect(4,4,w-8,h-8);g.fillStyle='#b3201a';g.textAlign='center';g.textBaseline='middle';g.font='bold 42px sans-serif';g.fillText('小',w/2,48);g.fillText('心',w/2,96);g.font='bold 20px sans-serif';g.fillStyle='#222';g.fillText('CAUTION',w/2,150);g.fillRect(20,168,w-40,3)});
+    const ys=new THREE.Mesh(new THREE.PlaneGeometry(.7,1.14),new THREE.MeshLambertMaterial({map:yTex}));ys.position.set(sx+2.2,R+1.9,fz+.03);cg.add(ys);
+    const wlamp=new THREE.Mesh(new THREE.BoxGeometry(.5,.2,.25).translate(sx,R+3.35,fz+.14),new THREE.MeshLambertMaterial({color:0xdedacb}));wlamp.userData.neon=0xfff0c0;landmarkLights.push(wlamp);cg.add(wlamp);
+    const vent=new THREE.Mesh(new THREE.BoxGeometry(1.6,.9,1.2).translate(sx-2.5,R+SH+.7,sz),new THREE.MeshLambertMaterial({color:0x8d9296}));cg.add(vent);
+    const tank=new THREE.Mesh(new THREE.CylinderGeometry(.8,.8,1.3,12).translate(sx+2.4,R+SH+.9,sz),new THREE.MeshLambertMaterial({color:0xb7b9b5}));cg.add(tank)}
    // spotters with cameras along the runway-side parapet
    const pm=[0xf0c9c9,0x2f4f8a,0xe9e6dc,0x8a2f2f,0x3a6b3a];for(let i=0;i<9;i++){const q=rwP(cs-44+i*11+rr(-2,2),cl+W/2-5);const body=new THREE.Mesh(new THREE.BoxGeometry(.5,1.1,.3).translate(0,.95,0),new THREE.MeshLambertMaterial({color:pick(pm)}));body.position.set(q[0],RWY.elev+ch+.3,q[1]);scene.add(body);
      const legs=new THREE.Mesh(new THREE.BoxGeometry(.4,.8,.25).translate(0,.4,0),new THREE.MeshLambertMaterial({color:0x2b3550}));legs.position.copy(body.position);scene.add(legs);
