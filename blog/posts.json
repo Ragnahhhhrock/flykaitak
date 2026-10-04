@@ -1,5 +1,39 @@
 [
   {
+    "slug": "real-housing-estates-from-hd-data",
+    "title": "Real Housing Authority estates",
+    "dek": "The 1998 public housing estates now come from the Housing Authority's list, each built from its real block types.",
+    "description": "Public housing estates now use the Housing Authority's estate list: the 101 estates from 1998 inside the map, each rebuilt from its real block types and heights.",
+    "date": "2026-10-04",
+    "tag": "Update",
+    "category": "scenery",
+    "keywords": [
+      "public housing",
+      "Housing Authority",
+      "housing estates",
+      "Wang Tau Hom",
+      "Wong Tai Sin",
+      "Hong Kong",
+      "Kai Tak",
+      "flight simulator"
+    ],
+    "hero": "real-estates-wang-tau-hom",
+    "hero_alt": "Wang Tau Hom Estate: cross-plan towers in blue and orange standing together on the hillside, with lift motor rooms and water tanks on the roofs.",
+    "hero_caption": "Wang Tau Hom Estate: cross-plan towers in two pastel shades, each with a roof machine room and water tank.",
+    "card_kicker": "SCENERY · HOUSING",
+    "card_title": "Real housing estates",
+    "card_sub": "From the Housing Authority list",
+    "card_image": "real-estates-wang-tau-hom",
+    "card_focus": 50,
+    "zh": {
+      "title": "真實房屋署屋邨",
+      "dek": "1998 年嘅公共屋邨而家用房屋署清單，按真實大廈類型來起。",
+      "description": "公共屋邨而家用房屋署嘅屋邨清單：地圖內 101 個 1998 年已入伙嘅屋邨，各按真實大廈類型同高度重建。",
+      "hero_alt": "橫頭磡邨：藍色同橙色嘅十字形大廈企喺山坡，天台有機房同水缸。",
+      "hero_caption": "橫頭磡邨：兩種粉彩色嘅十字形大廈，天台都有機房同水缸。"
+    }
+  },
+  {
     "slug": "public-housing-estates",
     "title": "Public housing estates in bunches",
     "dek": "Cross, Y, twin-tower and slab blocks now stand in matching groups, with pastel facades and rooftop tanks.",
