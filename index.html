@@ -1600,7 +1600,7 @@ let rbMasts13=[],rbMasts31=[],papi,papi31,rwyLights,rwyLights31,leadIn,leadIn31,
    G2W turns a stand-frame point into runway coordinates (s,l); V2 does the same for a direction. */
 const STAND_S=[166,237,313,380,448,533,620,702];  // stand centre lines (S), as measured from the airport chart
 const STAND_TY=['b744','a333','b772','a333','b744','a343','b772','a333'];   // the aircraft parked at the stands when no traffic is using them
-const NST=8,NACT=6;                               // stands built, and stands used by the scheduled turnarounds (7 and 8 always hold a parked aircraft)
+const NST=8,NACT=6,CYC=750;                               // stands built, and stands used by the scheduled turnarounds (7 and 8 always hold a parked aircraft)
 const G2W=(S,L)=>[L+647,-S],V2=(a,b)=>[b,-a];
 const DOOR_L=-703,DOOR_BACK=9,NOSE_GEAR=.39;      // door position (L), door distance behind the nose, nose gear as a fraction of the length ahead of the centre
 const standL=ty=>DOOR_L+AC[ty].len/2-DOOR_BACK;   // aircraft centre (L) that puts the forward door at the bridge cab
@@ -2553,22 +2553,16 @@ function radioPump(dt){
   else if(RAD.gap>0)RAD.gap-=dt;
   if(!RAD.cur&&RAD.gap<=0&&RAD.q.length){const m=RAD.q.shift();m.t=Math.max(2,spokenize(m.text).length*.056)+.3;RAD.cur=m;if(CFG.sound)sfx.squelch();radioShow(m)}
 }
+// Random crew chatter is only for Approach. Every runway clearance, to the AI traffic or to the player, comes from runway control (rcTower and atcUpdate)
 function chatter(freq){
+  if(freq!=='APP')return;
   const oc=OTHERS[(Math.random()*OTHERS.length)|0],W=windText();
   const E=LND.id==='31',R=E?'31':'13',sight=E?'Lei Yue Mun':'checkerboard';
   const A=[
     [['APP',E?`${oc}, Hong Kong Approach, cleared visual approach runway 31. Report Lei Yue Mun in sight.`:`${oc}, Hong Kong Approach, cleared IGS approach runway 13. Report checkerboard in sight.`],['OTH',E?`Cleared visual approach 31, wilco, ${oc}.`:`Cleared IGS 13, wilco, ${oc}.`]],
     [['APP',`${oc}, Hong Kong Approach, hold at waypoint Golf, minimum holding altitude 6000 feet. Expect further clearance in 5 minutes.`],['OTH',`Holding at Golf, ${oc}.`]],
     [['APP',`${oc}, contact Kai Tak Tower 118.7.`],['OTH',`118.7, ${oc}.`]]];
-  const T=[
-    [['TWR',`${oc}, Kai Tak Tower, ${W}, runway ${R} cleared to land.`],['OTH',`Cleared to land ${R}, ${oc}.`]],
-    [['TWR',`${oc}, line up and wait, runway ${R}.`],['OTH',`Line up and wait, ${oc}.`]],
-    [['TWR',`${oc}, ${W}, runway ${R} cleared for takeoff.`],['OTH',`Cleared for takeoff ${R}, ${oc}.`]],
-    [['OTH',`Kai Tak Tower, ${oc}, ${sight} in sight.`],['TWR',`${oc}, ${W}, runway ${R} cleared to land.`],['OTH',`Cleared to land ${R}, ${oc}.`]]];
-  // when the player is on the runway or final, other crews are only told to continue behind
-  const S=[[['TWR',`${oc}, Kai Tak Tower, continue approach, number 2 for runway ${R}.`],['OTH',`Continue approach, number 2, ${oc}.`]],
-    [['OTH',`Kai Tak Tower, ${oc}, ${sight} in sight.`],['TWR',`${oc}, continue approach, I will call your landing clearance.`],['OTH',`Continue, ${oc}.`]]];
-  const L=freq==='APP'?A:CFG.game==='watch'?T:S;for(const [who,t] of L[(Math.random()*L.length)|0])radioSay(who,t);
+  const L=A;for(const [who,t] of L[(Math.random()*L.length)|0])radioSay(who,t);
 }
 function atcUpdate(dt){
   const s=ST;
@@ -2580,20 +2574,33 @@ function atcUpdate(dt){
   const once=k=>{if(RAD.flags[k]!==undefined)return false;RAD.flags[k]=s.t;return true};
   const call=RAD.call,full=call+' Heavy',q=QNH[CFG.wx],W=windText(),wet=WX[CFG.wx].rain>.3?', runway wet':'';
   let freq='APP';
-  if(CFG.game==='watch'){RAD.next-=dt;if(RAD.next<=0&&!RAD.q.length&&!RAD.cur){chatter(Math.random()<.4?'APP':'TWR');RAD.next=14+Math.random()*16}return}
+  if(CFG.game==='watch'){rcTower(once,W);RAD.next-=dt;if(RAD.next<=0&&!RAD.q.length&&!RAD.cur){chatter('APP');RAD.next=30+Math.random()*30}return}
   if(CFG.game==='approach'){
     const p=PATH.pts[s.pi],d=p.d,tD=PATH.turnD,E=LND.id==='31',sight=E?'Lei Yue Mun':'checkerboard';  // on 31, tD is the Lei Yue Mun gap
     if(s.t>1.5&&once('init')){
       if(E){radioSay('APP',`${full}, Hong Kong Approach, radar contact. Cleared visual approach runway 31, QNH ${q}. Report Lei Yue Mun in sight.`);radioSay('YOU',`Cleared visual approach 31, QNH ${q}, will report Lei Yue Mun in sight, ${call}.`)}
       else{radioSay('APP',`${full}, Hong Kong Approach, radar contact. Cleared IGS approach runway 13, QNH ${q}. Report checkerboard in sight.`);radioSay('YOU',`Cleared IGS 13, QNH ${q}, will report checkerboard, ${call}.`)}}
     else if(d<tD+4500&&d>tD&&once('handoff')){radioSay('APP',`${call}, contact Kai Tak Tower 118.7.`);radioSay('YOU',`118.7, ${call}.`);radioSay('TWR',`${call}, Kai Tak Tower, ${W}. Report ${sight} in sight.`)}
-    else if(d<tD+1800&&d>tD-400&&once('checker')){radioSay('YOU',`${E?'Lei Yue Mun':'Checkerboard'} in sight, ${call}.`);radioSay('TWR',`${call}, ${W}${visText()}${wet}, runway ${LND.id} cleared to land.`);radioSay('YOU',`Cleared to land ${LND.id}, ${call}.`)}
+    else if(d<tD+1800&&d>tD-400&&once('checker')){radioSay('YOU',`${E?'Lei Yue Mun':'Checkerboard'} in sight, ${call}.`)}
+    // landing clearance: only when the runway is clear, or will be clear before you cross the threshold; otherwise continue, then go around
+    if(RAD.flags.checker!==undefined&&RAD.flags.ldg===undefined&&!s.onGround&&d>0){
+      const eta=d/Math.max(s.Gs||s.V||0,40),why=rcClearBy(eta,'player');
+      if(!why){if(once('ldg')){radioSay('TWR',`${call}, ${W}${visText()}${wet}, runway ${LND.id} cleared to land.`);radioSay('YOU',`Cleared to land ${LND.id}, ${call}.`)}}
+      else if(RAD.flags.cont===undefined&&once('cont'))radioSay('TWR',`${call}, continue approach, ${why}. Expect clearance when it is clear.`);
+      else if(eta<=RC.GA+2&&once('goar')){radioSay('TWR',`${call}, go around, go around, ${why}.`);radioSay('YOU',`Going around, ${call}.`);toast('Go around: '+why);RC.viol++}}
+    rcTower(once,W);
     freq=RAD.flags.handoff!==undefined?'TWR':'APP';
     if(RAD.flags.init!==undefined&&s.t>25&&d>tD+800&&s.t-RAD.lastChk>45&&RAD.nChk<2&&!s.onGround){
       const dv=s.y-p.alt;
       if(dv<-50||dv>130){RAD.lastChk=s.t;RAD.nChk++;radioSay(freq,`${call}, check your height, you are ${dv<0?'below':'above'} the glidepath.`)}}
   }else if(CFG.game==='free'){
-    if(s.onGround&&!s.td&&s.t>2&&once('clr')){radioSay('TWR',`${full}, Kai Tak Tower, ${W}${wet}, runway ${LND.id} cleared for takeoff.`);radioSay('YOU',`Cleared for takeoff ${LND.id}, ${call}.`)}
+    // take-off clearance: only when the runway is clear and nothing on final can reach the threshold before you are airborne (about 55 s)
+    if(s.onGround&&!s.td&&s.t>2&&RAD.flags.clr===undefined&&(s.Gs||0)<8){
+      const why=rcTakeoffWhy();
+      if(!why){if(once('clr')){radioSay('TWR',`${full}, Kai Tak Tower, ${W}${wet}, runway ${LND.id} cleared for takeoff.`);radioSay('YOU',`Cleared for takeoff ${LND.id}, ${call}.`)}}
+      else if(once('hold'))radioSay('TWR',`${full}, Kai Tak Tower, hold position, ${why}.`)}
+    else if(s.onGround&&!s.td&&(s.Gs||0)>=8&&RAD.flags.clr===undefined&&once('noclr')){radioSay('TWR',`${full}, you are not cleared for takeoff. Stop immediately.`);toast('Not cleared for take-off');RC.viol++}
+    rcTower(once,W);
     if(!s.onGround&&s.ra/FT>400&&once('dep')){radioSay('TWR',`${call}, contact Approach 119.1.`);radioSay('YOU',`119.1, ${call}.`);radioSay('APP',`${call}, Hong Kong Approach, radar contact, QNH ${q}. Report leaving the zone.`)}
     freq=RAD.flags.dep!==undefined?'APP':'TWR';
   }
@@ -2973,33 +2980,30 @@ function aiWrap(type,tail){const m=buildAircraftModel(AC[type],{tail,cheat:tail,
   const ll=makeLights([0,AC[type].cy-1,-AC[type].len*.48,1,.97,.9,9,-1]),lt=makeLights(L);ll.userData.isLights=lt.userData.isLights=true;m.add(lt,ll);m.userData.ll=ll;m.userData.type=type;return m}
 function buildAI(){
   for(const a of AI){scene.remove(a.m)}AI.length=0;standsFree();
-  const mk=(type,tail,fn,role)=>{const m=aiWrap(type,tail);scene.add(m);const a={m,fn,ll:m.userData.ll,type,tail,role};AI.push(a);return a};
+  const mk=(type,tail,fn,role)=>{const m=aiWrap(type,tail);scene.add(m);const a={m,fn,ll:m.userData.ll,type,tail,role,ga:null};AI.push(a);return a};
   const c0=PATH.pts[0].c,E=LND.id==='31',docks=[null,null,null,null,null,null],thrC=PATH.pts.find(q=>q.d<=0).c,tdAt=c=>(thrC+300-c)/76;
   const hide=j=>{parked[j].visible=false};
-  // a departure from stand j that lines up at global time tLine: the tug and bridge follow its pushback
+  // a departure from stand j that starts its take-off roll at global time tLine: the tug and bridge follow its pushback
   const dep=(ty,j,tLine,tail)=>{const S=STAND_S[j],L=(E?lineupT31:lineupT)(ty,S),dpf=E?departurePose31:departurePose;hide(j);
     const a=mk(ty,tail,t=>dpf(t+L-tLine,ty,S,0),'departure');a.stand=j;a.fid={role:'departure',j,li:AI_LIVERIES.indexOf(tail),t:tLine-L};a.bridge=t=>1-sstep(-20,-3,t+L-tLine);
     GSEK.ptug.list[j].fn=t=>tugAt(ty,S,(a.tau??t)+L-tLine);docks[j]=false;return a};
-  // an arrival: c is its distance along the approach path at t=0, tsh a delay in seconds
+  // an arrival that crosses the threshold at global time thrT (tsh is the delay, in seconds, before it starts down the approach from distance c)
   const arr=(ty,j,c,tsh,tail)=>{const S=STAND_S[j],dk=arrivalPts(c,S,ty).dock+tsh;hide(j);
-    const a=mk(ty,tail,t=>arrivalPose(t-tsh,c,j,ty),'arrival');a.stand=j;a.fid={role:'arrival',j,li:AI_LIVERIES.indexOf(tail),t:tsh+tdAt(c)};a.bridge=t=>sstep(dk+4,dk+20,t);docks[j]=dk;return a};
-  if(E){  // Runway 31 flow: one departure ahead of you, one arrival two minutes ahead and one behind, holds out to the south-east
-    dep('a333',4,30,AI_LIVERIES[0]);
-    arr('b744',0,c0+8600,0,AI_LIVERIES[1]);
-    dep('b772',5,421,AI_LIVERIES[2]);
-    arr('a343',1,c0,85,AI_LIVERIES[3]);
-    mk('b744',AI_LIVERIES[4],t=>holdingPose(t,8000,13500,1850,2600,0),'holding').fid={role:'holding',li:4,hi:0};
-    mk('a333',AI_LIVERIES[5],t=>holdingPose(t,8000,13500,2150,2600,Math.PI),'holding').fid={role:'holding',li:5,hi:1};
-    dep('b744',3,717,AI_LIVERIES[6]);
-  }else{
-    dep('a333',4,67,AI_LIVERIES[0]);                       // departs before you arrive
-    arr('b744',0,c0+8600,0,AI_LIVERIES[1]);                // lands about two minutes ahead of you
-    dep('b772',5,171,AI_LIVERIES[2]);                      // lines up once the runway is clear
-    arr('a343',1,c0,85,AI_LIVERIES[3]);                   // following you in on the IGS
-    mk('b744',AI_LIVERIES[4],t=>holdingPose(t,-11000,5200,1850,2600,0),'holding').fid={role:'holding',li:4,hi:0};         // holding west of the harbour
-    mk('a333',AI_LIVERIES[5],t=>holdingPose(t,-11000,5200,2150,2600,Math.PI),'holding').fid={role:'holding',li:5,hi:1};   // the next level up
-    dep('b744',3,486,AI_LIVERIES[6]);
-  }
+    const a=mk(ty,tail,t=>arrivalPose(t-tsh,c,j,ty),'arrival');a.stand=j;a.fid={role:'arrival',j,li:AI_LIVERIES.indexOf(tail),t:tsh+tdAt(c)};a.bridge=t=>sstep(dk+4,dk+20,t);docks[j]=dk;
+    rcArm(a,t=>c+76*(t-tsh));return a};
+  // The runway plan, made with the numbers runway control enforces. Tp is when the player crosses the threshold if flying the approach as
+  // flown by the autopilot. An arrival lands ahead of the player, with a departure rolling in the gap between them, and another departure
+  // goes before that arrival; one more arrival and departure follow the player. Each departure rolls RC.LU seconds after the arrival ahead
+  // has cleared the runway and is airborne at least RC.BUF seconds before the next arrival crosses the threshold.
+  const Tp=(thrC-c0)/76-3,T1=Tp-(rcVac('b744')+RC.LU+rcRoll('b772')+RC.BUF+14),R1=T1-RC.BUF-rcRoll('a333')-10,R2=T1+rcVac('b744')+RC.LU+3,
+    T3=Tp+130,R3=T3+rcVac('a343')+RC.LU+3;
+  dep('a333',4,R1,AI_LIVERIES[0]);                                   // departs before the arrival ahead of you
+  arr('b744',0,thrC-76*T1,0,AI_LIVERIES[1]);                          // lands about two minutes ahead of you
+  dep('b772',5,R2,AI_LIVERIES[2]);                                   // rolls once the runway is clear, in the gap before you
+  arr('a343',1,c0,T3-(thrC-c0)/76,AI_LIVERIES[3]);                    // follows you in on the approach
+  mk('b744',AI_LIVERIES[4],t=>holdingPose(t,E?8000:-11000,E?13500:5200,1850,2600,0),'holding').fid={role:'holding',li:4,hi:0};
+  mk('a333',AI_LIVERIES[5],t=>holdingPose(t,E?8000:-11000,E?13500:5200,2150,2600,Math.PI),'holding').fid={role:'holding',li:5,hi:1};
+  dep('b744',3,R3,AI_LIVERIES[6]);
   gseSyncStands(docks,0);
 }
 function animateSurfaces(m,ail,elev,flap,spl){const S=m.userData.surf;if(!S)return;
@@ -3009,27 +3013,32 @@ function animateSurfaces(m,ail,elev,flap,spl){const S=m.userData.surf;if(!S)retu
   for(const o of S.spl)o.h.rotation.x=-clamp(spl,0,1)*50*D2R}
 function buildAISchedule(phase,wrapNeg,conc){
   for(const a of AI){scene.remove(a.m)}AI.length=0;standsFree();
-  const mk=(type,tail,fn,role)=>{const m=aiWrap(type,tail);scene.add(m);const a={m,fn,ll:m.userData.ll,type,tail,role};AI.push(a);return a};
+  const mk=(type,tail,fn,role)=>{const m=aiWrap(type,tail);scene.add(m);const a={m,fn,ll:m.userData.ll,type,tail,role,ga:null};AI.push(a);return a};
   const E=LND.id==='31',dpf=E?departurePose31:departurePose,lnf=E?lineupT31:lineupT;
-  const P=600,thrC=PATH.pts.find(p=>p.d<=0).c,c0=thrC+300-8000;
+  const P=CYC,SL=CYC/NACT,thrC=PATH.pts.find(p=>p.d<=0).c,c0=thrC+300-8000,thrK=(thrC-c0)/76;
   const loc=(t,off)=>{let k=t+phase-off;if(k<0&&!wrapNeg)return -1;return ((k%P)+P)%P};
-  // Six turnarounds, one per stand. The arriving aircraft taxis in, docks at the bridge and sits there; when its cycle restarts an
-  // identical aircraft takes its place, waits, is pushed back and departs. The wait puts the line-up in its usual slot
-  // (145 s after the arrival slot, 100 s apart), so the runway sequence is the same as before.
-  const m=E?0:1,docks=[];parked.forEach((q,i)=>{if(i<NACT)q.visible=false});
+  // Six turnarounds, one per stand, one every SL seconds. The arriving aircraft taxis in, docks at the bridge and sits there; when its cycle
+  // restarts an identical aircraft takes its place, waits, is pushed back and departs.
+  // The runway plan: arrival j crosses the threshold thrK seconds into its cycle and is clear of the runway rcVac seconds after that. The
+  // departure from the same stand starts its roll RC.LU seconds later and is airborne rcRoll seconds after that, which leaves at least RC.BUF
+  // seconds before the next arrival (SL later) crosses the threshold. SL is long enough for that (runway control checks it as it runs).
+  const kR=ty=>thrK+rcVac(ty)+RC.LU,docks=[];parked.forEach((q,i)=>{if(i<NACT)q.visible=false});
   // The Concorde visit (Plane Spotter only): every sixth cycle (an hour of sim time) the arrival into stand 6 is a Concorde, and in the next cycle
   // the departure from stand 6 is the same Concorde. conc.n is the cycle of the first visit. Stand 6's ordinary traffic gives way in those two cycles.
-  const CV=conc?{NP:6,n:conc.n}:null,CY=(t,o)=>Math.floor((t+phase-o)/P),isCA=n=>!!CV&&(((n-CV.n)%CV.NP)+CV.NP)%CV.NP===0,isCD=n=>isCA(n-1),holdC=145+100*m-lnf('conc',STAND_S[5]);
-  for(let j=0;j<NACT;j++){const off=j*100,ty=STAND_TY[j],S=STAND_S[j],tail=AI_LIVERIES[j];
-    const dk=arrivalPts(c0,S,ty).dock;docks[j]=100*j-phase+dk;
-    const A=mk(ty,tail,t=>{const k=loc(t,off);return k<0||(j===5&&isCA(CY(t,off)))?null:arrivalPose(k,c0,j,ty)},'arrival');A.stand=j;A.fid={role:'arrival',j,li:j,sched:true,off,P,ph:phase,k:(thrC+300-c0)/76};A.bridge=t=>{const k=loc(t,off);return k<0||(j===5&&isCA(CY(t,off)))?0:sstep(dk+4,dk+20,k)};
-    const hold=145+100*m-lnf(ty,S);
-    const D=mk(ty,tail,t=>{if(j===5&&isCD(CY(t,off)))return null;const k=loc(t,off);return k<0?(hold<0?null:dpf(0,ty,S,hold)):dpf(k,ty,S,hold)},'departure');D.stand=j;D.fid={role:'departure',j,li:j,sched:true,off,P,ph:phase,k:hold};D.bridge=t=>{if(j===5&&isCD(CY(t,off)))return 0;const k=loc(t,off);return k<0?1:1-sstep(-20,-3,k-hold)};
+  const CV=conc?{NP:6,n:conc.n}:null,CY=(t,o)=>Math.floor((t+phase-o)/P),isCA=n=>!!CV&&(((n-CV.n)%CV.NP)+CV.NP)%CV.NP===0,isCD=n=>isCA(n-1),holdC=kR('conc')-lnf('conc',STAND_S[5]);
+  const SLOT=[0,1,2,5,3,4];   // the order the stands take their turn on the runway (chosen so that neighbouring movements on the apron seldom meet)
+  for(let j=0;j<NACT;j++){const off=SLOT[j]*SL,ty=STAND_TY[j],S=STAND_S[j],tail=AI_LIVERIES[j];
+    const dk=arrivalPts(c0,S,ty).dock;docks[j]=SL*SLOT[j]-phase+dk;
+    const A=mk(ty,tail,t=>{const k=loc(t,off);return k<0||(j===5&&isCA(CY(t,off)))?null:arrivalPose(k,c0,j,ty)},'arrival');A.stand=j;A.kf=t=>loc(t,off);A.fid={role:'arrival',j,li:j,sched:true,off,P,ph:phase,k:(thrC+300-c0)/76};A.bridge=t=>{const k=loc(t,off);return k<0||(j===5&&isCA(CY(t,off)))?0:sstep(dk+4,dk+20,k)};
+    rcArm(A,t=>c0+76*Math.max(0,loc(t,off)),t=>CY(t,off));
+    const hold=kR(ty)-lnf(ty,S);
+    const D=mk(ty,tail,t=>{if(j===5&&isCD(CY(t,off)))return null;const k=loc(t,off);return k<0?(hold<0?null:dpf(0,ty,S,hold)):dpf(k,ty,S,hold)},'departure');D.stand=j;D.kf=t=>loc(t,off);D.fid={role:'departure',j,li:j,sched:true,off,P,ph:phase,k:hold};D.bridge=t=>{if(j===5&&isCD(CY(t,off)))return 0;const k=loc(t,off);return k<0?1:1-sstep(-20,-3,k-hold)};
     GSEK.ptug.list[j].fn=t=>{const q=D.tau??t,k=loc(q,off),c=j===5&&isCD(CY(q,off));return tugAt(c?'conc':ty,S,(k<0?0:k)-(c?holdC:hold))}}
-  if(CV){const j=5,S=STAND_S[j],ty='conc',tail=AI_LIVERIES[1],PV=P*CV.NP,o0=500+P*CV.n,lv=(t,o)=>((t+phase-o)%PV+PV)%PV,dkC=arrivalPts(c0,S,ty).dock;
-    const CA=mk(ty,tail,t=>{const k=lv(t,o0);return k<P?arrivalPose(k,c0,j,ty):null},'arrival');CA.stand=j;
+  if(CV){const j=5,S=STAND_S[j],ty='conc',tail=AI_LIVERIES[1],PV=P*CV.NP,o0=SL*SLOT[5]+P*CV.n,lv=(t,o)=>((t+phase-o)%PV+PV)%PV,dkC=arrivalPts(c0,S,ty).dock;
+    const CA=mk(ty,tail,t=>{const k=lv(t,o0);return k<P?arrivalPose(k,c0,j,ty):null},'arrival');CA.stand=j;CA.kf=t=>{const k=lv(t,o0);return k<P?k:-1};
     CA.fid={role:'arrival',j,li:1,sched:true,sp:'arr',off:o0,P:PV,ph:phase,k:(thrC+300-c0)/76};CA.bridge=t=>{const k=lv(t,o0);return k<P?sstep(dkC+4,dkC+20,k):0};
-    const DC=mk(ty,tail,t=>{const k=lv(t,o0+P);return k<P?dpf(k,ty,S,holdC):null},'departure');DC.stand=j;
+    rcArm(CA,t=>c0+76*Math.min(lv(t,o0),P),t=>Math.floor((t+phase-o0)/PV));
+    const DC=mk(ty,tail,t=>{const k=lv(t,o0+P);return k<P?dpf(k,ty,S,holdC):null},'departure');DC.stand=j;DC.kf=t=>{const k=lv(t,o0+P);return k<P?k:-1};
     DC.fid={role:'departure',j,li:1,sched:true,sp:'dep',off:o0+P,P:PV,ph:phase,k:holdC};DC.bridge=t=>{const k=lv(t,o0+P);return k<P?1-sstep(-20,-3,k-holdC):0}}
   const hx=E?8000:-11000,hz=E?13500:5200;
   mk('b744',AI_LIVERIES[4],t=>holdingPose(t,hx,hz,1850,2600,0),'holding').fid={role:'holding',li:4,hi:0};
@@ -3046,7 +3055,7 @@ const FIDS_LONG=[['London','倫敦'],['Frankfurt','法蘭克福'],['Amsterdam','
 const FIDS_REG=[['Tokyo Narita','東京成田'],['Osaka Kansai','大阪關西'],['Seoul Kimpo','漢城金浦'],['Taipei','台北'],['Singapore','新加坡'],['Bangkok','曼谷'],['Manila','馬尼拉'],['Kuala Lumpur','吉隆坡'],['Jakarta','雅加達'],['Beijing','北京'],['Shanghai','上海'],['Hanoi','河內'],['Ho Chi Minh','胡志明市'],['Bali','峇里']];
 // status key: [English, Cantonese, colour class]
 const FIDS_ST={exp:['Expected','預計抵港','warn'],app:['On approach','進場中','warn'],fin:['Short final','最後進場','go'],ldg:['Landed','已降落','ok'],txi:['Taxiing','滑行中','ok'],stn:['At stand','已泊位','ok'],hld:['Holding','空中等候','warn'],
-  brd:['Boarding','登機中','warn'],psh:['Pushback','推出機位','ok'],wait:['Holding','地面等候','warn'],tko:['Take-off','起飛中','go'],dep:['Departed','已起飛','ok']};
+  brd:['Boarding','登機中','warn'],psh:['Pushback','推出機位','ok'],wait:['Holding','地面等候','warn'],ga:['Go-around','復飛','warn'],tko:['Take-off','起飛中','go'],dep:['Departed','已起飛','ok']};
 const fidsH=(a,b,c)=>{let h=Math.imul(a+1,2654435761)^Math.imul(b+7,1597334677)^Math.imul(c+13,3812015801);h^=h>>>15;h=Math.imul(h,2246822519);h^=h>>>13;return h>>>0};
 const fidsT0=()=>CFG.night?78000:37200;   // 21:40 at night, 10:20 by day
 const fidsHM=s=>{s=((Math.round(s/60)*60)%86400+86400)%86400;return String(s/3600|0).padStart(2,'0')+':'+String(s%3600/60|0).padStart(2,'0')};
@@ -3059,7 +3068,7 @@ function fidsRow(a,t){
   const H=fidsH(f.li,f.role==='arrival'?1:f.role==='departure'?2:3,n),L=fidsLong(a.type)?FIDS_LONG:FIDS_REG,car=FIDS_CAR[f.li%FIDS_CAR.length];
   const atStand=!!p&&f.j!=null&&Math.hypot(rwS(p.x,p.z)-(standL(a.type)+647),rwL(p.x,p.z)+STAND_S[f.j])<6,onRwy=!!p&&Math.abs(rwL(p.x,p.z))<25;
   let k;
-  if(f.role==='arrival')k=!p?'exp':air?(t0-tn<75?'fin':'app'):v>25?'ldg':(v>.5||!atStand)?'txi':'stn';
+  if(f.role==='arrival')k=a.ga!=null?'ga':!p?'exp':air?(t0-tn<75?'fin':'app'):v>25?'ldg':(v>.5||!atStand)?'txi':'stn';
   else if(f.role==='departure')k=!p||air?'dep':onRwy&&v>.5?'tko':p.push?(atStand&&v<.5?'brd':'psh'):v>.5?'txi':'wait';
   else k='hld';
   return {role:f.role==='departure'?'dep':'arr',t:t0,no:SP?'SSC '+(f.sp==='arr'?'001':'002'):car[0]+' '+(100+H%900),car:SP?SP.car:car,city:SP?SP.city:L[(H>>>8)%L.length],sp:!!SP,stand:f.j!=null?String(f.j+1):'',k,li:f.li,
@@ -3188,14 +3197,15 @@ function aiHit(ea,eb,t){
   if(window.__kt)window.__kt.hits=(window.__kt.hits||[]).concat([{t,a:ea.A.short,b:eb.A.short,ka:ha.k,kb:hb.k,ia:ea.i,ib:eb.i,ya:ea.y,yb:eb.y}])}
 
 // ---- ground control
-const AIC={t:null,ref:null,snap:new Map(),step:.5,margin:9,dec:.6,acc:.35,sec:-1,off:false,maxHold:0,OFF:(()=>{const o=[];for(let i=0;i<=20;i++)o.push(i*1.2);for(let t=27;t<=72;t+=3)o.push(t);return o})()};
-const aiRank=i=>(AI[i].role==='arrival'?1:AI[i].role==='departure'?2:3)*100+i;
+const AIC={commit:1,rejoin:0,lowStill:0,agem:1,stillMg:5,dyn:1,t:null,ref:null,snap:new Map(),step:.5,margin:9,dec:.6,acc:.35,sec:-1,off:false,maxHold:0,OFF:(()=>{const o=[];for(let i=0;i<=20;i++)o.push(i*1.2);for(let t=27;t<=72;t+=3)o.push(t);return o})()};
+// who gives way: arrivals before departures, and within a kind the one further along its turnaround (the one at the head of the queue)
+const aiRank=i=>{const a=AI[i],k=a.kf&&AIC.dyn?a.kf(a.tau):-1;return (a.role==='arrival'?1:a.role==='departure'?2:3)*2000+1000-clamp(k,-1,999)+i*.001};
 function aiCtlInit(t){AIC.t=t;AIC.ref=AI[0]||null;AIC.snap.clear();AIC.sec=Math.floor(t);AIC.maxHold=0;
-  for(const a of AI){a.tau=t;a.r=1;a.hold=0;a.wreck=false;a.wp=null;a.hitT=Infinity}aiSnap()}
-function aiSnap(){AIC.snap.set(AIC.sec,{t:AIC.t,a:AI.map(a=>({tau:a.tau,r:a.r,hold:a.hold,wreck:a.wreck,wp:a.wp,hitT:a.hitT}))});if(AIC.snap.size>900)AIC.snap.delete(AIC.snap.keys().next().value)}
+  for(const a of AI){a.tau=t;a.r=1;a.hold=0;a.wreck=false;a.wp=null;a.hitT=Infinity;a.ga=null;a.rce=null;a.rwhy=null}aiSnap()}
+function aiSnap(){AIC.snap.set(AIC.sec,{t:AIC.t,a:AI.map(a=>({tau:a.tau,r:a.r,hold:a.hold,wreck:a.wreck,wp:a.wp,hitT:a.hitT,ga:a.ga}))});if(AIC.snap.size>900)AIC.snap.delete(AIC.snap.keys().next().value)}
 function aiRestore(t){let k=Math.floor(t);while(k>=0&&!AIC.snap.has(k)&&k>AIC.sec-900)k--;
   const s=AIC.snap.get(k);if(!s){aiCtlInit(t);return}
-  AI.forEach((a,i)=>{const q=s.a[i];if(a.wreck&&!q.wreck)aiRepair(a);a.tau=q.tau;a.r=q.r;a.hold=q.hold;a.wreck=q.wreck;a.wp=q.wp;a.hitT=q.hitT});
+  AI.forEach((a,i)=>{const q=s.a[i];if(a.wreck&&!q.wreck)aiRepair(a);a.tau=q.tau;a.r=q.r;a.hold=q.hold;a.wreck=q.wreck;a.wp=q.wp;a.hitT=q.hitT;a.ga=q.ga===undefined?null:q.ga;a.rce=null;a.rwhy=null});
   AIC.t=s.t;AIC.sec=k;for(const key of[...AIC.snap.keys()])if(key>k)AIC.snap.delete(key)}
 function aiRepair(a){const old=a.m,m=aiWrap(a.type,a.tail);m.position.copy(old.position);m.rotation.copy(old.rotation);m.visible=old.visible;scene.remove(old);scene.add(m);a.m=m;a.ll=m.userData.ll;
   for(let i=EMIT.length-1;i>=0;i--)if(EMIT[i].m===old)EMIT.splice(i,1);a.wreck=false;a.wp=null;a.hitT=Infinity}
@@ -3210,22 +3220,34 @@ function aiCtlStep(dt){
     S[i]=s;if(!vis){cls[i]='taxi';continue}   // waiting to appear: it holds off while its stand or its way would be in use
     const p1=s[1],v=p1?Math.hypot(p1.x-p0.x,p1.z-p0.z,p1.y-p0.y)/OFF[1]:0;cls[i]=p0.y>E+1.5||v>12?'fast':mv?'taxi':'frozen'}
   const at=(i,k)=>{const c=fp[i]||(fp[i]=[]);let f=c[k];if(f===undefined){const s=S[i],p=s[Math.min(k,s.length-1)];f=c[k]=p?fpAt(footOf(AC[AI[i].type]),p.x,p.z,p.psi,p.y):null}return f};
-  if(!AIC.off)for(let i=0;i<n;i++){if(cls[i]!=='taxi')continue;const ri=aiRank(i);
+  const cmNow=new Array(n).fill(false);
+  if(!AIC.off)for(let i=0;i<n;i++){if(cls[i]!=='taxi')continue;const ri=aiRank(i),mgI=AIC.agem?Math.max(2.5,AIC.margin-Math.max(0,AI[i].hold-20)*.25):AIC.margin;   // a long wait makes the room asked for smaller, so a gridlock of near neighbours always dissolves
     for(let j=0;j<n&&!hold[i];j++){if(j===i||cls[j]==='gone'||cls[j]==='air')continue;
-      const cj=cls[j];if(cj==='taxi'&&aiRank(j)>ri)continue;
-      const still=cj==='frozen'||AI[j].r<.3;
-      for(let k=0;k<=K;k++){const si=S[i],sj=S[j],pi=si[Math.min(k,si.length-1)],pj=sj[Math.min(still?0:k,sj.length-1)];if(!pi||!pj||Math.abs(pi.x-pj.x)>115||Math.abs(pi.z-pj.z)>115)continue;   // far apart: no footprints needed
+      const cj=cls[j];let kMax=K,mg=mgI;
+      if(cj==='taxi'&&aiRank(j)>ri&&!AI[j].cm){if(!(AI[j].r<.3&&S[j][0])||!(AIC.lowStill||AI[j].stand===AI[i].stand))continue;kMax=5;mg=Math.min(mg,4)}   // a lower rank may be waiting in the way: never drive into it, though it need not be given room
+      const still=cj==='frozen'||AI[j].r<.3;if(still)mg=Math.min(mg,AIC.stillMg);   // something standing still needs less room than something that may move
+      for(let k=0;k<=kMax;k++){const si=S[i],sj=S[j],pi=si[Math.min(k,si.length-1)],pj=sj[Math.min(still?0:k,sj.length-1)];if(!pi||!pj||Math.abs(pi.x-pj.x)>115||Math.abs(pi.z-pj.z)>115)continue;   // far apart: no footprints needed
         const A=at(i,k),B=at(j,still?0:k);if(!A||!B||!vOver(A,B))continue;
-        if(fpDist(A,B,AIC.margin)<AIC.margin){hold[i]=true;AI[i].why=j;break}}}}
+        if(fpDist(A,B,mg)<mg){
+          // an aircraft that could not stop here without blocking the other's way is committed: it carries on and the other gives way
+          if(AIC.commit&&aiRank(j)<ri&&cj==='taxi'&&!still){const Z=at(i,Math.min(2,S[i].length-1));let blk=false;
+            if(Z)for(let k2=0;k2<=K&&!blk;k2++){const Bj=at(j,k2);if(Bj&&vOver(Z,Bj)&&fpDist(Z,Bj,4)<4)blk=true}
+            if(blk){AI[i].cm=1;cmNow[i]=true;break}}
+          hold[i]=true;AI[i].why=j;AI[i].whyK=k;break}}}}
+  for(let i=0;i<n;i++)if(!cmNow[i])AI[i].cm=0;
+  if(!AIC.off)rcHolds(S,cls,hold);
   for(let i=0;i<n;i++){const a=AI[i];
     if(a.wreck){continue}
+    if(a.ga!==null&&a.cycN&&a.cycN(a.tau)!==a.cycN(a.ga)){a.ga=null;a.rce=null}
     const held=hold[i]&&cls[i]==='taxi',lag=AIC.t-a.tau;
     a.r+=clamp((held?0:1)-a.r,-dt*AIC.dec,dt*AIC.acc);a.tau+=a.r*dt;
     // back on schedule: out of sight, or standing still, the lag is dropped at once; in the air it is made up gently
     if(lag>.4&&!held){if(cls[i]==='gone'||cls[i]==='air'){const q=a.fn(AIC.t);if(!q||Math.hypot(q.x,q.z)>30000||cls[i]==='air')a.tau=cls[i]==='air'?a.tau+Math.min(lag,dt*.15):AIC.t}
       else if(cls[i]==='frozen'){const q=a.fn(AIC.t),p=S[i][0];if(q&&p&&Math.hypot(q.x-p.x,q.z-p.z)<.5)a.tau=AIC.t}
       else if(cls[i]==='fast')a.tau+=Math.min(lag,dt*.12)}
-    a.hold=a.r<.05?a.hold+dt:0;if(a.hold>AIC.maxHold)AIC.maxHold=a.hold}
+    a.hold=a.r<.05?a.hold+dt:0;if(a.hold>AIC.maxHold)AIC.maxHold=a.hold;
+    // a gridlock breaker: an aircraft that has waited this long, in a queue that will not clear, rejoins the timetable where it should be now
+    if(AIC.rejoin&&a.hold>AIC.rejoin&&a.kf&&cls[i]==='taxi'){a.tau=AIC.t;a.r=1;a.hold=0;a.rce=null;a.ga=null}}
 }
 function aiControl(t){
   if(!AI.length)return;
@@ -3234,6 +3256,130 @@ function aiControl(t){
   if(t-AIC.t>240){aiCtlInit(t);return}
   let g=0;while(AIC.t<t-1e-6&&g++<600){const dt=Math.min(AIC.step,t-AIC.t);aiCtlStep(dt);AIC.t+=dt;if(Math.floor(AIC.t+1e-6)>AIC.sec){AIC.sec=Math.floor(AIC.t+1e-6);aiSnap()}}
 }
+
+/* =====================================================================
+   RUNWAY CONTROL. One runway, one movement at a time. The tower gives a landing clearance only when the runway is clear and will stay
+   clear until the arrival is down, and a take-off clearance only when the runway is clear and no arrival could reach the threshold
+   before the departure is airborne. Everything that uses the runway, the AI traffic and the player, is held to the same rules:
+     - an aircraft is ON the runway when any part of it is inside the strip (the runway and its holding distance, wing tips included)
+     - a departure holds short of the strip until it may enter, and waits at the line-up point until it may roll
+     - an arrival that finds the runway occupied 12 s before the threshold goes around
+   The AI timetable (buildAISchedule, buildAI) is planned with the same numbers, so in normal running nobody waits or goes around; the holds
+   and go-arounds are the safety net for when the player, or a ground hold, breaks the plan. Control runs on the clock of aiControl, so rewind
+   restores it exactly (a go-around is part of the snapshot).
+   ===================================================================== */
+const RC={PL:20,FIN:50,BUF:15,LU:3,GA:12,HL:2.8,log:[],base:'',V:null,pl:null,stat:{k:'clear',t:'CLEAR'},viol:0,vac:{}};
+const rcRoll=ty=>(AC[ty].vR||82)/2.2+1.5;           // roll start to lift-off (the departure pose accelerates at 2.2 m/s²)
+const rcStrip=(x,z,y,semi)=>{const s=rwS(x,z),l=rwL(x,z);return s>-30&&s<RWY.len+30&&Math.abs(l)<40+semi&&y<RWY.elev+64};
+// seconds from crossing the landing threshold to being clear of the strip, for this type on the runway in use (measured from the pose function)
+function rcVac(ty){const key=ty+LND.id;if(RC.vac[key]!==undefined)return RC.vac[key];
+  const thrC=PATH.pts.find(q=>q.d<=0).c,c0=thrC+300-8000,semi=AC[ty].span/2;let td=null,vac=null;
+  for(let t=60;t<300&&vac===null;t+=.25){const p=arrivalPose(t,c0,0,ty);if(!p)continue;
+    if(td===null&&p.y<=RWY.elev+.8&&Math.abs(rwL(p.x,p.z))<40)td=t;if(td!==null&&!rcStrip(p.x,p.z,p.y,semi))vac=t}
+  return RC.vac[key]=(vac===null?120:vac)-(thrC-c0)/76}
+// the first moment, on the aircraft's own clock and within u0..u1 seconds of now, when f(pose) holds (to 0.03 s); the start itself if it already does
+function rcFirst(a,f,u0,u1){
+  for(let u=u0;u<=u1;u++){const p=a.fn(a.tau+u);if(!p||!f(p))continue;if(u===u0)return a.tau+u0;
+    let lo=u-1,hi=u;for(let k=0;k<5;k++){const m=(lo+hi)/2,q=a.fn(a.tau+m);if(q&&f(q))hi=m;else lo=m}return a.tau+hi}
+  return null}
+// the runway events of one AI aircraft, found by looking ahead along its own timetable (cached, and renewed as its clock moves on)
+function rcEv(a){const c=a.rce;if(c&&a.tau>=c.t0&&a.tau<=c.t1-70)return c.ev;
+  const E=RWY.elev,semi=AC[a.type].span/2,ev={},u0=-10,u1=170,st=p=>rcStrip(p.x,p.z,p.y,semi);
+  if(a.role==='arrival'){
+    ev.thr=rcFirst(a,p=>{const q=lS(p.x,p.z);return q>=0&&q<400&&p.y<E+90&&Math.abs(lL(p.x,p.z))<400},u0,u1);                    // over the threshold
+    ev.td=rcFirst(a,p=>p.y<=E+.8&&lS(p.x,p.z)>=0&&Math.abs(rwL(p.x,p.z))<40,u0,u1);                    // wheels down on the centre line
+    if(ev.td!==null)ev.vac=rcFirst(a,p=>!st(p),Math.max(u0,ev.td-a.tau+.5),u1+60)}                       // clear of the strip
+  else if(a.role==='departure'){
+    ev.ent=rcFirst(a,p=>st(p)&&p.y<E+3,u0,u1);                                                          // enters the strip
+    ev.line=rcFirst(a,p=>st(p)&&lS(p.x,p.z)>=TAXI_END_S-.05&&Math.abs(rwL(p.x,p.z))<1&&p.y<E+1,u0,u1); // at the line-up point, about to roll
+    ev.air=rcFirst(a,p=>p.y>E+3,u0,u1)}                                                                 // airborne
+  a.rce={t0:a.tau+u0,t1:a.tau+u1,ev};return ev}
+// the player as a runway user: on the strip (a departure until it has touched down, then an arrival), or inbound with an arrival time
+function rcPlayer(){
+  if(!ST||(mode!=='fly'&&mode!=='attract'&&mode!=='ended')||CFG.game==='watch')return null;
+  const s=ST,E=RWY.elev,g=s.onGround||s.y<E+3,o={grd:false,kind:s.td?'arr':'dep',eta:null};
+  o.grd=g&&rcStrip(s.x,s.z,s.y,s.ac.span/2);
+  const p=PATH.pts[s.pi];
+  if(!g&&p&&p.d>-300&&s.y<p.alt+300&&Math.abs(pathLateral(s.pi,s.x,s.z))<600&&!s.ended)o.eta=Math.max(0,p.d)/Math.max(s.Gs||s.V||0,40);
+  return o}
+// who is on the strip and who is inbound, from the poses S[j][0] that the control step already holds
+function rcView(S,cls){const E=RWY.elev,V=new Array(AI.length).fill(null);
+  for(let j=0;j<AI.length;j++){const a=AI[j];if(a.role==='holding'||cls[j]==='gone')continue;
+    const p=S[j]&&S[j][0],ev=rcEv(a),semi=AC[a.type].span/2;
+    V[j]={a,grd:!!p&&p.y<E+3&&rcStrip(p.x,p.z,p.y,semi),eta:a.role==='arrival'&&a.ga==null&&ev.thr!==null&&ev.td!==null&&a.tau<ev.td?ev.thr-a.tau:null}}
+  return V}
+// why a departure may not enter the strip ('enter') or start its roll ('roll'); null when it may
+function rcMay(i,V,pl,what){const a=AI[i],ev=rcEv(a);let free=0;   // free: when what is on the runway now will be off it, so the earliest the roll can start
+  if(what==='enter')for(let j=0;j<V.length;j++){const v=V[j];if(j===i||!v||!v.grd)continue;const b=v.a,eb=rcEv(b);
+    free=Math.max(free,b.rwhy?1e9:b.role==='departure'?(eb.air!==null?eb.air-b.tau+2:1e9):(eb.vac!==null?eb.vac-b.tau:1e9))}
+  const need=(what==='roll'?0:Math.max(free,(ev.line!==null?ev.line:a.tau)-a.tau,0))+rcRoll(a.type);
+  for(let j=0;j<V.length;j++){const v=V[j];if(j===i||!v)continue;
+    if(v.grd&&(what==='roll'||v.a.role==='departure'))return v.a.role==='departure'?'a departure is on the runway':'the runway is occupied';
+    if(v.eta!==null&&v.eta<need+RC.BUF)return 'traffic is on final'}
+  if(pl){if(pl.grd&&(what==='roll'||pl.kind==='dep'))return 'the runway is occupied';if(pl.eta!==null&&pl.eta<need+RC.BUF+(what==='enter'?RC.PL:0))return 'traffic is on final'}   // the player cannot be sent around by the plan, so a departure keeps well clear of its approach
+  return null}
+// will the runway be free of everything else when something reaches the threshold in eta seconds? null if so, else the reason
+function rcClearBy(eta,except){const V=RC.V||[],pl=RC.pl;
+  for(let j=0;j<V.length;j++){const v=V[j];if(!v||j===except||!v.grd)continue;const a=v.a,ev=rcEv(a);
+    const t=a.rwhy?1e9:a.role==='departure'?(ev.air!==null?ev.air-a.tau+2:1e9):(ev.vac!==null?ev.vac-a.tau:1e9);
+    if(t>eta-3)return a.role==='departure'?'a departure is on the runway':'the runway is occupied'}
+  if(pl&&pl.grd&&except!=='player')return 'the runway is occupied';
+  return null}
+// the control step: departures hold short and wait at the line-up point, arrivals that find the runway occupied go around
+function rcHolds(S,cls,hold){
+  const V=rcView(S,cls),pl=rcPlayer();RC.V=V;RC.pl=pl;
+  for(let i=0;i<AI.length;i++){const a=AI[i],v=V[i];if(!v||a.wreck)continue;
+    if(a.role==='departure'){
+      if(cls[i]!=='taxi'){a.rwhy=null;continue}
+      const ev=rcEv(a),tEnt=ev.ent!==null?ev.ent-a.tau:null,tLine=ev.line!==null?ev.line-a.tau:null;let why=null;
+      if(!v.grd&&tEnt!==null&&tEnt>=-.05&&tEnt<=RC.HL)why=rcMay(i,V,pl,'enter');
+      else if(v.grd&&tLine!==null&&tLine>=-.05&&tLine<=1)why=rcMay(i,V,pl,'roll');
+      if(why&&!a.rwhy)RC.log.push({t:AIC.t,ev:'hold',i,why});if(!why&&a.rwhy)RC.log.push({t:AIC.t,ev:'go',i});
+      a.rwhy=why;if(why)hold[i]=true}
+    else if(a.role==='arrival'&&a.ga==null&&v.eta!==null&&v.eta<=RC.GA&&v.eta>0&&cls[i]!=='frozen'){
+      let why=null;for(let j=0;j<V.length&&!why;j++)if(j!==i&&V[j]&&V[j].grd)why=V[j].a.role==='departure'?'a departure is on the runway':'the runway is occupied';
+      if(!why&&pl&&pl.grd)why='the runway is occupied';
+      if(why){a.ga=a.tau;a.rce=null;RC.log.push({t:AIC.t,ev:'go-around',i,why})}}}
+  // the state shown on screen
+  let k='clear',t='CLEAR';
+  const rolling=V.some(v=>v&&v.grd&&v.a.role==='departure'&&(v.a.v||0)>3)||(pl&&pl.grd&&pl.kind==='dep'&&(ST.Gs||0)>3);
+  const inbound=V.some(v=>v&&v.eta!==null&&v.eta<=RC.FIN)||(pl&&pl.eta!==null&&pl.eta<=RC.FIN);
+  const occupied=V.some(v=>v&&v.grd)||(pl&&pl.grd);
+  if(rolling){k='tko';t='TAKE-OFF'}else if(inbound){k='ldg';t='LANDING'}else if(occupied){k='occ';t='OCCUPIED'}
+  RC.stat={k,t}}
+// why the player may not take off now (null when it may): something on the runway, or an arrival that could reach the threshold before the player is airborne (about 55 s)
+function rcTakeoffWhy(){const V=RC.V||[];
+  for(const v of V)if(v&&v.grd)return v.a.role==='departure'?'a departure is on the runway':'the runway is occupied';
+  for(const v of V)if(v&&v.eta!==null&&v.eta<55+RC.BUF)return 'traffic is on final';
+  return null}
+// a go-around: carry on along the approach path (and straight on beyond the runway end), climbing away; for scheduled traffic the aircraft stays away until its cycle ends
+function rcGoAround(a,t){
+  const g=a.ga,u=t-g,b=a.base(g);if(!b)return null;
+  const v0=76,acc=1,vm=96,tv=(vm-v0)/acc,dist=u<tv?v0*u+.5*acc*u*u:v0*tv+.5*acc*tv*tv+vm*(u-tv),c=a.cAt(g)+dist,P=PATH.pts,cE=P[P.length-1].c;
+  let x,z,psi,phi=0;
+  if(c<=cE){const q=pathAtC(c),q2=pathAtC(c+v0*3);x=q.x;z=q.z;psi=q.h;phi=Math.atan(v0*v0*(q2.k||0)/G)*(1-clamp(u/6,0,1))}
+  else{const q=pathAtC(cE);psi=LND.hdg*D2R;x=q.x+Math.sin(psi)*(c-cE);z=q.z-Math.cos(psi)*(c-cE)}
+  const ramp=Math.min(u,2.8),climb=76*.0218*ramp*ramp+(u>2.8?85*.1222*(u-2.8):0);
+  return {x,z,y:b.y+climb,psi,theta:((AC[a.type].apt||2)+clamp(u*2.5,0,6))*D2R,phi,gear:u<9?1:0,lights:true}}
+// arm an arrival for go-arounds: cAt(t) is its distance along the approach path at time t, cycN(t) the number of its turnaround cycle (scheduled traffic)
+function rcArm(a,cAt,cycN){const base=a.fn;a.base=base;a.cAt=cAt;a.cycN=cycN||null;a.ga=null;
+  a.fn=t=>a.ga!==null&&t>a.ga&&(!a.cycN||a.cycN(t)===a.cycN(a.ga))?rcGoAround(a,t):base(t)}
+// the radio name of an AI flight: the flight board's airline and number
+function rcCall(a){if(!a.fid)return 'Traffic';const r=fidsRow(a,ST.t||0);return r.car[1]+' '+r.no.split(' ')[1]}
+// tower calls for the AI traffic, from what runway control is really doing
+function rcTower(once,W){
+  const V=RC.V;if(!V||RAD.q.length>3)return;const R=LND.id;
+  for(let i=0;i<V.length;i++){const v=V[i];if(!v)continue;const a=v.a,ev=a.rce&&a.rce.ev;if(!ev)continue;const cs=rcCall(a);
+    if(a.role==='arrival'){
+      if(a.ga!==null){if(once('ga'+i+':'+Math.round(a.ga))){radioSay('TWR',`${cs}, go around, runway ${R} is not clear.`);radioSay('OTH',`Going around, ${cs}.`)}continue}
+      if(v.eta!==null&&v.eta<=RC.FIN&&v.eta>RC.GA){const k=Math.round(ev.thr);
+        if(rcClearBy(v.eta,i)===null){if(once('ld'+i+':'+k)){radioSay('TWR',`${cs}, Kai Tak Tower, ${W}, runway ${R} cleared to land.`);radioSay('OTH',`Cleared to land ${R}, ${cs}.`)}}
+        else if(RAD.flags['ld'+i+':'+k]===undefined&&once('ct'+i+':'+k)){radioSay('TWR',`${cs}, continue approach, runway ${R} not yet clear.`);radioSay('OTH',`Continue approach, ${cs}.`)}}}
+    else if(a.role==='departure'){const tEnt=ev.ent!==null?ev.ent-a.tau:null,tLine=ev.line!==null?ev.line-a.tau:null;
+      if(a.rwhy){if(once('hs'+i+':'+Math.round(ev.ent!==null?ev.ent:0))){radioSay('TWR',`${cs}, hold position, ${a.rwhy}.`);radioSay('OTH',`Holding position, ${cs}.`)}continue}
+      if(!v.grd&&tEnt!==null&&tEnt>0&&tEnt<=9&&once('lu'+i+':'+Math.round(ev.ent)))radioSay('TWR',`${cs}, runway ${R}, line up and wait.`);
+      else if(v.grd&&tLine!==null&&tLine>-3&&tLine<=2&&once('to'+i+':'+Math.round(ev.line))){radioSay('TWR',`${cs}, ${W}, runway ${R} cleared for takeoff.`);radioSay('OTH',`Cleared for takeoff ${R}, ${cs}.`)}}}}
+function rcHud(){const el=document.getElementById('flightid');if(!el||!RC.base)return;const t=RC.base+' · RWY '+LND.id+' '+RC.stat.t;if(el._rc!==t){el._rc=t;el.textContent=t}}
 
 // ---- touching: AI against AI and AI against the parked aircraft; the player is checked by playerHit
 const PARKED_FP=[];
@@ -3263,7 +3409,7 @@ function updateAI(){
   for(const b of BRIDGE)b.e=0;
   parked.forEach((m,i)=>{if(m.visible){BRIDGE[i].e=1;BRIDGE[i].R=AC[STAND_TY[i]].R}});
   for(const a of AI){const p=a.wreck?a.wp:a.fn(a.tau);if(!p||Math.hypot(p.x,p.z)>30000){a.m.visible=false;a.p=null;a.ann=0;continue}
-    if(a.bridge){const b=BRIDGE[a.stand],v=a.bridge(a.tau);if(v>b.e){b.e=v;b.R=AC[a.type].R}}
+    if(a.bridge){const b=BRIDGE[a.stand],v=a.ga!==null&&a.ga!==undefined?0:a.bridge(a.tau);if(v>b.e){b.e=v;b.R=AC[a.type].R}}
     a.m.visible=true;a.m.position.set(p.x,p.y,p.z);a.m.rotation.set(p.theta||0,-p.psi,-(p.phi||0),'YXZ');
     const gr=a.m.userData.gear;gr.visible=p.gear>.5;a.ll.visible=!!p.lights;
     const nz=a.m.userData.nose;if(nz){const dr=p.gear>.5?(a.role==='arrival'&&(p.y>RWY.elev+1||(a.v||0)>45)?12.5:5):0;a.nz=lerp(a.nz??dr,dr,.06);nz.rotation.x=-a.nz*D2R}   // the drooping nose: 12.5 degrees to land, 5 to taxi and take off, up and locked once the wheels are up
@@ -3361,9 +3507,9 @@ function buildGSE(){
   rect(610,710,-815,-765,Y+11,'the cargo shed');
   // routes
   // stand vehicles: a catering truck and a baggage tractor with three carts serve each docked aircraft. They wait at a depot behind the tail
-  // and run once per 600 s cycle; gseSyncStands() times the run to start just after the aircraft docks.
+  // and run once per CYC (750 s) cycle, the turnaround cycle of the scheduled traffic; gseSyncStands() times the run to start just after the aircraft docks.
   const standRun=(j,kind,lStop,dwS,v,o)=>{const pts=gseStandLoop(j,lStop),P0=gseSched(gseRoute(pts,12),[{i:0,dw:0,tag:'depot'},{i:3,dw:dwS,tag:'stand'}],v).P;
-    return gseRun(kind,pts,12,[{i:0,dw:600-P0,tag:'depot'},{i:3,dw:dwS,tag:'stand'}],v,0,Object.assign({stand:j},o))};
+    return gseRun(kind,pts,12,[{i:0,dw:CYC-P0,tag:'depot'},{i:3,dw:dwS,tag:'stand'}],v,0,Object.assign({stand:j},o))};
   for(let j=0;j<6;j++){
     standRun(j,'cater',DOOR_L,70,6,{});                                                                                   // the catering truck lifts to the door
     const t=standRun(j,'tug',-660,60,5.5,{beacon:[1,.65,.1]});['cartA','cartB','cartC'].forEach((c,n)=>gseAdd(c,{lead:t,off:4.6+4.7*n}))}   // baggage tractor and carts
@@ -4136,7 +4282,7 @@ function startFlight(){
   if(CFG.game==='watch')buildAISchedule(CFG.phase??0,true,{n:CFG.concN??(CFG.conc?-1:2)});else if(CFG.game==='free')buildAISchedule(-100,false);else buildAI();
   applyEnvironment();setWalled(CFG.walled);hoops.visible=CFG.guide&&CFG.game==='approach';wxSel.value=CFG.wx;
   const W=CFG.game==='watch';
-  document.getElementById('flightid').textContent=(W?'PLANE SPOTTER · KAI TAK'+(LND.id==='31'?' · RWY 31':''):ST.ac.short.toUpperCase()+' · '+(CFG.lesson?'TAKE-OFF LESSON':CFG.lland?'LANDING LESSON':CFG.game==='free'?'FREE FLIGHT'+(LND.id==='31'?' · RWY 31':''):LND.id==='31'?'RWY 31':'IGS 13'))+' · '+todLabel().toUpperCase()+' · '+WX[CFG.wx].label.toUpperCase();
+  RC.base=(W?'PLANE SPOTTER · KAI TAK'+(LND.id==='31'?' · RWY 31':''):ST.ac.short.toUpperCase()+' · '+(CFG.lesson?'TAKE-OFF LESSON':CFG.lland?'LANDING LESSON':CFG.game==='free'?'FREE FLIGHT'+(LND.id==='31'?' · RWY 31':''):LND.id==='31'?'RWY 31':'IGS 13'))+' · '+todLabel().toUpperCase()+' · '+WX[CFG.wx].label.toUpperCase();RC.stat={k:'clear',t:'CLEAR'};RC.V=null;RC.pl=null;RC.log.length=0;RC.viol=0;rcHud();
   for(const o of document.querySelectorAll('#viewSel option'))o.hidden=(W&&(o.value==='cockpit'||o.value==='cabin'))||(o.value==='lym'&&LND.id!=='31');
   for(const id of['btnAP','btnHud','btnGuide','btnDeck'])document.getElementById(id).hidden=W;if(W)fidsOn=!compactMQ.matches;
   if(W){for(const id of['ctl','map'])document.getElementById(id).hidden=true}
@@ -4248,7 +4394,7 @@ function frame(now,manual){
   const t=now/1000;LIGHT_U.uTime.value=t;WATER_U.uTime.value=t;
   const sdt=dt*(mode==='fly'?CFG.ts:1);
   if(!paused){updateTraffic(sdt,CFG.night);updateShips(sdt,t);updateFX(dt);updateDamageFX(dt)}
-  fidsTick(now);updateAI();if(mode==='fly'&&!paused&&CFG.game!=='watch')playerHit();for(const b of BRIDGE)bridgeSet(b,b.e,b.R);if(gseLamps)updateGSE();
+  fidsTick(now);updateAI();rcHud();if(mode==='fly'&&!paused&&CFG.game!=='watch')playerHit();for(const b of BRIDGE)bridgeSet(b,b.e,b.R);if(gseLamps)updateGSE();
   updateAircraftVisual();if(hoops)hoops.visible=CFG.guide&&!SPOTS[CFG.view]&&CFG.view!=='tower';
   if(deckGroup&&deckGroup.visible){drawDisplays(dt);animateDeck()}
   if(mode==='attract'){attractCamera(dt)}else updateCamera(dt);
@@ -4296,7 +4442,7 @@ const fontsReady=document.fonts&&document.fonts.ready?Promise.race([document.fon
 fontsReady.then(()=>setTimeout(boot,30));
 
 /* test hooks */
-window.__kt={onPaved,gearPaved,rwS,LINKS,rb:()=>rbMasts13,bat:buildingAt,setHour,solarState,SUN_DIR,MOON_DIR,ENV,AI,CFG,ST,COACH,LESSON,keys,coachUpdate,coachResync,coachGo,rwL,get PATH(){return PATH},LND,setRunway,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,{rwy:'13',conc:false},o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.conc&&CFG.game==='watch'?'watchC':CFG.rwy==='31'&&CFG.game!=='learn'?CFG.game+'31':CFG.game}]`).checked=true;hourIn.value=o.hour!==undefined?o.hour:CFG.night?22:15;showHour();startFlight()},
+window.__kt={RC,rcEv,rcVac,rcRoll,rcStrip,rcClearBy,rcTakeoffWhy,rcView,rcPlayer,CYC,onPaved,gearPaved,rwS,LINKS,rb:()=>rbMasts13,bat:buildingAt,setHour,solarState,SUN_DIR,MOON_DIR,ENV,AI,CFG,ST,COACH,LESSON,keys,coachUpdate,coachResync,coachGo,rwL,get PATH(){return PATH},LND,setRunway,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,{rwy:'13',conc:false},o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.conc&&CFG.game==='watch'?'watchC':CFG.rwy==='31'&&CFG.game!=='learn'?CFG.game+'31':CFG.game}]`).checked=true;hourIn.value=o.hour!==undefined?o.hour:CFG.night?22:15;showHour();startFlight()},
   run:(sec)=>{if(CFG.game==='watch'){ST.t+=sec;return {t:ST.t}}const h=1/120;for(let i=0;i<sec*120&&!ST.ended;i++){physStep(h);if(i%60===0)recordHistory();if(i%12===0)aiTick()}return {ended:ST.ended,td:ST.td,t:ST.t,x:ST.x,y:ST.y,z:ST.z,V:ST.V/KT,d:PATH.pts[ST.pi].d}},
   get mode(){return mode},updateAI,AIC,footOf,GSE,GSE_KINDS,AIRBOX,rwS,BGRID,updateGSE,gseLamps:()=>gseLamps,fpAt,fpDist,hitOn,damageModel,aiHit,DEBRIS,EMIT,aiTick,ctl(){return aiControl},get CFG(){return CFG},frame:(now)=>frame(now,true),get FOCUS(){return FOCUS},step:()=>physStep(1/120),rwS,setZoom:z=>{CFG.zoom=z},get AI(){return AI},get GSE(){return GSE},get BRIDGE(){return BRIDGE},STAND_S,STAND_TY,lineupT,lineupT31,arrivalPts,tugAt,standL,PB,get parked(){return parked},gseAt:(t)=>{ST.t=t;updateGSE();return GSE.map(e=>({k:e.kind,x:e.p.x,z:e.p.z,psi:e.p.psi,lift:e.lift}))},get shipLights(){return shipLights},get SHIPS(){return SHIPS},get DISP(){return DISP},get deck(){return deckGroup},get streetCam(){return STREET_CAM},get BB(){return BB},get water(){return water},get camera(){return camera},get nStreets(){return STREETS.length},drawDisplays,look,setView,terrainAt,buildingAt,groundInfo};
 })();
