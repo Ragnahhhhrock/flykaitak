@@ -1,5 +1,39 @@
 [
   {
+    "slug": "map-toggle-live-aircraft",
+    "title": "A map toggle with live aircraft",
+    "dek": "The corner map now shows the other airliners as they fly, taxi and climb, and a Map button (or M) turns it on and off.",
+    "description": "Fly Kai Tak's corner map now plots the other aircraft live, amber in the air with altitude and grey on the ground, and a Map button or the M key hides it.",
+    "date": "2026-10-04",
+    "tag": "Feature",
+    "category": "flying",
+    "keywords": [
+      "map",
+      "live aircraft",
+      "traffic",
+      "minimap",
+      "M key",
+      "Kai Tak",
+      "flight simulator",
+      "Hong Kong 1998"
+    ],
+    "hero": "map-live-traffic",
+    "hero_alt": "The 747 on the IGS approach over Kowloon, with the corner map showing another aircraft in amber with its altitude.",
+    "hero_caption": "On the IGS 13 approach. The map in the top left shows another aircraft in amber, with its altitude.",
+    "card_kicker": "MAP · TRAFFIC",
+    "card_title": "Map toggle with live aircraft",
+    "card_sub": "Press M to show or hide",
+    "card_image": "map-live-traffic",
+    "card_focus": 10,
+    "zh": {
+      "title": "可以開關嘅即時飛機地圖",
+      "dek": "角落地圖而家會顯示其他客機嘅飛行、滑行同爬升，仲有個 Map 掣（或者 M 鍵）可以開關。",
+      "description": "Fly Kai Tak 嘅角落地圖而家即時顯示其他飛機：空中係琥珀色同有高度，地面係灰色；Map 掣或者 M 鍵可以收埋。",
+      "hero_alt": "747 喺九龍上空 IGS 進場，角落地圖用琥珀色顯示另一部飛機同佢嘅高度。",
+      "hero_caption": "IGS 13 進場。左上角嘅地圖用琥珀色顯示另一部飛機同佢嘅高度。"
+    }
+  },
+  {
     "slug": "kai-tak-terminal-and-apron-layout",
     "title": "The Kai Tak terminal, rebuilt to match the chart",
     "dek": "The terminal pier now stands at the north-west end of the apron, at right angles to the runway, with eight nose-in stands and three apron lanes.",

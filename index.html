@@ -393,6 +393,7 @@ html,body{overscroll-behavior:none;touch-action:manipulation}
     <button class="btn" id="btnFwd" type="button" title="Forward 10 seconds ( ] )">+10 s</button>
     <select id="wxSel" aria-label="Weather"></select>
     <button class="btn" id="btnNight" type="button" aria-pressed="false" title="Time of day: dawn, day, dusk, night ( N )">Day</button>
+    <button class="btn" id="btnMap" type="button" aria-pressed="true" title="Map with live aircraft on/off ( M )">Map</button>
     <button class="btn" id="btnClouds" type="button" aria-pressed="true" title="Cloud layers on/off ( U )">Clouds</button>
     <button class="btn" id="btnAP" type="button" aria-pressed="false">Autopilot</button>
     <button class="btn" id="btnDeck" type="button" aria-pressed="false">Cockpit</button>
@@ -510,6 +511,7 @@ html,body{overscroll-behavior:none;touch-action:manipulation}
           <span><kbd>C</kbd></span><span>Cycle view: cockpit, exterior, tower, cabin</span>
           <span><kbd>Z</kbd></span><span>Autopilot on/off</span>
           <span><kbd>K</kbd></span><span>Show or hide the cockpit panel (cockpit view)</span>
+          <span><kbd>M</kbd></span><span>Show or hide the map with live aircraft</span>
           <span><kbd>N</kbd> <kbd>P</kbd> <kbd>U</kbd></span><span>Time of day, pause, clouds</span>
           <span><kbd>I</kbd> <kbd>O</kbd> / mouse wheel</span><span>Zoom in / out (1× to 16×). Scroll up to zoom in, down to zoom out</span>
           <span><kbd>T</kbd></span><span>Time speed 1×, 2×, 4×, 8×</span>
@@ -688,7 +690,7 @@ const WX={
 };
 
 /* ---------------- state & settings ---------------- */
-const CFG={game:'approach',lesson:false,rwy:'13',zoom:1,ts:1,deck:false,hud:true,ac:'b744',night:false,hour:15,wx:'clear',lightning:false,clouds:true,guide:true,ap:false,walled:true,view:'cockpit',sound:true,radio:true,seatRow:34,seatLeft:true};
+const CFG={game:'approach',lesson:false,rwy:'13',zoom:1,ts:1,deck:false,hud:true,map:true,ac:'b744',night:false,hour:15,wx:'clear',lightning:false,clouds:true,guide:true,ap:false,walled:true,view:'cockpit',sound:true,radio:true,seatRow:34,seatLeft:true};
 const ST={};let mode='loading'; // loading | attract | fly | ended
 let paused=false;
 
@@ -3457,8 +3459,13 @@ function drawMap(){
   mc.strokeStyle='#ff5ad9';mc.lineWidth=2.5;mc.beginPath();PATH.pts.forEach((p,i)=>{if(i%8)return;i?mc.lineTo(X(p.x),Z(p.z)):mc.moveTo(X(p.x),Z(p.z))});mc.stroke();
   mc.strokeStyle='#ffffff';mc.lineWidth=5;const a=rwP(0,0),b=rwP(RWY.len,0);mc.beginPath();mc.moveTo(X(a[0]),Z(a[1]));mc.lineTo(X(b[0]),Z(b[1]));mc.stroke();
   mc.fillStyle='#ef6a2c';mc.fillRect(X(CHK.x-150)-5,Z(CHK.z)-5,10,10);
+  let nAc=0;mc.font='15px "B612 Mono",monospace';mc.textAlign='left';
+  for(const a of AI){if(!a.m.visible||!a.p)continue;const q=a.p,px=X(q.x),pz=Z(q.z);if(px<-12||px>W+12||pz<-12||pz>W+12)continue;nAc++;
+    const air=q.y>RWY.elev+15;mc.save();mc.translate(px,pz);mc.rotate(q.psi);mc.fillStyle=air?'#ffd166':'#9fb3ad';mc.strokeStyle='#05090b';mc.lineWidth=1.5;
+    mc.beginPath();mc.moveTo(0,-9);mc.lineTo(6,7);mc.lineTo(0,3);mc.lineTo(-6,7);mc.closePath();mc.stroke();mc.fill();mc.restore();
+    if(air){mc.fillStyle='#ffd166';mc.fillText(String(Math.round(q.y/FT/100)),px+9,pz+5)}}
   mc.save();mc.translate(W/2,W/2);mc.rotate(s.psi);mc.fillStyle='#8ff5a8';mc.strokeStyle='#05090b';mc.lineWidth=2;mc.beginPath();mc.moveTo(0,-14);mc.lineTo(9,10);mc.lineTo(0,5);mc.lineTo(-9,10);mc.closePath();mc.stroke();mc.fill();mc.restore();
-  mc.fillStyle='rgba(5,9,11,.7)';mc.fillRect(0,W-34,W,34);mc.fillStyle='#c9d4d0';mc.font='18px "B612 Mono",monospace';mc.fillText('N↑  6 km',10,W-11);
+  mc.fillStyle='rgba(5,9,11,.7)';mc.fillRect(0,W-34,W,34);mc.fillStyle='#c9d4d0';mc.font='18px "B612 Mono",monospace';mc.fillText('N↑  6 km',10,W-11);mc.textAlign='right';mc.fillText(nAc+' traffic',W-10,W-11);mc.textAlign='left';
 }
 /* ---------------- GPWS & callouts ---------------- */
 function gpws(dt){
@@ -3497,7 +3504,7 @@ window.addEventListener('keydown',e=>{
     case 'KeyG':toggleGear();break;case 'KeyF':setFlaps(1);break;case 'KeyV':setFlaps(-1);break;
     case 'KeyC':{const o=CFG.game==='watch'?['carpark','ped','street','boat','checker',...(LND.id==='31'?['lym']:[]),'peak','tower','chase']:['cockpit','chase','tower','street','ped','carpark','boat','checker',...(LND.id==='31'?['lym']:[]),'peak','cabin'];setView(o[(o.indexOf(CFG.view)+1)%o.length]);break}
     case 'KeyZ':toggleAP();break;case 'KeyR':toggleRadio();break;case 'KeyB':toggleFids('key');break;case 'BracketLeft':timeJump(-10);break;case 'BracketRight':timeJump(10);break;
-    case 'KeyT':setTs(CFG.ts>=8?1:CFG.ts*2);break;case 'KeyI':setZoom(Math.min(16,CFG.zoom*2));break;case 'KeyO':setZoom(Math.max(1,CFG.zoom/2));break;case 'KeyK':toggleDeck();break;case 'KeyN':toggleNight();break;case 'KeyU':setClouds_on(!CFG.clouds);break;case 'KeyP':togglePause();break;
+    case 'KeyT':setTs(CFG.ts>=8?1:CFG.ts*2);break;case 'KeyI':setZoom(Math.min(16,CFG.zoom*2));break;case 'KeyO':setZoom(Math.max(1,CFG.zoom/2));break;case 'KeyK':toggleDeck();break;case 'KeyM':toggleMap();break;case 'KeyN':toggleNight();break;case 'KeyU':setClouds_on(!CFG.clouds);break;case 'KeyP':togglePause();break;
   }
   VIA='button';
   if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();
@@ -3539,6 +3546,8 @@ function readInputs(dt){
 function toggleGear(){if(ST.ap){toggleAP(false)}ST.gearDown=!ST.gearDown;tog('gear',ST.gearDown?'down':'up');syncButtons()}
 function setFlaps(d){if(ST.ap)toggleAP(false);const o=ST.flapIdx;ST.flapIdx=clamp(ST.flapIdx+d,0,4);if(ST.flapIdx!==o)tog('flaps',ST.ac.flaps[ST.flapIdx]);syncButtons();toast('Flaps '+ST.ac.flaps[ST.flapIdx])}
 function toggleDeck(){CFG.deck=!CFG.deck;tog('deck',CFG.deck?'on':'off');syncButtons()}
+function applyMap(){if(mode!=='fly')return;document.getElementById('map').hidden=!CFG.map||CFG.game==='watch'||CFG.view==='cabin'}
+function toggleMap(){CFG.map=!CFG.map;tog('map',CFG.map?'on':'off');applyMap();syncButtons();toast('Map '+(CFG.map?'on':'off'))}
 function toggleHud(){CFG.hud=!CFG.hud;tog('hud',CFG.hud?'on':'off');syncButtons()}
 function toggleGuide(){CFG.guide=!CFG.guide;hoops.visible=CFG.guide;tog('guide',CFG.guide?'on':'off');syncButtons()}
 function toggleSound(){CFG.sound=!CFG.sound;sfx.mute(CFG.sound);if(!CFG.sound&&synth)synth.cancel();tog('sound',CFG.sound?'on':'off');syncButtons()}
@@ -3550,13 +3559,13 @@ function setClouds_on(on){CFG.clouds=on;for(const c of cloudLayers)c.visible=on;
 function togglePause(){paused=!paused;tog('pause',paused?'on':'off');syncButtons()}
 function setView(v){if(CFG.game==='watch'&&(v==='cockpit'||v==='cabin'))v='carpark';if(mode==='fly'&&v!==CFG.view)track('view_change',{view:v});CFG.view=v;document.getElementById('viewSel').value=v;look.yaw=look.pitch=0;look.dist=1;camera.userData.snap=true;
   document.getElementById('cabin').hidden=v!=='cabin';document.getElementById('seatbox').hidden=v!=='cabin';
-  if(mode==='fly'){const W=CFG.game==='watch';document.getElementById('map').hidden=W||v==='cabin';document.getElementById('ctl').hidden=W||v==='cabin'||!!ST.ended}
+  if(mode==='fly'){const W=CFG.game==='watch';document.getElementById('map').hidden=!CFG.map||W||v==='cabin';document.getElementById('ctl').hidden=W||v==='cabin'||!!ST.ended}
   if(v==='cabin'&&!ST.ap&&!ST.onGround&&mode==='fly'&&CFG.game==='approach'){toggleAP(true);toast('The computer is flying. Enjoy the view from your seat.')}
   updateSeatTag();syncButtons()}
 function updateSeatTag(){const letters=CFG.seatLeft?'A':'K';document.getElementById('seattag').textContent='ROW '+CFG.seatRow+' · SEAT '+letters;document.getElementById('seatSide').textContent=CFG.seatLeft?'Left':'Right'}
 function syncButtons(){document.getElementById('btnRadio').setAttribute('aria-pressed',String(CFG.radio));
   document.getElementById('btnAP').setAttribute('aria-pressed',String(!!ST.ap));document.getElementById('btnPause').setAttribute('aria-pressed',String(paused));
-  document.getElementById('btnGuide').setAttribute('aria-pressed',String(CFG.guide));document.getElementById('btnHud').setAttribute('aria-pressed',String(CFG.hud));const bd=document.getElementById('btnDeck');bd.setAttribute('aria-pressed',String(CFG.deck));bd.hidden=CFG.view!=='cockpit';document.getElementById('btnSound').setAttribute('aria-pressed',String(CFG.sound));document.getElementById('btnClouds').setAttribute('aria-pressed',String(CFG.clouds));
+  document.getElementById('btnGuide').setAttribute('aria-pressed',String(CFG.guide));document.getElementById('btnHud').setAttribute('aria-pressed',String(CFG.hud));const bd=document.getElementById('btnDeck');bd.setAttribute('aria-pressed',String(CFG.deck));bd.hidden=CFG.view!=='cockpit';document.getElementById('btnSound').setAttribute('aria-pressed',String(CFG.sound));document.getElementById('btnClouds').setAttribute('aria-pressed',String(CFG.clouds));document.getElementById('btnMap').setAttribute('aria-pressed',String(CFG.map));
   document.getElementById('btnGear').textContent='Gear '+(ST.gearDown?'↓':'↑');
 }
 let toastT=0;function toast(t){if(COACH.on)return;const el=document.getElementById('toast');el.textContent=t;el.classList.add('on');toastT=performance.now()+2600}
@@ -3724,6 +3733,8 @@ const ZH={
 'Four engines · long haul':'四引擎 · 長途機',
 'Clear':'晴朗','Rain':'落雨','Typhoon':'颱風','Storm':'雷暴','Low cloud':'低雲','Fog':'大霧',
 'Clouds':'雲層',
+'Map':'地圖',
+'Show or hide the map with live aircraft':'顯示或隱藏地圖同即時航機位置',
 'Cloud layers and flying through them. Untick for a clear sky in any weather.':'雲層，同埋穿過雲層飛行。取消剔選，無論咩天氣都係萬里無雲。',
 'Lightning':'閃電',
 'Adds flashes and thunder to any weather. Storm turns it on anyway.':'任何天氣都加入閃電同雷聲。雷暴天氣會自動開啟。',
@@ -3813,6 +3824,7 @@ document.getElementById('btnNight').addEventListener('click',toggleNight);
 document.getElementById('btnAP').addEventListener('click',()=>toggleAP());
 document.getElementById('btnDeck').addEventListener('click',toggleDeck);
 document.getElementById('btnHud').addEventListener('click',toggleHud);
+document.getElementById('btnMap').addEventListener('click',toggleMap);
 document.getElementById('btnFids').addEventListener('click',()=>toggleFids('button'));
 document.getElementById('btnGuide').addEventListener('click',toggleGuide);
 document.getElementById('btnSound').addEventListener('click',toggleSound);
@@ -3865,7 +3877,7 @@ function startFlight(){
   const W=CFG.game==='watch';
   document.getElementById('flightid').textContent=(W?'PLANE SPOTTER · KAI TAK'+(LND.id==='31'?' · RWY 31':''):ST.ac.short.toUpperCase()+' · '+(CFG.lesson?'TAKE-OFF LESSON':CFG.game==='free'?'FREE FLIGHT'+(LND.id==='31'?' · RWY 31':''):LND.id==='31'?'RWY 31':'IGS 13'))+' · '+todLabel().toUpperCase()+' · '+WX[CFG.wx].label.toUpperCase();
   for(const o of document.querySelectorAll('#viewSel option'))o.hidden=(W&&(o.value==='cockpit'||o.value==='cabin'))||(o.value==='lym'&&LND.id!=='31');
-  for(const id of['btnAP','btnHud','btnGuide','btnDeck'])document.getElementById(id).hidden=W;if(W)fidsOn=!compactMQ.matches;
+  for(const id of['btnAP','btnHud','btnGuide','btnDeck','btnMap'])document.getElementById(id).hidden=W;if(W)fidsOn=!compactMQ.matches;
   if(W){for(const id of['ctl','map'])document.getElementById(id).hidden=true}
   setView(W?'carpark':CFG.game==='free'?'chase':CFG.ap?'chase':'cockpit');
   syncButtons();sfx.start();sfx.mute(CFG.sound);lightningT=rr(4,9);
