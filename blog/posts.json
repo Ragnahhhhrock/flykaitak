@@ -1,5 +1,38 @@
 [
   {
+    "slug": "map-on-the-home-screen-m-key",
+    "title": "The map on the home screen, with M to toggle",
+    "dek": "The corner map now shows as soon as the home screen loads, over the live demo, and M turns it on and off there too.",
+    "description": "Fly Kai Tak's corner map now shows automatically on the home screen over the live demo flight, and the M key toggles it on and off, on the home screen and in flight.",
+    "date": "2026-10-04",
+    "tag": "Update",
+    "category": "controls",
+    "keywords": [
+      "map",
+      "home screen",
+      "M key",
+      "live aircraft",
+      "Kai Tak",
+      "flight simulator",
+      "Hong Kong 1998"
+    ],
+    "hero": "map-home-auto",
+    "hero_alt": "The home screen with the corner map showing the demo aircraft on the IGS approach.",
+    "hero_caption": "The home screen on load, with the map in the top left.",
+    "card_kicker": "MAP · HOME SCREEN",
+    "card_title": "Map on the home screen",
+    "card_sub": "Shows on load, M to toggle",
+    "card_image": "map-home-auto",
+    "card_focus": 30,
+    "zh": {
+      "title": "主畫面嘅地圖，用 M 鍵開關",
+      "dek": "主畫面一載入，角落地圖就會喺即時示範上面自動顯示，喺主畫面都可以用 M 鍵開關。",
+      "description": "Fly Kai Tak 嘅角落地圖而家喺主畫面一載入就自動顯示，疊喺即時示範飛行上面；M 鍵可以喺主畫面同飛行入面開關。",
+      "hero_alt": "主畫面，左上角嘅地圖顯示示範飛機喺 IGS 進場。",
+      "hero_caption": "主畫面一載入，左上角已經有地圖。"
+    }
+  },
+  {
     "slug": "landing-lesson-for-first-time-pilots",
     "title": "New: a landing lesson for first-time pilots",
     "dek": "A guided IGS 13 approach: wheels down, flaps, speed, the checkerboard turn, the flare and the stop. No experience needed.",

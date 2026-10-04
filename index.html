@@ -497,7 +497,7 @@ html,body{overscroll-behavior:none;touch-action:manipulation}
         <div class="toggles">
           <label class="tog"><input type="checkbox" id="optGuide" checked><span>Approach guide<small>Magenta gates along the IGS path and the turn.</small></span></label>
           <label class="tog"><input type="checkbox" id="optAP"><span>Computer flies the aircraft<small>Autopilot and autothrottle fly the approach. Pick a cabin seat and watch.</small></span></label>
-          <label class="tog"><input type="checkbox" id="optMap" checked><span>Map with live aircraft<small>The corner map shows you and the other traffic. Untick to hide it. M toggles it in flight.</small></span></label>
+          <label class="tog"><input type="checkbox" id="optMap" checked><span>Map with live aircraft<small>The corner map shows you and the other traffic. Untick to hide it. M toggles it here and in flight.</small></span></label>
           <label class="tog"><input type="checkbox" id="optWalled" checked><span>Kowloon Walled City as it stood before 1994<small>It was demolished in 1993–94. Untick to see the 1998 park instead.</small></span></label>
         </div>
       </fieldset>
@@ -3499,6 +3499,7 @@ window.addEventListener('keydown',e=>{
   if(mode==='ended'&&(e.code==='BracketLeft')){timeJump(-10);return}
   if(e.target&&(e.target.tagName==='INPUT'||e.target.tagName==='SELECT')&&e.key!=='Enter')return;
   if(mode==='attract'&&e.key==='Enter'&&!document.getElementById('setup').hidden){startFlight();return}
+  if(mode==='attract'&&e.code==='KeyM'&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&!document.getElementById('setup').hidden){toggleMap();return}
   if(mode!=='fly')return;
   if(COACH.on&&LS[COACH.i].manual&&(e.code==='Enter'||e.code==='NumpadEnter')&&!(e.target&&e.target.tagName==='BUTTON')){e.preventDefault();coachNext();return}
   keys[e.code]=true;const s=ST;VIA='key';
@@ -3548,7 +3549,7 @@ function readInputs(dt){
 function toggleGear(){if(ST.ap){toggleAP(false)}ST.gearDown=!ST.gearDown;tog('gear',ST.gearDown?'down':'up');syncButtons()}
 function setFlaps(d){if(ST.ap)toggleAP(false);const o=ST.flapIdx;ST.flapIdx=clamp(ST.flapIdx+d,0,4);if(ST.flapIdx!==o)tog('flaps',ST.ac.flaps[ST.flapIdx]);syncButtons();toast('Flaps '+ST.ac.flaps[ST.flapIdx])}
 function toggleDeck(){CFG.deck=!CFG.deck;tog('deck',CFG.deck?'on':'off');syncButtons()}
-function applyMap(){const o=document.getElementById('optMap');if(o)o.checked=CFG.map;if(mode!=='fly')return;document.getElementById('map').hidden=!CFG.map||CFG.game==='watch'||CFG.view==='cabin'}
+function applyMap(){const o=document.getElementById('optMap');if(o)o.checked=CFG.map;const m=document.getElementById('map');m.style.top=mode==='attract'?'calc(env(safe-area-inset-top,0px) + 66px)':'';if(mode==='attract'){m.hidden=!CFG.map;return}if(mode!=='fly')return;m.hidden=!CFG.map||CFG.game==='watch'||CFG.view==='cabin'}
 function toggleMap(){CFG.map=!CFG.map;tog('map',CFG.map?'on':'off');applyMap();syncButtons();toast('Map '+(CFG.map?'on':'off'))}
 function toggleHud(){CFG.hud=!CFG.hud;tog('hud',CFG.hud?'on':'off');syncButtons()}
 function toggleGuide(){CFG.guide=!CFG.guide;hoops.visible=CFG.guide;tog('guide',CFG.guide?'on':'off');syncButtons()}
@@ -3561,7 +3562,7 @@ function setClouds_on(on){CFG.clouds=on;for(const c of cloudLayers)c.visible=on;
 function togglePause(){paused=!paused;tog('pause',paused?'on':'off');syncButtons()}
 function setView(v){if(CFG.game==='watch'&&(v==='cockpit'||v==='cabin'))v='carpark';if(mode==='fly'&&v!==CFG.view)track('view_change',{view:v});CFG.view=v;document.getElementById('viewSel').value=v;look.yaw=look.pitch=0;look.dist=1;camera.userData.snap=true;
   document.getElementById('cabin').hidden=v!=='cabin';document.getElementById('seatbox').hidden=v!=='cabin';
-  if(mode==='fly'){const W=CFG.game==='watch';document.getElementById('map').hidden=!CFG.map||W||v==='cabin';document.getElementById('ctl').hidden=W||v==='cabin'||!!ST.ended}
+  if(mode==='fly'){const W=CFG.game==='watch';applyMap();document.getElementById('ctl').hidden=W||v==='cabin'||!!ST.ended}
   if(v==='cabin'&&!ST.ap&&!ST.onGround&&mode==='fly'&&CFG.game==='approach'){toggleAP(true);toast('The computer is flying. Enjoy the view from your seat.')}
   updateSeatTag();syncButtons()}
 function updateSeatTag(){const letters=CFG.seatLeft?'A':'K';document.getElementById('seattag').textContent='ROW '+CFG.seatRow+' · SEAT '+letters;document.getElementById('seatSide').textContent=CFG.seatLeft?'Left':'Right'}
@@ -3817,7 +3818,7 @@ const ZH={
 'Clouds':'雲層',
 'Map':'地圖',
 'Map with live aircraft':'即時飛機地圖',
-'The corner map shows you and the other traffic. Untick to hide it. M toggles it in flight.':'角落地圖會顯示你同其他飛機。取消剔選就收埋。飛行時可以用 M 鍵開關。',
+'The corner map shows you and the other traffic. Untick to hide it. M toggles it here and in flight.':'角落地圖會顯示你同其他飛機。取消剔選就收埋。飛行時可以用 M 鍵開關。',
 'Show or hide the map with live aircraft':'顯示或隱藏地圖同即時航機位置',
 'Cloud layers and flying through them. Untick for a clear sky in any weather.':'雲層，同埋穿過雲層飛行。取消剔選，無論咩天氣都係萬里無雲。',
 'Lightning':'閃電',
@@ -3877,6 +3878,7 @@ function applyHomeEnv(){if(mode!=='attract')return;const q=n=>document.querySele
   wxSel.value=CFG.wx;applyEnvironment();if(CFG.lightning||WX[CFG.wx].light)lightningT=Math.min(lightningT,.4)}
 document.getElementById('setup').addEventListener('change',e=>{const t=e.target;if(!t||t.tagName!=='INPUT')return;
   if(t.name==='tod'||t.id==='optHour'||t.name==='wx'||t.id==='optClouds'||t.id==='optLightning')applyHomeEnv();
+  if(t.id==='optMap'){CFG.map=t.checked;applyMap()}
   if(t.name==='ac')track('aircraft_select',{aircraft:t.value});
   else track('setup_option',{option:t.name||t.id,value:t.type==='checkbox'?(t.checked?'on':'off'):t.value})});
 const hourIn=document.getElementById('optHour'),hourOut=document.getElementById('hourOut');
@@ -3950,7 +3952,7 @@ const STRIPE_LINK='https://buy.stripe.com/9B6cMX2TT3tPaFi0UcaAw00';
 const reducedMotion=()=>!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
 if(reducedMotion())reel.removeAttribute('autoplay');
 function reelShow(on){if(!reelOK)return;if(on&&!reducedMotion())reel.play().catch(()=>{});else reel.pause()}
-function showSetup(){hsRenderHome();setMore(false);try{if(screen.orientation&&screen.orientation.unlock)screen.orientation.unlock()}catch(e){}reelShow(true);flightEnd('quit');mode='attract';paused=false;for(const id of['bar','ctl','map','result','cabin'])document.getElementById(id).hidden=true;document.getElementById('setup').hidden=false;sfx.stopAll();if(synth)synth.cancel();radioClear();coachHide();syncMode();
+function showSetup(){hsRenderHome();setMore(false);try{if(screen.orientation&&screen.orientation.unlock)screen.orientation.unlock()}catch(e){}reelShow(true);flightEnd('quit');mode='attract';paused=false;for(const id of['bar','ctl','map','result','cabin'])document.getElementById(id).hidden=true;document.getElementById('setup').hidden=false;applyMap();sfx.stopAll();if(synth)synth.cancel();radioClear();coachHide();syncMode();
   clearFX();CFG.ap=true;setRunway('13');resetFlight();ST.ap=true;spawnAircraftModel();buildAI();CFG.view='chase';applyHomeEnv();setWalled(document.getElementById('optWalled').checked)}
 function startFlight(){
   setMore(false);reelShow(false);readSetup();setRunway(CFG.lesson?'13':CFG.rwy==='31'?'31':'13');flightEnd('restart');clearFX();mode='fly';paused=false;SEED=window.__capture?1998:1998+Math.floor(Math.random()*1000);
@@ -4101,7 +4103,7 @@ function frame(now,manual){
       {rev,brake:on&&s.Gs>6?clamp(s.Gs/70,.05,.4)*.22:0,gearMove:gm&&!s.ended,flapMove:Math.abs(s.flapPos-s.flapIdx)>.01&&!s.ended,gearDrag:s.ended?0:s.gearPos*clamp(s.V/90,0,1)})}
   if(toastT&&now>toastT){document.getElementById('toast').classList.remove('on');toastT=0}
   LIGHT_U.uScale.value=HH*renderer.getPixelRatio()/(2*Math.tan(camera.fov*D2R/2));
-  renderer.render(scene,camera);drawHUD();if(mode==='fly')drawMap();
+  renderer.render(scene,camera);drawHUD();if(mode==='fly'||mode==='attract')drawMap();
 }
 
 /* =====================================================================
