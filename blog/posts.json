@@ -1,5 +1,36 @@
 [
   {
+    "slug": "home-screen-share-buttons",
+    "title": "Share buttons on the home screen",
+    "dek": "Send Fly Kai Tak to a friend from the home screen: X, Facebook, Reddit, WhatsApp, Threads, email or a copied link.",
+    "description": "The home screen now has share buttons for X, Facebook, Reddit, WhatsApp, Threads, email, copy link and the system share sheet, in English or Cantonese.",
+    "date": "2026-10-04",
+    "tag": "New",
+    "category": "scores",
+    "keywords": [
+      "share buttons",
+      "home screen",
+      "social sharing",
+      "Kai Tak",
+      "flight simulator"
+    ],
+    "hero": "home-share-buttons",
+    "hero_alt": "The Fly Kai Tak home screen with a row of share buttons under the demo reel and the Buy me a coffee button.",
+    "hero_caption": "The share row under the demo reel, next to the coffee button.",
+    "card_kicker": "SHARING · HOME SCREEN",
+    "card_title": "Share buttons on the home screen",
+    "card_sub": "X, Facebook, WhatsApp and more",
+    "card_image": "home-share-buttons",
+    "card_focus": 50,
+    "zh": {
+      "title": "主畫面加咗分享掣",
+      "dek": "喺主畫面就可以將 Fly Kai Tak 介紹畀朋友：X、Facebook、Reddit、WhatsApp、Threads、電郵或者複製連結。",
+      "description": "主畫面而家有分享掣：X、Facebook、Reddit、WhatsApp、Threads、電郵、複製連結同系統分享選單，支援英文同廣東話。",
+      "hero_alt": "Fly Kai Tak 主畫面，示範短片同「請我飲杯咖啡」掣下面有一排分享掣。",
+      "hero_caption": "示範短片下面嘅分享掣，喺咖啡掣隔離。"
+    }
+  },
+  {
     "slug": "car-park-roof-bay-lines",
     "title": "Bay lines on the car park roof",
     "dek": "White parking bay lines now mark out rows of 5 m by 2.5 m bays on the Plane Spotter roof.",
