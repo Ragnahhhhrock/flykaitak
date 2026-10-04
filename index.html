@@ -1721,6 +1721,13 @@ function buildAirport(){
   const asph=new THREE.MeshLambertMaterial({color:0x3e3f42,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1});
   const rw=new THREE.Mesh(new THREE.PlaneGeometry(RWY.wid+14,RWY.len+40).rotateX(-Math.PI/2),asph);placeAlong(rw,RWY.len/2,0,RWY.elev+.05);
   const tw=new THREE.Mesh(new THREE.PlaneGeometry(26,RWY.len+40).rotateX(-Math.PI/2),asph);placeAlong(tw,RWY.len/2,APN.A,RWY.elev+.05);
+  // link taxiways: bitumen strips across the grass between the runway edge and taxiway A, angled toward the 31 end like the real rapid exits
+  const LINK_S=[330,1020,1710,2400,3060],LINK_W=30,LINK_SLANT=38;
+  for(const s of LINK_S){
+    const sh=new THREE.Shape();   // x = l, y = s, relative to the strip's runway-edge centre
+    sh.moveTo(-36,-LINK_W/2);sh.lineTo(-36,LINK_W/2);sh.lineTo(APN.A+12,LINK_W/2+LINK_SLANT);sh.lineTo(APN.A+12,-LINK_W/2+LINK_SLANT);sh.closePath();
+    const lk=new THREE.Mesh(new THREE.ShapeGeometry(sh).rotateX(-Math.PI/2),asph);placeAlong(lk,s,0,RWY.elev+.05);
+  }
   // markings
   const mk=new THREE.MeshBasicMaterial({color:0xe9e9e4,polygonOffset:true,polygonOffsetFactor:-6,polygonOffsetUnits:-6,transparent:true});
   const mkEnd=(num,s,flip)=>{

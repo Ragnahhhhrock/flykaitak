@@ -1,5 +1,37 @@
 [
   {
+    "slug": "link-taxiways-between-runway-and-taxiway-a",
+    "title": "New: link taxiways between the runway and taxiway A",
+    "dek": "Five angled bitumen strips now cross the grass between the runway and the parallel taxiway.",
+    "description": "Fly Kai Tak update: five angled bitumen link taxiways now join the runway to parallel taxiway A, matching the aerial photographs of Kai Tak.",
+    "date": "2026-10-04",
+    "tag": "New",
+    "category": "scenery",
+    "keywords": [
+      "Kai Tak",
+      "taxiway",
+      "link taxiway",
+      "runway",
+      "aerial photograph",
+      "flight simulator"
+    ],
+    "hero": "link-taxiways-aerial",
+    "hero_alt": "Looking along Runway 13 from above, with bitumen link strips crossing the grass between the runway and the parallel taxiway.",
+    "hero_caption": "Link strips crossing the grass between the runway and taxiway A.",
+    "card_kicker": "SCENERY · NEW",
+    "card_title": "Link taxiways",
+    "card_sub": "Bitumen strips between runway and taxiway",
+    "card_image": "link-taxiways-aerial",
+    "card_focus": 50,
+    "zh": {
+      "title": "新增：跑道同滑行道 A 之間嘅連接道",
+      "dek": "五條斜斜嘅瀝青連接道而家橫過跑道同平行滑行道之間嘅草地。",
+      "description": "Fly Kai Tak 更新：五條斜瀝青連接道而家將跑道接去平行滑行道 A，同啟德機場航拍相一致。",
+      "hero_alt": "由高處沿住 13 跑道望，有瀝青連接道橫過跑道同平行滑行道之間嘅草地。",
+      "hero_caption": "橫過跑道同滑行道 A 之間草地嘅連接道。"
+    }
+  },
+  {
     "slug": "rooftop-cross-bar-lights",
     "title": "Rooftop Cross-Bar Lights on the Approach",
     "dek": "Bright lamp masts on Kowloon rooftops now mark the approach to both runways.",
