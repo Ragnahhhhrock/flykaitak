@@ -1728,6 +1728,12 @@ const GAPC=STAND_C.map((S,j)=>{const n=STAND_C[j+1];return n==null?36:Math.min(4
 const PB={T:52,hold:3,d1:85,R:18,v:2.8,hitch:6.4,tug:[30,-719.5]};  // pushback: seconds, connect time, straight run (m), turn radius (m), speed, tug centre to nose gear, tug bay (S offset, L)
 const PB_D=PB.d1+Math.PI/2*PB.R;                  // the main gear is pushed straight back, then round a quarter circle so the nose points along the pier toward taxiway A
 const BRIDGE=[];
+// Remote stands 11-19 on lane D2 have no jet bridge. Aircraft park nose-in on them (tail toward the lane) and the passengers ride apron buses
+// from the bus gate at the pier. That only happens when every jet bridge is taken: the 6 scheduled turnarounds and the 2 parked aircraft hold all 8.
+const REM_TY=['b772','a333','b744',null,'a343','b772',null,null,null];   // the aircraft on remote stands 11-19 (null: empty)
+const REM_NOSE=375;                                     // nose wheel stop line (s) on the remote stands
+const REMOTE_OPS=NST-NACT-2<=0;                         // contact stands that nothing uses: with none free, aircraft use the remote stands and buses run
+const remDoorS=ty=>REM_NOSE-.39*AC[ty].len+AC[ty].len/2-DOOR_BACK;   // s of the forward left door of an aircraft on a remote stand
 const hdgOf=(ds,dl)=>{const w=rwP(ds,dl);return Math.atan2(w[0],-w[1])};
 function pushAt(ty,S,d){ // aircraft centre O and heading h (stand frame) once the main gear has been pushed d metres; the turn is toward +S (taxiway A is then ahead)
   const l0=standL(ty,S);if(d<=PB.d1)return {O:[S,l0+d],h:[0,-1]};
@@ -1853,7 +1859,7 @@ function buildApronMarkings(placeAlong){
       C([APN.D3,lS+150],[APN.D3,lS],[APN.stop,lS],.8,YEL);C([APN.D3,lS-150],[APN.D3,lS],[APN.stop,lS],.8,YEL);L([APN.D3-d,lS],[APN.stop,lS],.8,YEL);L([APN.stop,lS-4],[APN.stop,lS+4],.8,YEL);
       plate(22,lS,String(j+1),Math.PI)}
     // remote stands along lane D2 (numbers 11-19): a box on the far side of the lane with a short lead-in
-    APN.remote.forEach((lS,i)=>{rect(APN.D2+18,APN.D2+104,lS-33,lS+33,.6,RED);L([APN.D2+13,lS],[APN.D2+62,lS],.8,YEL);L([APN.D2+62,lS-4],[APN.D2+62,lS+4],.8,YEL);plate(APN.D2+84,lS,String(11+i),0)});
+    APN.remote.forEach((lS,i)=>{rect(APN.D2+18,APN.D2+104,lS-33,lS+33,.6,RED);L([APN.D2+13,lS],[REM_NOSE,lS],.8,YEL);L([REM_NOSE,lS-4],[REM_NOSE,lS+4],.8,YEL);plate(APN.D2+84,lS,String(11+i),0)});
   });
   // cargo apron: lane D1 carries on to the far end, and the cargo stands 41-46 lie on its far side with the aircraft nose to the cargo terminal
   {const CD1=APN.D1,CE=-1150;
@@ -2071,6 +2077,9 @@ function buildAirport(){
   // parked[14], [15]: aircraft in for maintenance on the apron in front of the hangars, nose to the runway
   for(const[ty,tl,sM,lM]of[['b744',0x23406e,157,-915],['a333',0x3a5f2e,262,-925]]){const opt={tail:tl,gear:true},m=buildAircraftModel(AC[ty],opt);m.userData.spec={type:ty,opt};m.userData.type=ty;
     const p=rwP(sM,lM);m.position.set(p[0],RWY.elev,p[1]);m.rotation.y=-hdgOf(0,1);scene.add(m);parked.push(m)}
+  // parked[16...]: aircraft on the remote stands 11-19 (no jet bridge), nose-in with the tail toward lane D2; apron buses serve them (buildGSE)
+  if(REMOTE_OPS)REM_TY.forEach((ty,i)=>{if(!ty)return;const opt={tail:[0x1d6f6a,0xb53a2c,0x23406e,0x6a1f2f,0x3a5f2e][i%5],gear:true},m=buildAircraftModel(AC[ty],opt);m.userData.spec={type:ty,opt};m.userData.type=ty;
+    const p=rwP(REM_NOSE-.39*AC[ty].len,APN.remote[i]);m.position.set(p[0],RWY.elev,p[1]);m.rotation.y=-hdgOf(1,0);scene.add(m);parked.push(m)});
   // lights
   // edge lights turn amber over the last 600 m, and the landing threshold is green (red at the far end), for each direction
   const mkRwyLights=dir=>{const Lr=[];
@@ -3675,6 +3684,9 @@ const GSE_KINDS={
       ...gseWheels(.62,[-.75],.38,.3),...gseWheels(.6,[1.0],.3,.25)],cols:[0xd9a21f,0xc9372c,0x3d7a46],alts:[0x2a2d31]},
   tender:{len:11.4,parts:gseFire(11.4)},
   rescue:{len:8.0,parts:gseFire(8.0)},
+  // apron bus: low-floor coach with a window band, a coloured stripe and a pale roof
+  bus:{len:12.2,parts:[[2.5,.5,11.6,0,.4,0,0x45484c],[2.55,2.3,12,0,.75,0,'body'],[2.58,.8,11.0,0,1.85,.2,GL],[2.4,1.2,.1,0,1.75,-6.03,GL],[2.58,.35,12.02,0,.95,0,'alt'],[2.35,.18,11.2,0,3.05,0,0xb6babd],
+      ...gseWheels(1.2,[-3.9,3.6],.5,.4)],cols:[0xeeeeea,0xf0e6c8],alts:[0x2f5c8a,0xc9372c,0x3d7a46,0xd88a2a]},
 };
 // ---- routes: a closed loop of runway-coordinate points, corners rounded, with the distance of every point along it
 function gseRoute(pts,R){
@@ -3743,6 +3755,20 @@ function buildGSE(){
     ['dolA','dolB','dolC'].forEach((d,n)=>gseAdd(d,{lead:tr,off:4.6+4.7*n}))}
   {const l41=2000-STAND_C[0],l42=2000-STAND_C[1];   // forklifts shuttle along the airside docks
    gseRun('fork',[[642,l41+6],[642,l41],[642,l42],[642,l42-6],[639,l42-6],[639,l41+6]],5,[{i:1,dw:35,tag:'dock'},{i:2,dw:35,tag:'dock'}],3.2,0,{beacon:[1,.65,.1]})}
+  // Remote stand buses. The bus gate is a lounge at the root of the pier with a canopy over the loading lane. Each bus has a loop of its own:
+  // gate -> east along the service road (l = -790) -> along s = 405, in front of the noses -> down beside the aircraft to its forward left door (dwell:
+  // passengers off and on) -> out between the wingtips -> back by the outer lane (s = 413, l = -797) to the gate. They only run when no jet bridge is free.
+  if(REMOTE_OPS){
+    const hallM=cityMaterial({color:0xd9d5c8}),slab=new THREE.MeshLambertMaterial({color:0x8d8b84}),post=new THREE.MeshLambertMaterial({color:0x6d7378});
+    place(box(74,9,26,hallM),-65,-819,Y);place(box(76,.8,28,slab),-65,-819,Y+9);rect(-78,-52,-856,-782,Y+10,'the bus gate');
+    place(box(24,.35,48,slab),-28,-795,Y+4.6);for(const s0 of[-50,-6])for(const l0 of[-806,-784])place(box(.5,4.6,.5,post),s0,l0,Y);
+    const sg=new THREE.Mesh(new THREE.PlaneGeometry(15,2.8),new THREE.MeshBasicMaterial({map:canvasTex(600,112,(g,w,h)=>{g.fillStyle='#1f4f8a';g.fillRect(0,0,w,h);g.strokeStyle='#fff';g.lineWidth=4;g.strokeRect(5,5,w-10,h-10);
+      g.fillStyle='#fff';g.textAlign='center';g.textBaseline='middle';g.font='bold 44px sans-serif';g.fillText('巴士閘口  BUS GATE',w/2,h/2-12);g.font='bold 26px sans-serif';g.fillText('遠端停機位 Remote stands 11-19',w/2,h/2+30)})}));
+    place(sg,-51.8,-819,Y+6.2);sg.rotation.y=-RWY.hdg*D2R+Math.PI;
+    let bi=0;REM_TY.forEach((ty,i)=>{if(!ty)return;const lS=APN.remote[i],dS=remDoorS(ty),lD=lS-5.7,lO=lS-37.5;
+      const pts=[[-45,-797],[-45,-790],[-28,-790],[405,-790],[405,lD],[dS+3,lD],[dS-4,lD],[dS-4,lO],[413,lO],[413,-797]];
+      gseRun('bus',pts,8,[{i:2,dw:45,tag:'gate'},{i:5,dw:90,tag:'door'}],6.5,bi++*83,{})})
+  }
   // instanced meshes: one per kind and colour group, with vertex colours for the fixed parts
   const tc=new THREE.Color(),mats={};
   for(const kind in GSEK){const K=Object.assign(GSE_KINDS[kind],GSEK[kind]),groups={};K.meshes=[];

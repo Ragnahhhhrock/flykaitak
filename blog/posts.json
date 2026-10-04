@@ -1,5 +1,38 @@
 [
   {
+    "slug": "remote-stands-and-apron-buses",
+    "title": "Remote stands and apron buses",
+    "dek": "Aircraft now park on the remote stands without jet bridges, and apron buses carry the passengers.",
+    "description": "Remote stands 11 to 19 at Kai Tak hold parked aircraft, and apron buses run from a new bus gate to their doors when no jet bridge is free.",
+    "date": "2026-10-04",
+    "tag": "New",
+    "category": "scenery",
+    "keywords": [
+      "remote stands",
+      "apron bus",
+      "bus gate",
+      "jet bridge",
+      "ground vehicles",
+      "Kai Tak",
+      "flight simulator"
+    ],
+    "hero": "remote-stands",
+    "hero_alt": "Aircraft parked nose-in on the remote stands along apron lane D2.",
+    "hero_caption": "Aircraft parked on the remote stands along lane D2.",
+    "card_kicker": "SCENERY · APRON",
+    "card_title": "Remote stands and apron buses",
+    "card_sub": "Stands 11 to 19",
+    "card_image": "remote-stands",
+    "card_focus": 50,
+    "zh": {
+      "title": "遠端機位同機場巴士",
+      "dek": "飛機而家停喺冇登機橋嘅遠端機位，機場巴士負責接載乘客。",
+      "description": "啟德 11 至 19 號遠端機位停咗飛機，冇登機橋可用嗰陣，機場巴士會由新嘅巴士閘口駛去機門。",
+      "hero_alt": "飛機機頭向內停喺 D2 滑行道旁邊嘅遠端機位。",
+      "hero_caption": "D2 滑行道旁邊遠端機位上嘅飛機。"
+    }
+  },
+  {
     "slug": "cargo-terminal-and-freighters",
     "title": "Cargo terminal and freighters",
     "dek": "A cargo terminal, two freighter types and their handling vehicles now work alongside the passenger flights.",
