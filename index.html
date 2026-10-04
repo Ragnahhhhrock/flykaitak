@@ -223,6 +223,39 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
 .hspanel[hidden]{display:none}
 .hspanel .hst caption{display:table-caption}
 @media (max-width:820px){.hspanel{left:16px;top:60px;width:calc(100% - 32px)}}
+/* ---------- flight information board: an old split-flap (Solari) board, home screen and Plane Spotter ---------- */
+.fids{box-sizing:border-box;background:#0b0c0d;border:3px solid #2b2e30;outline:1px solid #000;border-radius:3px;padding:8px 10px 6px;font-family:var(--f-num);color:#f1ede2;box-shadow:0 6px 26px rgba(0,0,0,.6),inset 0 0 0 1px #3d4143}
+.fids[hidden]{display:none!important}
+.fids-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:5px;padding-bottom:5px;border-bottom:2px solid var(--checker);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#f1ede2}
+.fids-h b{font-weight:700}
+.fids-clock{display:inline-flex;gap:2px;align-items:center;letter-spacing:.06em;white-space:nowrap}
+.fids-cap{margin:7px 0 3px;font-family:var(--f-ui);font-weight:700;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#f5c518}
+.fr{display:flex;gap:9px;margin:0 0 2px;white-space:nowrap;align-items:center}
+.fr.hd{margin:0 0 3px;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#8c9291}
+.fr.hd span,.fr .c{display:block;overflow:hidden}
+.fr.done .fl{opacity:.55}
+.fg{display:inline-flex;gap:1px;flex:none}
+.fg.t{width:calc(5*10px + 4px)}.fg.f{width:calc(7*10px + 6px)}.fg.k{width:calc(4*10px + 3px)}
+.fl{position:relative;display:inline-block;box-sizing:border-box;width:9px;height:17px;line-height:17px;text-align:center;font-size:13px;font-weight:700;color:#f1ede2;background:linear-gradient(#242729 0 49%,#050505 49% 52%,#1b1d1f 52%);border-radius:1px;box-shadow:0 1px 0 #000;overflow:hidden;backface-visibility:hidden}
+.fl.w{width:17px;font-family:var(--f-han),"PingFang HK","Microsoft JhengHei",serif;font-size:13px}
+.fl.sp{background:linear-gradient(#242729 0 49%,#050505 49% 52%,#1b1d1f 52%)}
+.fl.flip{animation:flapflip .34s ease-in}
+@keyframes flapflip{0%{transform:rotateX(0)}45%{transform:rotateX(-88deg);filter:brightness(.4)}55%{transform:rotateX(88deg);filter:brightness(.4)}100%{transform:rotateX(0)}}
+.fr .t .fl{color:#f5c518}
+.fl.s-warn{color:#f5c518}.fl.s-go{color:#ff8a3d}.fl.s-ok{color:#f1ede2}
+.fr.me{outline:1px solid var(--checker);outline-offset:2px}
+.fr .lv{flex:none;width:8px;height:8px;margin-right:-3px;border-radius:2px;border:1px solid rgba(255,255,255,.4)}
+@media (prefers-reduced-motion:reduce){.fl.flip{animation:none}}
+#fidsHome{grid-column:1;grid-row:1;align-self:start;justify-self:end;margin:66px 28px 0 28px;width:min(520px,calc(100% - 56px));z-index:1}
+.brand{grid-column:1;grid-row:1}.sheet{grid-column:2;grid-row:1}
+#fidsPlay{position:fixed;z-index:3;right:calc(env(safe-area-inset-right,0px) + 10px);top:calc(env(safe-area-inset-top,0px) + 58px);width:min(520px,calc(100% - 20px));max-height:calc(100% - 150px);overflow:hidden}
+@media (max-width:820px){
+  .brand{grid-row:1}.sheet{grid-column:1;grid-row:2}
+  #fidsHome{grid-column:1;grid-row:3;justify-self:stretch;margin:0;width:auto;border-radius:0;border-width:1px 0 0}
+  #fidsPlay{padding:6px 8px 4px}
+}
+@media (max-width:520px){.fg.k,.fr .k{display:none}}
+@media (max-height:520px){#fidsHome{display:none}}
 .hs{display:grid;gap:8px;border-top:1px solid var(--line);padding-top:14px}
 .hs-me{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px}
 .hs-me label{color:var(--muted);font-size:11px;letter-spacing:.14em;text-transform:uppercase}
@@ -360,6 +393,7 @@ html,body{overscroll-behavior:none;touch-action:manipulation}
     <button class="btn" id="btnGuide" type="button" aria-pressed="true">Guide</button>
     <button class="btn" id="btnSound" type="button" aria-pressed="true">Sound</button>
     <button class="btn" id="btnRadio" type="button" aria-pressed="true" title="ATC radio on/off ( R )">Radio</button>
+    <button class="btn" id="btnFids" type="button" aria-pressed="true" title="Flight board on/off ( B )" hidden>Flights</button>
     <button class="btn" id="btnFs" type="button" hidden>Full screen</button>
     <button class="btn" id="btnPause" type="button" aria-pressed="false">Pause</button>
     <button class="btn" id="btnMore" type="button" aria-expanded="false" aria-controls="more">More</button>
@@ -381,6 +415,7 @@ html,body{overscroll-behavior:none;touch-action:manipulation}
 </div>
 
 <div id="toast" role="status" aria-live="polite"></div>
+<div class="fids" id="fidsPlay" role="region" aria-label="Flight information" hidden></div>
 <div id="coach" hidden>
   <div class="coach-top"><span class="eyebrow" id="coachStep"></span><button class="btn" id="coachSkip" type="button">Skip lesson</button></div>
   <h3 id="coachTitle" aria-live="polite"></h3>
@@ -405,6 +440,7 @@ html,body{overscroll-behavior:none;touch-action:manipulation}
       <a class="coffee" id="btnCoffee" href="#" target="_blank" rel="noopener" hidden>☕ Buy me a coffee · $5 AUD</a>
     </div>
   </div>
+  <div class="fids" id="fidsHome" role="region" aria-label="Flight information"></div>
   <div class="sheet">
     <div class="checkband" aria-hidden="true"></div>
     <div class="sheet-body">
@@ -466,6 +502,7 @@ html,body{overscroll-behavior:none;touch-action:manipulation}
           <span><kbd>N</kbd> <kbd>P</kbd> <kbd>U</kbd></span><span>Day/night, pause, clouds</span>
           <span><kbd>I</kbd> <kbd>O</kbd> / mouse wheel</span><span>Zoom in / out (1× to 16×). Scroll up to zoom in, down to zoom out</span>
           <span><kbd>T</kbd></span><span>Time speed 1×, 2×, 4×, 8×</span>
+          <span><kbd>B</kbd></span><span>Flight information board on/off (Plane Spotter)</span>
           <span><kbd>[</kbd> <kbd>]</kbd></span><span>Jump back / forward 10 seconds (back works after a crash too)</span>
           <span>Drag the view</span><span>Look around (cockpit, cabin) or orbit (exterior)</span>
         </div>
@@ -2699,30 +2736,30 @@ function aiWrap(type,tail){const m=buildAircraftModel(AC[type],{tail,cheat:tail,
 function buildAI(){
   for(const a of AI){scene.remove(a.m)}AI.length=0;standsFree();
   const mk=(type,tail,fn,role)=>{const m=aiWrap(type,tail);scene.add(m);const a={m,fn,ll:m.userData.ll,type,tail,role};AI.push(a);return a};
-  const c0=PATH.pts[0].c,E=LND.id==='31',docks=[null,null,null,null,null,null];
+  const c0=PATH.pts[0].c,E=LND.id==='31',docks=[null,null,null,null,null,null],thrC=PATH.pts.find(q=>q.d<=0).c,tdAt=c=>(thrC+300-c)/76;
   const hide=j=>{parked[j].visible=false};
   // a departure from stand j that lines up at global time tLine: the tug and bridge follow its pushback
   const dep=(ty,j,tLine,tail)=>{const S=STAND_S[j],L=(E?lineupT31:lineupT)(ty,S),dpf=E?departurePose31:departurePose;hide(j);
-    const a=mk(ty,tail,t=>dpf(t+L-tLine,ty,S,0),'departure');a.stand=j;a.bridge=t=>1-sstep(-20,-3,t+L-tLine);
+    const a=mk(ty,tail,t=>dpf(t+L-tLine,ty,S,0),'departure');a.stand=j;a.fid={role:'departure',j,li:AI_LIVERIES.indexOf(tail),t:tLine-L};a.bridge=t=>1-sstep(-20,-3,t+L-tLine);
     GSEK.ptug.list[j].fn=t=>tugAt(ty,S,(a.tau??t)+L-tLine);docks[j]=false;return a};
   // an arrival: c is its distance along the approach path at t=0, tsh a delay in seconds
   const arr=(ty,j,c,tsh,tail)=>{const S=STAND_S[j],dk=arrivalPts(c,S,ty).dock+tsh;hide(j);
-    const a=mk(ty,tail,t=>arrivalPose(t-tsh,c,j,ty),'arrival');a.stand=j;a.bridge=t=>sstep(dk+4,dk+20,t);docks[j]=dk;return a};
+    const a=mk(ty,tail,t=>arrivalPose(t-tsh,c,j,ty),'arrival');a.stand=j;a.fid={role:'arrival',j,li:AI_LIVERIES.indexOf(tail),t:tsh+tdAt(c)};a.bridge=t=>sstep(dk+4,dk+20,t);docks[j]=dk;return a};
   if(E){  // Runway 31 flow: one departure ahead of you, one arrival two minutes ahead and one behind, holds out to the south-east
     dep('a333',4,30,AI_LIVERIES[0]);
     arr('b744',0,c0+8600,0,AI_LIVERIES[1]);
     dep('b772',5,421,AI_LIVERIES[2]);
     arr('a343',1,c0,85,AI_LIVERIES[3]);
-    mk('b744',AI_LIVERIES[4],t=>holdingPose(t,8000,13500,1850,2600,0),'holding');
-    mk('a333',AI_LIVERIES[5],t=>holdingPose(t,8000,13500,2150,2600,Math.PI),'holding');
+    mk('b744',AI_LIVERIES[4],t=>holdingPose(t,8000,13500,1850,2600,0),'holding').fid={role:'holding',li:4,hi:0};
+    mk('a333',AI_LIVERIES[5],t=>holdingPose(t,8000,13500,2150,2600,Math.PI),'holding').fid={role:'holding',li:5,hi:1};
     dep('b744',3,717,AI_LIVERIES[6]);
   }else{
     dep('a333',4,67,AI_LIVERIES[0]);                       // departs before you arrive
     arr('b744',0,c0+8600,0,AI_LIVERIES[1]);                // lands about two minutes ahead of you
     dep('b772',5,171,AI_LIVERIES[2]);                      // lines up once the runway is clear
     arr('a343',1,c0,85,AI_LIVERIES[3]);                   // following you in on the IGS
-    mk('b744',AI_LIVERIES[4],t=>holdingPose(t,-11000,5200,1850,2600,0),'holding');         // holding west of the harbour
-    mk('a333',AI_LIVERIES[5],t=>holdingPose(t,-11000,5200,2150,2600,Math.PI),'holding');   // the next level up
+    mk('b744',AI_LIVERIES[4],t=>holdingPose(t,-11000,5200,1850,2600,0),'holding').fid={role:'holding',li:4,hi:0};         // holding west of the harbour
+    mk('a333',AI_LIVERIES[5],t=>holdingPose(t,-11000,5200,2150,2600,Math.PI),'holding').fid={role:'holding',li:5,hi:1};   // the next level up
     dep('b744',3,486,AI_LIVERIES[6]);
   }
   gseSyncStands(docks,0);
@@ -2744,15 +2781,77 @@ function buildAISchedule(phase,wrapNeg){
   const m=E?0:1,docks=[];parked.forEach(q=>{q.visible=false});
   for(let j=0;j<6;j++){const off=j*100,ty=STAND_TY[j],S=STAND_S[j],tail=AI_LIVERIES[j];
     const dk=arrivalPts(c0,S,ty).dock;docks[j]=100*j-phase+dk;
-    const A=mk(ty,tail,t=>{const k=loc(t,off);return k<0?null:arrivalPose(k,c0,j,ty)},'arrival');A.stand=j;A.bridge=t=>{const k=loc(t,off);return k<0?0:sstep(dk+4,dk+20,k)};
+    const A=mk(ty,tail,t=>{const k=loc(t,off);return k<0?null:arrivalPose(k,c0,j,ty)},'arrival');A.stand=j;A.fid={role:'arrival',j,li:j,sched:true,off,P,ph:phase,k:(thrC+300-c0)/76};A.bridge=t=>{const k=loc(t,off);return k<0?0:sstep(dk+4,dk+20,k)};
     const hold=145+100*m-lnf(ty,S);
-    const D=mk(ty,tail,t=>{const k=loc(t,off);return k<0?(hold<0?null:dpf(0,ty,S,hold)):dpf(k,ty,S,hold)},'departure');D.stand=j;D.bridge=t=>{const k=loc(t,off);return k<0?1:1-sstep(-20,-3,k-hold)};
+    const D=mk(ty,tail,t=>{const k=loc(t,off);return k<0?(hold<0?null:dpf(0,ty,S,hold)):dpf(k,ty,S,hold)},'departure');D.stand=j;D.fid={role:'departure',j,li:j,sched:true,off,P,ph:phase,k:hold};D.bridge=t=>{const k=loc(t,off);return k<0?1:1-sstep(-20,-3,k-hold)};
     GSEK.ptug.list[j].fn=t=>{const k=loc(D.tau??t,off);return tugAt(ty,S,(k<0?0:k)-hold)}}
   const hx=E?8000:-11000,hz=E?13500:5200;
-  mk('b744',AI_LIVERIES[4],t=>holdingPose(t,hx,hz,1850,2600,0),'holding');
-  mk('a343',AI_LIVERIES[5],t=>holdingPose(t,hx,hz,2150,2600,Math.PI),'holding');
+  mk('b744',AI_LIVERIES[4],t=>holdingPose(t,hx,hz,1850,2600,0),'holding').fid={role:'holding',li:4,hi:0};
+  mk('a343',AI_LIVERIES[5],t=>holdingPose(t,hx,hz,2150,2600,Math.PI),'holding').fid={role:'holding',li:5,hi:1};
   gseSyncStands(docks,wrapNeg);
 }
+/* =====================================================================
+   FLIGHT INFORMATION BOARD. Arrivals and departures for Kai Tak, on the home screen and in Plane Spotter. Every AI aircraft carries a
+   flight (a.fid, set when the traffic is built) and the board reads the aircraft's own state, so it always matches what is on the apron.
+   Airlines and flight numbers are made up (no real brands); the cities are 1998 Kai Tak destinations. The clock is Hong Kong time.
+   ===================================================================== */
+const FIDS_CAR=[['RJA','Red Junk Air','紅帆航空'],['BHA','Blue Harbour Air','藍港航空'],['JPA','Jade Peak Airways','翠峰航空'],['GLA','Golden Lantern Air','金燈航空'],['ORA','Orchid Air','蘭花航空'],['KWA','Kowloon Wings','九龍翼航空'],['SSA','South Sea Air','南海航空'],['TKA','Teak Air','柚木航空']];
+const FIDS_LONG=[['London','倫敦'],['Frankfurt','法蘭克福'],['Amsterdam','阿姆斯特丹'],['Paris','巴黎'],['Sydney','悉尼'],['Melbourne','墨爾本'],['Auckland','奧克蘭'],['San Francisco','三藩市'],['Los Angeles','洛杉磯'],['Vancouver','溫哥華'],['Toronto','多倫多'],['Rome','羅馬'],['Zurich','蘇黎世'],['Dubai','杜拜']];
+const FIDS_REG=[['Tokyo Narita','東京成田'],['Osaka Kansai','大阪關西'],['Seoul Kimpo','漢城金浦'],['Taipei','台北'],['Singapore','新加坡'],['Bangkok','曼谷'],['Manila','馬尼拉'],['Kuala Lumpur','吉隆坡'],['Jakarta','雅加達'],['Beijing','北京'],['Shanghai','上海'],['Hanoi','河內'],['Ho Chi Minh','胡志明市'],['Bali','峇里']];
+// status key: [English, Cantonese, colour class]
+const FIDS_ST={exp:['Expected','預計抵港','warn'],app:['On approach','進場中','warn'],fin:['Short final','最後進場','go'],ldg:['Landed','已降落','ok'],txi:['Taxiing','滑行中','ok'],stn:['At stand','已泊位','ok'],hld:['Holding','空中等候','warn'],
+  brd:['Boarding','登機中','warn'],psh:['Pushback','推出機位','ok'],wait:['Holding','地面等候','warn'],tko:['Take-off','起飛中','go'],dep:['Departed','已起飛','ok']};
+const fidsH=(a,b,c)=>{let h=Math.imul(a+1,2654435761)^Math.imul(b+7,1597334677)^Math.imul(c+13,3812015801);h^=h>>>15;h=Math.imul(h,2246822519);h^=h>>>13;return h>>>0};
+const fidsT0=()=>CFG.night?78000:37200;   // 21:40 at night, 10:20 by day
+const fidsHM=s=>{s=((Math.round(s/60)*60)%86400+86400)%86400;return String(s/3600|0).padStart(2,'0')+':'+String(s%3600/60|0).padStart(2,'0')};
+const fidsLong=ty=>ty==='b744'||ty==='a343';
+// one board row for an AI aircraft; t is the sim clock, a.tau the aircraft's own clock
+function fidsRow(a,t){
+  const f=a.fid,p=a.p,v=a.v||0,tn=a.tau??t,air=!!p&&p.y>RWY.elev+3;let n=0,t0;
+  if(f.role==='holding'){t0=Math.ceil((t+420+f.hi*240)/300)*300}
+  else if(f.sched){n=Math.floor((tn+f.ph-f.off)/f.P);t0=n*f.P+f.off-f.ph+f.k}else t0=f.t;
+  const H=fidsH(f.li,f.role==='arrival'?1:f.role==='departure'?2:3,n),L=fidsLong(a.type)?FIDS_LONG:FIDS_REG,car=FIDS_CAR[f.li%FIDS_CAR.length];
+  const atStand=!!p&&f.j!=null&&Math.hypot(rwS(p.x,p.z)-STAND_S[f.j],rwL(p.x,p.z)-standL(a.type))<6,onRwy=!!p&&Math.abs(rwL(p.x,p.z))<25;
+  let k;
+  if(f.role==='arrival')k=!p?'exp':air?(t0-tn<75?'fin':'app'):v>25?'ldg':(v>.5||!atStand)?'txi':'stn';
+  else if(f.role==='departure')k=!p||air?'dep':onRwy&&v>.5?'tko':p.push?(atStand&&v<.5?'brd':'psh'):v>.5?'txi':'wait';
+  else k='hld';
+  return {role:f.role==='departure'?'dep':'arr',t:t0,no:car[0]+' '+(100+H%900),car,city:L[(H>>>8)%L.length],stand:f.j!=null?String(APN.numA[f.j]):'',k,li:f.li,
+    done:f.role==='arrival'?(k==='ldg'||k==='txi'||k==='stn'):k==='dep'}}
+// the demo aircraft on the home screen, listed as an arrival
+function fidsMe(t){
+  const thr=PATH.pts.find(q=>q.d<=0).c,eta=(thr+300-PATH.pts[0].c)/76,L=fidsLong(CFG.ac)?FIDS_LONG:FIDS_REG;
+  const k=ST.td?'ldg':eta-t<75?'fin':'app';
+  return {role:'arr',t:eta,no:'FKT 13',car:['FKT','Fly Kai Tak','Fly Kai Tak'],city:L[fidsH(CFG.ac.length,CFG.ac.charCodeAt(1)||0,5)%L.length],stand:'RWY 13',k,li:-1,done:k==='ldg',me:true}}
+let fidsOn=true,fidsLast=-1e9;
+const FL_W=c=>c.charCodeAt(0)>255;
+// n flaps for a string (pad with blanks; Cantonese characters sit in wider flaps and count as two columns)
+function fidsFlaps(str,n,cls,key,prev,next){let o='',used=0,i=0;const ch=[...String(str)];
+  for(const c0 of ch){const w=FL_W(c0)?2:1;if(used+w>n)break;const c=FL_W(c0)?c0:c0.toUpperCase();const k=key+':'+i;next[k]=c;const f=prev&&prev[k]!==c&&prev[k]!==undefined?' flip':'';o+=`<b class="fl${w>1?' w':''}${cls?' '+cls:''}${f}">${c===' '?'&nbsp;':c}</b>`;used+=w;i++}
+  while(used<n){const k=key+':'+i;next[k]=' ';const f=prev&&prev[k]!==' '&&prev[k]!==undefined?' flip':'';o+=`<b class="fl sp${f}">&nbsp;</b>`;used++;i++}
+  return o}
+function fidsHTML(max,prev,next){
+  const t=ST.t||0,zh=LANG==='zh',rows=[];
+  for(const a of AI)if(a.fid)rows.push(fidsRow(a,t));
+  if(mode==='attract')rows.push(fidsMe(t));
+  const list=role=>rows.filter(r=>r.role===role).sort((x,y)=>(x.done-y.done)||(x.done?y.t-x.t:x.t-y.t)).slice(0,max);
+  const CN=zh?12:13,SN=12,narrow=window.innerWidth<=520,cn=narrow?(zh?8:9):CN;
+  const sec=(role,cap,col)=>`<div class="fids-cap">${cap}</div><div class="fr hd"><span style="width:${5*10+4}px">${zh?'時間':'Time'}</span><span style="width:${7*10+6}px">${zh?'航班':'Flight'}</span><span class="c" style="width:${cn*10+cn-1}px">${col}</span>${narrow?'':`<span style="width:${4*10+3}px">${zh?'機位':'Stand'}</span>`}<span>${zh?'狀態':'Status'}</span></div>`+
+    list(role).map((r,ri)=>{const S=FIDS_ST[r.k],sw=r.li<0?'var(--jade-bright)':'#'+AI_LIVERIES[r.li%AI_LIVERIES.length].toString(16).padStart(6,'0');
+      const stand=r.stand==='RWY 13'?(zh?'13':'13'):r.stand,key=role+ri,hm=fidsHM(fidsT0()+r.t);
+      return `<div class="fr${r.done?' done':''}${r.me?' me':''}" title="${zh?r.car[2]:r.car[1]}"><span class="fg t">${fidsFlaps(hm,5,'',key+'t',prev,next)}</span><i class="lv" style="background:${sw}"></i><span class="fg f">${fidsFlaps(r.no,7,'',key+'f',prev,next)}</span><span class="fg c" style="width:${cn*10+cn-1}px">${fidsFlaps(zh?r.city[1]:r.city[0],cn,'',key+'c',prev,next)}</span>${narrow?'':`<span class="fg k">${fidsFlaps(stand,4,'',key+'k',prev,next)}</span>`}<span class="fg s">${fidsFlaps(zh?S[1]:S[0],SN,'s-'+S[2],key+'s',prev,next)}</span></div>`}).join('');
+  const clk=fidsHM(fidsT0()+t),ck={};
+  return `<div class="fids-h"><b>${zh?'航班資訊 · 啟德':'Flight information · Kai Tak'}</b><span class="fids-clock">${zh?'香港時間':'HKT'}&nbsp;${fidsFlaps(clk,5,'s-warn','clk',prev,next)}</span></div>`+
+    sec('arr',zh?'抵港航班 · Arrivals':'Arrivals · 抵港航班',zh?'來自':'From')+sec('dep',zh?'離港航班 · Departures':'Departures · 離港航班',zh?'前往':'To')}
+function fidsDraw(el,max){if(!el||(paused&&el._h))return;const next={},h=fidsHTML(max,el._g,next);if(h!==el._h){el._h=h;el._g=next;el.innerHTML=h}el.setAttribute('aria-label',LANG==='zh'?'航班資訊':'Flight information')}
+function fidsTick(now){
+  const pl=document.getElementById('fidsPlay');if(pl.hidden===(mode==='fly'&&CFG.game==='watch'&&fidsOn))fidsShow();
+  if(now-fidsLast<400)return;fidsLast=now;const H=window.innerHeight;
+  if(mode==='attract')fidsDraw(document.getElementById('fidsHome'),clamp(Math.floor((H-500)/44),2,8));
+  else if(mode==='fly'&&CFG.game==='watch'&&fidsOn)fidsDraw(document.getElementById('fidsPlay'),clamp(Math.floor((H-190)/46),2,8))}
+function fidsShow(){const W=mode==='fly'&&CFG.game==='watch',b=document.getElementById('btnFids');document.getElementById('fidsPlay').hidden=!(W&&fidsOn);b.hidden=!W;b.setAttribute('aria-pressed',String(fidsOn));fidsLast=-1e9}
+function toggleFids(via){if(mode!=='fly'||CFG.game!=='watch')return;fidsOn=!fidsOn;fidsShow();tog('flight_board',fidsOn?'on':'off',via)}
+
 /* =====================================================================
    AIRCRAFT COLLISIONS. Every aircraft has a footprint (fuselage, two wings, two tailplanes). Ground traffic is under control: an aircraft
    that would run into a higher-priority one holds where it is, braking and moving off smoothly, until the way is clear. If two
@@ -3299,7 +3398,7 @@ window.addEventListener('keydown',e=>{
   switch(e.code){
     case 'KeyG':toggleGear();break;case 'KeyF':setFlaps(1);break;case 'KeyV':setFlaps(-1);break;
     case 'KeyC':{const o=CFG.game==='watch'?['carpark','ped','street','boat','checker',...(LND.id==='31'?['lym']:[]),'peak','tower','chase']:['cockpit','chase','tower','street','ped','carpark','boat','checker',...(LND.id==='31'?['lym']:[]),'peak','cabin'];setView(o[(o.indexOf(CFG.view)+1)%o.length]);break}
-    case 'KeyZ':toggleAP();break;case 'KeyR':toggleRadio();break;case 'BracketLeft':timeJump(-10);break;case 'BracketRight':timeJump(10);break;
+    case 'KeyZ':toggleAP();break;case 'KeyR':toggleRadio();break;case 'KeyB':toggleFids('key');break;case 'BracketLeft':timeJump(-10);break;case 'BracketRight':timeJump(10);break;
     case 'KeyT':setTs(CFG.ts>=8?1:CFG.ts*2);break;case 'KeyI':setZoom(Math.min(16,CFG.zoom*2));break;case 'KeyO':setZoom(Math.max(1,CFG.zoom/2));break;case 'KeyK':toggleDeck();break;case 'KeyN':toggleNight();break;case 'KeyU':setClouds_on(!CFG.clouds);break;case 'KeyP':togglePause();break;
   }
   VIA='button';
@@ -3548,7 +3647,7 @@ const ZH={
 'Show or hide the cockpit panel (cockpit view)':'顯示或隱藏駕駛艙儀表板（駕駛艙視角）',
 'Day/night, pause, clouds':'日夜、暫停、雲層',
 'Zoom in / out (1× to 16×). Scroll up to zoom in, down to zoom out':'放大 / 縮小（1× 至 16×）。滑鼠滾輪向上放大，向下縮小',
-'Time speed 1×, 2×, 4×, 8×':'時間速度 1×、2×、4×、8×',
+'Time speed 1×, 2×, 4×, 8×':'時間速度 1×、2×、4×、8×','Flight information board on/off (Plane Spotter)':'航班資訊板開／關（觀機）',
 'Jump back / forward 10 seconds (back works after a crash too)':'後退 / 前進 10 秒（撞機之後亦可以後退）',
 'Drag the view':'拖曳畫面',
 'Look around (cockpit, cabin) or orbit (exterior)':'環顧四周（駕駛艙、客艙）或者繞機飛行（機外）',
@@ -3565,7 +3664,7 @@ function zhOf(s){const t=s.trim();if(!t)return null;if(Object.prototype.hasOwnPr
 function applyLang(){
   const w=document.createTreeWalker(document.getElementById('setup'),NodeFilter.SHOW_TEXT);
   for(let n;n=w.nextNode();){
-    if(n.parentNode.closest('#btnLang'))continue;
+    if(n.parentNode.closest('#btnLang,.fids'))continue;
     let o=langOrig.get(n);if(o===undefined){o=n.nodeValue;langOrig.set(n,o)}
     const z=LANG==='zh'?zhOf(o):null;
     const v=z===null?o:o.slice(0,o.length-o.trimStart().length)+z+o.slice(o.trimEnd().length);
@@ -3573,7 +3672,7 @@ function applyLang(){
   document.documentElement.lang=LANG==='zh'?'zh-HK':'en';
   const b=document.getElementById('btnLang');b.setAttribute('aria-pressed',LANG==='zh');
   for(const s of b.querySelectorAll('span'))s.classList.toggle('on',s.dataset.l===LANG)}
-document.getElementById('btnLang').addEventListener('click',e=>{LANG=LANG==='zh'?'en':'zh';try{localStorage.setItem('fkt-lang',LANG)}catch(_){}track('language_toggle',{language:LANG==='zh'?'cantonese':'english'});applyLang();e.currentTarget.blur()});
+document.getElementById('btnLang').addEventListener('click',e=>{LANG=LANG==='zh'?'en':'zh';try{localStorage.setItem('fkt-lang',LANG)}catch(_){}track('language_toggle',{language:LANG==='zh'?'cantonese':'english'});applyLang();fidsLast=-1e9;e.currentTarget.blur()});
 applyLang();
 function readSetup(){const gv=document.querySelector('input[name=game]:checked').value;CFG.lesson=gv==='learn';CFG.game=gv==='approach31'?'approach':gv==='free31'?'free':gv==='watch31'?'watch':CFG.lesson?'free':gv;CFG.rwy=gv==='approach31'||gv==='free31'||gv==='watch31'?'31':'13';CFG.ac=document.querySelector('input[name=ac]:checked').value;CFG.night=document.querySelector('input[name=tod]:checked').value==='night';CFG.wx=document.querySelector('input[name=wx]:checked').value;
   CFG.lightning=document.getElementById('optLightning').checked;CFG.clouds=document.getElementById('optClouds').checked;CFG.guide=document.getElementById('optGuide').checked;CFG.ap=document.getElementById('optAP').checked;CFG.walled=document.getElementById('optWalled').checked}
@@ -3609,6 +3708,7 @@ document.getElementById('btnNight').addEventListener('click',toggleNight);
 document.getElementById('btnAP').addEventListener('click',()=>toggleAP());
 document.getElementById('btnDeck').addEventListener('click',toggleDeck);
 document.getElementById('btnHud').addEventListener('click',toggleHud);
+document.getElementById('btnFids').addEventListener('click',()=>toggleFids('button'));
 document.getElementById('btnGuide').addEventListener('click',toggleGuide);
 document.getElementById('btnSound').addEventListener('click',toggleSound);
 document.getElementById('btnRadio').addEventListener('click',toggleRadio);
@@ -3660,7 +3760,7 @@ function startFlight(){
   const W=CFG.game==='watch';
   document.getElementById('flightid').textContent=(W?'PLANE SPOTTER · KAI TAK'+(LND.id==='31'?' · RWY 31':''):ST.ac.short.toUpperCase()+' · '+(CFG.lesson?'TAKE-OFF LESSON':CFG.game==='free'?'FREE FLIGHT'+(LND.id==='31'?' · RWY 31':''):LND.id==='31'?'RWY 31':'IGS 13'))+' · '+(CFG.night?'NIGHT':'DAY')+' · '+WX[CFG.wx].label.toUpperCase();
   for(const o of document.querySelectorAll('#viewSel option'))o.hidden=(W&&(o.value==='cockpit'||o.value==='cabin'))||(o.value==='lym'&&LND.id!=='31');
-  for(const id of['btnAP','btnHud','btnGuide','btnDeck'])document.getElementById(id).hidden=W;
+  for(const id of['btnAP','btnHud','btnGuide','btnDeck'])document.getElementById(id).hidden=W;if(W)fidsOn=!compactMQ.matches;
   if(W){for(const id of['ctl','map'])document.getElementById(id).hidden=true}
   setView(W?'carpark':CFG.game==='free'?'chase':CFG.ap?'chase':'cockpit');
   syncButtons();sfx.start();sfx.mute(CFG.sound);lightningT=rr(4,9);
@@ -3770,7 +3870,7 @@ function frame(now,manual){
   const t=now/1000;LIGHT_U.uTime.value=t;WATER_U.uTime.value=t;
   const sdt=dt*(mode==='fly'?CFG.ts:1);
   if(!paused){updateTraffic(sdt,CFG.night);updateShips(sdt,t);updateFX(dt);updateDamageFX(dt)}
-  updateAI();if(mode==='fly'&&!paused&&CFG.game!=='watch')playerHit();for(const b of BRIDGE)bridgeSet(b,b.e,b.R);if(gseLamps)updateGSE();
+  fidsTick(now);updateAI();if(mode==='fly'&&!paused&&CFG.game!=='watch')playerHit();for(const b of BRIDGE)bridgeSet(b,b.e,b.R);if(gseLamps)updateGSE();
   updateAircraftVisual();if(hoops)hoops.visible=CFG.guide&&!SPOTS[CFG.view]&&CFG.view!=='tower';
   if(deckGroup&&deckGroup.visible){drawDisplays(dt);animateDeck()}
   if(mode==='attract'){attractCamera(dt)}else updateCamera(dt);

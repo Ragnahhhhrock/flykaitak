@@ -1,5 +1,38 @@
 [
   {
+    "slug": "split-flap-flight-information-board",
+    "title": "The Kai Tak Flight Information Board",
+    "dek": "An old split-flap board lists every arrival and departure, on the home screen and in Plane Spotter.",
+    "description": "Fly Kai Tak adds a split-flap flight information board with every arrival and departure, on the home screen and in Plane Spotter, in English and Cantonese.",
+    "date": "2026-10-04",
+    "tag": "Feature",
+    "category": "scenery",
+    "keywords": [
+      "Kai Tak",
+      "flight information board",
+      "split-flap",
+      "Solari",
+      "plane spotter",
+      "arrivals",
+      "departures"
+    ],
+    "hero": "fids-spotter",
+    "hero_alt": "Plane Spotter from the car park roof with a split-flap flight board at the top right.",
+    "hero_caption": "The board in Plane Spotter.",
+    "card_kicker": "SCENERY · FEATURE",
+    "card_title": "Flight board",
+    "card_sub": "Arrivals and departures, split-flap",
+    "card_image": "fids-spotter",
+    "card_focus": 50,
+    "zh": {
+      "title": "啟德航班資訊板",
+      "dek": "一塊舊式翻牌板列出每班抵港同離港航班，主畫面同觀機模式都有。",
+      "description": "Fly Kai Tak 加入翻牌式航班資訊板，列出每班抵港同離港航班，主畫面同觀機模式都有，支援英文同廣東話。",
+      "hero_alt": "喺停車場天台觀機，右上角有翻牌式航班資訊板。",
+      "hero_caption": "觀機模式嘅資訊板。"
+    }
+  },
+  {
     "slug": "mouse-wheel-zoom",
     "title": "Zoom With the Mouse Wheel",
     "dek": "Scroll up to zoom in and scroll down to zoom out, in the same 1× to 16× steps as the I and O keys.",
