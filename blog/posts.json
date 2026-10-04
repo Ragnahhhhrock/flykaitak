@@ -1,5 +1,38 @@
 [
   {
+    "slug": "south-apron-helipads-and-inlet-taxiways",
+    "title": "South apron, helipads and inlet taxiways",
+    "dek": "Stands 71 to 81, two helipads, taxiway bridges over the water inlet, fuel tanks by the terminal and bitumen at the hangars.",
+    "description": "Kai Tak's south apron with stands 71-81, helipads and taxiway bridges over the inlet, plus fuel tanks beside the terminal and bitumen at the maintenance hangars.",
+    "date": "2026-10-04",
+    "tag": "Update",
+    "category": "scenery",
+    "keywords": [
+      "south apron",
+      "helipad",
+      "taxiway bridge",
+      "fuel tanks",
+      "maintenance apron",
+      "Kai Tak",
+      "flight simulator"
+    ],
+    "hero": "south-apron-helipads-inlet",
+    "hero_alt": "A long south apron with parked aircraft beside the water inlet, two taxiway bridges and two helipads.",
+    "hero_caption": "The south apron across the inlet.",
+    "card_kicker": "SCENERY · SOUTH APRON",
+    "card_title": "South apron",
+    "card_sub": "Helipads and inlet bridges",
+    "card_image": "south-apron-helipads-inlet",
+    "card_focus": 50,
+    "zh": {
+      "title": "南停機坪、直升機坪同海灣滑行道",
+      "dek": "71至81號機位、兩個直升機坪、海灣上嘅滑行道橋、大樓旁嘅油缸同機庫嘅瀝青路面。",
+      "description": "啟德南停機坪有71至81號機位、直升機坪同橫過海灣嘅滑行道橋，仲有客運大樓旁嘅油缸同維修機庫嘅瀝青路面。",
+      "hero_alt": "海灣旁邊停咗飛機嘅南停機坪、兩條滑行道橋同兩個直升機坪。",
+      "hero_caption": "隔住海灣望南停機坪。"
+    }
+  },
+  {
     "slug": "inside-the-1998-terminal-staff-and-signs",
     "title": "Inside the 1998 terminal: staff and signs",
     "dek": "Walk into Kai Tak's terminal: yellow bilingual signs, red check-in desks, immigration, shops and security staff in blue.",
