@@ -1,5 +1,37 @@
 [
   {
+    "slug": "maintenance-area-hangars-and-tank-farm",
+    "title": "Maintenance area: hangars and tank farm",
+    "dek": "The maintenance area is rebuilt from the chart and photos: three hangars with lit bays, a workshop tower, a fenced aircraft compound and a tank farm.",
+    "description": "Kai Tak's maintenance area now has three hangars with lit bays, a workshop tower, a fenced aircraft compound, a blast fence, floodlights and a fuel tank farm.",
+    "date": "2026-10-04",
+    "tag": "Update",
+    "category": "scenery",
+    "keywords": [
+      "maintenance area",
+      "hangars",
+      "tank farm",
+      "blast fence",
+      "Kai Tak",
+      "flight simulator"
+    ],
+    "hero": "maintenance-area-day",
+    "hero_alt": "Three hangars with skylight roofs and open door bays beyond a fenced compound with a stripped 747.",
+    "hero_caption": "The maintenance area from the apron side.",
+    "card_kicker": "SCENERY · MAINTENANCE",
+    "card_title": "Maintenance area",
+    "card_sub": "Hangars and tank farm",
+    "card_image": "maintenance-area-day",
+    "card_focus": 50,
+    "zh": {
+      "title": "維修區：機庫同油缸區",
+      "dek": "維修區根據圖表同相片重建：三個亮燈機庫、工場塔、有圍欄嘅飛機維修區同油缸區。",
+      "description": "啟德維修區而家有三個亮燈機庫、工場塔、有圍欄嘅飛機維修區、擋噴氣牆、泛光燈同油缸區。",
+      "hero_alt": "有圍欄嘅拆機區後面，三個有天窗天台同開咗門嘅機庫。",
+      "hero_caption": "由停機坪嗰邊望維修區。"
+    }
+  },
+  {
     "slug": "remote-stands-and-apron-buses",
     "title": "Remote stands and apron buses",
     "dek": "Aircraft now park on the remote stands without jet bridges, and apron buses carry the passengers.",
