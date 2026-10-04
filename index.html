@@ -1713,12 +1713,12 @@ let rbMasts13=[],rbMasts31=[],papi,papi31,rwyLights,rwyLights31,leadIn,leadIn31,
    ===================================================================== */
 const TI_S=-79,TI_L=-939,F1=4.9;      // main block centre (s, l); the 1/F floor, level with the jet bridge floors
 const TVIEWS={   // p: eye position in the interior frame, yaw/pitch in radians (yaw 0 looks toward the apron, positive turns left), fov in degrees
-  hall:{p:[20,F1+1.65,14],yaw:1.1,pitch:-.03,fov:74},
-  immig:{p:[8,F1+1.65,25],yaw:-1.52,pitch:-.02,fov:72},
-  shops:{p:[74,F1+1.65,26],yaw:-1.28,pitch:-.02,fov:74},
-  gate:{p:[221,F1+1.65,38],yaw:-.36,pitch:-.03,fov:74},
-  stairs:{p:[-6,1.7,20],yaw:-.55,pitch:.0,fov:74},
-  arrivals:{p:[-58,1.7,8],yaw:-1.45,pitch:.0,fov:74},
+  hall:{p:[12,F1+1.65,4],yaw:1.18,pitch:-.04,fov:70},
+  immig:{p:[33,F1+1.65,25],yaw:-1.5,pitch:-.03,fov:70},
+  shops:{p:[78,F1+1.65,11],yaw:-1.8,pitch:-.03,fov:72},
+  gate:{p:[226,F1+1.65,22],yaw:-.5,pitch:-.04,fov:72},
+  stairs:{p:[-6,1.7,22],yaw:-.55,pitch:-.03,fov:72},
+  arrivals:{p:[-58,1.7,14],yaw:-1.35,pitch:-.03,fov:72},
   kerb:{p:[-6,2.3,92],yaw:0,pitch:.1,fov:62,out:true}
 };
 const TVK=Object.keys(TVIEWS);
@@ -1828,7 +1828,8 @@ function tiBuild(){
   const bxm=c=>MC['b'+c]||(MC['b'+c]=[.88,.72,1,.5,.94,.8].map(f=>new THREE.MeshBasicMaterial({color:tiShade(c,f)})));
   const bx=(w,h,d,c,x,y,z,ry,par)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),bxm(c));m.position.set(x,y,z);if(ry)m.rotation.y=ry;(par||g).add(m);return m};
   const fp=(w,h,c,x,y,z,rx,ry,par)=>{const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),mb(c,{side:THREE.DoubleSide}));m.position.set(x,y,z);m.rotation.set(rx||0,ry||0,0);(par||g).add(m);return m};
-  const tm=t=>MC['t'+t.uuid]||(MC['t'+t.uuid]=new THREE.MeshBasicMaterial({map:t,side:THREE.DoubleSide}));
+  const TINT=new Map();
+  const tm=t=>MC['t'+t.uuid]||(MC['t'+t.uuid]=new THREE.MeshBasicMaterial({map:t,color:TINT.get(t)||0xffffff,side:THREE.DoubleSide}));
   const tp=(w,h,tex,per,x,y,z,rx,ry,par)=>{const geo=new THREE.PlaneGeometry(w,h),uv=geo.attributes.uv;for(let i=0;i<uv.count;i++)uv.setXY(i,uv.getX(i)*w/per,uv.getY(i)*h/per);
     const m=new THREE.Mesh(geo,tm(tex));m.position.set(x,y,z);m.rotation.set(rx||0,ry||0,0);(par||g).add(m);return m};
   const sp=(w,h,tex,x,y,z,ry,par)=>{const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),tm(tex));m.position.set(x,y,z);m.rotation.y=ry||0;(par||g).add(m);return m};   // a flat sign facing +z (ry turns it)
@@ -1842,15 +1843,16 @@ function tiBuild(){
     for(let j=0;j<2;j++){c.fillStyle='#fff8e6';c.fillRect(0,j*256+104,w,44);c.fillStyle='#fffdf4';c.fillRect(0,j*256+110,w,32)}},true);
   const wallT=canvasTex(256,256,(c,w,h)=>{c.fillStyle='#d4d0b4';c.fillRect(0,0,w,h);for(let i=0;i<500;i++){c.fillStyle='rgba('+(R()<.5?'255,255,240':'120,118,90')+','+(.04+R()*.07)+')';c.fillRect(R()*w,R()*h,2+R()*6,2+R()*5)}
     c.strokeStyle='#aaa78c';c.lineWidth=2;for(let i=0;i<=4;i++){c.beginPath();c.moveTo(i*64,0);c.lineTo(i*64,h);c.stroke();c.beginPath();c.moveTo(0,i*64);c.lineTo(w,i*64);c.stroke()}},true);
+  TINT.set(ceilT,0xd9d9d0);TINT.set(floorT,0xeeeadc);TINT.set(slatT,0xe2dcd0);
   // surfaces: rectangles with an optional hole (the stairwell)
   const rect=(x0,x1,z0,z1,hole,fn)=>{if(!hole)return fn(x0,x1,z0,z1);const[a,b,c,d]=hole;fn(x0,a,z0,z1);fn(b,x1,z0,z1);fn(a,b,z0,c);fn(a,b,d,z1)};
   const floor=(x0,x1,z0,z1,y,hole,tex,per,par)=>rect(x0,x1,z0,z1,hole,(a,b,c,d)=>{if(b-a>.01&&d-c>.01)tp(b-a,d-c,tex,per,(a+b)/2,y,(c+d)/2,-Math.PI/2,0,par)});
   const wall=(x0,z0,x1,z1,y0,y1,tex,per,par)=>{const L=Math.hypot(x1-x0,z1-z0);tp(L,y1-y0,tex||wallT,per||2.4,(x0+x1)/2,(y0+y1)/2,(z0+z1)/2,0,-Math.atan2(z1-z0,x1-x0),par||g)};
   const HOLE=[8,26,-23,-17],CX=520;
   // ---- 1/F: hall and the pier corridor
-  floor(-70,70,-51,51,F1,HOLE,floorT,8);floor(70,CX,0,58,F1,null,floorT,8);
-  floor(-70,70,-51,51,F1+CE1,null,ceilT,4.8);floor(70,CX,0,58,F1+CE1,null,ceilT,4.8);
-  for(const[a,b,c,d] of[[-70,70,-51,-51],[-70,70,51,51],[-70,-70,-51,51],[70,70,-51,8],[70,70,40,58],[70,CX,58,58],[CX,CX,0,58]])wall(a,c,b,d,F1,F1+CE1);
+  floor(-70,70,-51,51,F1,HOLE,floorT,8);floor(70,CX,0,30,F1,null,floorT,8);
+  floor(-70,70,-51,51,F1+CE1,null,ceilT,4.8);floor(70,CX,0,30,F1+CE1,null,ceilT,4.8);
+  for(const[a,b,c,d] of[[-70,70,-51,-51],[-70,70,51,51],[-70,-70,-51,51],[70,70,-51,2],[70,70,28,51],[70,CX,30,30],[CX,CX,0,30]])wall(a,c,b,d,F1,F1+CE1);
   // the window wall of the pier: sill, header, mullions, and a faint tint; the real apron lies beyond
   bx(CX-70,.9,.3,0xd9d5c8,(CX+70)/2,F1+.45,0);bx(CX-70,1.7,.3,0xcfc9b8,(CX+70)/2,F1+4.05,0);
   {const n=Math.floor((CX-70)/3),im=new THREE.InstancedMesh(new THREE.BoxGeometry(.12,2.3,.16),mb(0x8d9296),n);for(let i=0;i<n;i++)im.setMatrixAt(i,_bm.makeTranslation(72+i*3,F1+2.05,0));im.frustumCulled=false;g.add(im);
@@ -1909,15 +1911,15 @@ function tiBuild(){
   for(let k=0;k<7;k++)person({x:41+R()*5,z:9+R()*28,yaw:-Math.PI/2+(R()-.5)*.6});
   // ---- the pier corridor: shop arcade, clock, benches, gate lounges
   const SH=[['Tin Lok Jewellery','天祿珠寶','#f3efe6','#a11f1f'],['Camera House','相機行','#1c3a5e','#ffffff'],['Jade & Gold','玉器金行','#1b5e3a','#f5e6a8'],['Time & Tide Watches','時間鐘錶','#f3efe6','#14202e'],['Silk Road Gifts','絲路禮品','#7a1f2b','#f6e7c0'],['Harbour Books','港灣書店','#f3efe6','#2a4a6a'],['Sweets & Tobacco','糖煙雜貨','#e8d9a0','#5a1a14'],['Duty Free','免稅店','#14202e','#f6c500']];
-  SH.forEach((s,i)=>{const xc=78+9*i;bx(8,3.2,1.2,0x6a5a48,xc,1.6,57.4,0,h1);fp(7.4,2.2,0xf3e3b8,xc,1.55,56.78,0,0,h1);bx(7.4,.1,.8,0xb9a47c,xc,1.0,56.4,0,h1);
-    for(let k=0;k<6;k++)bx(.25+R()*.3,.3+R()*.3,.25,Rp([0xc8a23a,0x2b6b8a,0xb23a34,0xe9e6dc,0x3a7a5a,0x6a3b8a]),xc-3+k*1.2,1.2,56.2,0,h1);
-    sp(7.6,1.55,tiShopSign(s[0],s[1],s[2],s[3],{rule:true}),xc,3.9,56.7,Math.PI,h1)});
-  {const ck=document.createElement('canvas');ck.width=ck.height=256;const tex=new THREE.CanvasTexture(ck);TI.clocks.push({cv:ck,tex});const gr=new THREE.Group();gr.position.set(112,3.75,28);h1.add(gr);bx(1.5,1.5,1.5,0x2a2a2a,0,0,0,0,gr);
+  SH.forEach((s,i)=>{const xc=78+9*i;bx(8,3.2,1.2,0x6a5a48,xc,1.6,29.4,0,h1);fp(7.4,2.2,0xf3e3b8,xc,1.55,28.78,0,0,h1);bx(7.4,.1,.8,0xb9a47c,xc,1.0,28.4,0,h1);
+    for(let k=0;k<6;k++)bx(.25+R()*.3,.3+R()*.3,.25,Rp([0xc8a23a,0x2b6b8a,0xb23a34,0xe9e6dc,0x3a7a5a,0x6a3b8a]),xc-3+k*1.2,1.2,28.2,0,h1);
+    sp(7.6,1.55,tiShopSign(s[0],s[1],s[2],s[3],{rule:true}),xc,3.9,28.7,Math.PI,h1)});
+  {const ck=document.createElement('canvas');ck.width=ck.height=256;const tex=new THREE.CanvasTexture(ck);TI.clocks.push({cv:ck,tex});const gr=new THREE.Group();gr.position.set(112,3.75,14);h1.add(gr);bx(1.5,1.5,1.5,0x2a2a2a,0,0,0,0,gr);
     for(let i=0;i<4;i++){const pl=new THREE.Mesh(new THREE.PlaneGeometry(1.34,1.34),new THREE.MeshBasicMaterial({map:tex}));pl.rotation.y=i*Math.PI/2;pl.position.set(Math.sin(i*Math.PI/2)*.76,0,Math.cos(i*Math.PI/2)*.76);gr.add(pl)}
     bx(.06,CE1-3.75-.75,.06,0x6a6e72,0,.75+(CE1-3.75-.75)/2,0,0,gr)}
-  hang(Y('Terrace · Departure gates','露台 離境閘口',{w:700,h:190,arrow:'up'}),5.6,1.52,100,3.95,24,-Math.PI/2,CE1);
-  for(let k=0;k<4;k++){bx(2.4,.45,.8,0x4a3a2a,100+k*9,.32,40,0,h1);bx(2.4,.5,.1,0x4a3a2a,100+k*9,.7,40.4,0,h1);if(R()<.7)person({x:100+k*9+(R()-.5),z:40,yaw:Math.PI,pose:'sit'})}
-  for(let i=0;i<10;i++)person({x:80+R()*60,z:8+R()*30,yaw:R()*6.28});
+  hang(Y('Terrace · Departure gates','露台 離境閘口',{w:700,h:190,arrow:'up'}),5.6,1.52,100,3.95,12,-Math.PI/2,CE1);
+  for(let k=0;k<4;k++){bx(2.4,.45,.8,0x4a3a2a,100+k*9,.32,19,0,h1);bx(2.4,.5,.1,0x4a3a2a,100+k*9,.7,19.4,0,h1);if(R()<.7)person({x:100+k*9+(R()-.5),z:19,yaw:Math.PI,pose:'sit'})}
+  for(let i=0;i<10;i++)person({x:80+R()*60,z:3+R()*22,yaw:R()*6.28});
   // gate lounges at stands 8, 7 and 6 (the real apron lies beyond the glass)
   const seatP=[],seatB=[];
   for(const j of[7,6,5]){const xj=939-STAND_S[j],gn=j+1;
@@ -1929,7 +1931,7 @@ function tiBuild(){
   {const mk=(geo,arr,c)=>{const im=new THREE.InstancedMesh(geo,mb(c),arr.length);arr.forEach((a,i)=>im.setMatrixAt(i,_bm.makeTranslation(a[0],a[1],a[2])));im.frustumCulled=false;h1.add(im)};mk(new THREE.BoxGeometry(.5,.08,.5),seatP,0x3b6aa0);mk(new THREE.BoxGeometry(.5,.45,.07),seatB,0x2d5482)}
   // ---- security staff (armed airport security pairs in blue, as in the photos)
   guard(-3,F1,-4,.95);guard(-1.6,F1,-5.4,.55,{rifle:false});
-  guard(34,F1,17.5,-1.3);guard(34.4,F1,21.4,-1.9);
+  guard(41,F1,21.2,-1.45);guard(41.3,F1,25.4,-1.85);
   guard(-24,0.12,18,1.0);guard(-22.6,0.12,19.6,.7);
   // the ramp patrol on the apron outside the gate windows: dark navy uniforms and a rifle
   guard(226,0,-17,.5,{uni:0x1a2142,vest:0x12172e,rifle:true});guard(228.2,0,-18.3,.2,{uni:0x1a2142,vest:0x12172e,rifle:true});
@@ -1959,10 +1961,12 @@ function tiBuild(){
   trolley(-70+6,2,0,h1,0);
   for(let k=0;k<6;k++)trolley(-50+k*17,Rp([8,18]),R()*3,h1,0);
   bx(.7,.9,1.1,0xf2c200,62,.45,36,0,h1);bx(.5,.5,.5,0x232426,62.1,1.15,36.3,0,h1);
+  // a few people close to each eye so the view has foreground
+  for(const k in TVIEWS){const v=TVIEWS[k];if(v.out)continue;for(let i=0;i<5;i++){const d=4+R()*8,a=-v.yaw+(R()-.5)*1.0,x=v.p[0]-Math.sin(a)*d*-1,z=v.p[2]-Math.cos(a)*d;person({x:v.p[0]+Math.sin(-v.yaw+(R()-.5)*1.0)*-d*-1,z:v.p[2]-Math.cos(-v.yaw+(R()-.5)*1.0)*d,y:v.p[1]-1.65,yaw:R()*6.28})}}
   // walkers
   for(let k=0;k<10;k++){const z=Rp([-18,-8,2,12,22,30,40]),x0=-60+R()*20;walker([[x0,z],[x0+90+R()*30,z+(R()-.5)*6]],1.1+R()*.5,{y:F1})}
-  for(let k=0;k<6;k++){const z=Rp([-4,6,14,24]);walker([[74,z],[190+R()*80,z+(R()-.5)*8]],1.1+R()*.5,{y:F1})}
-  for(let k=0;k<7;k++){const z=Rp([-20,-4,12,24,42]);walker([[-62,z],[20+R()*40,z+(R()-.5)*8]],1.1+R()*.5,{y:.12})}
+  for(let k=0;k<6;k++){const z=Rp([3,9,16,23,27]);walker([[74,z],[190+R()*80,z+(R()-.5)*8]],1.1+R()*.5,{y:F1})}
+  for(let k=0;k<7;k++){const z=Rp([-20,-4,28,42]);walker([[-62,z],[20+R()*40,z+(R()-.5)*8]],1.1+R()*.5,{y:.12})}
   pops.forEach((r,i)=>r.i=i);TI.pops=tiPopBuild(g,pops);TI.recs=pops;TI.walkers=pops.filter(r=>r.walk);
   tiUpdate(true);
 }

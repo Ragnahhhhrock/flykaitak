@@ -1,5 +1,68 @@
 [
   {
+    "slug": "inside-the-1998-terminal-staff-and-signs",
+    "title": "Inside the 1998 terminal: staff and signs",
+    "dek": "Walk into Kai Tak's terminal: yellow bilingual signs, red check-in desks, immigration, shops and security staff in blue.",
+    "description": "The Kai Tak terminal now has a 1998 interior: check-in desks, departure immigration, a shop arcade, arrivals, signs and staff including armed security.",
+    "date": "2026-10-04",
+    "tag": "New",
+    "category": "scenery",
+    "keywords": [
+      "terminal interior",
+      "signage",
+      "security staff",
+      "immigration",
+      "Kai Tak",
+      "flight simulator"
+    ],
+    "hero": "terminal-departures-hall",
+    "hero_alt": "The departures hall with red check-in desks, flight boards and passengers.",
+    "hero_caption": "The departures hall on the 1/F.",
+    "card_kicker": "SCENERY · TERMINAL",
+    "card_title": "Inside the terminal",
+    "card_sub": "Staff, signs and shops",
+    "card_image": "terminal-departures-hall",
+    "card_focus": 50,
+    "zh": {
+      "title": "1998年客運大樓內部：職員同指示牌",
+      "dek": "行入啟德客運大樓：黃色中英指示牌、紅色登機櫃台、入境處、商店同藍色制服保安。",
+      "description": "啟德客運大樓而家有1998年內部：登機櫃台、離境入境、商店街、抵港大堂、指示牌同職員，包括帶槍保安。",
+      "hero_alt": "離境大堂，紅色登機櫃台、航班板同乘客。",
+      "hero_caption": "1/F離境大堂。"
+    }
+  },
+  {
+    "slug": "maintenance-area-moved-to-the-chart-position",
+    "title": "Maintenance area moved to the chart position",
+    "dek": "The hangars, tower, compound and tank farm now sit where the 1996 chart and airport plan put them, at the chart's angle.",
+    "description": "The Kai Tak maintenance area is repositioned to match the 1996 parking chart and airport plan: hangars, workshop tower, compound and offices turned to the chart angle.",
+    "date": "2026-10-04",
+    "tag": "Update",
+    "category": "scenery",
+    "keywords": [
+      "maintenance area",
+      "hangars",
+      "1996 chart",
+      "Kai Tak",
+      "flight simulator"
+    ],
+    "hero": "maintenance-area-day",
+    "hero_alt": "Three hangars with open door bays beside a fenced compound.",
+    "hero_caption": "The hangars in their new position.",
+    "card_kicker": "SCENERY · MAINTENANCE",
+    "card_title": "Maintenance area",
+    "card_sub": "Moved to the chart",
+    "card_image": "maintenance-area-day",
+    "card_focus": 50,
+    "zh": {
+      "title": "維修區移到圖表位置",
+      "dek": "機庫、工場塔、維修區同油缸區而家企喺1996年圖表同機場平面圖所示嘅位置，角度亦跟圖表。",
+      "description": "啟德維修區按1996年停機坪圖同機場平面圖重新定位：機庫、工場塔、維修區同辦公樓轉到圖表角度。",
+      "hero_alt": "有圍欄維修區隔離嘅三個開門機庫。",
+      "hero_caption": "機庫喺新位置。"
+    }
+  },
+  {
     "slug": "maintenance-area-hangars-and-tank-farm",
     "title": "Maintenance area: hangars and tank farm",
     "dek": "The maintenance area is rebuilt from the chart and photos: three hangars with lit bays, a workshop tower, a fenced aircraft compound and a tank farm.",
