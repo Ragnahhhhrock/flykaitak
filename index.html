@@ -1581,7 +1581,7 @@ function buildWalledCity(){
 function setWalled(on){walledGroup.visible=on;parkGroup.visible=!on;WALLED.on=on;if(WALLED.ref)WALLED.ref.top=on?WALLED.col.top:-99}
 
 /* ---------------- airport ---------------- */
-let papi,papi31,rwyLights,rwyLights31,leadIn,leadIn31,approachLights,approachLights31,hoops,hoops13,hoops31,parked=[];
+let rbMasts13=[],rbMasts31=[],papi,papi31,rwyLights,rwyLights31,leadIn,leadIn31,approachLights,approachLights31,hoops,hoops13,hoops31,parked=[];
 /* ==============================================================}
    STANDS, JET BRIDGES AND PUSHBACK
    Six contact stands along the terminal face. Aircraft park nose-in with the forward left door level with a jet bridge cab.
@@ -1791,11 +1791,20 @@ function buildAirport(){
   // Runway 31: the approach lights run out over Kowloon Bay (a crossbar 300 m out)
   const La31=[];for(let k=30;k<=900;k+=30){const bar=k===300?15:2;for(let l=-bar*1.5;l<=bar*1.5+.01;l+=3){const q=rwP(RWY.len+k,l);La31.push(q[0],RWY.elev+2.5,q[1],1,.97,.88,3.4,-1)}}
   approachLights31=makeLights(La31);scene.add(approachLights31);
+  // rooftop cross-bar masts on Kowloon buildings under the approach: a vertical column of bright lamps with a few small upward-facing ones, as on the old Cheung Chau approach
+  const crossBars=(PTH,out)=>{const P=PTH.pts;for(const dd of[1500,2300,3100]){let best=null;
+    for(let i=0;i<P.length;i+=2){if(Math.abs(P[i].d-dd)>200)continue;for(let ox=-80;ox<=80;ox+=20)for(let oz=-80;oz<=80;oz+=20){const b=buildingAt(P[i].x+ox,P[i].z+oz,-3);if(b&&(!best||b.top>best.top))best=b}}
+    if(!best)continue;const mx=(best.x0+best.x1)/2,mz=(best.z0+best.z1)/2,base=best.top;
+    const mast=new THREE.Mesh(new THREE.BoxGeometry(.7,22,.7).translate(0,11,0),new THREE.MeshLambertMaterial({color:0x3a3a3a}));mast.position.set(mx,base,mz);scene.add(mast);(out.masts=out.masts||[]).push(mast);
+    for(let k=0;k<10;k++)out.L.push(mx,base+5+k*1.6,mz,1,.93,.8,14,-1);
+    for(let k=0;k<3;k++)out.L.push(mx+(k-1)*1.6,base+22.8,mz,1,.97,.9,8,-1)}};
   // lead-in strobes over the rooftops along the curved approach (sequenced)
   const Ll=[];let ph=0;for(let i=0;i<PATH.pts.length;i+=5){const p=PATH.pts[i];if(p.d>4200||p.d<930)continue;const b=buildingAt(p.x,p.z,0);const gy=Math.max(terrainAt(p.x,p.z),b?b.top:0,RWY.elev)+3;Ll.push(p.x,gy,p.z,1,1,1,4.5,(1-p.d/4200)*1.0)}
+  {const o={L:Ll};crossBars(PATH13,o);rbMasts13=o.masts||[]}
   leadIn=makeLights(Ll);scene.add(leadIn);
   // the same sequenced strobes lead you in over the water to Runway 31, through the Lei Yue Mun gap
   const Ll31=[];for(let i=0;i<PATH31.pts.length;i+=5){const p=PATH31.pts[i];if(p.d>4200||p.d<930)continue;const b=buildingAt(p.x,p.z,0);const gy=Math.max(terrainAt(p.x,p.z),b?b.top:0,RWY.elev)+3;Ll31.push(p.x,gy,p.z,1,1,1,4.5,(1-p.d/4200)*1.0)}
+  {const o={L:Ll31};crossBars(PATH31,o);rbMasts31=o.masts||[]}
   leadIn31=makeLights(Ll31);scene.add(leadIn31);
   // PAPI, left side at the aiming point
   const Lp=[];for(let k=0;k<4;k++)Lp.push(...rwP3(310,-48-k*9,1.2),1,1,1,4,-1);
@@ -1810,7 +1819,7 @@ function buildAirport(){
 }
 // switch the airfield furniture (lights, PAPI, guide gates) and the approach path to the runway being landed on
 function updateRunwayScenery(){const e=LND.id==='31';
-  if(rwyLights){rwyLights.visible=!e;rwyLights31.visible=e;approachLights.visible=!e;approachLights31.visible=e;leadIn.visible=!e;leadIn31.visible=e;papi.visible=!e;papi31.visible=e}
+  if(rwyLights){rwyLights.visible=!e;rwyLights31.visible=e;approachLights.visible=!e;approachLights31.visible=e;leadIn.visible=!e;leadIn31.visible=e;for(const m of rbMasts13)m.visible=!e;for(const m of rbMasts31)m.visible=e;papi.visible=!e;papi31.visible=e}
   if(hoops13){hoops=e?hoops31:hoops13;(e?hoops13:hoops31).visible=false}}
 function setRunway(id){const e=id==='31';LND.id=e?'31':'13';LND.dir=e?-1:1;LND.hdg=e?RWY.hdg+180:RWY.hdg;PATH=e?PATH31:PATH13;updateRunwayScenery()}
 function rwP3__unused(){}
@@ -4151,7 +4160,7 @@ const fontsReady=document.fonts&&document.fonts.ready?Promise.race([document.fon
 fontsReady.then(()=>setTimeout(boot,30));
 
 /* test hooks */
-window.__kt={setHour,solarState,SUN_DIR,MOON_DIR,ENV,AI,CFG,ST,COACH,LESSON,keys,coachUpdate,coachResync,coachGo,rwL,get PATH(){return PATH},LND,setRunway,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,{rwy:'13',conc:false},o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.conc&&CFG.game==='watch'?'watchC':CFG.rwy==='31'&&CFG.game!=='learn'?CFG.game+'31':CFG.game}]`).checked=true;hourIn.value=o.hour!==undefined?o.hour:CFG.night?22:15;showHour();startFlight()},
+window.__kt={rb:()=>rbMasts13,bat:buildingAt,setHour,solarState,SUN_DIR,MOON_DIR,ENV,AI,CFG,ST,COACH,LESSON,keys,coachUpdate,coachResync,coachGo,rwL,get PATH(){return PATH},LND,setRunway,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,{rwy:'13',conc:false},o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.conc&&CFG.game==='watch'?'watchC':CFG.rwy==='31'&&CFG.game!=='learn'?CFG.game+'31':CFG.game}]`).checked=true;hourIn.value=o.hour!==undefined?o.hour:CFG.night?22:15;showHour();startFlight()},
   run:(sec)=>{if(CFG.game==='watch'){ST.t+=sec;return {t:ST.t}}const h=1/120;for(let i=0;i<sec*120&&!ST.ended;i++){physStep(h);if(i%60===0)recordHistory();if(i%12===0)aiTick()}return {ended:ST.ended,td:ST.td,t:ST.t,x:ST.x,y:ST.y,z:ST.z,V:ST.V/KT,d:PATH.pts[ST.pi].d}},
   get mode(){return mode},updateAI,AIC,footOf,GSE,GSE_KINDS,AIRBOX,rwS,BGRID,updateGSE,gseLamps:()=>gseLamps,fpAt,fpDist,hitOn,damageModel,aiHit,DEBRIS,EMIT,aiTick,ctl(){return aiControl},get CFG(){return CFG},frame:(now)=>frame(now,true),get FOCUS(){return FOCUS},step:()=>physStep(1/120),rwS,setZoom:z=>{CFG.zoom=z},get AI(){return AI},get GSE(){return GSE},get BRIDGE(){return BRIDGE},STAND_S,STAND_TY,lineupT,lineupT31,arrivalPts,tugAt,standL,PB,get parked(){return parked},gseAt:(t)=>{ST.t=t;updateGSE();return GSE.map(e=>({k:e.kind,x:e.p.x,z:e.p.z,psi:e.p.psi,lift:e.lift}))},get shipLights(){return shipLights},get SHIPS(){return SHIPS},get DISP(){return DISP},get deck(){return deckGroup},get streetCam(){return STREET_CAM},get BB(){return BB},get water(){return water},get camera(){return camera},get nStreets(){return STREETS.length},drawDisplays,look,setView,terrainAt,buildingAt,groundInfo};
 })();

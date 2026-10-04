@@ -1,5 +1,37 @@
 [
   {
+    "slug": "rooftop-cross-bar-lights",
+    "title": "Rooftop Cross-Bar Lights on the Approach",
+    "dek": "Bright lamp masts on Kowloon rooftops now mark the approach to both runways.",
+    "description": "Three bright cross-bar lamp masts on tall Kowloon rooftops now mark the approach to Runway 13 and Runway 31, glowing at night under the flight path.",
+    "date": "2026-10-04",
+    "tag": "New",
+    "category": "scenery",
+    "keywords": [
+      "Kai Tak",
+      "approach lights",
+      "cross-bar lights",
+      "Kowloon rooftops",
+      "night",
+      "IGS 13"
+    ],
+    "hero": "rooftop-crossbars-ahead",
+    "hero_alt": "A bright white column of lamps on a rooftop in Kowloon at night.",
+    "hero_caption": "A cross-bar mast on a Kowloon rooftop.",
+    "card_kicker": "SCENERY · NEW",
+    "card_title": "Rooftop cross-bar lights",
+    "card_sub": "Lamp masts mark the approach",
+    "card_image": "rooftop-crossbars-ahead",
+    "card_focus": 50,
+    "zh": {
+      "title": "進場航道嘅樓頂橫桿燈",
+      "dek": "九龍樓頂嘅光亮燈桿而家標示兩條跑道嘅進場。",
+      "description": "九龍高樓樓頂新增三支光亮橫桿燈桿，標示 13 跑道同 31 跑道嘅進場，夜晚喺航道下面發光。",
+      "hero_alt": "夜晚九龍樓頂上一柱光亮嘅白燈。",
+      "hero_caption": "九龍樓頂上嘅橫桿燈桿。"
+    }
+  },
+  {
     "slug": "starter-scores-on-the-high-score-table",
     "title": "Update: starter scores on the high score table",
     "dek": "Ten fictional, easy-to-beat scores fill the table so it is never empty.",
