@@ -6,7 +6,9 @@ Usage:  python3 tools/test_landings.py [--rwy 13|31|both] [--night] [--ac b744,b
 Serves the repo, opens it in headless Chromium and uses the sim's test hooks (window.__kt) to check, for each
 runway and weather preset:
   1. the autopilot lands the aircraft (no crash, no missed approach), touching down on the runway;
-  2. with no input at all (autopilot off) the aircraft crashes.
+  2. with no input at all (autopilot off) the aircraft crashes;
+  3. aircraft on the ground (AI traffic taxiing, docking, pushing back) keep all three wheels on the tarmac, never on the grass;
+  4. the player's aircraft steered off the runway at walking pace stops at the tarmac edge, and at speed crashes (runway excursion).
 Exit code 0 means every check passed.
 """
 import argparse
@@ -87,6 +89,34 @@ SPOTTER = """
 """
 
 
+GROUND = """
+(cfg) => {
+  window.__kt.start(cfg);
+  const K = window.__kt; let n = 0, bad = 0, first = null; const seen = new Set();
+  for (let t = 0; t < 1500; t += 0.5) for (const a of K.AI) { const p = a.fn(t); if (!p || p.y > 4.6) continue;
+    n++; const len = K.AC[a.type].len;
+    if (!K.gearPaved(p.x, p.z, p.psi, len, 0)) { bad++; if (!first) first = {role: a.role, type: a.type, t, s: Math.round(K.rwS(p.x, p.z)), l: Math.round(K.rwL(p.x, p.z))}; } }
+  return {n, bad, first};
+}
+"""
+
+
+EDGE = """
+([cfg, speed, side]) => {
+  window.__kt.start(cfg);
+  const S = window.__kt.ST, K = window.__kt, h0 = S.psiG, turn = side * Math.PI / 2;
+  S.Gs = speed; let blocked = false, stopped = 0;
+  for (let i = 0; i < 20 * 120 && !S.ended; i++) {
+    S.psiG = S.psi = h0 + turn; S.throttle = 0.2; S.Gs = speed;
+    window.__kt.step();
+    if (!S.ended && !K.gearPaved(S.x, S.z, S.psiG, S.ac.len, 0)) { blocked = 'off'; break; }
+  }
+  const e = S.ended;
+  return {kind: e ? (e.crash ? 'crash' : 'ended') : 'held', title: e && e.title, off: blocked, l: +K.rwL(S.x, S.z).toFixed(1), Gs: +S.Gs.toFixed(1)};
+}
+"""
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--rwy", default="both")
@@ -131,6 +161,19 @@ def main():
             ok = r["bad"] == 0 and r["n"] > 0
             print(f"RWY {rwy} plane spotter traffic     -> {r['n']} poses, {r['bad']} bad", flush=True)
             fails += 0 if ok else 1
+        for rwy in rwys:
+            for game in ("watch", "approach", "free"):
+                r = pg.evaluate(GROUND, {"game": game, "rwy": rwy, "wx": "clear", "night": False, "deck": False})
+                ok = r["bad"] == 0 and r["n"] > 0
+                print(f"RWY {rwy} {game:8s} ground traffic  -> {r['n']} ground poses, {r['bad']} off the tarmac {r['first'] or ''}", flush=True)
+                fails += 0 if ok else 1
+        for rwy in rwys:
+            for side, nm in ((1, "toward Kowloon Bay"), (-1, "toward the apron")):
+                for speed, want in ((5, "held"), (40, "crash")):
+                    r = pg.evaluate(EDGE, [{"game": "free", "rwy": rwy, "ac": "b744", "wx": "clear", "night": False, "deck": False, "ap": False}, speed, side])
+                    ok = r["kind"] == want and not r["off"]
+                    print(f"RWY {rwy} steer {nm:19s} at {speed:2d} m/s -> {r['kind']:5s} l={r['l']} {r['title'] or ''} {'' if ok else 'WRONG'}", flush=True)
+                    fails += 0 if ok else 1
         b.close()
     srv.shutdown()
     if errs:

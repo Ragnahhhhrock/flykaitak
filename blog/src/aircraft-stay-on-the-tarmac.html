@@ -1,0 +1,33 @@
+<p>Aircraft on the ground now stay on the grey tarmac. None of them drives across the green grass any more.</p>
+
+<h2>What is new</h2>
+<ul>
+  <li>Arrivals used to leave the runway on a straight diagonal across the grass to taxiway A. They now turn off onto a link taxiway, follow it to taxiway A and carry on to the stand. Runway 13 arrivals take the link that leans toward the 31 end, and Runway 31 arrivals take a new link that leans toward the 13 end. There are now six links: five lean toward the 31 end and one toward the 13 end.</li>
+  <li>Round pads widen the tightest corners, where a link meets taxiway A and where taxiway A curves onto each end of the runway. The nose wheel now stays on the tarmac through the turn.</li>
+  <li>Your own aircraft has to keep all three wheels on the tarmac. Leave it at more than about 12 kt and the run ends in a runway excursion. Slower than that, the aircraft stops at the edge and a message tells you why.</li>
+  <li>A touchdown with a wheel beyond the tarmac edge now counts as landing off the runway.</li>
+</ul>
+
+<figure class="wide">
+  <img src="/assets/blog/shots/tarmac-link-exit.jpg" width="1600" height="900" loading="lazy" alt="A 747 turning off Runway 13 onto a link taxiway, with taxiway A and the green grass on either side.">
+  <figcaption>A Runway 13 arrival leaves the runway by the link taxiway instead of cutting across the grass.</figcaption>
+</figure>
+
+<figure class="wide">
+  <img src="/assets/blog/shots/tarmac-links-31.jpg" width="1600" height="900" loading="lazy" alt="A 747 on the new link taxiway that leans toward the 13 end, between Runway 31 and taxiway A.">
+  <figcaption>Runway 31 arrivals use a new link that leans the other way.</figcaption>
+</figure>
+
+<figure class="wide">
+  <img src="/assets/blog/shots/tarmac-edge-stop.jpg" width="1600" height="900" loading="lazy" alt="A 747 turned across the runway and stopped at the tarmac edge, with the message that aircraft cannot travel on grass.">
+  <figcaption>Steered off the side at walking pace, the aircraft stops at the edge of the tarmac.</figcaption>
+</figure>
+
+<h2>How it was checked</h2>
+<p>The test script now steps through every moment of the other aircraft taxiing, docking and being pushed back, on both runways and in the approach, Free flight and Plane Spotter modes. At every step the nose wheel and both main wheels must be on the tarmac. It also steers your own aircraft off the runway on each side, at walking pace and at speed.</p>
+
+<h2>What did not change</h2>
+<ul>
+  <li>The arrival and departure timings are the same, so every aircraft still docks and departs at the same moment as before.</li>
+  <li>The autopilot still lands in every weather preset, and flying with no input still ends in a crash.</li>
+</ul>

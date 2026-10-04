@@ -1672,6 +1672,34 @@ function bridgeSet(b,e,R){
    The positions are measured from the Kai Tak chart. */
 const APN={A:-96,D3:73,D2:283,D1:497,stop:-44,end:-862,
   remote:[0,1,2,3,4,5,6,7,8].map(i=>-170-i*75)};
+/* ---------------- pavement map ----------------
+   Aircraft on the ground stay on the grey tarmac and never cross the green grass. This is the one description of that tarmac: it draws the
+   runway, taxiway A, the link taxiways and the apron (buildAirport), routes the taxiing aircraft (arrivalPts) and checks them (onPaved).
+   Runway coordinates: s along the runway from the threshold, l toward the apron (negative). A link runs from the runway edge (l0) across
+   the grass to taxiway A (l1); k = +1 leans toward the 31 end (the rapid exits that Runway 13 arrivals use), k = -1 toward the 13 end. */
+const PAVE={rw:(RWY.wid+14)/2,twy:13,end:20,link:{w:30,slant:38,l0:-36,l1:APN.A+12},apron:{s0:-150,s1:780,l0:-1180,l1:-83},
+  // round pads that widen the tightest corners (where a link meets taxiway A, and the lead-on to each runway end) so the nose wheel stays on the tarmac: [s, l, radius]
+  pads:[[0,-78,20],[RWY.len,-78,20],[1867,APN.A,20],[1486,APN.A,20]]};
+const LINKS=[{s:330,k:1},{s:1020,k:1},{s:1537.5,k:-1,exit:1},{s:1852.5,k:1,exit:1},{s:2400,k:1},{s:3060,k:1}];   // exit: the link the arrivals take off the runway
+const linkMid=(L,l)=>L.s+L.k*PAVE.link.slant*(PAVE.link.l0-l)/(PAVE.link.l0-PAVE.link.l1);   // centre line of a link at l
+let LEAD_ON=null;   // the curved lead-on from each end of taxiway A to the runway end, as a centre line (built on first use, needs TAXI_R)
+function leadOnLines(){if(!LEAD_ON){const A=APN.A,d=Math.min(TAXI_R,.45*150,.45*-A);
+  LEAD_ON=[0,RWY.len].map(sE=>{const f=sE===0?1:-1,a=[sE+f*d,A],p=[sE,A],b=[sE,A+d],o=[];
+    for(let m=0;m<=12;m++){const u=m/12,w0=(1-u)*(1-u),w1=2*u*(1-u),w2=u*u;o.push([w0*a[0]+w1*p[0]+w2*b[0],w0*a[1]+w1*p[1]+w2*b[1]])}
+    o.push([sE,-30]);return o})}return LEAD_ON}
+const segDist=(s,l,a,b)=>{const dx=b[0]-a[0],dy=b[1]-a[1],t=clamp(((s-a[0])*dx+(l-a[1])*dy)/(dx*dx+dy*dy),0,1);return Math.hypot(s-a[0]-t*dx,l-a[1]-t*dy)};
+// Is the ground point (s,l) tarmac? m shrinks every paved area by m metres, so a wheel must be at least that far inside the edge.
+function onPaved(s,l,m){m=m||0;
+  if(s>-PAVE.end&&s<RWY.len+PAVE.end){if(Math.abs(l)<PAVE.rw-m||Math.abs(l-APN.A)<PAVE.twy-m)return true}                   // runway with shoulders, taxiway A
+  const P=PAVE.apron;if(s>P.s0+m&&s<P.s1-m&&l>P.l0+m&&l<P.l1-m)return true;                                                  // concrete apron, lanes and stands
+  for(const q of PAVE.pads)if(Math.hypot(s-q[0],l-q[1])<q[2]-m)return true;                                                  // corner pads
+  const K=PAVE.link,cf=Math.abs(K.l0-K.l1)/Math.hypot(K.slant,K.l0-K.l1);                                                     // links: a parallelogram, w wide along s
+  if(l<K.l0&&l>K.l1)for(const L of LINKS)if(Math.abs(s-linkMid(L,l))<K.w/2-m/cf)return true;
+  if(l<-28&&l>-112)for(const q of leadOnLines()){if(Math.abs(s-q[0][0])>70)continue;for(let i=0;i<q.length-1;i++)if(segDist(s,l,q[i],q[i+1])<PAVE.twy-m)return true}
+  return false}
+// the three wheels of an aircraft with its centre at (x,z), heading psi and length len: the main gear is level with the centre, 5.5 m either side
+function gearPaved(x,z,psi,len,m){const fx=Math.sin(psi),fz=-Math.cos(psi),rx=Math.cos(psi),rz=Math.sin(psi),n=NOSE_GEAR*len;
+  for(const [a,b] of [[0,5.5],[0,-5.5],[n,0]])if(!onPaved(rwS(x+fx*a+rx*b,z+fz*a+rz*b),rwL(x+fx*a+rx*b,z+fz*a+rz*b),m))return false;return true}
 const APR_MATS=[];   // marking materials, dimmed at night with the rest of the ground
 function buildApronMarkings(placeAlong){
   const YEL='#e8b100',RED='#c0352b',WHT='#ecece6',ASP='#3e3f42',A=APN.A,R=TAXI_R,LANES=[APN.D3,APN.D2,APN.D1],E=APN.end;
@@ -1728,13 +1756,13 @@ function buildAirport(){
   const asph=new THREE.MeshLambertMaterial({color:0x3e3f42,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1});
   const rw=new THREE.Mesh(new THREE.PlaneGeometry(RWY.wid+14,RWY.len+40).rotateX(-Math.PI/2),asph);placeAlong(rw,RWY.len/2,0,RWY.elev+.05);
   const tw=new THREE.Mesh(new THREE.PlaneGeometry(26,RWY.len+40).rotateX(-Math.PI/2),asph);placeAlong(tw,RWY.len/2,APN.A,RWY.elev+.05);
-  // link taxiways: bitumen strips across the grass between the runway edge and taxiway A, angled toward the 31 end like the real rapid exits
-  const LINK_S=[330,1020,1710,2400,3060],LINK_W=30,LINK_SLANT=38;
-  for(const s of LINK_S){
+  // link taxiways: bitumen strips across the grass between the runway edge and taxiway A, angled like rapid exits (see LINKS)
+  for(const L of LINKS){const K=PAVE.link,d=L.k*K.slant;
     const sh=new THREE.Shape();   // x = l, y = s, relative to the strip's runway-edge centre
-    sh.moveTo(-36,-LINK_W/2);sh.lineTo(-36,LINK_W/2);sh.lineTo(APN.A+12,LINK_W/2+LINK_SLANT);sh.lineTo(APN.A+12,-LINK_W/2+LINK_SLANT);sh.closePath();
-    const lk=new THREE.Mesh(new THREE.ShapeGeometry(sh).rotateX(-Math.PI/2),asph);placeAlong(lk,s,0,RWY.elev+.05);
+    sh.moveTo(K.l0,-K.w/2);sh.lineTo(K.l0,K.w/2);sh.lineTo(K.l1,K.w/2+d);sh.lineTo(K.l1,-K.w/2+d);sh.closePath();
+    const lk=new THREE.Mesh(new THREE.ShapeGeometry(sh).rotateX(-Math.PI/2),asph);placeAlong(lk,L.s,0,RWY.elev+.05);
   }
+  for(const q of PAVE.pads){const pd=new THREE.Mesh(new THREE.CircleGeometry(q[2],28).rotateX(-Math.PI/2),asph);placeAlong(pd,q[0],q[1],RWY.elev+.05)}   // corner pads
   // markings
   const mk=new THREE.MeshBasicMaterial({color:0xe9e9e4,polygonOffset:true,polygonOffsetFactor:-6,polygonOffsetUnits:-6,transparent:true});
   const mkEnd=(num,s,flip)=>{
@@ -2208,7 +2236,7 @@ function waterName(x,z){if(LND.id==='31'){const d=-lS(x,z);return d<2200?'Ditche
 function fmtFt(m){return Math.round(m/FT).toLocaleString('en')+' ft'}
 function touchdown(){
   const s=ST,a=s.ac;attemptStart('touchdown');const sr=lS(s.x,s.z),lr=lL(s.x,s.z);
-  if(sr<-10||sr>RWY.len||Math.abs(lr)>38)return crash(sr<0?'Landed short of the runway':'Landed off the runway','The wheels touched '+(sr<0?Math.round(-sr)+' m before the threshold':Math.round(Math.abs(lr))+' m from the centreline')+'.');
+  if(sr<-10||sr>RWY.len||!gearPaved(s.x,s.z,s.psi,a.len,0))return crash(sr<0?'Landed short of the runway':'Landed off the runway','The wheels touched '+(sr<0?Math.round(-sr)+' m before the threshold':Math.round(Math.abs(lr))+' m from the centreline, off the tarmac')+'.');
   const vs=s.vy;const bank=Math.abs(s.phi);
   if(s.gearPos<.95)return crash('Gear-up landing','The landing gear was not down and locked. The aircraft slid down the runway on its engines and belly.');
   if(vs<-4.8)return crash('Hard landing: main gear collapsed','Touchdown at '+Math.round(-vs/FT*60)+' feet per minute. The gear is certified to about 600.');
@@ -2228,8 +2256,11 @@ function groundRoll(dt){
   const q=.5*RHO*s.Gs*s.Gs;const drag=q*a.S*(CD0+CDFS[4]+CDG+.08)/a.mass;
   const rev=s.td&&s.throttle<.12?.5:0;const brake=s.td?(s.throttle<.3&&s.Gs>1.5?1.5:0):(s.throttle<.05&&s.Gs>.5?1.2:0);const thr=(s.td?s.throttle>.12:true)?s.thrust/a.mass:0;
   s.Gs=Math.max(0,s.Gs+(thr-drag-rev-brake-.15)*dt);s.V=s.Gs;
-  s.vx=s.Gs*Math.sin(s.psiG);s.vz=-s.Gs*Math.cos(s.psiG);s.x+=s.vx*dt;s.z+=s.vz*dt;s.ra=0;
-  if(Math.abs(lr)>45&&s.Gs>3)return crash('Runway excursion','The aircraft ran off the side of the runway into Kowloon Bay. The strip is only a few hundred metres wide, with water on both sides.');
+  s.vx=s.Gs*Math.sin(s.psiG);s.vz=-s.Gs*Math.cos(s.psiG);const px=s.x,pz=s.z;s.x+=s.vx*dt;s.z+=s.vz*dt;s.ra=0;
+  // aircraft on the ground stay on the tarmac: all three wheels must be on it (see onPaved). Off it at speed is a crash; at walking pace the aircraft just stops at the edge
+  if(!gearPaved(s.x,s.z,s.psiG,a.len,0)){
+    if(s.Gs>6)return crash('Runway excursion','The wheels left the tarmac at '+Math.round(s.Gs/KT)+' kt. Aircraft can only travel on the grey tarmac: the soft grass beside the runway cannot carry them, and the strip is only a few hundred metres wide, with water beyond.');
+    s.x=px;s.z=pz;s.Gs=0;s.V=0;s.vx=s.vz=0;if(s.t-(s.grassT||-9)>4){s.grassT=s.t;toast('Stopped at the edge of the tarmac: aircraft cannot travel on grass')}}
   if(sr>RWY.len+40&&s.Gs>2)return LND.id==='31'?crash('Overran toward Kowloon City','The aircraft could not stop before the end of Runway 31. Beyond it lies Kowloon City.'):crash('Overran into Kowloon Bay','The aircraft could not stop before the end of the runway. In 1993 a China Airlines 747 did exactly this.');
   if(s.td&&s.Gs<3*KT){s.Gs=0;if(CFG.game==='free'){if(!s.stopNoted){s.stopNoted=1;const g=gradeLanding(s.td);toast('Landed: grade '+g.g+', '+Math.round(g.fpm)+' fpm. Add thrust to go again.');trackLanding({grade:g.g,score:Math.max(0,g.pts),touchdown_fpm:Math.round(g.fpm),mode:'free'})}if(s.throttle>.3){s.td=null;s.stopNoted=0;s.attempted=false}return}return landed()}
   if(s.td&&CFG.game==='free'&&s.throttle>.6&&s.Gs>20){s.td=null;s.stopNoted=0;s.attempted=false}  // touch-and-go
@@ -2795,9 +2826,11 @@ function taxiLegs(pts,t0,vs){const o=[[pts[0][0],pts[0][1],t0]];let t=t0;for(let
 function arrivalPts(c0,S,ty){   // taxiway A, apron lane D3 out to the stand, then in along the stand's painted lead-in to the bridge
   const t0=arrivalT0(c0),A=APN.A,D3=APN.D3,sd=standL(ty)+647;
   const tail=(x0,tx)=>taxiLegs([[x0,A],[D3,A],[D3,-S],[sd,-S]],tx,[10,7,5]);
-  let head,tl;
-  if(LND.dir<0){const E=RWY.len-1800;head=[[E,0,t0],[E-60,0,t0+6]];tl=tail(E-140,t0+16)}
-  else{head=[[1800,0,t0],[1840,0,t0+4],[1900,-96,t0+16]];tl=tail(1780,t0+28)}
+  // Off the runway by a link taxiway (never across the grass): along the runway to the link's junction, down the link's centre line to
+  // taxiway A. The 13 arrivals use the link that leans toward the 31 end, the 31 arrivals the one that leans toward the 13 end.
+  let head,tl;const L=LINKS.find(q=>q.exit&&q.k===LND.dir),jn=L.s-L.k*(-PAVE.link.l0)*PAVE.link.slant/(PAVE.link.l0-PAVE.link.l1),sA=linkMid(L,A);
+  if(LND.dir<0){const E=RWY.len-1800;head=[[E,0,t0],[jn,0,t0+2.4]];tl=tail(sA,t0+12)}
+  else{head=[[1800,0,t0],[jn,0,t0+2.4]];tl=tail(1780,t0+28);head.push([sA,A,t0+16])}
   return {pts:[...head,...tl],dock:tl[tl.length-1][2]}}
 function arrivalPose(t,c0,stand,ty){
   const v=76,thr=PATH.pts.find(p=>p.d<=0).c;const tdC=thr+300;const tTD=(tdC-c0)/v;
@@ -4198,7 +4231,7 @@ const fontsReady=document.fonts&&document.fonts.ready?Promise.race([document.fon
 fontsReady.then(()=>setTimeout(boot,30));
 
 /* test hooks */
-window.__kt={rb:()=>rbMasts13,bat:buildingAt,setHour,solarState,SUN_DIR,MOON_DIR,ENV,AI,CFG,ST,COACH,LESSON,keys,coachUpdate,coachResync,coachGo,rwL,get PATH(){return PATH},LND,setRunway,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,{rwy:'13',conc:false},o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.conc&&CFG.game==='watch'?'watchC':CFG.rwy==='31'&&CFG.game!=='learn'?CFG.game+'31':CFG.game}]`).checked=true;hourIn.value=o.hour!==undefined?o.hour:CFG.night?22:15;showHour();startFlight()},
+window.__kt={onPaved,gearPaved,rwS,LINKS,rb:()=>rbMasts13,bat:buildingAt,setHour,solarState,SUN_DIR,MOON_DIR,ENV,AI,CFG,ST,COACH,LESSON,keys,coachUpdate,coachResync,coachGo,rwL,get PATH(){return PATH},LND,setRunway,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,{rwy:'13',conc:false},o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.conc&&CFG.game==='watch'?'watchC':CFG.rwy==='31'&&CFG.game!=='learn'?CFG.game+'31':CFG.game}]`).checked=true;hourIn.value=o.hour!==undefined?o.hour:CFG.night?22:15;showHour();startFlight()},
   run:(sec)=>{if(CFG.game==='watch'){ST.t+=sec;return {t:ST.t}}const h=1/120;for(let i=0;i<sec*120&&!ST.ended;i++){physStep(h);if(i%60===0)recordHistory();if(i%12===0)aiTick()}return {ended:ST.ended,td:ST.td,t:ST.t,x:ST.x,y:ST.y,z:ST.z,V:ST.V/KT,d:PATH.pts[ST.pi].d}},
   get mode(){return mode},updateAI,AIC,footOf,GSE,GSE_KINDS,AIRBOX,rwS,BGRID,updateGSE,gseLamps:()=>gseLamps,fpAt,fpDist,hitOn,damageModel,aiHit,DEBRIS,EMIT,aiTick,ctl(){return aiControl},get CFG(){return CFG},frame:(now)=>frame(now,true),get FOCUS(){return FOCUS},step:()=>physStep(1/120),rwS,setZoom:z=>{CFG.zoom=z},get AI(){return AI},get GSE(){return GSE},get BRIDGE(){return BRIDGE},STAND_S,STAND_TY,lineupT,lineupT31,arrivalPts,tugAt,standL,PB,get parked(){return parked},gseAt:(t)=>{ST.t=t;updateGSE();return GSE.map(e=>({k:e.kind,x:e.p.x,z:e.p.z,psi:e.p.psi,lift:e.lift}))},get shipLights(){return shipLights},get SHIPS(){return SHIPS},get DISP(){return DISP},get deck(){return deckGroup},get streetCam(){return STREET_CAM},get BB(){return BB},get water(){return water},get camera(){return camera},get nStreets(){return STREETS.length},drawDisplays,look,setView,terrainAt,buildingAt,groundInfo};
 })();

@@ -1,5 +1,38 @@
 [
   {
+    "slug": "aircraft-stay-on-the-tarmac",
+    "title": "Fix: Aircraft Stay on the Tarmac",
+    "dek": "Taxiing aircraft use the link taxiways and never cross the grass.",
+    "description": "Fly Kai Tak ground fix: arrivals leave the runway by a link taxiway, every aircraft keeps its wheels on the tarmac, and the grass is off limits.",
+    "date": "2026-10-04",
+    "tag": "Fix",
+    "category": "flying",
+    "keywords": [
+      "Kai Tak",
+      "taxiway",
+      "tarmac",
+      "grass",
+      "taxiing",
+      "link taxiway",
+      "runway excursion"
+    ],
+    "hero": "tarmac-link-exit",
+    "hero_alt": "A 747 turning off Runway 13 onto a link taxiway, with taxiway A and the green grass on either side.",
+    "hero_caption": "A Runway 13 arrival leaves the runway by the link taxiway instead of cutting across the grass.",
+    "card_kicker": "GROUND · FIX",
+    "card_title": "Tarmac only",
+    "card_sub": "No taxiing across grass",
+    "card_image": "tarmac-link-exit",
+    "card_focus": 50,
+    "zh": {
+      "title": "修正：飛機只喺柏油路面行駛",
+      "dek": "滑行中嘅飛機行連接滑行道，唔會再駛過草地。",
+      "description": "Fly Kai Tak 地面修正：降落飛機經連接滑行道離開跑道，所有飛機嘅機輪都喺柏油路面上，草地唔准行。",
+      "hero_alt": "一架 747 由 13 跑道轉入連接滑行道，滑行道 A 同綠色草地分別喺兩邊。",
+      "hero_caption": "13 跑道嘅降落飛機經連接滑行道離開跑道，唔再橫過草地。"
+    }
+  },
+  {
     "slug": "map-off-by-default",
     "title": "The map is off until you turn it on",
     "dek": "The corner map no longer switches itself on when the home screen loads. Press M or tick the option to show it.",
