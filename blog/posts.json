@@ -1,5 +1,39 @@
 [
   {
+    "slug": "cargo-terminal-and-freighters",
+    "title": "Cargo terminal and freighters",
+    "dek": "A cargo terminal, two freighter types and their handling vehicles now work alongside the passenger flights.",
+    "description": "Kai Tak gets a cargo terminal with stands 41 to 46, 747-400F and A300-600F freighters in the schedule, cargo loaders and trucks, plus new hangars and car park detail.",
+    "date": "2026-10-04",
+    "tag": "New",
+    "category": "scenery",
+    "keywords": [
+      "cargo terminal",
+      "freighter",
+      "747-400F",
+      "A300-600F",
+      "maintenance hangars",
+      "ground vehicles",
+      "Kai Tak",
+      "flight simulator"
+    ],
+    "hero": "cargo-apron",
+    "hero_alt": "Six freighters nose-in to the maroon cargo terminal, stands 41 to 46.",
+    "hero_caption": "Stands 41 to 46 along the cargo terminal.",
+    "card_kicker": "SCENERY · CARGO",
+    "card_title": "Cargo terminal and freighters",
+    "card_sub": "Stands 41 to 46",
+    "card_image": "cargo-apron",
+    "card_focus": 50,
+    "zh": {
+      "title": "貨運大樓同貨機",
+      "dek": "貨運大樓、兩款貨機同地勤車輛，而家同客運航班一齊運作。",
+      "description": "啟德加入貨運大樓同 41 至 46 號機位、時間表有 747-400F 同 A300-600F 貨機、貨運裝載車同貨車，仲有新機庫同停車場細節。",
+      "hero_alt": "六架貨機機頭向住棗紅色貨運大樓，41 至 46 號機位。",
+      "hero_caption": "貨運大樓旁邊嘅 41 至 46 號機位。"
+    }
+  },
+  {
     "slug": "real-housing-estates-from-hd-data",
     "title": "Real Housing Authority estates",
     "dek": "The 1998 public housing estates now come from the Housing Authority's list, each built from its real block types.",
