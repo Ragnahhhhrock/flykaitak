@@ -1,0 +1,46 @@
+<p>Kai Tak now runs one movement at a time on the runway. The tower clears an arrival to land, or a departure to take off, only when the runway is clear and will stay clear. The AI traffic, and you, follow the same rules.</p>
+
+<div class="readouts" role="list">
+  <div class="readout" role="listitem"><b>1</b><span>Movement at a time<i>on the runway strip</i></span></div>
+  <div class="readout" role="listitem"><b>15 s</b><span>Buffer<i>a departure is airborne before the next arrival reaches the threshold</i></span></div>
+  <div class="readout" role="listitem"><b>12 s</b><span>Go-around point<i>before the threshold, if the runway is occupied</i></span></div>
+</div>
+
+<h2>What counts as occupied</h2>
+<p>An aircraft is on the runway when any part of it, wing tips included, is inside the runway strip: the runway plus the distance short of it where aircraft hold. A departure waiting on the taxiway outside the strip does not block anything.</p>
+
+<h2>Departures</h2>
+<p>A departure holds short of the strip until it may enter. At the line-up point it waits for the runway to be clear before it rolls. The tower says so on the radio ("hold position, the runway is occupied" or "traffic is on final"), and gives the line-up and take-off clearances only when the departure can go.</p>
+
+<figure class="wide">
+  <img src="/assets/blog/shots/runway-control-lineup.jpg" width="1600" height="900" loading="lazy" alt="A 747 waiting on Runway 13 in Plane Spotter. The top bar reads RWY 13 OCCUPIED and the tower call says to hold position because the runway is occupied.">
+  <figcaption>A departure holds position while the runway is occupied. The flight board shows it as Holding.</figcaption>
+</figure>
+
+<h2>Arrivals</h2>
+<p>The tower clears an arrival to land only when the runway will be clear by the time it reaches the threshold. Until then the call is "continue approach, runway not yet clear". If the runway is still occupied 12 seconds before the threshold, the arrival goes around: the tower calls it, the crew reads it back, and the flight board shows Go-around.</p>
+
+<figure class="wide">
+  <img src="/assets/blog/shots/runway-control-takeoff.jpg" width="1600" height="900" loading="lazy" alt="A 747 taking off from Runway 13. The top bar reads RWY 13 TAKE-OFF and the tower has just cleared the next arrival to land.">
+  <figcaption>A departure rolls (RWY 13 TAKE-OFF) and the next arrival is cleared to land, because the runway will be clear before it arrives.</figcaption>
+</figure>
+
+<h2>The AI timetable</h2>
+<p>The Plane Spotter and background traffic is planned with the same numbers. Each departure starts its roll a few seconds after the arrival ahead of it has left the strip, and is airborne at least 15 seconds before the next arrival crosses the threshold. In normal running nobody waits and nobody goes around. The holds and go-arounds are there for when something breaks the plan.</p>
+
+<h2>You are on the same runway</h2>
+<ul>
+  <li><strong>Take-off:</strong> in Free Flight the tower clears you only when the runway is clear and nothing on final can reach the threshold before you are airborne (about 55 seconds). Otherwise it tells you to hold position. If you roll without clearance, the tower tells you to stop.</li>
+  <li><strong>Landing:</strong> if you stay on the runway, arrivals go around instead of landing on you. AI departures keep well clear of your approach, so the runway is empty when you land.</li>
+  <li><strong>Status:</strong> the top bar shows RWY 13 or 31 with CLEAR, LANDING, TAKE-OFF or OCCUPIED.</li>
+</ul>
+
+<figure class="wide">
+  <img src="/assets/blog/shots/runway-control-landing.jpg" width="1600" height="900" loading="lazy" alt="An arrival on Runway 13 in Plane Spotter with the flight board open and the runway state in the top bar.">
+  <figcaption>An arrival lands on a clear Runway 13.</figcaption>
+</figure>
+
+<h2>Ground traffic</h2>
+<p>Ground control on the apron got two fixes along the way. A waiting aircraft in your path now stops you, and the aircraft at the head of a queue goes first. A long wait also asks for less room, so a jam between neighbouring stands dissolves instead of lasting.</p>
+
+<p>The new check, <code>tools/test_runway.py</code>, runs 50 minutes of Plane Spotter traffic on each runway with no collisions, no two aircraft closing on each other on the strip and no go-arounds. It also checks that arrivals go around for a player on the runway, and that a take-off with traffic on final is refused. The landing test passes in every weather preset.</p>

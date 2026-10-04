@@ -29,6 +29,7 @@ Data: © Lands Department, HKSAR Government (CSDI). Elevation: SRTM via AWS Terr
 - Passenger cabin: a 3D interior with seats in each type's layout (3-4-3, 3-3-3, 2-4-2), bins, windows and passengers. Pick a row and side, then drag to look around
 - Views: cockpit, exterior, control tower, four spectator spots, cabin seat
 - Sound: engines, wind, rain, a touchdown thud with tyre chirp, brake squeal, reverser roar, gear hydraulics with a lock clunk, flap motor, gear-down rumble, thunder, GPWS
+- Runway control: one movement at a time on the runway. The tower clears a landing, or a take-off, only when the runway is clear and will stay clear. Departures hold short and wait at the line-up point, arrivals that find the runway occupied 12 s before the threshold go around, and the AI timetable is planned with the same numbers (a departure is airborne at least 15 s before the next arrival crosses the threshold). In Free Flight the tower holds you until the runway is clear and nothing on final can reach the threshold before you are airborne, and arrivals go around for a player on the runway. The top bar shows the runway state (CLEAR, LANDING, TAKE-OFF, OCCUPIED). `python3 tools/test_runway.py` checks it.
 - ATC radio: Hong Kong Approach (119.1) clears you for the IGS 13 approach and hands you to Kai Tak Tower (118.7), who clears you to land after you report the checkerboard. Calls follow your position and the live weather (wind, QNH, visibility), your readbacks are automatic, and other crews chatter on frequency. Free flight gets a takeoff clearance and the hand-off to Approach; Spectator plays the tower and approach traffic. Captions show on screen, voices use the browser's speech synthesis, and R turns the radio off
 - Autopilot and autothrottle that fly the full approach and autoland
 - High score table: every hand-flown IGS 13 landing is scored out of 100 and ranked by score: Captain (90+), First Officer (76+), Second Officer (60+), Flight Engineer (45+), Cadet. Saved in the browser with a callsign; an optional Cloudflare Worker + D1 database in `server/` shares one table (see `docs/highscores.md`)
@@ -98,6 +99,6 @@ Google Analytics 4 with game events. See docs/analytics.md.
 
 ## Roadmap
 - Learn to fly, next: ground and taxi lessons, and a Runway 31 landing lesson
-- ATC radio, next: ground and taxi calls, more voices, go-around instructions, crews that match the AI traffic
+- ATC radio, next: ground and taxi calls, more voices, crews that match the AI traffic
 - More aircraft: 747-200/300, 767-300, MD-11, A300-600, A320, 737-300, L-1011, DC-10
 - Higher-fidelity terrain and coastline, more hand-built landmarks

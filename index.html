@@ -3379,7 +3379,7 @@ function rcTower(once,W){
       if(a.rwhy){if(once('hs'+i+':'+Math.round(ev.ent!==null?ev.ent:0))){radioSay('TWR',`${cs}, hold position, ${a.rwhy}.`);radioSay('OTH',`Holding position, ${cs}.`)}continue}
       if(!v.grd&&tEnt!==null&&tEnt>0&&tEnt<=9&&once('lu'+i+':'+Math.round(ev.ent)))radioSay('TWR',`${cs}, runway ${R}, line up and wait.`);
       else if(v.grd&&tLine!==null&&tLine>-3&&tLine<=2&&once('to'+i+':'+Math.round(ev.line))){radioSay('TWR',`${cs}, ${W}, runway ${R} cleared for takeoff.`);radioSay('OTH',`Cleared for takeoff ${R}, ${cs}.`)}}}}
-function rcHud(){const el=document.getElementById('flightid');if(!el||!RC.base)return;const t=RC.base+' · RWY '+LND.id+' '+RC.stat.t;if(el._rc!==t){el._rc=t;el.textContent=t}}
+function rcHud(){const el=document.getElementById('flightid');if(!el||!RC.base)return;const t='RWY '+LND.id+' '+RC.stat.t+' · '+RC.base;if(el._rc!==t){el._rc=t;el.textContent=t;el.title=t}}   // the runway state first: the bar is narrow and cuts the end
 
 // ---- touching: AI against AI and AI against the parked aircraft; the player is checked by playerHit
 const PARKED_FP=[];
