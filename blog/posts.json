@@ -1,5 +1,38 @@
 [
   {
+    "slug": "public-housing-estates",
+    "title": "Public housing estates in bunches",
+    "dek": "Cross, Y, twin-tower and slab blocks now stand in matching groups, with pastel facades and rooftop tanks.",
+    "description": "Hong Kong public housing blocks (Harmony, Trident, Twin Tower and slab) now stand in matching estates in the sim, with pastel facades, air-conditioners and roof tanks.",
+    "date": "2026-10-04",
+    "tag": "Update",
+    "category": "scenery",
+    "keywords": [
+      "public housing",
+      "housing estates",
+      "Harmony block",
+      "Trident block",
+      "Hong Kong",
+      "Kai Tak",
+      "flight simulator"
+    ],
+    "hero": "housing-estates-day",
+    "hero_alt": "A bunch of tall cross-shaped housing blocks with lift motor rooms and water tanks on their roofs, on a hillside above the harbour.",
+    "hero_caption": "A bunch of cross-plan blocks, each with a lift motor room and a water tank on the roof.",
+    "card_kicker": "SCENERY · HOUSING",
+    "card_title": "Housing estates in bunches",
+    "card_sub": "Cross, Y and slab blocks",
+    "card_image": "housing-estates-day",
+    "card_focus": 50,
+    "zh": {
+      "title": "公共屋邨成群出現",
+      "dek": "十字形、Y 形、雙塔同長條形大廈而家成組出現，有粉彩外牆同天台水缸。",
+      "description": "模擬器入面嘅公共屋邨大廈（和諧式、三叉型、雙塔式同長條型）而家成組出現，有粉彩外牆、冷氣機同天台水缸。",
+      "hero_alt": "一群十字形高層屋邨大廈，天台有升降機機房同水缸，喺維港上面嘅山坡。",
+      "hero_caption": "一群十字形大廈，每幢天台都有升降機機房同水缸。"
+    }
+  },
+  {
     "slug": "home-screen-share-buttons",
     "title": "Share buttons on the home screen",
     "dek": "Send Fly Kai Tak to a friend from the home screen: X, Facebook, Reddit, WhatsApp, Threads, email or a copied link.",

@@ -1049,7 +1049,7 @@ function buildStreetScene(){
   for(const r of ROADS){const m=r.w[Math.floor(r.w.length/2)];const D=districtAt(m[0],m[1]).n;if(!['Mong Kok','Tsim Sha Tsui','Sham Shui Po','Kowloon City','Hung Hom','Wan Chai','Causeway Bay','North Point','Kwun Tong'].includes(D))continue;putSigns(r,22,12,.7,.12,true)}
   // rooftop billboard frames near the approach (as seen in the street photos)
   const recs=[];for(const a of BGRID.values())for(const b of a)recs.push(b);
-  let nb=0;for(const b of recs){if(nb>150)break;const cx=(b.x0+b.x1)/2,cz=(b.z0+b.z1)/2;const w=b.x1-b.x0;if(w<12||b.top-terrainAt(cx,cz)<12||rnd()>.35)continue;const n=nearApproach(cx,cz);if(n.d<200||n.d>3000||n.lat>500)continue;
+  let nb=0;for(const b of recs){if(nb>150)break;if(b.est)continue;const cx=(b.x0+b.x1)/2,cz=(b.z0+b.z1)/2;const w=b.x1-b.x0;if(w<12||b.top-terrainAt(cx,cz)<12||rnd()>.35)continue;const n=nearApproach(cx,cz);if(n.d<200||n.d>3000||n.lat>500)continue;
     const cell=A.b[Math.floor(rnd()*A.b.length)];const bw=Math.min(w*.9,rr(10,18)),bh=bw/2;const ang=rnd()*Math.PI;const ax=Math.cos(ang),az=Math.sin(ang);const y0=b.top+1.5;
     Q.add(cx,y0+bh/2,cz,ax,az,bw,bh,cell);
     for(let k=0;k<=4;k++){const u=(k/4-.5)*bw;frames.push(cx+ax*u,b.top,cz+az*u,cx+ax*u,y0+bh,cz+az*u);frames.push(cx+ax*u,b.top,cz+az*u+1.5,cx+ax*u,y0+bh*.7,cz+az*u)}
@@ -1058,7 +1058,7 @@ function buildStreetScene(){
   const fg=new THREE.BufferGeometry();fg.setAttribute('position',new THREE.Float32BufferAttribute(frames,3));scene.add(new THREE.LineSegments(fg,new THREE.LineBasicMaterial({color:0x3a3d40})));
   // facade clutter: air-conditioners, laundry poles and bamboo scaffolding on tenements near the approach
   const ac=[],poles=[],scaf=[];
-  for(const b of recs){const cx=(b.x0+b.x1)/2,cz=(b.z0+b.z1)/2;const n=nearApproach(cx,cz);if(n.d<-50||n.d>3500||n.lat>700)continue;const gy=terrainAt(cx,cz);const H=b.top-gy;if(H<8)continue;
+  for(const b of recs){if(b.est)continue;const cx=(b.x0+b.x1)/2,cz=(b.z0+b.z1)/2;const n=nearApproach(cx,cz);if(n.d<-50||n.d>3500||n.lat>700)continue;const gy=terrainAt(cx,cz);const H=b.top-gy;if(H<8)continue;
     const k=Math.min(18,Math.floor(H/3));for(let i=0;i<k;i++){const face=Math.floor(rnd()*4);const y=gy+rr(3,H-1);let x,z;
       if(face<2){x=face?b.x1+.35:b.x0-.35;z=rr(b.z0+1,b.z1-1)}else{z=face>2?b.z1+.35:b.z0-.35;x=rr(b.x0+1,b.x1-1)}
       if(rnd()<.7)ac.push([x,y,z]);else poles.push([x,y,z,face])}
@@ -1220,7 +1220,7 @@ function buildBillboards(){
   for(let i=recs.length-1;i>0;i--){const j=Math.floor(R()*(i+1));const t=recs[i];recs[i]=recs[j];recs[j]=t}
   const DN=new Set(DISTRICTS.map(d=>d.n));DN.add('Kowloon');
   let nApp=0,nRoad=0;const MAXAPP=130,MAXROAD=70;
-  for(const b of recs){if(nApp>=MAXAPP&&nRoad>=MAXROAD)break;if(!DN.has(b.name))continue;
+  for(const b of recs){if(nApp>=MAXAPP&&nRoad>=MAXROAD)break;if(!DN.has(b.name)||b.est)continue;
     const cx=(b.x0+b.x1)/2,cz=(b.z0+b.z1)/2,wx=b.x1-b.x0,wz=b.z1-b.z0,gy=terrainAt(cx,cz);if(b.top-gy<14||Math.max(wx,wz)<13||gy<.5||!clear(cx,cz))continue;
     const n=nearApproach(cx,cz);const inApp=n.d>-100&&n.d<8500&&n.lat<(n.d<5400?650:950),rd=nearRoad(cx,cz,75);
     let nx,nz,zone;
@@ -1247,7 +1247,7 @@ function buildBillboards(){
 /* ---------------- buildings (real footprints, 1998 heights estimated by district) ---------------- */
 const BGRID=new Map(),BCELL=250;
 const AIRBOX=[];   // the airport buildings as true (rotated) boxes in runway coordinates, for the traffic: the colliders above are their bounding boxes
-function addCollider(x0,x1,z0,z1,top,name){const b={x0,x1,z0,z1,top,name};for(let i=Math.floor(x0/BCELL);i<=Math.floor(x1/BCELL);i++)for(let j=Math.floor(z0/BCELL);j<=Math.floor(z1/BCELL);j++){const k=i+','+j;if(!BGRID.has(k))BGRID.set(k,[]);BGRID.get(k).push(b)}}
+function addCollider(x0,x1,z0,z1,top,name){const b={x0,x1,z0,z1,top,name};for(let i=Math.floor(x0/BCELL);i<=Math.floor(x1/BCELL);i++)for(let j=Math.floor(z0/BCELL);j<=Math.floor(z1/BCELL);j++){const k=i+','+j;if(!BGRID.has(k))BGRID.set(k,[]);BGRID.get(k).push(b)}return b}
 function buildingAt(x,z,pad){const a=BGRID.get(Math.floor(x/BCELL)+','+Math.floor(z/BCELL));if(!a)return null;let best=null;for(const b of a){if(x>b.x0-pad&&x<b.x1+pad&&z>b.z0-pad&&z<b.z1+pad){if(!best||b.top>best.top)best=b}}return best}
 const DISTRICTS=[
  {n:'Kowloon City',x0:-1600,x1:1300,z0:-2100,z1:400,h:[16,45]},
@@ -1278,6 +1278,95 @@ function skipFootprint(x,z){
   if(Math.hypot(x-(-2380),z-(-170))<120)return false;
   return false;
 }
+/* ---------------- public housing estates ----------------
+   Hong Kong's public housing came in a handful of standard blocks, built in bunches to the same design: Harmony and Cruciform (cross plan),
+   Trident (Y plan), Twin Tower (two square towers, one taller), and long Slab / Linear blocks. The footprints are not tagged, so an estate is found
+   as a group of four or more similar, mid-sized tall footprints standing within 75 m of each other (CBD, Mong Kok, Tsim Sha Tsui and Kowloon City
+   keep their tenements). Every block in an estate shares one height class and one pastel scheme, with a stair/lift core every 8 bays, air-conditioners
+   under the windows, and a lift motor room and water tank on the roof. */
+const ESTATES=[],ESTATE_SKIP=new Set(['Central','Sheung Wan','Wan Chai','Causeway Bay','Tsim Sha Tsui','Mong Kok','Kowloon City']);
+const HOUSING_PAL=[0xe3cd7f,0xe3a99f,0x9fc4e3,0xe6b684,0xa8d0a0,0xd6d4c6,0xb9c9de,0xe8c6a0];
+const hsh=n=>{const s=Math.sin(n*12.9898+4.1)*43758.5453;return s-Math.floor(s)};
+function markEstates(recs){
+  const cand=[];recs.forEach((r,i)=>{const lo=Math.min(r.w,r.d),hi=Math.max(r.w,r.d),a=r.w*r.d;
+    if(lo<15||hi>75||a<300||a>2000||hi/lo>5||ESTATE_SKIP.has(r.n))return;r.a=a;r.asp=hi/lo;cand.push(i)});
+  const par=cand.map((_,k)=>k),fd=i=>{while(par[i]!==i){par[i]=par[par[i]];i=par[i]}return i};
+  const grid=new Map();cand.forEach((ri,k)=>{const r=recs[ri],key=Math.floor(r.x/100)+','+Math.floor(r.z/100);if(!grid.has(key))grid.set(key,[]);grid.get(key).push(k)});
+  cand.forEach((ri,k)=>{const r=recs[ri],gi=Math.floor(r.x/100),gj=Math.floor(r.z/100);
+    for(let i=gi-1;i<=gi+1;i++)for(let j=gj-1;j<=gj+1;j++){const a=grid.get(i+','+j);if(!a)continue;
+      for(const m of a){if(m<=k)continue;const q=recs[cand[m]],ar=r.a/q.a;
+        if(Math.hypot(r.x-q.x,r.z-q.z)<75&&ar>.65&&ar<1.54&&Math.abs(r.asp-q.asp)<1.2)par[fd(m)]=fd(k)}}});
+  const comps=new Map();cand.forEach((ri,k)=>{const f=fd(k);if(!comps.has(f))comps.set(f,[]);comps.get(f).push(ri)});
+  for(const [,mem] of comps){if(mem.length<4)continue;
+    const id=Math.min(...mem),s=hsh(id+1),cls=s<.16?0:s<.5?1:2,base=cls===0?16+Math.floor(hsh(id+7)*7):cls===1?28+Math.floor(hsh(id+7)*8):34+Math.floor(hsh(id+7)*8);
+    const c1=HOUSING_PAL[Math.floor(hsh(id+3)*HOUSING_PAL.length)],c2=HOUSING_PAL[(HOUSING_PAL.indexOf(c1)+1+Math.floor(hsh(id+5)*3))%HOUSING_PAL.length];
+    let n=0,sx=0,sz=0;
+    for(const ri of mem){const r=recs[ri],th=r.y+1.5;
+      let fl=base;if(hsh(ri*3+id)<.3)fl-=2*(1+Math.floor(hsh(ri*5+id)*3));fl=Math.max(fl,12);
+      const cap=clearanceCap(r.x,r.z)-(th-3.5),hh=Math.min(fl*2.8,cap);if(hh<12)continue;
+      const u=hsh(ri*7+id);let type='slab';
+      if(r.asp<=2.3&&r.a>=500&&r.asp<1.6)type=cls===0?'twin':cls===1?(u<.6?'Y':'cross'):(u<.8?'cross':'Y');
+      r.h=hh+1.5;r.c=hsh(ri*11+id)<.3?c2:c1;r.est={type,id,cls};n++;sx+=r.x;sz+=r.z}
+    if(n>=3)ESTATES.push({id,n,cls,floors:base,x:Math.round(sx/n),z:Math.round(sz/n)});
+    else for(const ri of mem)delete recs[ri].est}
+}
+function housingMaterial(){
+  const m=new THREE.MeshLambertMaterial({color:0xffffff});
+  m.onBeforeCompile=sh=>{
+    sh.uniforms.uNight=CITY_U.uNight;
+    sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 vWP;varying vec3 vON;varying float vSeed;')
+     .replace('#include <project_vertex>',`#include <project_vertex>
+      vec4 cw=vec4(transformed,1.);vec3 nw=normal;
+      #ifdef USE_INSTANCING
+       cw=instanceMatrix*cw;nw=mat3(instanceMatrix)*nw;vSeed=fract(sin(dot(instanceMatrix[3].xz,vec2(12.9898,78.233)))*43758.5453);
+      #else
+       vSeed=0.;
+      #endif
+      cw=modelMatrix*cw;vWP=cw.xyz;vON=normalize(mat3(modelMatrix)*nw);`);
+    sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nvarying vec3 vWP;varying vec3 vON;varying float vSeed;uniform float uNight;float hs(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}')
+     .replace('#include <emissivemap_fragment>',`#include <emissivemap_fragment>
+      if(abs(vON.y)<.5){
+        vec2 nn=normalize(vON.xz);float u=dot(vWP.xz,vec2(-nn.y,nn.x));float fy=(vWP.y-1.)/2.8;
+        float bay=u/2.4,bi=floor(bay);vec2 f=vec2(fract(bay),fract(fy));vec2 cell=vec2(bi,floor(fy));
+        float m8=mod(bi,8.);float core=step(abs(m8-3.5),.6);float panel=mod(floor(bi/8.),2.);
+        vec3 col=diffuseColor.rgb;
+        col=mix(col,col*.86,panel*(1.-core));
+        col=mix(col,vec3(.6,.62,.6),core*.75);
+        float h=hs(cell+vSeed*91.7);
+        float win=mix(step(.24,f.x)*step(f.x,.76)*step(.34,f.y)*step(f.y,.76),step(.42,f.x)*step(f.x,.58)*step(.12,f.y)*step(f.y,.88),core);
+        col*=1.-.2*step(f.y,.05);
+        col*=.93+.07*hs(vec2(floor(u*.9),floor(vWP.y*.06)));
+        float ac=(1.-core)*step(.57,h)*step(.06,f.x)*step(f.x,.42)*step(.06,f.y)*step(f.y,.27);
+        col=mix(col,vec3(.8,.81,.8),ac);
+        float bar=step(abs(f.y-.55),.03)*(1.-core);
+        col=mix(col,vec3(.14,.17,.2)*.9,win*.85);col=mix(col,col*1.9,win*bar*.5);
+        diffuseColor.rgb=col;
+        float lit=step(.5,hs(cell+vSeed*57.3+7.))*win*(1.-core);float cool=step(.5,hs(cell+vSeed*13.1));
+        vec3 wc=mix(vec3(1.,.78,.5),vec3(.82,.95,.9),cool);
+        totalEmissiveRadiance+=wc*lit*uNight*(.5+.5*fract(h*7.3))+vec3(.5,.62,.5)*win*core*uNight*.35;
+      }`);
+  };
+  m.customProgramCacheKey=()=> 'housing';
+  return m;
+}
+function buildEstateMeshes(recs){
+  const wings=[],roof=[];
+  for(const r of recs){if(!r.est)continue;const c=Math.cos(r.ph),s=Math.sin(r.ph),W=r.w,D=r.d,H=r.h,top=r.y+H;
+    const wing=(cx,cz,lx,lz,len,wid,h)=>wings.push({x:r.x+cx*c-cz*s,z:r.z+cx*s+cz*c,y:r.y,yaw:Math.atan2(-(lx*s+lz*c),lx*c-lz*s),len,wid,h,c:r.c});
+    const room=(cx,cz,yy)=>{const px=r.x+cx*c-cz*s,pz=r.z+cx*s+cz*c;roof.push({x:px,y:yy,z:pz,yaw:-r.ph,sx:6.4,sy:3.2,sz:5.4,c:0xd9d5c9});roof.push({x:px+cx*0+2.6*c,y:yy,z:pz+2.6*s,yaw:-r.ph,sx:3.4,sy:2.4+((r.x*7|0)&1)*.6,sz:3.4,c:0x9ea4a6})};
+    const t=r.est.type;
+    if(t==='cross'){wing(0,0,1,0,W,D*.42,H);wing(0,0,0,1,D,W*.42,H);room(0,0,top)}
+    else if(t==='Y'){const m=Math.min(W,D),R=m*.52,wd=Math.max(7,m*.36);for(let k=0;k<3;k++){const a=(90+120*k)*D2R,dx=Math.cos(a),dz=Math.sin(a);wing(dx*R/2,dz*R/2,dx,dz,R+3,wd,H)}room(0,0,top)}
+    else if(t==='twin'){wing(-W*.2,-D*.2,1,0,W*.52,D*.52,H);wing(W*.2,D*.2,1,0,W*.52,D*.52,H*.78);room(-W*.2,-D*.2,top);room(W*.2,D*.2,top-H*.22)}
+    else{wing(0,0,1,0,W,D,H);if(W>=D*1.6){room(-W*.25,0,top);room(W*.25,0,top)}else room(0,0,top)}}
+  const box=new THREE.BoxGeometry(1,1,1).translate(0,.5,0),tc=new THREE.Color();
+  const em=new THREE.InstancedMesh(box,housingMaterial(),wings.length);
+  wings.forEach((w,i)=>{_q.setFromEuler(_e.set(0,w.yaw,0));_m4.compose(_v.set(w.x,w.y,w.z),_q,_s.set(w.len,w.h,w.wid));em.setMatrixAt(i,_m4);tc.setHex(w.c);tc.multiplyScalar(.96+hsh(i*1.7)*.07);em.setColorAt(i,tc)});
+  em.frustumCulled=false;scene.add(em);
+  const rm=new THREE.InstancedMesh(box,new THREE.MeshLambertMaterial({color:0xffffff}),roof.length);
+  roof.forEach((w,i)=>{_q.setFromEuler(_e.set(0,w.yaw,0));_m4.compose(_v.set(w.x,w.y,w.z),_q,_s.set(w.sx,w.sy,w.sz));rm.setMatrixAt(i,_m4);tc.setHex(w.c);rm.setColorAt(i,tc)});
+  rm.frustumCulled=false;scene.add(rm);
+}
 let bldMesh,cityMat,signs=[],streetLights,obstructionLights=null;
 function buildCity(){
   cityMat=cityMaterial();const B=GEO.B,recs=[];
@@ -1290,11 +1379,13 @@ function buildCity(){
     if(area<130)h*=.45;else if(area<300)h*=.75;else if(area>3000&&rnd()<.55)h=rr(12,28);
     const cap=clearanceCap(x,z)-(th-3.5);h=Math.min(h,cap);if(h<7)continue;
     recs.push({x,z,y:th-1.5,w,d,ph,h:h+1.5,c:pick(pal),n:D.n})}
-  bldMesh=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1).translate(0,.5,0),cityMat,recs.length);
-  const tc=new THREE.Color();
-  recs.forEach((r,i)=>{_q.setFromEuler(_e.set(0,-r.ph,0));_m4.compose(_v.set(r.x,r.y,r.z),_q,_s.set(r.w,r.h,r.d));bldMesh.setMatrixAt(i,_m4);tc.setHex(r.c);tc.multiplyScalar(.9+rnd()*.14);bldMesh.setColorAt(i,tc);
-    const c=Math.abs(Math.cos(r.ph)),s=Math.abs(Math.sin(r.ph));const ex=c*r.w/2+s*r.d/2,ez=s*r.w/2+c*r.d/2;addCollider(r.x-ex,r.x+ex,r.z-ez,r.z+ez,r.y+r.h,r.n)});
-  scene.add(bldMesh);
+  markEstates(recs);
+  bldMesh=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1).translate(0,.5,0),cityMat,recs.reduce((n,r)=>n+(r.est?0:1),0));
+  const tc=new THREE.Color();let pi=0;
+  recs.forEach(r=>{const jit=.9+rnd()*.14;   // one rnd() per footprint, as before, so the rest of the city keeps its random sequence
+    if(!r.est){_q.setFromEuler(_e.set(0,-r.ph,0));_m4.compose(_v.set(r.x,r.y,r.z),_q,_s.set(r.w,r.h,r.d));bldMesh.setMatrixAt(pi,_m4);tc.setHex(r.c);tc.multiplyScalar(jit);bldMesh.setColorAt(pi,tc);pi++}
+    const c=Math.abs(Math.cos(r.ph)),s=Math.abs(Math.sin(r.ph));const ex=c*r.w/2+s*r.d/2,ez=s*r.w/2+c*r.d/2;const cb=addCollider(r.x-ex,r.x+ex,r.z-ez,r.z+ez,r.y+r.h,r.n);if(r.est)cb.est=true});
+  scene.add(bldMesh);buildEstateMeshes(recs);
   {const L=[];const near=(x,z)=>{const n=pathNearestGlobal(x,z);const p=PATH.pts[n];return p.d>-200&&p.d<6000&&Math.abs(pathLateral(n,x,z))<1500};
    for(const r of recs){const nearA=near(r.x,r.z);if(r.h<(nearA?28:55))continue;if(L.length/8>6000)break;
      const c=Math.cos(r.ph),s=Math.sin(r.ph);const corners=r.h>90?[[1,1],[-1,-1],[1,-1],[-1,1]]:[[1,1],[-1,-1]];
@@ -4523,7 +4614,7 @@ const fontsReady=document.fonts&&document.fonts.ready?Promise.race([document.fon
 fontsReady.then(()=>setTimeout(boot,30));
 
 /* test hooks */
-window.__kt={RC,rcEv,rcVac,rcRoll,rcStrip,rcClearBy,rcTakeoffWhy,rcView,rcPlayer,CYC,onPaved,gearPaved,rwS,LINKS,rb:()=>rbMasts13,bat:buildingAt,setHour,solarState,SUN_DIR,MOON_DIR,ENV,AI,CFG,ST,COACH,LESSON,keys,coachUpdate,coachResync,coachGo,rwL,get PATH(){return PATH},LND,setRunway,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,{rwy:'13',conc:false},o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.conc&&CFG.game==='watch'?'watchC':CFG.rwy==='31'&&CFG.game!=='learn'?CFG.game+'31':CFG.game}]`).checked=true;hourIn.value=o.hour!==undefined?o.hour:CFG.night?22:15;showHour();startFlight()},
+window.__kt={ESTATES,RC,rcEv,rcVac,rcRoll,rcStrip,rcClearBy,rcTakeoffWhy,rcView,rcPlayer,CYC,onPaved,gearPaved,rwS,LINKS,rb:()=>rbMasts13,bat:buildingAt,setHour,solarState,SUN_DIR,MOON_DIR,ENV,AI,CFG,ST,COACH,LESSON,keys,coachUpdate,coachResync,coachGo,rwL,get PATH(){return PATH},LND,setRunway,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,{rwy:'13',conc:false},o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.conc&&CFG.game==='watch'?'watchC':CFG.rwy==='31'&&CFG.game!=='learn'?CFG.game+'31':CFG.game}]`).checked=true;hourIn.value=o.hour!==undefined?o.hour:CFG.night?22:15;showHour();startFlight()},
   run:(sec)=>{if(CFG.game==='watch'){ST.t+=sec;return {t:ST.t}}const h=1/120;for(let i=0;i<sec*120&&!ST.ended;i++){physStep(h);if(i%60===0)recordHistory();if(i%12===0)aiTick()}return {ended:ST.ended,td:ST.td,t:ST.t,x:ST.x,y:ST.y,z:ST.z,V:ST.V/KT,d:PATH.pts[ST.pi].d}},
   get mode(){return mode},updateAI,AIC,footOf,GSE,GSE_KINDS,AIRBOX,rwS,BGRID,updateGSE,gseLamps:()=>gseLamps,fpAt,fpDist,hitOn,damageModel,aiHit,DEBRIS,EMIT,aiTick,ctl(){return aiControl},get CFG(){return CFG},frame:(now)=>frame(now,true),get FOCUS(){return FOCUS},step:()=>physStep(1/120),rwS,setZoom:z=>{CFG.zoom=z},get AI(){return AI},get GSE(){return GSE},get BRIDGE(){return BRIDGE},STAND_S,STAND_TY,lineupT,lineupT31,arrivalPts,tugAt,standL,PB,get parked(){return parked},gseAt:(t)=>{ST.t=t;updateGSE();return GSE.map(e=>({k:e.kind,x:e.p.x,z:e.p.z,psi:e.p.psi,lift:e.lift}))},get shipLights(){return shipLights},get SHIPS(){return SHIPS},get DISP(){return DISP},get deck(){return deckGroup},get streetCam(){return STREET_CAM},get BB(){return BB},get water(){return water},get camera(){return camera},get nStreets(){return STREETS.length},drawDisplays,look,setView,terrainAt,buildingAt,groundInfo};
 })();
