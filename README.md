@@ -73,6 +73,7 @@ The home screen shows the live sim of the airport in the background, with a 58-s
 | R | ATC radio on/off |
 | N, P | Day/night, pause |
 | I / O, mouse wheel | Zoom in / out (scroll up zooms in, scroll down zooms out) |
+| B | Flight information board on/off (Plane Spotter) |
 | T | Time speed |
 | [ / ] | Back / forward 10 s |
 | K | Cockpit panel on/off |
