@@ -1,5 +1,38 @@
 [
   {
+    "slug": "longer-throttle-bar",
+    "title": "A longer thrust bar for finer control",
+    "dek": "The touch thrust bar is up to 260 px tall, so small thrust changes are easier to set.",
+    "description": "Fly Kai Tak's thrust lever bar is now up to 260 px tall on desktop and 170 px on landscape phones, giving finer control of thrust.",
+    "date": "2026-10-04",
+    "tag": "Update",
+    "category": "controls",
+    "keywords": [
+      "thrust",
+      "throttle",
+      "touch controls",
+      "thrust levers",
+      "slider",
+      "Kai Tak",
+      "flight simulator"
+    ],
+    "hero": "throttle-long-bar",
+    "hero_alt": "The 747 on approach with the longer thrust bar at the bottom right, set at 9 percent.",
+    "hero_caption": "The longer thrust bar at the bottom right, set at 9%.",
+    "card_kicker": "CONTROLS · THRUST",
+    "card_title": "A longer thrust bar",
+    "card_sub": "Finer thrust control",
+    "card_image": "throttle-long-bar",
+    "card_focus": 90,
+    "zh": {
+      "title": "加長推力桿，微調更準",
+      "dek": "觸控推力桿最長 260 px，微調推力容易啲。",
+      "description": "Fly Kai Tak 嘅推力桿而家喺桌面最長 260 px、手機橫向最長 170 px，微調推力更準。",
+      "hero_alt": "747 進場，右下角嘅推力桿加長咗，設定喺 9%。",
+      "hero_caption": "右下角加長咗嘅推力桿，設定喺 9%。"
+    }
+  },
+  {
     "slug": "bigger-map-home-and-plane-spotter",
     "title": "A bigger map on the home screen and in Plane Spotter",
     "dek": "The corner map is twice the size on the home screen and in Plane Spotter, and it steps aside when High scores is open.",

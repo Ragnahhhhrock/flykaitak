@@ -162,7 +162,7 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
 .cfg{display:grid;gap:6px}
 .cfg .btn{min-width:74px;padding:10px 8px}
 .thr{display:grid;justify-items:center;gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:8px 6px}
-.thr input{writing-mode:vertical-lr;direction:rtl;height:140px;width:28px;accent-color:var(--jade)}
+.thr input{writing-mode:vertical-lr;direction:rtl;height:clamp(140px,30vh,260px);width:28px;accent-color:var(--jade)}
 .thr span{font-family:var(--f-num);font-size:11px;color:var(--muted)}
 
 #cabin{position:fixed;inset:0;pointer-events:none}
@@ -310,7 +310,7 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
   .sheet-body{padding:18px 16px 24px}
   #map{width:112px;height:112px}
   #stick{width:112px;height:112px}
-  .thr input{height:112px}
+  .thr input{height:clamp(112px,30vh,220px)}
   .flightid{display:none}
 }
 @media (prefers-reduced-motion:reduce){#toast{transition:none}}
@@ -357,7 +357,7 @@ html,body{overscroll-behavior:none;touch-action:manipulation}
   #toast{top:calc(env(safe-area-inset-top,0px) + 54px)}
   #ctl{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 8px)}
   #stick{width:104px;height:104px}
-  .thr input{height:96px}
+  .thr input{height:clamp(96px,40vh,170px)}
   .cfg .btn{min-width:68px;padding:8px}
   #cabin .tag{bottom:16px}
   #result{padding:8px}
