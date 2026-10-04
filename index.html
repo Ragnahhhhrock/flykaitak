@@ -496,6 +496,7 @@ html,body{overscroll-behavior:none;touch-action:manipulation}
         <div class="toggles">
           <label class="tog"><input type="checkbox" id="optGuide" checked><span>Approach guide<small>Magenta gates along the IGS path and the turn.</small></span></label>
           <label class="tog"><input type="checkbox" id="optAP"><span>Computer flies the aircraft<small>Autopilot and autothrottle fly the approach. Pick a cabin seat and watch.</small></span></label>
+          <label class="tog"><input type="checkbox" id="optMap" checked><span>Map with live aircraft<small>The corner map shows you and the other traffic. Untick to hide it. M toggles it in flight.</small></span></label>
           <label class="tog"><input type="checkbox" id="optWalled" checked><span>Kowloon Walled City as it stood before 1994<small>It was demolished in 1993–94. Untick to see the 1998 park instead.</small></span></label>
         </div>
       </fieldset>
@@ -3546,7 +3547,7 @@ function readInputs(dt){
 function toggleGear(){if(ST.ap){toggleAP(false)}ST.gearDown=!ST.gearDown;tog('gear',ST.gearDown?'down':'up');syncButtons()}
 function setFlaps(d){if(ST.ap)toggleAP(false);const o=ST.flapIdx;ST.flapIdx=clamp(ST.flapIdx+d,0,4);if(ST.flapIdx!==o)tog('flaps',ST.ac.flaps[ST.flapIdx]);syncButtons();toast('Flaps '+ST.ac.flaps[ST.flapIdx])}
 function toggleDeck(){CFG.deck=!CFG.deck;tog('deck',CFG.deck?'on':'off');syncButtons()}
-function applyMap(){if(mode!=='fly')return;document.getElementById('map').hidden=!CFG.map||CFG.game==='watch'||CFG.view==='cabin'}
+function applyMap(){const o=document.getElementById('optMap');if(o)o.checked=CFG.map;if(mode!=='fly')return;document.getElementById('map').hidden=!CFG.map||CFG.game==='watch'||CFG.view==='cabin'}
 function toggleMap(){CFG.map=!CFG.map;tog('map',CFG.map?'on':'off');applyMap();syncButtons();toast('Map '+(CFG.map?'on':'off'))}
 function toggleHud(){CFG.hud=!CFG.hud;tog('hud',CFG.hud?'on':'off');syncButtons()}
 function toggleGuide(){CFG.guide=!CFG.guide;hoops.visible=CFG.guide;tog('guide',CFG.guide?'on':'off');syncButtons()}
@@ -3734,6 +3735,8 @@ const ZH={
 'Clear':'晴朗','Rain':'落雨','Typhoon':'颱風','Storm':'雷暴','Low cloud':'低雲','Fog':'大霧',
 'Clouds':'雲層',
 'Map':'地圖',
+'Map with live aircraft':'即時飛機地圖',
+'The corner map shows you and the other traffic. Untick to hide it. M toggles it in flight.':'角落地圖會顯示你同其他飛機。取消剔選就收埋。飛行時可以用 M 鍵開關。',
 'Show or hide the map with live aircraft':'顯示或隱藏地圖同即時航機位置',
 'Cloud layers and flying through them. Untick for a clear sky in any weather.':'雲層，同埋穿過雲層飛行。取消剔選，無論咩天氣都係萬里無雲。',
 'Lightning':'閃電',
@@ -3786,7 +3789,7 @@ function applyLang(){
 document.getElementById('btnLang').addEventListener('click',e=>{LANG=LANG==='zh'?'en':'zh';try{localStorage.setItem('fkt-lang',LANG)}catch(_){}track('language_toggle',{language:LANG==='zh'?'cantonese':'english'});applyLang();fidsLast=-1e9;e.currentTarget.blur()});
 applyLang();
 function readSetup(){const gv=document.querySelector('input[name=game]:checked').value;CFG.lesson=gv==='learn';CFG.game=gv==='approach31'?'approach':gv==='free31'?'free':gv==='watch31'?'watch':CFG.lesson?'free':gv;CFG.rwy=gv==='approach31'||gv==='free31'||gv==='watch31'?'31':'13';CFG.ac=document.querySelector('input[name=ac]:checked').value;CFG.hour=parseFloat(document.getElementById('optHour').value)||0;CFG.night=solarState(CFG.hour).sunEl<0;CFG.wx=document.querySelector('input[name=wx]:checked').value;
-  CFG.lightning=document.getElementById('optLightning').checked;CFG.clouds=document.getElementById('optClouds').checked;CFG.guide=document.getElementById('optGuide').checked;CFG.ap=document.getElementById('optAP').checked;CFG.walled=document.getElementById('optWalled').checked}
+  CFG.lightning=document.getElementById('optLightning').checked;CFG.clouds=document.getElementById('optClouds').checked;CFG.map=document.getElementById('optMap').checked;CFG.guide=document.getElementById('optGuide').checked;CFG.ap=document.getElementById('optAP').checked;CFG.walled=document.getElementById('optWalled').checked}
 // Home screen: Day/Night, Weather, Clouds and Lightning change the live sim rendering behind the menu straight away.
 function applyHomeEnv(){if(mode!=='attract')return;const q=n=>document.querySelector('input[name='+n+']:checked');const wx=q('wx');
   CFG.hour=parseFloat(document.getElementById('optHour').value)||0;if(wx&&WX[wx.value])CFG.wx=wx.value;CFG.clouds=document.getElementById('optClouds').checked;CFG.lightning=document.getElementById('optLightning').checked;

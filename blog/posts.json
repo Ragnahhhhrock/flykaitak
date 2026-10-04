@@ -1,5 +1,39 @@
 [
   {
+    "slug": "map-option-on-the-home-screen",
+    "title": "A Map option on the home screen",
+    "dek": "Choose whether the corner map is on before you start a flight, with a new tick box in the home screen Options.",
+    "description": "Fly Kai Tak's home screen now has a Map with live aircraft option, so you can start a flight with the corner map on or off. M still toggles it in flight.",
+    "date": "2026-10-04",
+    "tag": "Update",
+    "category": "controls",
+    "keywords": [
+      "map",
+      "home screen",
+      "options",
+      "live aircraft",
+      "M key",
+      "Kai Tak",
+      "flight simulator",
+      "Hong Kong 1998"
+    ],
+    "hero": "map-home-option",
+    "hero_alt": "The home screen options with the new Map with live aircraft tick box under Computer flies the aircraft.",
+    "hero_caption": "The new Map option in the home screen Options.",
+    "card_kicker": "MAP · HOME SCREEN",
+    "card_title": "Map option on the home screen",
+    "card_sub": "Start with the map on or off",
+    "card_image": "map-home-option",
+    "card_focus": 60,
+    "zh": {
+      "title": "主畫面嘅地圖選項",
+      "dek": "主畫面「選項」多咗個剔選格，開始飛行之前就可以揀角落地圖要唔要開。",
+      "description": "Fly Kai Tak 主畫面而家有「即時飛機地圖」選項，開始飛行時可以揀開或者關角落地圖；飛行途中仍然可以用 M 鍵開關。",
+      "hero_alt": "主畫面選項，「Computer flies the aircraft」下面多咗「Map with live aircraft」剔選格。",
+      "hero_caption": "主畫面選項入面新增嘅地圖選項。"
+    }
+  },
+  {
     "slug": "map-toggle-live-aircraft",
     "title": "A map toggle with live aircraft",
     "dek": "The corner map now shows the other airliners as they fly, taxi and climb, and a Map button (or M) turns it on and off.",
