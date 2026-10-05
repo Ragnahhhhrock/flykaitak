@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" role="img" aria-label="Jade-green cap with the embroidered checkerboard mark on the front">
+  <defs>
+    <linearGradient id="cr-cr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2a9466"/><stop offset=".6" stop-color="#1b7d52"/><stop offset="1" stop-color="#0f5a3a"/></linearGradient>
+    <linearGradient id="cr-br" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b7d52"/><stop offset="1" stop-color="#0c4a30"/></linearGradient>
+  </defs>
+  <ellipse cx="310" cy="452" rx="220" ry="22" fill="#000" opacity=".35"/>
+  <path d="M120 372 Q130 196 300 178 Q446 176 472 332 L476 372 Z" fill="url(#cr-cr)"/>
+  <path d="M300 180 Q300 280 312 372 M300 180 Q226 250 210 372 M300 180 Q392 230 410 372" fill="none" stroke="#0f5a3a" stroke-width="2.5"/>
+  <path d="M300 180 Q300 280 312 372" fill="none" stroke="#2fa36d" stroke-width="1" stroke-dasharray="3 4" transform="translate(5 0)"/>
+  <ellipse cx="300" cy="182" rx="12" ry="6" fill="#0f5a3a"/>
+  <path d="M110 372 Q300 352 532 388 Q556 404 520 420 Q320 402 108 392 Q98 382 110 372 Z" fill="url(#cr-br)"/>
+  <path d="M120 380 Q300 362 520 396" fill="none" stroke="#2fa36d" stroke-width="1.2" stroke-dasharray="4 4"/>
+  <g transform="translate(228 254) rotate(-4)">
+    <rect x="-4" y="-4" width="80" height="80" rx="10" fill="#0a1115"/>
+    <rect x="6" y="6" width="60" height="60" fill="#f5efe3"/>
+    <path fill="#e8571f" d="M6 6h15v15H6zM36 6h15v15H36zM21 21h15v15H21zM51 21h15v15H51zM6 36h15v15H6zM36 36h15v15H36zM21 51h15v15H21zM51 51h15v15H51z"/>
+    <path d="M1 22 C26 21 41 28 51 43 L69 69" fill="none" stroke="#0a1115" stroke-width="9" stroke-linecap="round"/>
+    <path d="M1 22 C26 21 41 28 51 43 L69 69" fill="none" stroke="#2fa36d" stroke-width="5" stroke-linecap="round"/>
+  </g>
+</svg>

@@ -55,6 +55,7 @@ The home screen shows the live sim of the airport in the background, with a 58-s
 ## Site
 - Start screen has a Blog menu button (top left) linking to /blog/
 - Blog at https://flykaitak.com/blog/ (every feature and fix gets a post; see docs/blog.md)
+- Merch shop at https://flykaitak.com/shop/ (Shop button and Kai Tak merch card on the start screen; see docs/shop.md)
 - Contact: contact@flykaitak.com
 - "Another Mal Gordon project" links to https://malgordon.com
 - The "Buy me a coffee" button ($5 AUD) opens a Stripe Payment Link, set in `STRIPE_LINK` in `index.html`

@@ -1,5 +1,39 @@
 [
   {
+    "slug": "the-kai-tak-shop",
+    "title": "The Kai Tak shop is open",
+    "dek": "Tees, a cap, a patch, a pin, a poster, a mug and stickers, all from the checkerboard and the IGS 13 approach. Linked from the home screen.",
+    "description": "Fly Kai Tak has a merch shop: checkerboard and IGS 13 tees, a Runway 13 cap, a 1998 patch, a pin, a poster, a mug and stickers.",
+    "date": "2026-10-05",
+    "tag": "New",
+    "category": "site",
+    "keywords": [
+      "Kai Tak merch",
+      "shop",
+      "t-shirt",
+      "cap",
+      "patch",
+      "enamel pin",
+      "poster",
+      "Fly Kai Tak"
+    ],
+    "hero": "kai-tak-shop",
+    "hero_alt": "The Fly Kai Tak shop page, titled The Kai Tak shop, with 啟德 in large characters and the first products below.",
+    "hero_caption": "The Kai Tak shop at flykaitak.com/shop.",
+    "card_kicker": "SITE · NEW",
+    "card_title": "The Kai Tak shop",
+    "card_sub": "Tees, caps, patches and prints",
+    "card_image": "kai-tak-shop-products",
+    "card_focus": 50,
+    "zh": {
+      "title": "啟德商店開張",
+      "dek": "T 恤、帽、布章、襟章、海報、杯同貼紙，全部來自棋盤同 IGS 13 進場。主畫面有連結。",
+      "description": "Fly Kai Tak 開咗精品商店：棋盤同 IGS 13 T 恤、13 號跑道帽、1998 布章、襟章、海報、杯同貼紙。",
+      "hero_alt": "Fly Kai Tak 商店頁面，標題係啟德商店，大字寫住「啟德」，下面係第一批貨品。",
+      "hero_caption": "flykaitak.com/shop 嘅啟德商店。"
+    }
+  },
+  {
     "slug": "boats-along-the-seawall-not-in-the-inlet",
     "title": "Boats along the seawall, not in the inlet",
     "dek": "Harbour craft come right up to the runway seawall again, but keep out of the inlet under the south apron taxiways.",

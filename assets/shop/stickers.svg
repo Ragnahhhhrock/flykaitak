@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" role="img" aria-label="Sheet of six stickers: checkerboard, 13-31 runway sign, 啟德 roundel, jet in plan view, IGS 088° and stand 6">
+  <defs>
+    <filter id="st-sh" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#000" flood-opacity=".28"/></filter>
+  </defs>
+  <g transform="rotate(4 300 300)">
+    <rect x="118" y="88" width="372" height="440" rx="10" fill="#000" opacity=".4" transform="translate(6 8)"/>
+    <rect x="112" y="80" width="376" height="440" rx="10" fill="#e4ddcf"/>
+    <g filter="url(#st-sh)">
+      <g transform="translate(150 118)">
+        <rect x="-8" y="-8" width="136" height="136" rx="14" fill="#fff"/>
+        <rect width="120" height="120" fill="#f5efe3"/>
+        <path fill="#e8571f" d="M0 0h30v30H0zM60 0h30v30H60zM30 30h30v30H30zM90 30h30v30H90zM0 60h30v30H0zM60 60h30v30H60zM30 90h30v30H30zM90 90h30v30H90z"/>
+      </g>
+      <g transform="translate(318 140)">
+        <rect x="-8" y="-8" width="150" height="80" rx="12" fill="#fff"/>
+        <rect width="134" height="64" rx="4" fill="#c8102e"/>
+        <rect x="4" y="4" width="126" height="56" rx="2" fill="none" stroke="#fff" stroke-width="2"/>
+        <text x="67" y="44" text-anchor="middle" font-family="B612,sans-serif" font-weight="700" font-size="30" fill="#fff">13-31</text>
+      </g>
+      <g transform="translate(220 330)">
+        <circle r="70" fill="#fff"/>
+        <circle r="62" fill="#1b7d52"/>
+        <circle r="54" fill="none" stroke="#f5efe3" stroke-width="2" stroke-dasharray="4 4"/>
+        <text y="13" text-anchor="middle" font-family="'Noto Serif TC','Songti TC',serif" font-weight="900" font-size="38" fill="#f5efe3">啟德</text>
+      </g>
+      <g transform="translate(392 318) rotate(134) scale(.62)">
+        <path d="M0 -112 C14 -112 18 -84 18 -60 L18 74 C18 94 10 108 0 114 C-10 108 -18 94 -18 74 L-18 -60 C-18 -84 -14 -112 0 -112 Z M14 -24 L112 52 L112 66 L14 30 Z M-14 -24 L-112 52 L-112 66 L-14 30 Z M14 78 L52 102 L52 112 L14 102 Z M-14 78 L-52 102 L-52 112 L-14 102 Z" fill="#fff" stroke="#fff" stroke-width="18" stroke-linejoin="round"/>
+        <path d="M10 -22 L102 46 L102 58 L10 24 Z" fill="#a9aeb1"/><path d="M-10 -22 L-102 46 L-102 58 L-10 24 Z" fill="#a9aeb1"/><path d="M10 72 L44 94 L44 102 L10 92 Z" fill="#a9aeb1"/><path d="M-10 72 L-44 94 L-44 102 L-10 92 Z" fill="#a9aeb1"/>
+        <rect x="40" y="-12" width="13" height="32" rx="6.5" fill="#3a5058"/><rect x="-53" y="-12" width="13" height="32" rx="6.5" fill="#3a5058"/>
+        <path d="M0 -100 C9 -100 11 -78 11 -56 L11 66 C11 84 6 98 0 102 C-6 98 -11 84 -11 66 L-11 -56 C-11 -78 -9 -100 0 -100 Z" fill="#f6f5f0" stroke="#0a1115" stroke-width="2"/>
+        <path d="M-11 -40 H11" stroke="#1b7d52" stroke-width="5"/>
+      </g>
+      <g transform="translate(150 438)">
+        <rect x="-8" y="-8" width="158" height="62" rx="31" fill="#fff"/>
+        <rect width="142" height="46" rx="23" fill="#0a1115"/>
+        <text x="71" y="30" text-anchor="middle" font-family="'B612 Mono',monospace" font-weight="700" font-size="19" letter-spacing="2" fill="#8ff5a8">IGS 088°</text>
+      </g>
+      <g transform="translate(358 422)">
+        <rect x="-8" y="-8" width="92" height="92" rx="12" fill="#fff"/>
+        <rect width="76" height="76" rx="4" fill="#111"/>
+        <rect x="5" y="5" width="66" height="66" rx="2" fill="none" stroke="#ffd200" stroke-width="3"/>
+        <text x="38" y="56" text-anchor="middle" font-family="B612,sans-serif" font-weight="700" font-size="46" fill="#ffd200">6</text>
+      </g>
+    </g>
+  </g>
+</svg>

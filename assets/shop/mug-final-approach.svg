@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" role="img" aria-label="Enamel camp mug with a checkerboard band and the approach callouts 088°, 3.1° and turn right">
+  <defs>
+    <pattern id="mg-ck" width="24" height="24" patternUnits="userSpaceOnUse"><rect width="24" height="24" fill="#f5efe3"/><path d="M0 0h12v12H0zM12 12h12v12H12z" fill="#e8571f"/></pattern>
+    <linearGradient id="mg-sh" x1="0" x2="1"><stop offset="0" stop-color="#5a5040" stop-opacity=".28"/><stop offset=".3" stop-color="#5a5040" stop-opacity="0"/><stop offset=".7" stop-color="#fff" stop-opacity=".18"/><stop offset="1" stop-color="#5a5040" stop-opacity=".3"/></linearGradient>
+  </defs>
+  <ellipse cx="290" cy="472" rx="190" ry="20" fill="#000" opacity=".35"/>
+  <path d="M396 230 C 486 222, 492 380, 396 376" fill="none" stroke="#0a1115" stroke-width="30" stroke-linecap="round"/>
+  <path d="M396 230 C 486 222, 492 380, 396 376" fill="none" stroke="#efe8da" stroke-width="18" stroke-linecap="round"/>
+  <path d="M150 170 L 150 444 Q 150 470 180 470 L 380 470 Q 410 470 410 444 L 410 170 Z" fill="#efe8da"/>
+  <rect x="150" y="226" width="260" height="48" fill="url(#mg-ck)"/>
+  <g font-family="'B612 Mono',monospace" fill="#0a1115" text-anchor="middle">
+    <text x="280" y="320" font-family="B612,sans-serif" font-weight="700" font-size="20" letter-spacing="3">FINAL APPROACH</text>
+    <text x="280" y="356" font-size="15" letter-spacing="3">IGS 088° · GS 3.1°</text>
+    <text x="280" y="386" font-size="15" letter-spacing="3" fill="#1b7d52" font-weight="700">TURN RIGHT ▸ RWY 13</text>
+    <text x="280" y="432" font-family="'Noto Serif TC','Songti TC',serif" font-weight="900" font-size="26" letter-spacing="8">啟德</text>
+  </g>
+  <path d="M150 170 L 150 444 Q 150 470 180 470 L 380 470 Q 410 470 410 444 L 410 170 Z" fill="url(#mg-sh)"/>
+  <ellipse cx="280" cy="170" rx="130" ry="20" fill="#0a1115"/>
+  <ellipse cx="280" cy="170" rx="122" ry="15" fill="#2b2016"/>
+  <path d="M150 444 Q 150 470 180 470 L 380 470 Q 410 470 410 444" fill="none" stroke="#0a1115" stroke-width="8"/>
+</svg>

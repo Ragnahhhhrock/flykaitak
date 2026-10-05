@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" role="img" aria-label="Gold-edged enamel pin of the Fly Kai Tak checkerboard mark">
+  <defs>
+    <linearGradient id="pn-gd" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f3d98a"/><stop offset=".45" stop-color="#c9a54a"/><stop offset="1" stop-color="#8a6a22"/></linearGradient>
+    <linearGradient id="pn-gl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".45"/><stop offset=".35" stop-color="#fff" stop-opacity="0"/></linearGradient>
+  </defs>
+  <g transform="rotate(-8 300 300)">
+    <rect x="148" y="162" width="320" height="320" rx="54" fill="#000" opacity=".4"/>
+    <rect x="140" y="140" width="320" height="320" rx="54" fill="url(#pn-gd)"/>
+    <rect x="154" y="154" width="292" height="292" rx="44" fill="#0a1115"/>
+    <g transform="translate(184 184)">
+      <rect width="232" height="232" fill="#f5efe3" stroke="url(#pn-gd)" stroke-width="6"/>
+      <path fill="#e8571f" d="M0 0h58v58H0zM116 0h58v58H116zM58 58h58v58H58zM174 58h58v58H174zM0 116h58v58H0zM116 116h58v58H116zM58 174h58v58H58zM174 174h58v58H174z"/>
+      <path d="M0 58h232M0 116h232M0 174h232M58 0v232M116 0v232M174 0v232" stroke="url(#pn-gd)" stroke-width="4"/>
+    </g>
+    <path d="M160 242 C 260 238, 318 266, 356 324 L 428 432" fill="none" stroke="url(#pn-gd)" stroke-width="44" stroke-linecap="round"/>
+    <path d="M160 242 C 260 238, 318 266, 356 324 L 428 432" fill="none" stroke="#1f8a5b" stroke-width="28" stroke-linecap="round"/>
+    <rect x="140" y="140" width="320" height="320" rx="54" fill="url(#pn-gl)"/>
+  </g>
+</svg>

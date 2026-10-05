@@ -1,0 +1,45 @@
+/* Fly Kai Tak shop. Sits on top of assets/blog/blog.css (same night-cockpit design system). */
+.shophead{background:radial-gradient(ellipse at 85% 30%,rgba(232,87,31,.16),transparent 55%),var(--ink);border-bottom:1px solid var(--line)}
+.shophead .wrap{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;padding-top:44px;padding-bottom:38px}
+.shophead h1{font-size:clamp(36px,6vw,64px);line-height:1.04;letter-spacing:-.01em;margin:0 0 14px}
+.shophead .lede{margin:0;max-width:46ch;font-size:clamp(15px,2vw,18px);line-height:1.55}
+.shophead .han{font-family:var(--f-han);font-weight:900;font-size:clamp(64px,10vw,124px);line-height:1;color:var(--paper);letter-spacing:.04em;display:flex;flex:none;text-shadow:0 2px 30px rgba(0,0,0,.55)}
+.shopbody{padding-top:8px;padding-bottom:20px}
+.status{max-width:var(--read)}
+.kinds{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 22px}
+.kinds button{min-height:40px;padding:8px 14px;border:1px solid var(--line-2);border-radius:999px;background:transparent;color:var(--text);font-family:var(--f-ui);font-size:13px;cursor:pointer}
+.kinds button:hover{border-color:var(--paper)}
+.kinds button.on{background:var(--paper);border-color:var(--paper);color:#13191c;font-weight:700}
+.prods{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px}
+.prod{display:flex;flex-direction:column;background:var(--panel-2);border:1px solid var(--line);border-radius:3px;overflow:hidden;scroll-margin-top:20px}
+.prod[hidden]{display:none}
+.prod:target{border-color:var(--checker)}
+.tile{position:relative;aspect-ratio:1;background:radial-gradient(circle at 50% 40%,#1c2a30,#0a1115 75%);border-bottom:3px solid var(--jade)}
+.tile .art{width:100%;height:100%;display:block;transition:transform .35s ease}
+.prod:hover .tile .art{transform:scale(1.035)}
+.stock{position:absolute;top:12px;left:12px;font-family:var(--f-num);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;padding:5px 8px;border-radius:2px}
+.stock.soon{background:rgba(10,17,21,.82);color:var(--amber);border:1px solid rgba(255,185,74,.45)}
+.stock.in{background:var(--jade);color:var(--paper)}
+.pbody{display:flex;flex-direction:column;gap:8px;padding:16px 18px 18px;flex:1}
+.pbody .kind{margin:0;font-family:var(--f-num);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.pbody h3{margin:0;font-size:19px;line-height:1.25}
+.price{margin:0;font-family:var(--f-num);color:var(--phosphor);font-size:20px}
+.price span{font-size:11px;letter-spacing:.16em;color:var(--muted)}
+.desc{margin:0;color:var(--muted);font-size:14.5px;line-height:1.55}
+.specs{list-style:none;margin:2px 0 8px;padding:0;display:flex;flex-wrap:wrap;gap:6px}
+.specs li{font-family:var(--f-num);font-size:11px;letter-spacing:.06em;color:var(--text);border:1px solid var(--line-2);border-radius:2px;padding:4px 7px}
+.pbody .btn{margin-top:auto;justify-content:center}
+.btn.notify{border-color:var(--checker);color:var(--paper)}
+.btn.notify:hover{background:rgba(232,87,31,.14)}
+.small{color:var(--muted);font-size:13.5px;margin:26px 0 0;max-width:var(--read)}
+html[data-lang=zh] .shophead h1{letter-spacing:.04em}
+@media (max-width:640px){
+  .shophead .wrap{padding-top:30px;padding-bottom:26px}
+  .shophead .han{display:none}
+  .prods{grid-template-columns:1fr 1fr;gap:12px}
+  .pbody{padding:12px}
+  .pbody h3{font-size:16px}
+  .desc{font-size:13px}
+}
+@media (max-width:400px){.prods{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){.tile .art{transition:none}}

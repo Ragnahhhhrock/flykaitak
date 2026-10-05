@@ -165,7 +165,7 @@ def site_header(current):
 <div class="checkband" aria-hidden="true"></div>
 <header class="site"><div class="wrap">
   <a class="brandlink" href="/" aria-label="{NAME}, play the simulator"><img src="/assets/brand/mark.svg" width="32" height="32" alt=""><span>{NAME}</span><span class="han" lang="zh-Hant" aria-hidden="true">啟德機場</span></a>
-  <nav aria-label="Main">{a("/blog/", "Blog", "blog")}<a href="/">Play</a>{LANG_BTN}</nav>
+  <nav aria-label="Main">{a("/blog/", "Blog", "blog")}{a("/shop/", "Shop", "shop")}<a href="/">Play</a>{LANG_BTN}</nav>
 </div></header>
 """
 
@@ -453,6 +453,7 @@ def sitemap(posts, extra):
     newest = max(p.get("updated", p["date"]) for p in posts)
     urls = [(f"{SITE}/", None, "weekly"), (f"{SITE}/blog/", newest, "weekly")]
     urls += [(u, m, "weekly") for u, m in extra]
+    urls += [(f"{SITE}/shop/", None, "weekly")]
     urls += [(p["url"], p.get("updated", p["date"]), "monthly") for p in posts]
     body = "".join(f"<url><loc>{u}</loc>" + (f"<lastmod>{m}</lastmod>" if m else "") + f"<changefreq>{c}</changefreq></url>\n"
                    for u, m, c in urls)

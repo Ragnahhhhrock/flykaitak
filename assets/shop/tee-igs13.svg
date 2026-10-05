@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" role="img" aria-label="Off-white t-shirt printed with a chart of the IGS 13 approach and the right turn onto Runway 13">
+  <defs>
+    <pattern id="ti-ck" width="10" height="10" patternUnits="userSpaceOnUse"><rect width="10" height="10" fill="#f5efe3"/><path d="M0 0h5v5H0zM5 5h5v5H5z" fill="#e8571f"/></pattern>
+    <linearGradient id="ti-sh" x1="0" x2="1"><stop offset="0" stop-color="#5a5040" stop-opacity=".22"/><stop offset=".25" stop-color="#5a5040" stop-opacity="0"/><stop offset=".75" stop-color="#5a5040" stop-opacity="0"/><stop offset="1" stop-color="#5a5040" stop-opacity=".22"/></linearGradient>
+  </defs>
+  <ellipse cx="300" cy="548" rx="190" ry="16" fill="#000" opacity=".35"/>
+  <path d="M212 96 L146 120 L68 200 L124 268 L170 236 L170 520 Q170 534 184 534 L416 534 Q430 534 430 520 L430 236 L476 268 L532 200 L454 120 L388 96 Q376 146 300 148 Q224 146 212 96 Z" fill="#efe8da" stroke="#d6cdbb" stroke-width="2"/>
+  <path d="M212 96 L146 120 L68 200 L124 268 L170 236 L170 520 Q170 534 184 534 L416 534 Q430 534 430 520 L430 236 L476 268 L532 200 L454 120 L388 96 Q376 146 300 148 Q224 146 212 96 Z" fill="url(#ti-sh)"/>
+  <path d="M212 96 Q224 146 300 148 Q376 146 388 96" fill="none" stroke="#d6cdbb" stroke-width="10" stroke-linecap="round"/>
+  <path d="M124 268 L170 236 M476 268 L430 236" stroke="#d6cdbb" stroke-width="3"/>
+  <g font-family="'B612 Mono',monospace" fill="#0a1115">
+    <text x="300" y="196" text-anchor="middle" font-size="15" letter-spacing="6" font-weight="700">KAI TAK · IGS 13</text>
+    <path d="M214 214 H386" stroke="#0a1115" stroke-width="1.5"/>
+    <path d="M300 430 C 330 426, 380 424, 420 424" fill="none" stroke="#3a5058" stroke-width="1.5" stroke-dasharray="3 4"/>
+    <path d="M214 262 H312 C 336 262, 352 274, 360 292" fill="none" stroke="#1b7d52" stroke-width="5" stroke-linecap="round"/>
+    <path d="M214 262 H300" fill="none" stroke="#f5efe3" stroke-width="1.5" stroke-dasharray="6 6"/>
+    <rect x="300" y="226" width="20" height="20" fill="url(#ti-ck)" stroke="#0a1115" stroke-width="1"/>
+    <g transform="translate(360 292) rotate(-44)"><rect x="-6" y="0" width="12" height="84" fill="#0a1115"/><path d="M0 6 V78" stroke="#f5efe3" stroke-width="1.4" stroke-dasharray="6 5"/></g>
+    <text x="222" y="252" font-size="12" letter-spacing="1">088°</text>
+    <text x="326" y="241" font-size="10" letter-spacing="1">CHECKERBOARD</text>
+    <text x="368" y="282" font-size="12">47°</text>
+    <text x="412" y="372" font-size="12" text-anchor="end">RWY 13</text>
+    <text x="222" y="306" font-size="11" fill="#3a5058" letter-spacing="2">KOWLOON CITY</text>
+    <text x="418" y="412" font-size="11" fill="#3a5058" letter-spacing="2" text-anchor="end">KOWLOON BAY</text>
+    <path d="M214 446 H386" stroke="#0a1115" stroke-width="1.5"/>
+    <text x="300" y="470" text-anchor="middle" font-size="12" letter-spacing="5">HONG KONG · 1998</text>
+  </g>
+</svg>

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" role="img" aria-label="Black t-shirt with an orange-and-white checkerboard on the chest and 啟德 below">
+  <defs>
+    <pattern id="tc-ck" width="40" height="40" patternUnits="userSpaceOnUse"><rect width="40" height="40" fill="#f5efe3"/><path d="M0 0h20v20H0zM20 20h20v20H20z" fill="#e8571f"/></pattern>
+    <linearGradient id="tc-sh" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".35"/><stop offset=".25" stop-color="#000" stop-opacity="0"/><stop offset=".75" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".35"/></linearGradient>
+  </defs>
+  <ellipse cx="300" cy="548" rx="190" ry="16" fill="#000" opacity=".35"/>
+  <path d="M212 96 L146 120 L68 200 L124 268 L170 236 L170 520 Q170 534 184 534 L416 534 Q430 534 430 520 L430 236 L476 268 L532 200 L454 120 L388 96 Q376 146 300 148 Q224 146 212 96 Z" fill="#15191b" stroke="#2b3438" stroke-width="2"/>
+  <path d="M212 96 L146 120 L68 200 L124 268 L170 236 L170 520 Q170 534 184 534 L416 534 Q430 534 430 520 L430 236 L476 268 L532 200 L454 120 L388 96 Q376 146 300 148 Q224 146 212 96 Z" fill="url(#tc-sh)"/>
+  <path d="M212 96 Q224 146 300 148 Q376 146 388 96" fill="none" stroke="#2b3438" stroke-width="10" stroke-linecap="round"/>
+  <path d="M124 268 L170 236 M476 268 L430 236" stroke="#0b0e0f" stroke-width="3"/>
+  <rect x="220" y="196" width="160" height="120" fill="url(#tc-ck)"/>
+  <text x="300" y="384" text-anchor="middle" font-family="'Noto Serif TC','Songti TC',serif" font-weight="900" font-size="62" letter-spacing="10" fill="#f5efe3">啟德</text>
+  <text x="300" y="418" text-anchor="middle" font-family="'B612 Mono',monospace" font-size="13" letter-spacing="5" fill="#93a6a2">VHHH · 1998</text>
+</svg>

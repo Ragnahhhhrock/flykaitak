@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" role="img" aria-label="Round embroidered patch with the checkerboard and IGS track, ringed by Runway 13 Hong Kong 1998">
+  <defs>
+    <path id="pt-ring" d="M300 300 m-168 0 a168 168 0 1 1 336 0 a168 168 0 1 1 -336 0"/>
+    <path id="pt-low" d="M132 300 a168 168 0 0 0 336 0"/>
+    <clipPath id="pt-in"><circle cx="300" cy="300" r="132"/></clipPath>
+  </defs>
+  <circle cx="306" cy="310" r="212" fill="#000" opacity=".35"/>
+  <circle cx="300" cy="300" r="210" fill="#005f4b"/>
+  <circle cx="300" cy="300" r="200" fill="none" stroke="#2fa36d" stroke-width="3" stroke-dasharray="5 5"/>
+  <circle cx="300" cy="300" r="140" fill="#f5efe3"/>
+  <g clip-path="url(#pt-in)">
+    <rect x="160" y="160" width="280" height="280" fill="#0a1115"/>
+    <g transform="translate(206 196)">
+      <rect width="132" height="132" fill="#f5efe3"/>
+      <path fill="#e8571f" d="M0 0h33v33H0zM66 0h33v33H66zM33 33h33v33H33zM99 33h33v33H99zM0 66h33v33H0zM66 66h33v33H66zM33 99h33v33H33zM99 99h33v33H99z"/>
+    </g>
+    <path d="M150 250 C 236 246, 290 268, 324 318 L 380 420" fill="none" stroke="#0a1115" stroke-width="22" stroke-linecap="round"/>
+    <path d="M150 250 C 236 246, 290 268, 324 318 L 380 420" fill="none" stroke="#2fa36d" stroke-width="12" stroke-linecap="round"/>
+  </g>
+  <circle cx="300" cy="300" r="138" fill="none" stroke="#f5efe3" stroke-width="5"/>
+  <text font-family="'B612 Mono',monospace" font-weight="700" font-size="26" letter-spacing="6" fill="#f5efe3"><textPath href="#pt-ring" startOffset="23%" text-anchor="middle">KAI TAK · RUNWAY 13</textPath></text>
+  <text font-family="'B612 Mono',monospace" font-weight="700" font-size="24" letter-spacing="6" fill="#e8571f"><textPath href="#pt-low" startOffset="50%" text-anchor="middle" side="left">HONG KONG 1998</textPath></text>
+  <circle cx="132" cy="300" r="6" fill="#e8571f"/><circle cx="468" cy="300" r="6" fill="#e8571f"/>
+</svg>

@@ -99,6 +99,15 @@ html:lang(zh) body{font-family:var(--f-ui),"PingFang HK","Microsoft JhengHei","N
 .brand-meta .credit a:hover,.foot a:hover{text-decoration-color:var(--checker)}
 .coffee{justify-self:start;display:inline-flex;align-items:center;gap:8px;background:var(--checker);color:var(--checker-ink);font-weight:700;font-size:12px;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;padding:10px 14px;border-radius:3px;text-shadow:none;border:1px solid var(--checker)}
 .coffee[hidden]{display:none!important}
+.merch{justify-self:start;display:inline-flex;align-items:center;gap:12px;max-width:420px;padding:6px 14px 6px 6px;background:var(--panel);border:1px solid var(--line-2);border-radius:3px;color:var(--text);text-decoration:none;text-shadow:none;backdrop-filter:blur(6px)}
+.merch .mthumb{width:56px;height:56px;border-radius:2px;flex:none;overflow:hidden;border-bottom:2px solid var(--jade);background:#0a1115}
+.merch .mthumb img{width:100%;height:100%;display:block;transform:scale(1.45);transform-origin:50% 48%}
+.merch-txt{display:grid;gap:2px;line-height:1.25}
+.merch-txt b{font-size:13px;letter-spacing:.06em;text-transform:uppercase}
+.merch-txt span{font-family:var(--f-num);font-size:11px;color:var(--muted);letter-spacing:.04em}
+.merch-go{margin-left:6px;color:var(--checker);font-size:18px}
+.merch:hover{border-color:var(--checker)}
+.merch:focus-visible{outline:2px solid var(--checker);outline-offset:2px}
 .coffee:hover{filter:brightness(1.08)}
 .coffee:focus-visible,.brand-meta .credit a:focus-visible,.foot a:focus-visible{outline:2px solid var(--checker);outline-offset:2px}
 .foot{font-family:var(--f-num);font-size:11.5px;color:var(--muted);line-height:1.7;margin:0}
@@ -306,7 +315,8 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
   #setup{grid-template-columns:minmax(0,1fr);background:rgba(10,17,21,.55)}
   .brand{padding:20px 16px 8px;align-items:center}
   .han{grid-auto-flow:column;font-size:clamp(40px,12vw,64px)}
-  .topnav{left:16px;top:12px}
+  .topnav{left:16px;right:16px;top:12px;gap:4px;overflow-x:auto;scrollbar-width:none}.topnav::-webkit-scrollbar{display:none}
+  .navitem{flex:none;white-space:nowrap;padding:8px 7px;font-size:11px;letter-spacing:.03em}.langtog{padding:0}.langtog span{padding:0 8px}
   .brand{flex-wrap:wrap;gap:12px;padding-top:62px}.brand-meta{flex:1 1 100%}
   #reel,.reelbox .checkband{width:100%}
   .sheet{border-left:0}
@@ -453,7 +463,7 @@ body.bigmap #radio{top:calc(env(safe-area-inset-top,0px) + 396px)}
 <div id="radio" aria-live="off" hidden></div>
 
 <section id="setup" hidden>
-  <nav class="topnav" aria-label="Site"><a class="navitem" href="/blog/">Blog</a><button class="navitem" id="btnHs" type="button" aria-expanded="false" aria-controls="hsPanel">High scores</button><button class="navitem" id="btnFidsHome" type="button" aria-pressed="true" aria-controls="fidsHome" title="Flight board on/off ( B )">Flights</button><button class="navitem langtog" id="btnLang" type="button" aria-pressed="false" aria-label="Language: English / 廣東話" title="English / 廣東話"><span data-l="en" class="on">EN</span><span data-l="zh" lang="zh-HK">粵</span></button></nav>
+  <nav class="topnav" aria-label="Site"><a class="navitem" href="/blog/">Blog</a><a class="navitem" id="navShop" href="/shop/">Shop</a><button class="navitem" id="btnHs" type="button" aria-expanded="false" aria-controls="hsPanel">High scores</button><button class="navitem" id="btnFidsHome" type="button" aria-pressed="true" aria-controls="fidsHome" title="Flight board on/off ( B )">Flights</button><button class="navitem langtog" id="btnLang" type="button" aria-pressed="false" aria-label="Language: English / 廣東話" title="English / 廣東話"><span data-l="en" class="on">EN</span><span data-l="zh" lang="zh-HK">粵</span></button></nav>
   <div class="hspanel" id="hsPanel" hidden role="region" aria-label="High scores"><div id="hsHomeTable"></div></div>
   <div class="brand">
     <h2 class="han" lang="zh-Hant" aria-label="啟德機場 Kai Tak Airport"><span>啟</span><span>德</span><span>機</span><span>場</span></h2>
@@ -463,6 +473,7 @@ body.bigmap #radio{top:calc(env(safe-area-inset-top,0px) + 396px)}
       <div class="sub">Hong Kong · 1998</div>
       <div class="credit"><a href="https://malgordon.com" target="_blank" rel="noopener">Another Mal Gordon project</a></div>
       <a class="coffee" id="btnCoffee" href="#" target="_blank" rel="noopener" hidden>☕ Buy me a coffee · $5 AUD</a>
+      <a class="merch" id="btnMerch" href="/shop/"><span class="mthumb"><img src="assets/shop/tee-checkerboard.jpg" width="56" height="56" alt="" loading="lazy"></span><span class="merch-txt"><b>Kai Tak merch</b><span>Tees, caps, patches &amp; prints</span></span><span class="merch-go" aria-hidden="true">→</span></a>
       <section class="res-share home-share home-follow" id="homeFollow" aria-label="Follow Fly Kai Tak">
         <h3>Follow Fly Kai Tak</h3>
         <ul>
@@ -4883,7 +4894,7 @@ function syncMode(){const m=document.querySelector('input[name=game]:checked').v
 for(const r of document.querySelectorAll('input[name=game]'))r.addEventListener('change',syncMode);
 /* LANGUAGE: English / Cantonese toggle for the home screen */
 const ZH={
-'Blog':'網誌',
+'Blog':'網誌','Shop':'商店','Kai Tak merch':'啟德精品','Tees, caps, patches & prints':'T 恤、帽、布章同海報',
 'Another Mal Gordon project':'Mal Gordon 嘅另一個作品',
 '☕ Buy me a coffee · $5 AUD':'☕ 請我飲杯咖啡 · 5 澳元',
 'Follow Fly Kai Tak':'追蹤 Fly Kai Tak','Share Fly Kai Tak':'分享 Fly Kai Tak','Copy link':'複製連結','Share…':'分享…','Email':'電郵',
@@ -5172,6 +5183,7 @@ function updateHomeShare(){
   document.getElementById('hsNatLi').hidden=!navigator.share}
 updateHomeShare();
 document.getElementById('btnLang').addEventListener('click',updateHomeShare);
+for(const id of ['navShop','btnMerch'])document.getElementById(id).addEventListener('click',()=>{try{track('shop_click',{method:id==='navShop'?'nav':'teaser',content_type:'home'})}catch(_){}});
 document.getElementById('homeFollow').addEventListener('click',e=>{const a=e.target.closest('a[data-f]');if(a)try{track('follow',{method:a.dataset.f,content_type:'home'})}catch(_){}});
 document.getElementById('homeShare').addEventListener('click',async e=>{
   const a=e.target.closest('a[data-m]');if(a){homeTrack(a.dataset.m);return}
