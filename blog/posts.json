@@ -1,5 +1,39 @@
 [
   {
+    "slug": "regal-kaitak-hotel-rebuilt",
+    "title": "The Regal Kai Tak Hotel, rebuilt from photos",
+    "dek": "The airport hotel across Prince Edward Road East now has its real L-shaped plan, glass bands, brick ends, podium terrace and name.",
+    "description": "The Regal Kai Tak Hotel rebuilt from photos and its roof plan: the L-shaped tower, glass bands, brick end walls, podium terrace, name signs and night lights.",
+    "date": "2026-10-05",
+    "tag": "Update",
+    "category": "scenery",
+    "keywords": [
+      "Regal Kai Tak Hotel",
+      "富豪啟德酒店",
+      "airport hotel",
+      "Prince Edward Road East",
+      "footbridge",
+      "Kowloon City",
+      "Kai Tak",
+      "flight simulator"
+    ],
+    "hero": "regal-kaitak-hotel-front",
+    "hero_alt": "A long dark hotel slab of glass and brown bands on a brick podium, its brick end wall carrying vertical Chinese characters, a footbridge leaving over the road.",
+    "hero_caption": "The Regal Kai Tak Hotel from over the car park.",
+    "card_kicker": "SCENERY · UPDATE",
+    "card_title": "Regal Kai Tak Hotel",
+    "card_sub": "Rebuilt from photos and the roof plan",
+    "card_image": "regal-kaitak-hotel-front",
+    "card_focus": 50,
+    "zh": {
+      "title": "富豪啟德酒店：根據相片重建",
+      "dek": "太子道東對面嘅機場酒店而家有真實嘅 L 形平面、玻璃橫帶、磚砌端牆、平台露台同酒店名。",
+      "description": "根據相片同天台平面圖重建富豪啟德酒店：L 形主樓、玻璃橫帶、磚砌端牆、平台露台、招牌同夜燈。",
+      "hero_alt": "一座長形深色酒店，玻璃同啡色橫帶相間，企喺磚砌平台上，磚牆端面直寫中文字，行人天橋過馬路。",
+      "hero_caption": "喺停車場上面望富豪啟德酒店。"
+    }
+  },
+  {
     "slug": "big-buddha-ngong-ping",
     "title": "The Big Buddha at Ngong Ping",
     "dek": "The 34 m bronze Tian Tan Buddha on its three-tier altar, Po Lin Monastery below, and new terrain carrying Lantau on to the west.",
