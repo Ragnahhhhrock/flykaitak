@@ -738,7 +738,7 @@ async function loadGeo(progress){
   const mk=(R,nx,nz,src)=>{const h=new Float32Array(src.length);for(let i=0;i<src.length;i++)h[i]=src[i]/10;return {x0:R.x0,z0:R.z0,nx,nz,d:(R.x1-R.x0)/(nx-1),h}};
   GEO.O=mk(GEO.outer,hd[0],hd[1],hO);GEO.I=mk(GEO.inner,hd[2],hd[3],hI);
   for(const G of[GEO.O,GEO.I])for(let j=0;j<G.nz;j++)for(let i=0;i<G.nx;i++){const x=G.x0+i*G.d,z=G.z0+j*G.d;for(const w of WATER1998)if(x>w[0]&&x<w[1]&&z>w[2]&&z<w[3])G.h[j*G.nx+i]=-8;
-    const s=rwS(x,z),l=rwL(x,z);if(s>-140&&s<RWY.len+120&&l>-200&&l<180||APRON(s,l+60)||APRON(s,l-60)||(s>-215&&s<-135&&l>-1010&&l<-690))G.h[j*G.nx+i]=Math.min(G.h[j*G.nx+i],2.5)}
+    const s=rwS(x,z),l=rwL(x,z);if(s>-140&&s<RWY.len+120&&l>-200&&l<180||APRON(s,l+60)||APRON(s,l-60)||(s>-215&&s<-135&&l>-600&&l<-265))G.h[j*G.nx+i]=Math.min(G.h[j*G.nx+i],2.5)}
   const nb=new Int32Array(bb,0,1)[0];GEO.B=new Int16Array(bb,4,nb*6);GEO.nb=nb;GEO.roads=roads;
   for(const t of[to,ti]){t.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());t.minFilter=THREE.LinearMipmapLinearFilter}
   TEX.outer=to;TEX.inner=ti;
@@ -1323,7 +1323,8 @@ const LANDMARK_CLEAR=[];
 function clearanceCap(x,z){const i=pathNearestGlobal(x,z);const p=PATH.pts[i];if(p.d<-60)return 999;const lat=Math.abs(pathLateral(i,x,z));return (p.alt-24)+Math.max(0,lat-200)*.55}
 function skipFootprint(x,z){
   const s=rwS(x,z),l=rwL(x,z);if(s>-170&&s<RWY.len+200&&l>-1240&&l<200||inEast(s,l,-20)||inMaint(s,l))return true;        // Kai Tak airport (modern development there)
-  if(s>-218&&s<-140&&l>-1015&&l<-685)return true;                                        // the terminal car park on the landside strip
+  if(s>-240&&s<-140&&l>-605&&l<-260)return true;                                         // the terminal car park on the landside strip
+  if(s>-385&&s<-200&&l>-495&&l<-345)return true;                                         // the airport hotel across Prince Edward Road, and its footbridge
   if(x>-4400&&x<-2750&&z>500&&z<3150)return true;                                        // West Kowloon: 1998 reclamation, not yet built on
   for(const w of WATER1998)if(x>w[0]&&x<w[1]&&z>w[2]&&z<w[3])return true;
   if(Math.abs(x-WALLED.x)<WALLED.w/2+25&&Math.abs(z-WALLED.z)<WALLED.d/2+25)return true;
@@ -2474,7 +2475,7 @@ function buildAirport(){
   }
   }}
   // the smaller maintenance and airline buildings on the landside edge of the strip, from the chart (west of the terminal block)
-  solid(-200,-150,-1060,-1010,14,'the Kai Tak maintenance offices');   // the car park now fills the strip in front of the terminal block
+  solid(-200,-150,-1060,-1010,14,'the Kai Tak maintenance offices');solid(-215,-165,-1005,-960,12,'the Kai Tak maintenance offices');solid(-182,-142,-935,-880,10,'the Kai Tak maintenance offices');
   solid(1975,2110,-505,-470,9,'the flight services building',cityMaterial({color:0xdedbd0}),new THREE.MeshLambertMaterial({color:0x4c4a46}));   // beside the helipads on the south apron
   // Control tower: on the roof of the passenger terminal at its runway end (the root of the pier), on the apron side, as in period photos: from the cab the
   // controllers looked down onto the taxiway and runway with the harbour beyond, and along the pier and apron toward Lion Rock.
@@ -2524,8 +2525,9 @@ function buildAirport(){
   // Multi-storey car park: a long block on the landside (north) of the passenger terminal, between the terminal and Prince Edward Road, parallel to the terminal and
   // joined to it by covered footbridges. Two sections, as in the 1990s photos and the Kai Tak model: a taller far section toward the maintenance area and a lower near
   // section toward the runway, whose end wall carries the clock and the airport sign. The spotters crowd the roof at that end, looking out over Kowloon City at the
-  // aircraft on the IGS turn. Runway coordinates: s -200 to -152 (the terminal's landside wall is at s -134/-140), l -1000 to -700.
-  {const S0=-200,S1=-152,cs=(S0+S1)/2,D=S1-S0,LF=-1000,LS=-830,LN=-700,H1=30.6,H2=27.2,NAME='the Kai Tak car park';
+  // aircraft on the IGS turn. Runway coordinates: s -200 to -152 (the terminal's landside wall is at s -134/-140), l -580 to -280: the runway half of the terminal
+  // frontage, as in the 1990s aerial photos (the tank farm and the terminal block at the far end, Prince Edward Road East in front at s -255).
+  {const S0=-200,S1=-152,cs=(S0+S1)/2,D=S1-S0,LF=-580,LS=-410,LN=-280,H1=30.6,H2=27.2,NAME='the Kai Tak car park';
    const bodyM=cityMaterial({color:0xd8d4ca}),slabM=new THREE.MeshLambertMaterial({color:0x9a968c}),wallM=new THREE.MeshLambertMaterial({color:0xe2ded4}),capM=new THREE.MeshLambertMaterial({color:0xd2cec3});
    const railM=new THREE.MeshLambertMaterial({color:0xeeeeea}),poleM=new THREE.MeshLambertMaterial({color:0x1b1b1d}),globeM=new THREE.MeshLambertMaterial({color:0xf4f1e6}),dm=new THREE.Object3D();
    const col=(s0,s1,l0,l1,h)=>{const c=[rwP(s0,l0),rwP(s0,l1),rwP(s1,l0),rwP(s1,l1)];addCollider(Math.min(...c.map(q=>q[0])),Math.max(...c.map(q=>q[0])),Math.min(...c.map(q=>q[1])),Math.max(...c.map(q=>q[1])),h,NAME);AIRBOX.push({s0,s1,l0,l1,name:NAME})};
@@ -2557,7 +2559,7 @@ function buildAirport(){
    for(const[l,h,w]of[[LF+7,H1+6,10],[LS-7,H1+7,11],[LN-60,H2+6,9]]){placeAlong(new THREE.Mesh(new THREE.BoxGeometry(w,h,9).translate(0,h/2,0),wallM),S1-6,l,RWY.elev);placeAlong(new THREE.Mesh(new THREE.BoxGeometry(w+.6,.4,9.6).translate(0,h+.2,0),slabM),S1-6,l,RWY.elev)}
    // covered footbridges across to the terminal's landside wall
    const glassM=new THREE.MeshLambertMaterial({color:0x40565e}),bridgeM=new THREE.MeshLambertMaterial({color:0xe6e3da});
-   for(const l of[-975,-905,-785]){placeAlong(new THREE.Mesh(new THREE.BoxGeometry(7,3.4,15).translate(0,8.2,0),bridgeM),-145.5,l,RWY.elev);placeAlong(new THREE.Mesh(new THREE.BoxGeometry(7.1,1.6,13).translate(0,8.9,0),glassM),-145.5,l,RWY.elev)}
+   for(const l of[-555,-480,-365]){placeAlong(new THREE.Mesh(new THREE.BoxGeometry(7,3.4,15).translate(0,8.2,0),bridgeM),-145.5,l,RWY.elev);placeAlong(new THREE.Mesh(new THREE.BoxGeometry(7.1,1.6,13).translate(0,8.9,0),glassM),-145.5,l,RWY.elev)}
    // the end wall toward the runway: the clock and the airport sign (moved here from the terminal), on a white panel that stands proud of the decks
    {const sign=canvasTex(2048,640,g=>{g.fillStyle='#f4f2ea';g.fillRect(0,0,2048,640);const cx=300,cy=330;g.fillStyle='#fff';g.beginPath();g.arc(cx,cy,230,0,7);g.fill();g.strokeStyle='#1a1a1a';g.lineWidth=14;g.beginPath();g.arc(cx,cy,230,0,7);g.stroke();
      g.fillStyle='#1a1a1a';g.textAlign='center';g.textBaseline='middle';g.font='bold 48px '+TI_FE;for(let i=1;i<=12;i++){const a=i/12*Math.PI*2;g.fillText(String(i),cx+Math.sin(a)*182,cy-Math.cos(a)*182)}
@@ -2592,6 +2594,27 @@ function buildAirport(){
     inst(near,new THREE.SphereGeometry(.13,8,6).translate(0,1.83,0),new THREE.MeshLambertMaterial({color:0x2a211a}),ppl.map(p=>({x:p.x,z:p.z,h:p.h})),p=>{dm.position.set(p.x,R,p.z);dm.scale.set(1,p.h,1)});dm.scale.set(1,1,1)}
    // the spotter's eye: at the parapet rail on the road-side corner of the runway end of the low roof, the crowd behind and beside, looking out over Kowloon City at the IGS turn and along the terminal to the runway
    const q=rwP(S0+1.4,LN-1);SPOTS.carpark=[q[0],RWY.elev+H2+.3+1.75,q[1]]}
+  // The airport hotel across Prince Edward Road East from the car park (opened 1982; the name here is generic), and the footbridge that joined them: a covered,
+  // air-conditioned bridge with a travelator, hung from a single central column in the road with two cable stays to each side (Gwulo, "Kai Tak Airport Hotel Footbridge").
+  {const HS0=-362,HS1=-302,HL0=-470,HL1=-370,hc=(HS0+HS1)/2,hl=(HL0+HL1)/2,q=rwP(hc,hl),gy=terrainAt(q[0],q[1]);
+   const th=Math.max(18,Math.min(44,clearanceCap(q[0],q[1])-(gy-3.5)-2)),G=new THREE.Group();placeAlong(G,hc,hl,gy);
+   const hm=cityMaterial({color:0xd9cfbf}),pod=cityMaterial({color:0xc9bfae}),dk=new THREE.MeshLambertMaterial({color:0x8d8b84});
+   G.add(new THREE.Mesh(new THREE.BoxGeometry(HL1-HL0+14,13,HS1-HS0+10).translate(0,6.5-3,0),pod));     // podium: lobby, restaurants, the lounge
+   G.add(new THREE.Mesh(new THREE.BoxGeometry(HL1-HL0,th,HS1-HS0-22).translate(0,th/2-3,4),hm));        // guest-room slab
+   G.add(new THREE.Mesh(new THREE.BoxGeometry(HL1-HL0+2,1.6,HS1-HS0-20).translate(0,th-3+.8,4),dk));
+   const sign=canvasTex(1024,192,g=>{g.fillStyle='#8a1f1f';g.fillRect(0,0,1024,192);g.fillStyle='#f4ead2';g.textAlign='center';g.textBaseline='middle';g.font='bold 74px '+TI_FE;g.fillText('AIRPORT HOTEL',330,98);g.font='bold 92px '+TI_FZ;g.fillText('機場酒店',800,100)});
+   for(const f of[-1,1]){const sp=new THREE.Mesh(new THREE.PlaneGeometry(52,9.75),new THREE.MeshBasicMaterial({map:sign}));if(f<0)sp.rotation.y=Math.PI;sp.position.set(0,th-3+7,4+f*((HS1-HS0-22)/2+.4));G.add(sp);
+    G.add(new THREE.Mesh(new THREE.BoxGeometry(52,10.5,.4).translate(0,th-3+7,4+f*((HS1-HS0-22)/2+.1)),dk))}
+   const c=[rwP(HS0-5,HL0-7),rwP(HS0-5,HL1+7),rwP(HS1+5,HL0-7),rwP(HS1+5,HL1+7)];addCollider(Math.min(...c.map(p=>p[0])),Math.max(...c.map(p=>p[0])),Math.min(...c.map(p=>p[1])),Math.max(...c.map(p=>p[1])),gy+th,'the airport hotel');
+   // the footbridge: from the car park's road-side wall (s -200) over the road to the hotel podium, at l -420
+   const BL=-420,BS0=HS1+5,BS1=-200,bc=-255,deckY=RWY.elev+7.5,B=new THREE.Group();placeAlong(B,bc,BL,0);
+   const bw=new THREE.MeshLambertMaterial({color:0xe6e3da}),gl=new THREE.MeshLambertMaterial({color:0x40565e}),st=new THREE.MeshLambertMaterial({color:0xb9bcbe});
+   const z0=-(BS0-bc),z1=-(BS1-bc),blen=Math.abs(z1-z0),bz=(z0+z1)/2;
+   B.add(new THREE.Mesh(new THREE.BoxGeometry(5.2,1.0,blen).translate(0,deckY+.5,bz),bw));B.add(new THREE.Mesh(new THREE.BoxGeometry(5.0,2.0,blen).translate(0,deckY+2,bz),gl));B.add(new THREE.Mesh(new THREE.BoxGeometry(5.4,.6,blen).translate(0,deckY+3.3,bz),bw));
+   const ptop=deckY+17;B.add(new THREE.Mesh(new THREE.BoxGeometry(1.6,ptop,1.6).translate(0,ptop/2,0),st));        // the central column in the road
+   for(const x of[-2.9,2.9])for(const zz of[-26,-13,13,26]){const a=new THREE.Vector3(x,ptop-.5,0),b=new THREE.Vector3(x,deckY+3.6,zz),d=b.clone().sub(a);
+    const cab=new THREE.Mesh(new THREE.CylinderGeometry(.09,.09,d.length(),6),st);cab.position.copy(a).add(b).multiplyScalar(.5);cab.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());B.add(cab)}
+   B.add(new THREE.Mesh(new THREE.BoxGeometry(6.4,.5,1.2).translate(0,ptop-.6,0),st))}
   // a junk moored off the runway in the harbour (south-west side)
   {const q=rwP(1650,330);const j=shipModel('junk');j.position.set(q[0],0,q[1]);j.rotation.y=-(RWY.hdg-90)*D2R;scene.add(j);const bow=new THREE.Vector3(-11,0,0).applyEuler(j.rotation);SPOTS.boat=[q[0]+bow.x,4.6,q[1]+bow.z];SPOTS.boatShip=j}
   // parked aircraft at the terminal, nose toward the pier

@@ -1,5 +1,37 @@
 [
   {
+    "slug": "car-park-at-the-runway-end-and-airport-hotel",
+    "title": "The car park moves to the runway end, with the airport hotel and its footbridge",
+    "dek": "The car park now stands where the aerial photos show it, and the airport hotel stands across Prince Edward Road East, joined by its cable-stayed footbridge.",
+    "description": "The Kai Tak car park moves to the runway end of the terminal frontage, with the airport hotel across Prince Edward Road East and its footbridge.",
+    "date": "2026-10-05",
+    "tag": "Fix",
+    "category": "scenery",
+    "keywords": [
+      "Kai Tak car park",
+      "airport hotel",
+      "footbridge",
+      "Prince Edward Road East",
+      "plane spotters",
+      "flight simulator"
+    ],
+    "hero": "carpark-and-hotel-aerial",
+    "hero_alt": "An aerial view of the car park along the runway end of the terminal, with the airport hotel across the road.",
+    "hero_caption": "The car park and the airport hotel, from over Kowloon City.",
+    "card_kicker": "SCENERY · CAR PARK",
+    "card_title": "Car park and hotel",
+    "card_sub": "With the footbridge",
+    "card_image": "hotel-footbridge",
+    "card_focus": 50,
+    "zh": {
+      "title": "停車場搬到跑道嗰頭，加埋機場酒店同行人天橋",
+      "dek": "停車場而家企喺航拍相顯示嘅位置，太子道東對面係機場酒店，用斜拉式行人天橋連接。",
+      "description": "啟德停車場搬到客運大樓前面近跑道嗰頭，太子道東對面加咗機場酒店同佢嘅行人天橋。",
+      "hero_alt": "鳥瞰沿客運大樓近跑道嗰頭嘅停車場，同馬路對面嘅機場酒店。",
+      "hero_caption": "由九龍城上空望停車場同機場酒店。"
+    }
+  },
+  {
     "slug": "car-park-spotter-view-moved",
     "title": "The car park roof view moves to the new car park",
     "dek": "The Plane Spotter car park view now stands at the rail of the new landside car park, looking over the terminal to the runway.",
