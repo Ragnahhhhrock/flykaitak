@@ -1,5 +1,38 @@
 [
   {
+    "slug": "extra-parking-bays-from-the-kai-tak-plan",
+    "title": "13 more parking bays from the Kai Tak plan",
+    "dek": "Stands 21 to 26 between lanes D3 and D2, a new east apron with stands 51 to 57, and the south apron parked nose-in.",
+    "description": "Checked against an unofficial Kai Tak plan: new stands 21-26, an east apron with stands 51-57, and south apron stands 71-81 now nose-in.",
+    "date": "2026-10-05",
+    "tag": "Update",
+    "category": "scenery",
+    "keywords": [
+      "Kai Tak apron",
+      "parking bays",
+      "stands",
+      "east apron",
+      "south apron",
+      "airport layout",
+      "Fly Kai Tak"
+    ],
+    "hero": "extra-stands-21-26",
+    "hero_alt": "Stands 21 to 26 between apron lanes D3 and D2, with red stand boxes, yellow lead-in lines, numbered plates and parked airliners.",
+    "hero_caption": "The new stands 21 to 26, between lanes D3 and D2.",
+    "card_kicker": "SCENERY · UPDATE",
+    "card_title": "13 more parking bays",
+    "card_sub": "Stands 21-26 and a new east apron",
+    "card_image": "extra-stands-21-26",
+    "card_focus": 50,
+    "zh": {
+      "title": "啟德平面圖多咗 13 個停機位",
+      "dek": "D3 同 D2 之間嘅 21 至 26 號停機位、新東停機坪 51 至 57 號，南停機坪改為機頭向內。",
+      "description": "對照非官方啟德平面圖：新增 21 至 26 號停機位、東停機坪 51 至 57 號，南停機坪 71 至 81 號改為機頭向內。",
+      "hero_alt": "D3 同 D2 滑行道之間嘅 21 至 26 號停機位，有紅色停機框、黃色引導線、編號牌同泊住嘅客機。",
+      "hero_caption": "D3 同 D2 之間嘅新 21 至 26 號停機位。"
+    }
+  },
+  {
     "slug": "car-park-moved-to-the-landside",
     "title": "The car park moves to the landside of the terminal",
     "dek": "A long, stepped car park beside the terminal, with footbridges, the clock wall and the spotters' crowd on its roof, as in the 1990s photos.",

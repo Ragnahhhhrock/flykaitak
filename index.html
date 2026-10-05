@@ -709,7 +709,22 @@ function gridSample(G,x,z){const fx=(x-G.x0)/G.d,fz=(z-G.z0)/G.d;const i=Math.fl
 function inInner(x,z){const g=GEO.inner;return x>g.x0+80&&x<g.x1-80&&z>g.z0+80&&z<g.z1-80}
 function terrainAt(x,z){if(!GEO.O)return 0;let h=inInner(x,z)?gridSample(GEO.I,x,z):gridSample(GEO.O,x,z);if(h>0.5)h+=chkH(x,z);return h}
 function landAt(x,z){return terrainAt(x,z)>0.5}
-const APRON=(s,l)=>s>-150&&s<780&&l<=-130&&l>-1180;   // the apron, terminal pier, main terminal block and the maintenance apron behind it
+/* EAST APRON (Technocratic Aviation's Kai Tak plan): past the maintenance hangars the apron runs on to the airport's east boundary road (Kai Fuk Road)
+   and up toward Prince Edward Road East, with a row of stands (51-57) along the boundary, nose-in toward it. Runway coordinates. B0 is a point on the
+   paved edge (22 m inside the road), e runs along the edge toward the cargo terminal, n points inward; st: each stand's place along the edge (from B0),
+   nose: the nose-wheel stop line (metres in from the edge), lane: the taxi lane behind the tails. poly: the paved outline. */
+const EAST={B0:[459.3,-1347.7],e:[.65,.76],n:[-.76,.65],nose:18,lane:100,st:[-222,-155,-88,-21,46,113,180],
+  poly:[[628,-1150],[289,-1547],[182,-1455],[348,-1327],[470,-1205],[490,-1175],[585,-1120]]};
+const EAST_TY=['b744f','a333','','b772','a306f','b744',''];   // the aircraft parked at stands 51-57 (blank: empty stand)
+const eastP=(t,d)=>[EAST.B0[0]+t*EAST.e[0]+d*EAST.n[0],EAST.B0[1]+t*EAST.e[1]+d*EAST.n[1]];   // the point t along the edge and d metres in
+function inEast(s,l,m){ // inside the east apron outline (m > 0: at least m metres in; m < 0: or within -m metres outside)
+  const P=EAST.poly;let c=false,d=1e9;
+  for(let i=0,j=P.length-1;i<P.length;j=i++){const a=P[i],b=P[j];if((a[1]>l)!==(b[1]>l)&&s<(b[0]-a[0])*(l-a[1])/(b[1]-a[1])+a[0])c=!c;
+    if(m){const dx=b[0]-a[0],dy=b[1]-a[1],k=Math.max(0,Math.min(1,((s-a[0])*dx+(l-a[1])*dy)/(dx*dx+dy*dy)));d=Math.min(d,Math.hypot(s-a[0]-k*dx,l-a[1]-k*dy))}}
+  return !m?c:m>0?c&&d>=m:c||d<=-m}
+// the maintenance strip (hangars, tank farm and their apron) in its own frame: the inverse of MT in buildAirport (MU0 = 260)
+const inMaint=(s,l)=>{const ds=s-75.12,dl=l+1064.4,S=108+.612*ds-.79*dl,L=-1040+.79*ds+.612*dl;return S>0&&S<560&&L>-1200&&L<-760};
+const APRON=(s,l)=>s>-150&&s<780&&l<=-130&&l>-1180||inEast(s,l);   // the apron, terminal pier, main terminal block, the maintenance apron behind it and the east apron
 function inAirport(x,z){const s=rwS(x,z),l=rwL(x,z);return (s>-90&&s<RWY.len+70&&l>-150&&l<130)||APRON(s,l)}
 const TEX={};
 async function loadGeo(progress){
@@ -1307,7 +1322,7 @@ const WALLED={x:-229,z:-721,w:210,d:125};
 const LANDMARK_CLEAR=[];
 function clearanceCap(x,z){const i=pathNearestGlobal(x,z);const p=PATH.pts[i];if(p.d<-60)return 999;const lat=Math.abs(pathLateral(i,x,z));return (p.alt-24)+Math.max(0,lat-200)*.55}
 function skipFootprint(x,z){
-  const s=rwS(x,z),l=rwL(x,z);if(s>-170&&s<RWY.len+200&&l>-1240&&l<200)return true;        // Kai Tak airport (modern development there)
+  const s=rwS(x,z),l=rwL(x,z);if(s>-170&&s<RWY.len+200&&l>-1240&&l<200||inEast(s,l,-20)||inMaint(s,l))return true;        // Kai Tak airport (modern development there)
   if(s>-218&&s<-140&&l>-1015&&l<-685)return true;                                        // the terminal car park on the landside strip
   if(x>-4400&&x<-2750&&z>500&&z<3150)return true;                                        // West Kowloon: 1998 reclamation, not yet built on
   for(const w of WATER1998)if(x>w[0]&&x<w[1]&&z>w[2]&&z<w[3])return true;
@@ -2104,6 +2119,10 @@ function bridgeSet(b,e,R){
    The positions are measured from the Kai Tak chart. */
 const APN={A:-96,D3:73,D2:283,D1:497,stop:-44,end:-862,
   remote:[0,1,2,3,4,5,6,7,8].map(i=>-170-i*75)};
+// Stands 21-26: the second row out from the terminal on the chart, between lanes D3 and D2. No jet bridge; aircraft taxi in nose first from lane D2,
+// nose toward the terminal, to the stop line (nose, s). l: each stand's centre line.
+const MID={l:[-250,-328,-406,-484,-562,-640],nose:150};
+const MID_TY=['a333','b772','','a343','b744',''];   // the aircraft parked at stands 21-26 (blank: empty stand)
 /* ---------------- pavement map ----------------
    Aircraft on the ground stay on the grey tarmac and never cross the green grass. This is the one description of that tarmac: it draws the
    runway, taxiway A, the link taxiways and the apron (buildAirport), routes the taxiing aircraft (arrivalPts) and checks them (onPaved).
@@ -2113,7 +2132,7 @@ const PAVE={rw:(RWY.wid+14)/2,twy:13,end:20,link:{w:30,slant:38,l0:-36,l1:APN.A+
   // round pads that widen the tightest corners (where a link meets taxiway A, and the lead-on to each runway end) so the nose wheel stays on the tarmac: [s, l, radius]
   pads:[[0,-78,20],[RWY.len,-78,20],[1867,APN.A,20],[1486,APN.A,20]]};
 // The south apron runs on from the main apron (s0 = 780, its far end), and the tarmac closes the head of the inlet (head). One bridge, A9, crosses the inlet.
-const SOUTH={s0:780,s1:2180,l0:-520,l1:-340,b4:-362,conn:[1800],head:{s0:780,s1:830},st:[0,1,2,3,4,5,6,7,8,9,10].map(i=>1040+72*i),nose:-392,pads:[[1985,-405],[2065,-405]]};
+const SOUTH={s0:780,s1:2180,l0:-520,l1:-340,b4:-362,conn:[1800],head:{s0:780,s1:830},st:[0,1,2,3,4,5,6,7,8,9,10].map(i=>1040+72*i),nose:-500,pads:[[1985,-405],[2065,-405]]};
 // the widened taxiway tarmac on the apron side toward the Runway 31 end (period aerial photo): out to l0 from taxiway A's edge, tapered at both ends
 const WIDE={s0:2560,s1:3180,l0:-190,l1:-105,taper:120};
 const wideL=s=>{const W=WIDE;if(s<=W.s0||s>=W.s1)return W.l1;const u=Math.min(1,(s-W.s0)/W.taper,(W.s1-s)/W.taper);return W.l1+(W.l0-W.l1)*u};   // outer edge of the widened tarmac at s
@@ -2132,6 +2151,7 @@ function onPaved(s,l,m){m=m||0;
   const P=PAVE.apron;if(s>P.s0+m&&s<P.s1-m&&l>P.l0+m&&l<P.l1-m)return true;                                                  // concrete apron, lanes and stands
   {const Q=SOUTH;if(s>Q.s0+m&&s<Q.s1-m&&l>Q.l0+m&&l<Q.l1-m)return true;for(const c of Q.conn)if(Math.abs(s-c)<13-m&&l<-96&&l>Q.l1)return true;if(s>Q.head.s0&&s<Q.head.s1-m&&l<-96&&l>Q.l1)return true}   // south apron, the tarmac over the head of the inlet and the bridge
   if(s>WIDE.s0+m&&s<WIDE.s1-m&&l<-96&&l>wideL(s)+m)return true;                                                              // widened taxiway tarmac toward the 31 end
+  if(inEast(s,l,m))return true;                                                                                                // east apron
   for(const q of PAVE.pads)if(Math.hypot(s-q[0],l-q[1])<q[2]-m)return true;                                                  // corner pads
   const K=PAVE.link,cf=Math.abs(K.l0-K.l1)/Math.hypot(K.slant,K.l0-K.l1);                                                     // links: a parallelogram, w wide along s
   if(l<K.l0&&l>K.l1)for(const L of LINKS)if(Math.abs(s-linkMid(L,l))<K.w/2-m/cf)return true;
@@ -2155,7 +2175,7 @@ function buildApronMarkings(placeAlong){
     // a stand number on a dark plate, upright for a pilot heading along ang (0 = toward +s, PI = toward -s)
     const plate=(s,l,txt,ang)=>{g.save();g.translate(X(l),Y(s));g.fillStyle='#2a2b2e';g.fillRect(-7*px,-10*px,14*px,20*px);g.strokeStyle=YEL;g.lineWidth=.4*px;g.setLineDash([]);g.strokeRect(-7*px,-10*px,14*px,20*px);
       g.rotate(ang);g.fillStyle=YEL;g.font='bold '+(8.5*px)+'px Arial, Helvetica, sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(txt,0,0);g.restore()};
-    draw({L,C,rect,plate});
+    draw({L,C,rect,plate,g,X,Y});
     const tx=new THREE.CanvasTexture(c);tx.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
     // pavement is lit like the rest of the ground; painted lines are unlit so they stay readable at night (dimmed in applyEnvironment)
     const mat=new (lit?THREE.MeshLambertMaterial:THREE.MeshBasicMaterial)({map:tx,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:lit?-4:-5,polygonOffsetUnits:lit?-4:-5});if(!lit)APR_MATS.push(mat);
@@ -2174,6 +2194,8 @@ function buildApronMarkings(placeAlong){
       plate(22,lS,String(j+1),Math.PI)}
     // remote stands along lane D2 (numbers 11-19): a box on the far side of the lane with a short lead-in
     APN.remote.forEach((lS,i)=>{rect(APN.D2+18,APN.D2+104,lS-33,lS+33,.6,RED);L([APN.D2+13,lS],[REM_NOSE,lS],.8,YEL);L([REM_NOSE,lS-4],[REM_NOSE,lS+4],.8,YEL);plate(APN.D2+84,lS,String(11+i),0)});
+    // stands 21-26 on the near side of lane D2: a box, the lead-in from the lane to the nose-wheel stop bar, and the number at the entrance
+    MID.l.forEach((lS,i)=>{rect(MID.nose-12,APN.D2-31,lS-33,lS+33,.6,RED);L([APN.D2-13,lS],[MID.nose,lS],.8,YEL);L([MID.nose,lS-4],[MID.nose,lS+4],.8,YEL);plate(APN.D2-44,lS,String(21+i),Math.PI)});
   });
   // cargo apron: lane D1 carries on to the far end, and the cargo stands 41-46 lie on its far side with the aircraft nose to the cargo terminal
   {const CD1=APN.D1,CE=-1150;
@@ -2181,6 +2203,13 @@ function buildApronMarkings(placeAlong){
    paint(470,700,-1170,-640,3,({L,C,rect,plate})=>{L([CD1,APN.end],[CD1,CE],.8,YEL);
      STAND_C.forEach((Sc,i)=>{const lc=2000-Sc;rect(536,640,lc-35,lc+35,.6,RED);
        C([CD1,lc+150],[CD1,lc],[CARGO_NOSE,lc],.8,YEL);C([CD1,lc-150],[CD1,lc],[CARGO_NOSE,lc],.8,YEL);L([CD1+R,lc],[CARGO_NOSE,lc],.8,YEL);L([CARGO_NOSE,lc-4],[CARGO_NOSE,lc+4],.8,YEL);plate(560,lc,String(41+i),0)})})}
+  // east apron: a taxi lane behind the tails, and stands 51-57 nose-in toward the boundary road (box, lead-in, stop bar, number at the entrance)
+  {const E=EAST,P=eastP,hd=Math.atan2(-E.n[1],-E.n[0]);
+   paint(140,660,-1580,-1100,2,({L,g,X,Y,plate})=>{
+     L(P(E.st[0]-40,E.lane),P(200,E.lane),.8,YEL);
+     E.st.forEach((t,i)=>{const q=[P(t-31,6),P(t+31,6),P(t+31,E.lane-12),P(t-31,E.lane-12)];
+       g.beginPath();q.forEach((p,k)=>k?g.lineTo(X(p[1]),Y(p[0])):g.moveTo(X(p[1]),Y(p[0])));g.closePath();g.lineWidth=.6*2;g.strokeStyle=RED;g.setLineDash([]);g.stroke();
+       L(P(t,E.lane),P(t,E.nose),.8,YEL);L(P(t-4,E.nose),P(t+4,E.nose),.8,YEL);const n=P(t,E.lane-24);plate(n[0],n[1],String(51+i),hd)})})}
   // where taxiway A meets each end of the runway: curved lead-on lines and the runway holding position (two solid lines, two dashed)
   const runwayEnd=(s0,s1,sE,from)=>{
     paint(s0,s1,-140,-36,3,({L,C})=>{const d=C([sE+from,A],[sE,A],[sE,0],26,ASP);L([sE,A+d],[sE,-30],26,ASP)},true);
@@ -2253,11 +2282,11 @@ function buildAirfieldSigns(placeAlong){
     for(const d of[-19,19])sign('mandatory',[num],sE+d,-49,-Math.PI/2);
     sign('location',['A'],sE+19,-55,-Math.PI/2)}
   // destination signs where the apron lanes leave taxiway A: lane D3 serves stands 1-8, D2 the remote stands 11-19, D1 the far apron
-  for(const[ls,txt]of[[APN.D3,'1-8'],[APN.D2,'11-19'],[APN.D1,'APRON']]){sign('destination',[{a:-90},txt],ls-30,A+16,0,1.5);sign('destination',[txt,{a:90}],ls+30,A+16,Math.PI,1.5)}
+  for(const[ls,txt]of[[APN.D3,'1-8'],[APN.D2,'11-26'],[APN.D1,'APRON']]){sign('destination',[{a:-90},txt],ls-30,A+16,0,1.5);sign('destination',[txt,{a:90}],ls+30,A+16,Math.PI,1.5)}
 }
 /* SOUTH APRON, HELIPADS AND THE TAXIWAYS ACROSS THE WATER INLET (AIP chart 25 Apr 1996, and the period aerial photos)
    Beyond the runway-side taxiway, a narrow inlet with a drainage nullah runs parallel to the runway. The inlet's head is closed by tarmac, where the main apron runs on into
-   the south apron, and a single link taxiway (A9) crosses it on a piled concrete deck near its far end to taxiway B4 and the south apron (stands 71-81, nose to B4), with two helipads and the flight services building at its east end. Runway coordinates. */
+   the south apron, and a single link taxiway (A9) crosses it on a piled concrete deck near its far end to taxiway B4 and the south apron (stands 71-81, nose-in from B4 toward the far edge), with two helipads and the flight services building at its east end. Runway coordinates. */
 function buildSouthApron(placeAlong){
   const E=RWY.elev,Q=SOUTH,conc=new THREE.MeshLambertMaterial({color:0xa6a49b}),kerb=new THREE.MeshLambertMaterial({color:0xc9c6bb}),
     asph=new THREE.MeshLambertMaterial({color:0x3e3f42,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}),pier=new THREE.MeshLambertMaterial({color:0x8d8b84});
@@ -2285,8 +2314,8 @@ function buildSouthApron(placeAlong){
   const px=2,W=(Q.l1-Q.l0)*px,H=(Q.s1-Q.s0)*px,c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d'),X=l=>(l-Q.l0)*px,Y=s=>(Q.s1-s)*px,YEL='#e8b100',RED='#c0352b',WHT='#ecece6';
   const L=(a,b,w,col)=>{g.beginPath();g.moveTo(X(a[1]),Y(a[0]));g.lineTo(X(b[1]),Y(b[0]));g.lineWidth=w*px;g.strokeStyle=col;g.stroke()};
   L([Q.s0+10,Q.b4],[1830,Q.b4],.8,YEL);
-  Q.st.forEach((sc,i)=>{g.strokeStyle=RED;g.lineWidth=.6*px;g.strokeRect(X(-478),Y(sc+36),(478-392)*px,72*px);L([sc,Q.b4],[sc,Q.nose],.8,YEL);L([sc-4,Q.nose],[sc+4,Q.nose],.8,YEL);
-    g.save();g.translate(X(-466),Y(sc));g.fillStyle='#2a2b2e';g.fillRect(-10*px,-7*px,20*px,14*px);g.rotate(-Math.PI/2);g.fillStyle=YEL;g.font='bold '+8.5*px+'px Arial, Helvetica, sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(String(71+i),0,0);g.restore()});
+  Q.st.forEach((sc,i)=>{g.strokeStyle=RED;g.lineWidth=.6*px;g.strokeRect(X(-512),Y(sc+36),(512-424)*px,72*px);L([sc,Q.b4],[sc,Q.nose],.8,YEL);L([sc-4,Q.nose],[sc+4,Q.nose],.8,YEL);
+    g.save();g.translate(X(-410),Y(sc));g.fillStyle='#2a2b2e';g.fillRect(-10*px,-7*px,20*px,14*px);g.rotate(-Math.PI/2);g.fillStyle=YEL;g.font='bold '+8.5*px+'px Arial, Helvetica, sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(String(71+i),0,0);g.restore()});
   for(const p of Q.pads){g.strokeStyle=WHT;g.lineWidth=1.2*px;g.beginPath();g.arc(X(p[1]),Y(p[0]),12.5*px,0,7);g.stroke();g.strokeStyle=YEL;g.lineWidth=.6*px;g.beginPath();g.arc(X(p[1]),Y(p[0]),14.5*px,0,7);g.stroke();
     g.save();g.translate(X(p[1]),Y(p[0]));g.fillStyle=WHT;g.font='bold '+13*px+'px Arial, Helvetica, sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText('H',0,px);g.restore()}
   const tx=new THREE.CanvasTexture(c);tx.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
@@ -2327,6 +2356,9 @@ function buildAirport(){
   for(const l of[-30,30]){const e=new THREE.Mesh(new THREE.PlaneGeometry(.9,RWY.len-800).rotateX(-Math.PI/2),mk);placeAlong(e,RWY.len/2,l,RWY.elev+.08)}
   buildApronMarkings(placeAlong);
   buildSouthApron(placeAlong);
+  // the east apron: a concrete platform on the outline, its top just under the main apron's where they overlap
+  {const sh=new THREE.Shape();EAST.poly.forEach((p,k)=>k?sh.lineTo(p[1],p[0]):sh.moveTo(p[1],p[0]));sh.closePath();
+   placeAlong(new THREE.Mesh(new THREE.ExtrudeGeometry(sh,{depth:22,bevelEnabled:false}).rotateX(-Math.PI/2).translate(0,-22,0),new THREE.MeshLambertMaterial({color:0xa6a49b})),0,0,RWY.elev+.01)}
   buildAirfieldSigns(placeAlong);
   scene.add(grp);
   // terminal: the pier runs along l, at right angles to the runway, its face (s = -78) toward the apron; the main block lies beyond its west end, the car park along its landside
@@ -2425,10 +2457,13 @@ function buildAirport(){
    M=ID;
    for(let i=0;i<7;i++)placeAlong(new THREE.Mesh(new THREE.BoxGeometry(2.6,7,10).translate(0,3.5,0),new THREE.MeshLambertMaterial({color:i%2?0xeeeae0:0x7b1f27})),-20+i*10,-870,RWY.elev);
    M=MAIN;
-   // the interline-connections building: low, white, roof plant and a brown loading canopy, on the apron east of the hangars
-   {const m=solid(400,470,-900,-852,9,'the interline building',cityMaterial({color:0xe8e6df}),new THREE.MeshLambertMaterial({color:0x4c4a46}));
-    for(const[s,l]of[[418,-880],[438,-870],[456,-884],[428,-860]])placeAlong(new THREE.Mesh(new THREE.BoxGeometry(5,2.2,5).translate(0,10.6,0),new THREE.MeshLambertMaterial({color:0x7b8084})),s,l,RWY.elev);
-    placeAlong(new THREE.Mesh(new THREE.BoxGeometry(5,.8,60).translate(0,3.2,0),new THREE.MeshLambertMaterial({color:0x6b4a32})),435,-847,RWY.elev)}
+   // the interline-connections building: low, white, roof plant and a brown loading canopy, at the north-east end of the cargo terminal (as on the chart;
+   // the east apron's taxi lane runs where it used to stand). Runway coordinates, not the strip frame.
+   M=ID;
+   {const m=solid(652,708,-1172,-1124,9,'the interline building',cityMaterial({color:0xe8e6df}),new THREE.MeshLambertMaterial({color:0x4c4a46}));
+    for(const[s,l]of[[666,-1140],[684,-1158],[694,-1136],[674,-1162]])placeAlong(new THREE.Mesh(new THREE.BoxGeometry(5,2.2,5).translate(0,10.6,0),new THREE.MeshLambertMaterial({color:0x7b8084})),s,l,RWY.elev);
+    placeAlong(new THREE.Mesh(new THREE.BoxGeometry(44,.8,5).translate(0,3.2,0),new THREE.MeshLambertMaterial({color:0x6b4a32})),649,-1148,RWY.elev)}
+   M=MAIN;
    // the compound round the aircraft stripped down on the maintenance apron: dark mesh fence and yellow stands, jacks and loaders
    {const fm=new THREE.MeshLambertMaterial({color:0x2c3a30}),ym=new THREE.MeshLambertMaterial({color:0xe8b800}),s0=112,s1=206,l0=-962,l1=-872;
     for(const[a,b,c,d]of[[s0,s1,l0,l0+.4],[s0,s1,l1-.4,l1],[s0,s0+.4,l0,l1],[s1-.4,s1,l0,l1]])placeAlong(new THREE.Mesh(new THREE.BoxGeometry(d-c,3.6,b-a).translate(0,1.8,0),fm),(a+b)/2,(c+d)/2,RWY.elev);
@@ -2569,9 +2604,15 @@ function buildAirport(){
   // parked[16...]: aircraft on the remote stands 11-19 (no jet bridge), nose-in with the tail toward lane D2; apron buses serve them (buildGSE)
   if(REMOTE_OPS)REM_TY.forEach((ty,i)=>{if(!ty)return;const opt={tail:[0x1d6f6a,0xb53a2c,0x23406e,0x6a1f2f,0x3a5f2e][i%5],gear:true},m=buildAircraftModel(AC[ty],opt);m.userData.spec={type:ty,opt};m.userData.type=ty;
     const p=rwP(REM_NOSE-.39*AC[ty].len,APN.remote[i]);m.position.set(p[0],RWY.elev,p[1]);m.rotation.y=-hdgOf(1,0);scene.add(m);parked.push(m)});
-  // parked[...]: aircraft on the south apron stands 71-81, nose toward taxiway B4
+  // parked[...]: aircraft on the south apron stands 71-81, nose-in toward the far edge, tail to taxiway B4 (as on the chart)
   SOUTH_TY.forEach((ty,i)=>{if(!ty)return;const opt={tail:[0x24607a,0xd9732b,0x6a1f2f,0x1d6f6a,0x23406e][i%5],gear:true},m=buildAircraftModel(AC[ty],opt);m.userData.spec={type:ty,opt};m.userData.type=ty;
-    const p=rwP(SOUTH.st[i],SOUTH.nose-.39*AC[ty].len);m.position.set(p[0],RWY.elev,p[1]);m.rotation.y=-hdgOf(0,1);scene.add(m);parked.push(m)});
+    const p=rwP(SOUTH.st[i],SOUTH.nose+.39*AC[ty].len);m.position.set(p[0],RWY.elev,p[1]);m.rotation.y=-hdgOf(0,-1);scene.add(m);parked.push(m)});
+  // parked[...]: stands 21-26 between lanes D3 and D2, nose toward the terminal
+  MID_TY.forEach((ty,i)=>{if(!ty)return;const opt={tail:[0xb53a2c,0x23406e,0x3a5f2e,0x6a1f2f,0x1d6f6a,0xd9732b][i],gear:true},m=buildAircraftModel(AC[ty],opt);m.userData.spec={type:ty,opt};m.userData.type=ty;
+    const p=rwP(MID.nose+.39*AC[ty].len,MID.l[i]);m.position.set(p[0],RWY.elev,p[1]);m.rotation.y=-hdgOf(-1,0);scene.add(m);parked.push(m)});
+  // parked[...]: east apron stands 51-57, nose toward the boundary road
+  EAST_TY.forEach((ty,i)=>{if(!ty)return;const opt={tail:[0xd9732b,0x1d6f6a,0,0x23406e,0x24607a,0xb53a2c][i],gear:true},m=buildAircraftModel(AC[ty],opt);m.userData.spec={type:ty,opt};m.userData.type=ty;
+    const q=eastP(EAST.st[i],EAST.nose+.39*AC[ty].len),p=rwP(q[0],q[1]);m.position.set(p[0],RWY.elev,p[1]);m.rotation.y=-hdgOf(-EAST.n[0],-EAST.n[1]);scene.add(m);parked.push(m)});
   // lights
   // edge lights turn amber over the last 600 m, and the landing threshold is green (red at the far end), for each direction
   const mkRwyLights=dir=>{const Lr=[];
