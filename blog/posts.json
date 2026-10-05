@@ -1,5 +1,37 @@
 [
   {
+    "slug": "apron-mast-lights-off-on-clear-days",
+    "title": "Apron mast lights off on clear days",
+    "dek": "The red floodlight masts now stay dark on a clear day and light up at night, in overcast weather and in fog.",
+    "description": "The apron floodlight masts' lamps and obstruction lights now switch off on clear days and come on at night, in overcast weather and in fog.",
+    "date": "2026-10-05",
+    "tag": "Fix",
+    "category": "scenery",
+    "keywords": [
+      "apron floodlights",
+      "floodlight masts",
+      "obstruction lights",
+      "weather",
+      "Kai Tak",
+      "flight simulator"
+    ],
+    "hero": "apron-masts-day-off",
+    "hero_alt": "Red floodlight masts by the remote stands on a clear day, their lamps unlit.",
+    "hero_caption": "On a clear day the masts stand dark.",
+    "card_kicker": "SCENERY · FIX",
+    "card_title": "Mast lights off by day",
+    "card_sub": "On at night, in cloud and fog",
+    "card_image": "apron-masts-overcast-on",
+    "card_focus": 50,
+    "zh": {
+      "title": "晴天停機坪燈柱唔著燈",
+      "dek": "紅色射燈柱而家晴天唔著燈，夜晚、天陰同有霧先會著。",
+      "description": "停機坪射燈柱嘅射燈同障礙燈而家晴天會熄，夜晚、天陰同有霧時先著。",
+      "hero_alt": "晴天時遠端停機位旁邊嘅紅色射燈柱，燈冇著。",
+      "hero_caption": "晴天時燈柱唔著燈。"
+    }
+  },
+  {
     "slug": "red-floodlight-masts-over-the-stands",
     "title": "Red floodlight masts over the stands",
     "dek": "Kai Tak's tall red apron floodlight masts now stand between the parked aircraft on every row of stands, lit at night.",

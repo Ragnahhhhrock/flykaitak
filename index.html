@@ -3516,6 +3516,7 @@ function applyEnvironment(){
   ENV.fogBase=fog;ENV.dens=dens;
   for(const S of SHIPS)if(S.m.userData.wake){const m=S.m.userData.wake.material;m.opacity=lerp(.35,over?.6:.85,k);m.color.setHex(hexMix(0x2a3438,0xffffff,k))}
   setWater();if(obstructionLights)obstructionLights.visible=n||over||fogW;
+  if(apronMasts)apronMasts.lights.visible=n||over||fogW;   // apron mast lamps and obstruction lights: off on a clear day
   for(const m of TERRAIN_MATS){const kd=over?.72:fogW?.8:1;if(m.userData.street)m.color.setHex(m.userData.base||(m.userData.base=m.color.getHex())).multiplyScalar(lerp(.25,kd,k));else m.color.setScalar(lerp(.11,kd,k))}
   for(const m of APR_MATS){const f=lerp(.55,over?.72:fogW?.8:1,k);if(m.userData.tint)m.color.copy(m.userData.tint).multiplyScalar(f);else m.color.setScalar(f)}   // textured paint is white times its map; flat-colour paint keeps its tint
   streetLights.visible=n;carLights&&(carLights.visible=n);shipLights.visible=true;
