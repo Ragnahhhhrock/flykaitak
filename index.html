@@ -2391,11 +2391,9 @@ function buildAirport(){
     for(const s of[22,58,94])for(const l of[-1085,-1127,-1169]){placeAlong(new THREE.Mesh(new THREE.CylinderGeometry(15,15,16,20).translate(0,8,0),tk),s,l,RWY.elev);placeAlong(new THREE.Mesh(new THREE.CylinderGeometry(15.3,15.3,3,20).translate(0,11,0),band),s,l,RWY.elev);placeAlong(new THREE.Mesh(new THREE.CylinderGeometry(13,15,1.2,20).translate(0,16.6,0),new THREE.MeshLambertMaterial({color:0x777b7e})),s,l,RWY.elev)}
     const r=[rwP(4,-1190),rwP(4,-1068),rwP(112,-1190),rwP(112,-1068)],q=[M.f(4,-1190),M.f(4,-1068),M.f(112,-1190),M.f(112,-1068)];addCollider(Math.min(...r.map(q=>q[0])),Math.max(...r.map(q=>q[0])),Math.min(...r.map(q=>q[1])),Math.max(...r.map(q=>q[1])),22,'the fuel tanks');AIRBOX.push({s0:Math.min(...q.map(a=>a[0])),s1:Math.max(...q.map(a=>a[0])),l0:Math.min(...q.map(a=>a[1])),l1:Math.max(...q.map(a=>a[1])),name:'the fuel tanks'})}
    M=MAIN;
-   // bitumen over the flight apron in front of the hangars, round the bays, the compound and the maintenance aircraft
-   {const bit=new THREE.MeshLambertMaterial({color:0x44454a,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
-    placeAlong(new THREE.Mesh(new THREE.PlaneGeometry(220,400).rotateX(-Math.PI/2),bit),290,-885,RWY.elev+.05);
-    const edge=new THREE.MeshBasicMaterial({color:0xe8b100,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-3});APR_MATS.push(edge);
-    placeAlong(new THREE.Mesh(new THREE.PlaneGeometry(1.2,400).rotateX(-Math.PI/2),edge),290,-776,RWY.elev+.06)}
+   // concrete over the flight apron in front of the hangars, round the bays, the compound and the maintenance aircraft (same colour as the main apron)
+   {const bit=new THREE.MeshLambertMaterial({color:0xa6a49b,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
+    placeAlong(new THREE.Mesh(new THREE.PlaneGeometry(220,400).rotateX(-Math.PI/2),bit),290,-885,RWY.elev+.05)}
    // H1: the small hangar nearest the terminal, one lit bay
    solid(108,198,-1085,-992,22,'the Kai Tak hangar',wallM(ribTex),new THREE.MeshLambertMaterial({color:0x9da1a3}));roofPlane(108,198,-1085,-992,22+2.45,sawTex,1,2);bay(153,-992,46,17);arrowSign(122,-992,12,20);
    // the workshop tower: ribbed, with lit windows
