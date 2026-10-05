@@ -2095,7 +2095,11 @@ const APN={A:-96,D3:73,D2:283,D1:497,stop:-44,end:-862,
 const PAVE={rw:(RWY.wid+14)/2,twy:13,end:20,link:{w:30,slant:38,l0:-36,l1:APN.A+12},apron:{s0:-150,s1:780,l0:-1180,l1:-83},
   // round pads that widen the tightest corners (where a link meets taxiway A, and the lead-on to each runway end) so the nose wheel stays on the tarmac: [s, l, radius]
   pads:[[0,-78,20],[RWY.len,-78,20],[1867,APN.A,20],[1486,APN.A,20]]};
-const SOUTH={s0:1000,s1:2180,l0:-520,l1:-340,b4:-362,conn:[1060,1800],st:[0,1,2,3,4,5,6,7,8,9,10].map(i=>1040+72*i),nose:-392,pads:[[1985,-405],[2065,-405]]};
+// The south apron runs on from the main apron (s0 = 780, its far end), and the tarmac closes the head of the inlet (head). One bridge, A9, crosses the inlet.
+const SOUTH={s0:780,s1:2180,l0:-520,l1:-340,b4:-362,conn:[1800],head:{s0:780,s1:830},st:[0,1,2,3,4,5,6,7,8,9,10].map(i=>1040+72*i),nose:-392,pads:[[1985,-405],[2065,-405]]};
+// the widened taxiway tarmac on the apron side toward the Runway 31 end (period aerial photo): out to l0 from taxiway A's edge, tapered at both ends
+const WIDE={s0:2560,s1:3180,l0:-190,l1:-105,taper:120};
+const wideL=s=>{const W=WIDE;if(s<=W.s0||s>=W.s1)return W.l1;const u=Math.min(1,(s-W.s0)/W.taper,(W.s1-s)/W.taper);return W.l1+(W.l0-W.l1)*u};   // outer edge of the widened tarmac at s
 const SOUTH_TY=['b744','a333','','b772','a333','b744','','a343','b772','','a333'];   // the aircraft parked at stands 71-81 (blank: empty stand)
 const LINKS=[{s:330,k:1},{s:1020,k:1},{s:1537.5,k:-1,exit:1},{s:1852.5,k:1,exit:1},{s:2400,k:1},{s:3060,k:1}];   // exit: the link the arrivals take off the runway
 const linkMid=(L,l)=>L.s+L.k*PAVE.link.slant*(PAVE.link.l0-l)/(PAVE.link.l0-PAVE.link.l1);   // centre line of a link at l
@@ -2109,7 +2113,8 @@ const segDist=(s,l,a,b)=>{const dx=b[0]-a[0],dy=b[1]-a[1],t=clamp(((s-a[0])*dx+(
 function onPaved(s,l,m){m=m||0;
   if(s>-PAVE.end&&s<RWY.len+PAVE.end){if(Math.abs(l)<PAVE.rw-m||Math.abs(l-APN.A)<PAVE.twy-m)return true}                   // runway with shoulders, taxiway A
   const P=PAVE.apron;if(s>P.s0+m&&s<P.s1-m&&l>P.l0+m&&l<P.l1-m)return true;                                                  // concrete apron, lanes and stands
-  {const Q=SOUTH;if(s>Q.s0+m&&s<Q.s1-m&&l>Q.l0+m&&l<Q.l1-m)return true;for(const c of Q.conn)if(Math.abs(s-c)<13-m&&l<-96&&l>Q.l1)return true}   // south apron and the link taxiways over the inlet
+  {const Q=SOUTH;if(s>Q.s0+m&&s<Q.s1-m&&l>Q.l0+m&&l<Q.l1-m)return true;for(const c of Q.conn)if(Math.abs(s-c)<13-m&&l<-96&&l>Q.l1)return true;if(s>Q.head.s0&&s<Q.head.s1-m&&l<-96&&l>Q.l1)return true}   // south apron, the tarmac over the head of the inlet and the bridge
+  if(s>WIDE.s0+m&&s<WIDE.s1-m&&l<-96&&l>wideL(s)+m)return true;                                                              // widened taxiway tarmac toward the 31 end
   for(const q of PAVE.pads)if(Math.hypot(s-q[0],l-q[1])<q[2]-m)return true;                                                  // corner pads
   const K=PAVE.link,cf=Math.abs(K.l0-K.l1)/Math.hypot(K.slant,K.l0-K.l1);                                                     // links: a parallelogram, w wide along s
   if(l<K.l0&&l>K.l1)for(const L of LINKS)if(Math.abs(s-linkMid(L,l))<K.w/2-m/cf)return true;
@@ -2234,15 +2239,21 @@ function buildAirfieldSigns(placeAlong){
   for(const[ls,txt]of[[APN.D3,'1-8'],[APN.D2,'11-19'],[APN.D1,'APRON']]){sign('destination',[{a:-90},txt],ls-30,A+16,0,1.5);sign('destination',[txt,{a:90}],ls+30,A+16,Math.PI,1.5)}
 }
 /* SOUTH APRON, HELIPADS AND THE TAXIWAYS ACROSS THE WATER INLET (AIP chart 25 Apr 1996, and the period aerial photos)
-   Beyond the runway-side taxiway, a narrow inlet with a drainage nullah runs parallel to the runway. Link taxiways A7 and A9 cross it on piled concrete decks
-   to taxiway B4 and the south apron (stands 71-81, nose to B4), with two helipads and the flight services building at its east end. Runway coordinates. */
+   Beyond the runway-side taxiway, a narrow inlet with a drainage nullah runs parallel to the runway. The inlet's head is closed by tarmac, where the main apron runs on into
+   the south apron, and a single link taxiway (A9) crosses it on a piled concrete deck near its far end to taxiway B4 and the south apron (stands 71-81, nose to B4), with two helipads and the flight services building at its east end. Runway coordinates. */
 function buildSouthApron(placeAlong){
   const E=RWY.elev,Q=SOUTH,conc=new THREE.MeshLambertMaterial({color:0xa6a49b}),kerb=new THREE.MeshLambertMaterial({color:0xc9c6bb}),
     asph=new THREE.MeshLambertMaterial({color:0x3e3f42,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}),pier=new THREE.MeshLambertMaterial({color:0x8d8b84});
   // the platform, down to the seabed like the main apron
   placeAlong(new THREE.Mesh(new THREE.BoxGeometry(Q.l1-Q.l0,22,Q.s1-Q.s0).translate(0,-11+E+.02,0),conc),(Q.s0+Q.s1)/2,(Q.l0+Q.l1)/2,0);
   // taxiway B4 along the front of the apron
-  placeAlong(new THREE.Mesh(new THREE.PlaneGeometry(26,820).rotateX(-Math.PI/2),asph),1420,Q.b4,E+.05);
+  placeAlong(new THREE.Mesh(new THREE.PlaneGeometry(26,Q.s1-350-Q.s0).rotateX(-Math.PI/2),asph),(Q.s0+Q.s1-350)/2,Q.b4,E+.05);
+  // the tarmac over the head of the inlet, from the runway strip to the south apron
+  placeAlong(new THREE.Mesh(new THREE.BoxGeometry(-150-Q.l1,22,Q.head.s1-Q.head.s0).translate(0,-11+E+.02,0),conc),(Q.head.s0+Q.head.s1)/2,(Q.l1-150)/2,0);
+  // the widened taxiway tarmac toward the 31 end: a concrete platform with a bitumen top, tapered at both ends
+  {const W=WIDE,sh=new THREE.Shape();sh.moveTo(W.l1,W.s0);sh.lineTo(W.l0,W.s0+W.taper);sh.lineTo(W.l0,W.s1-W.taper);sh.lineTo(W.l1,W.s1);sh.closePath();
+   placeAlong(new THREE.Mesh(new THREE.ExtrudeGeometry(sh,{depth:22,bevelEnabled:false}).rotateX(-Math.PI/2).translate(0,-22,0),conc),0,0,E+.03);
+   placeAlong(new THREE.Mesh(new THREE.ShapeGeometry(sh).rotateX(-Math.PI/2),asph),0,0,E+.05)}
   // link taxiways over the water: bitumen, a concrete deck on piers and low parapets
   for(const sc of Q.conn){
     const l0=-96,l1=Q.b4,len=l0-l1;
@@ -2256,7 +2267,7 @@ function buildSouthApron(placeAlong){
   // painted markings
   const px=2,W=(Q.l1-Q.l0)*px,H=(Q.s1-Q.s0)*px,c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d'),X=l=>(l-Q.l0)*px,Y=s=>(Q.s1-s)*px,YEL='#e8b100',RED='#c0352b',WHT='#ecece6';
   const L=(a,b,w,col)=>{g.beginPath();g.moveTo(X(a[1]),Y(a[0]));g.lineTo(X(b[1]),Y(b[0]));g.lineWidth=w*px;g.strokeStyle=col;g.stroke()};
-  L([1010,Q.b4],[1830,Q.b4],.8,YEL);
+  L([Q.s0+10,Q.b4],[1830,Q.b4],.8,YEL);
   Q.st.forEach((sc,i)=>{g.strokeStyle=RED;g.lineWidth=.6*px;g.strokeRect(X(-478),Y(sc+36),(478-392)*px,72*px);L([sc,Q.b4],[sc,Q.nose],.8,YEL);L([sc-4,Q.nose],[sc+4,Q.nose],.8,YEL);
     g.save();g.translate(X(-466),Y(sc));g.fillStyle='#2a2b2e';g.fillRect(-10*px,-7*px,20*px,14*px);g.rotate(-Math.PI/2);g.fillStyle=YEL;g.font='bold '+8.5*px+'px Arial, Helvetica, sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(String(71+i),0,0);g.restore()});
   for(const p of Q.pads){g.strokeStyle=WHT;g.lineWidth=1.2*px;g.beginPath();g.arc(X(p[1]),Y(p[0]),12.5*px,0,7);g.stroke();g.strokeStyle=YEL;g.lineWidth=.6*px;g.beginPath();g.arc(X(p[1]),Y(p[0]),14.5*px,0,7);g.stroke();
