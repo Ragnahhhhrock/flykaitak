@@ -1,5 +1,36 @@
 [
   {
+    "slug": "car-park-spotter-view-moved",
+    "title": "The car park roof view moves to the new car park",
+    "dek": "The Plane Spotter car park view now stands at the rail of the new landside car park, looking over the terminal to the runway.",
+    "description": "The Car park roof spotter view now sits on the new landside car park, at the runway-end rail, with a clear view over the terminal.",
+    "date": "2026-10-05",
+    "tag": "Fix",
+    "category": "scenery",
+    "keywords": [
+      "car park roof",
+      "plane spotter",
+      "spotter view",
+      "Kai Tak",
+      "flight simulator"
+    ],
+    "hero": "carpark-spotter-view",
+    "hero_alt": "The view from the car park roof rail over the terminal roof to the apron, the runway and the harbour.",
+    "hero_caption": "The Car park roof view from its new spot.",
+    "card_kicker": "SCENERY · SPOTTER VIEW",
+    "card_title": "Car park view moved",
+    "card_sub": "On the new landside roof",
+    "card_image": "carpark-spotter-view",
+    "card_focus": 50,
+    "zh": {
+      "title": "停車場天台視角搬到新停車場",
+      "dek": "「觀機」嘅停車場視角而家企喺陸側新停車場嘅欄河邊，望過客運大樓睇跑道。",
+      "description": "「停車場天台」觀機視角而家喺陸側新停車場跑道嗰頭嘅欄河邊，望過客運大樓冇遮擋。",
+      "hero_alt": "由停車場天台欄河望過客運大樓天台，見到停機坪、跑道同海港。",
+      "hero_caption": "新位置嘅停車場天台視角。"
+    }
+  },
+  {
     "slug": "extra-parking-bays-from-the-kai-tak-plan",
     "title": "13 more parking bays from the Kai Tak plan",
     "dek": "Stands 21 to 26 between lanes D3 and D2, a new east apron with stands 51 to 57, and the south apron parked nose-in.",
