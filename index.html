@@ -2433,10 +2433,11 @@ function buildAirport(){
   // the smaller maintenance and airline buildings on the landside edge of the strip, from the chart (west of the terminal block)
   solid(-200,-150,-1060,-1010,14,'the Kai Tak maintenance offices');solid(-215,-165,-1005,-960,12,'the Kai Tak maintenance offices');solid(-182,-142,-935,-880,10,'the Kai Tak maintenance offices');
   solid(1975,2110,-505,-470,9,'the flight services building',cityMaterial({color:0xdedbd0}),new THREE.MeshLambertMaterial({color:0x4c4a46}));   // beside the helipads on the south apron
-  // Control tower: on the roof of the passenger terminal's main block, at its apron corner (period photos), not a separate building on the apron.
+  // Control tower: on the roof of the passenger terminal at its runway end (the root of the pier), on the apron side, as in period photos: from the cab the
+  // controllers looked down onto the taxiway and runway with the harbour beyond, and along the pier and apron toward Lion Rock.
   // A plant storey and a dark band rise off the terminal roof; the cab above has the glazing leaning outward (wider at the top, so controllers can see straight
   // down onto the stands) on a chamfered, rectangular plan, a balcony rail at its foot and a deep flat roof with a dark fascia. Dishes and masts on the roof beside it.
-  {const TS=-33,TL=-879,R0=26,T=new THREE.Group();placeAlong(T,TS,TL,RWY.elev);
+  {const TS=-100,TL=-170,R0=22,T=new THREE.Group();placeAlong(T,TS,TL,RWY.elev);
    // a chamfered rectangle (half sizes w, d, corner cut c) as a ring of 8 points
    const ring=(w,d,c)=>[[w-c,d],[-w+c,d],[-w,d-c],[-w,-d+c],[-w+c,-d],[w-c,-d],[w,-d+c],[w,d-c]];
    // prism from a bottom ring to a top ring (leaning walls when they differ); each face is mapped 0..1 so a texture repeats per pane
@@ -2467,12 +2468,12 @@ function buildAirport(){
    const bcn=new THREE.Mesh(new THREE.BoxGeometry(.6,.6,.6).translate(0,R0+21.4,0),new THREE.MeshBasicMaterial({color:0xff2a20}));T.add(bcn);
    // dishes and masts on the terminal roof behind the tower (landside)
    const dishM=new THREE.MeshLambertMaterial({color:0xeceae4,side:THREE.DoubleSide}),frM=new THREE.MeshLambertMaterial({color:0x8b8e8c});
-   for(const[dx,dz,r,yaw]of[[-10,14,2.6,.4],[-4,15,3.1,.1],[3,14.5,3.1,-.2],[10,15.5,2.4,-.5],[14,9,1.8,-1.1]]){
+   for(const[dx,dz,r,yaw]of[[-10,-14,2.6,2.7],[-4,-15,3.1,3],[3,-14.5,3.1,3.3],[10,-15.5,2.4,3.6],[14,-9,1.8,4.2]]){
      const d=new THREE.Group();d.position.set(dx,R0+2.4,dz);d.rotation.y=yaw;T.add(d);
      d.add(new THREE.Mesh(new THREE.BoxGeometry(.3,r*.9,.3).translate(0,r*.45,0),frM));
      const bowl=new THREE.Mesh(new THREE.SphereGeometry(r,16,6,0,Math.PI*2,0,.5),dishM);bowl.rotation.x=Math.PI/2+.35;bowl.position.set(0,r*.95,r*.35);d.add(bowl);
      d.add(new THREE.Mesh(new THREE.CylinderGeometry(.05,.05,r*.9,4).rotateX(Math.PI/2-.35).translate(0,r*1.1,-r*.05),frM))}
-   for(const[dx,dz,h]of[[-15,4,14],[16,-2,10],[-13,-9,8]]){T.add(new THREE.Mesh(new THREE.CylinderGeometry(.12,.2,h,4).translate(dx,R0+2.4+h/2,dz),frM));
+   for(const[dx,dz,h]of[[-15,-4,14],[16,2,10],[-13,9,8]]){T.add(new THREE.Mesh(new THREE.CylinderGeometry(.12,.2,h,4).translate(dx,R0+2.4+h/2,dz),frM));
      for(let y=R0+4.4;y<R0+h;y+=2.6)T.add(new THREE.Mesh(new THREE.BoxGeometry(2.2,.08,.08).translate(dx,y,dz),frM))}
    const C=[rwP(TS-9,TL-11),rwP(TS+9,TL+11),rwP(TS-9,TL+11),rwP(TS+9,TL-11)];
    addCollider(Math.min(...C.map(q=>q[0])),Math.max(...C.map(q=>q[0])),Math.min(...C.map(q=>q[1])),Math.max(...C.map(q=>q[1])),R0+21,'the control tower');
