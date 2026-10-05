@@ -1,5 +1,39 @@
 [
   {
+    "slug": "big-buddha-ngong-ping",
+    "title": "The Big Buddha at Ngong Ping",
+    "dek": "The 34 m bronze Tian Tan Buddha on its three-tier altar, Po Lin Monastery below, and new terrain carrying Lantau on to the west.",
+    "description": "The Tian Tan Buddha at Ngong Ping arrives: the bronze statue, its altar, steps and Po Lin Monastery, floodlit at night, on newly extended Lantau terrain.",
+    "date": "2026-10-05",
+    "tag": "New",
+    "category": "scenery",
+    "keywords": [
+      "Big Buddha",
+      "Tian Tan Buddha",
+      "Ngong Ping",
+      "Po Lin Monastery",
+      "Lantau",
+      "Lantau Peak",
+      "Kai Tak",
+      "flight simulator"
+    ],
+    "hero": "big-buddha-front",
+    "hero_alt": "A seated bronze Buddha on a lotus throne atop a white three-tier round altar on a green hilltop, with a long flight of steps leading down.",
+    "hero_caption": "The Big Buddha facing north from Mok Yu Shan, Lantau.",
+    "card_kicker": "SCENERY · NEW",
+    "card_title": "The Big Buddha",
+    "card_sub": "Ngong Ping, Lantau, since 1993",
+    "card_image": "big-buddha-front",
+    "card_focus": 50,
+    "zh": {
+      "title": "昂坪天壇大佛",
+      "dek": "34 米高嘅天壇大佛連三層祭壇、山下嘅寶蓮寺，仲有向西延伸嘅大嶼山新地形。",
+      "description": "昂坪天壇大佛登場：銅佛、祭壇、樓梯同寶蓮寺，夜晚有射燈，坐喺新延伸嘅大嶼山地形上。",
+      "hero_alt": "一尊銅佛坐喺蓮花座上，下面係白色三層圓形祭壇，喺綠色山頂上，前面有一條長長嘅樓梯落山。",
+      "hero_caption": "大嶼山木魚山上面向北方嘅大佛。"
+    }
+  },
+  {
     "slug": "kwai-chung-container-terminal-detail",
     "title": "Kwai Chung container terminals come to life",
     "dek": "More ships alongside, more detailed quay cranes, terminal buildings, reefer racks, empties depots, yard tractors and lighters working cargo mid-stream.",

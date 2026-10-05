@@ -695,10 +695,10 @@ function pathLateral(i,x,z){const p=PATH.pts[i];return (x-p.x)*Math.cos(p.h)+(z-
 /* ---------------- geography (real data, loaded at boot) ---------------- */
 // Local frame: metres from the Runway 13 threshold (22.32558N 114.19262E). Assets are built by tools/build.py
 // from Hong Kong Lands Department open data (aerial imagery, basemap) and SRTM elevation.
-const GEO={outer:{x0:-28000,z0:-17000,x1:14000,z1:14000},inner:{x0:-8000,z0:-3800,x1:4800,z1:9000}};
+const GEO={outer:{x0:-28000,z0:-17000,x1:14000,z1:14000},inner:{x0:-8000,z0:-3800,x1:4800,z1:9000},lantau:{x0:-36800,z0:3800,x1:-28000,z1:14000}};   // lantau: west Lantau patch (tools/lantau.py)
 const HILLS=[{n:'Lion Rock',x:-558,z:-2948},{n:'Beacon Hill',x:-2350,z:-2550},{n:'Kowloon Peak',x:3442,z:-2032},{n:"Tate's Cairn",x:2536,z:-3726},
  {n:'Golden Hill',x:-4183,z:-4147},{n:'Tai Mo Shan',x:-7010,z:-9440},{n:'Victoria Peak',x:-4853,z:5504},{n:'Mount Cameron',x:-1176,z:7043},
- {n:'Mount Butler',x:884,z:6268},{n:'Mount Parker',x:2430,z:6268},{n:"Devil's Peak",x:5075,z:3277},{n:'Tsing Yi',x:-9043,z:-1933},{n:'Checkerboard Hill',x:-760,z:-1200}];
+ {n:'Lantau Peak',x:-27880,z:8530},{n:'Ngong Ping',x:-29635,z:7922},{n:'Mount Butler',x:884,z:6268},{n:'Mount Parker',x:2430,z:6268},{n:"Devil's Peak",x:5075,z:3277},{n:'Tsing Yi',x:-9043,z:-1933},{n:'Checkerboard Hill',x:-760,z:-1200}];
 const CHK={x:-760,z:-1200,boost:24,s:170}; // Kowloon Tsai hill: SRTM smooths it, so a little height is added back
 const chkH=(x,z)=>CHK.boost*Math.exp(-((x-CHK.x)**2+(z-CHK.z)**2)/(2*CHK.s*CHK.s));
 function nearestHill(x,z){let b=null,bd=1e18;for(const k of HILLS){const d=(x-k.x)**2+(z-k.z)**2;if(d<bd){bd=d;b=k}}return b}
@@ -707,7 +707,7 @@ const WATER1998=[[-3460,-2330,4240,4650]];
 function gridSample(G,x,z){const fx=(x-G.x0)/G.d,fz=(z-G.z0)/G.d;const i=Math.floor(fx),j=Math.floor(fz);if(i<0||j<0||i>=G.nx-1||j>=G.nz-1)return -12;
   const tx=fx-i,tz=fz-j,W=G.nx,h=G.h;return lerp(lerp(h[j*W+i],h[j*W+i+1],tx),lerp(h[(j+1)*W+i],h[(j+1)*W+i+1],tx),tz)}
 function inInner(x,z){const g=GEO.inner;return x>g.x0+80&&x<g.x1-80&&z>g.z0+80&&z<g.z1-80}
-function terrainAt(x,z){if(!GEO.O)return 0;let h=inInner(x,z)?gridSample(GEO.I,x,z):gridSample(GEO.O,x,z);if(h>0.5)h+=chkH(x,z);return h}
+function terrainAt(x,z){if(!GEO.O)return 0;if(x<GEO.outer.x0)return GEO.L?gridSample(GEO.L,x,z):-12;let h=inInner(x,z)?gridSample(GEO.I,x,z):gridSample(GEO.O,x,z);if(h>0.5)h+=chkH(x,z);return h}
 function landAt(x,z){return terrainAt(x,z)>0.5}
 /* EAST APRON (Technocratic Aviation's Kai Tak plan): past the maintenance hangars the apron runs on to the airport's east boundary road (Kai Fuk Road)
    and up toward Prince Edward Road East, with a row of stands (51-57) along the boundary, nose-in toward it. Runway coordinates. B0 is a point on the
@@ -731,7 +731,7 @@ async function loadGeo(progress){
   const get=async(u,t)=>{const r=await fetch(u);if(!r.ok)throw new Error(u+' '+r.status);const j=await r.json();if(t==='json')return j;const s=atob(j.b64);const u8=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u8[i]=s.charCodeAt(i);return u8.buffer};
   const tl=new THREE.TextureLoader();const tex=u=>new Promise((res,rej)=>tl.load(u,res,undefined,()=>rej(new Error(u))));
   progress('LOADING TERRAIN');
-  const [tb,bb,roads,to,ti,streets,estates]=await Promise.all([get('assets/terrain.json'),get('assets/buildings.json'),get('assets/roads.json','json'),tex('assets/aerial_outer.jpg'),tex('assets/aerial_inner.jpg'),get('assets/streets.json','json').catch(()=>[]),get('assets/estates.json','json').catch(()=>[])]);
+  const [tb,bb,roads,to,ti,streets,estates,lb,tla]=await Promise.all([get('assets/terrain.json'),get('assets/buildings.json'),get('assets/roads.json','json'),tex('assets/aerial_outer.jpg'),tex('assets/aerial_inner.jpg'),get('assets/streets.json','json').catch(()=>[]),get('assets/estates.json','json').catch(()=>[]),get('assets/lantau.json').catch(()=>null),tex('assets/aerial_lantau.jpg').catch(()=>null)]);
   GEO.streets=streets;GEO.estates=estates;
   const hd=new Int32Array(tb,0,4);const nO=hd[0]*hd[1],nI=hd[2]*hd[3];
   const hO=new Int16Array(tb,16,nO),hI=new Int16Array(tb,16+nO*2,nI);
@@ -739,9 +739,12 @@ async function loadGeo(progress){
   GEO.O=mk(GEO.outer,hd[0],hd[1],hO);GEO.I=mk(GEO.inner,hd[2],hd[3],hI);
   for(const G of[GEO.O,GEO.I])for(let j=0;j<G.nz;j++)for(let i=0;i<G.nx;i++){const x=G.x0+i*G.d,z=G.z0+j*G.d;for(const w of WATER1998)if(x>w[0]&&x<w[1]&&z>w[2]&&z<w[3])G.h[j*G.nx+i]=-8;
     const s=rwS(x,z),l=rwL(x,z);if(s>-140&&s<RWY.len+120&&l>-200&&l<180||APRON(s,l+60)||APRON(s,l-60)||(s>-215&&s<-135&&l>-600&&l<-265))G.h[j*G.nx+i]=Math.min(G.h[j*G.nx+i],2.5)}
+  // west Lantau (Ngong Ping and the Big Buddha): its east column takes the outer grid's heights so the two meshes meet without a step
+  if(lb&&tla){const hl=new Int32Array(lb,0,2),L=mk(GEO.lantau,hl[0],hl[1],new Int16Array(lb,8,hl[0]*hl[1]));
+    for(let j=0;j<L.nz;j++)L.h[j*L.nx+L.nx-1]=gridSample(GEO.O,GEO.outer.x0+.01,L.z0+j*L.d);GEO.L=L;TEX.lantau=tla}
   const nb=new Int32Array(bb,0,1)[0];GEO.B=new Int16Array(bb,4,nb*6);GEO.nb=nb;GEO.roads=roads;
   for(const t of[to,ti]){t.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());t.minFilter=THREE.LinearMipmapLinearFilter}
-  TEX.outer=to;TEX.inner=ti;
+  TEX.outer=to;TEX.inner=ti;if(TEX.lantau){TEX.lantau.anisotropy=to.anisotropy;TEX.lantau.minFilter=THREE.LinearMipmapLinearFilter}
 }
 
 /* ---------------- aircraft data ---------------- */
@@ -988,6 +991,7 @@ function terrainMesh(G,R,tex,skipInner,offset){
 function buildTerrain(){
   terrainMesh(GEO.O,GEO.outer,TEX.outer,true,0);
   terrainMesh(GEO.I,GEO.inner,TEX.inner,false,-1);
+  if(GEO.L)terrainMesh(GEO.L,GEO.lantau,TEX.lantau,false,0);
   buildShoreTexture();
   water=new THREE.Mesh(new THREE.PlaneGeometry(160000,160000),waterMaterial());
   water.rotation.x=-Math.PI/2;water.position.y=0;scene.add(water);
@@ -1633,6 +1637,53 @@ function buildPeak(){
    const rgm=new THREE.BufferGeometry();rgm.setAttribute('position',new THREE.Float32BufferAttribute(rl,3));g.add(new THREE.LineSegments(rgm,new THREE.LineBasicMaterial({color:0x7a6f5c})));
    scene.add(g);addCollider(x-14,x+14,z-10,z+10,b+10,'the Peak Lookout');L.push(x,b+5,z,1,.84,.52,3.5,-1)}
   scene.add(makeLights(L));
+}
+/* The Tian Tan Buddha (1993) at Ngong Ping, Lantau: a 34 m seated bronze Buddha on a three-tier altar on Mok Yu Shan, facing north,
+   268 steps up from the plateau, six bronze devas offering on the altar, and Po Lin Monastery's halls below. Floodlit at night. */
+const BUDDHA={x:-29635,z:7922,po:[-29281,7727]};
+function buildBigBuddha(){
+  if(!GEO.L)return;
+  const {x,z}=BUDDHA;let b=1e9;for(let a=0;a<8;a++)b=Math.min(b,terrainAt(x+Math.cos(a*.785)*30,z+Math.sin(a*.785)*30));b=Math.max(b,terrainAt(x,z)-6);
+  const bronze=new THREE.MeshLambertMaterial({color:0x74643f}),stone=new THREE.MeshLambertMaterial({color:0xdcd6c6}),rail=new THREE.MeshLambertMaterial({color:0xf1eee4});
+  const g=new THREE.Group();g.position.set(x,b,z);g.rotation.y=Math.PI;   // the statue's front (+z in the group) faces north (-z)
+  // the altar: three round tiers (after the Temple of Heaven), each ringed by a white balustrade; the lowest runs down into the hill
+  const T=[[31,5,-14],[25.5,5,0],[20,5,0]];let y=0;
+  for(const [r,h,d] of T){const hh=h-d,y0=d<0?d:y;const t=new THREE.Mesh(new THREE.CylinderGeometry(r,r+.6,hh,40).translate(0,y0+hh/2,0),stone);g.add(t);y=y0+hh;
+    const rl=new THREE.Mesh(new THREE.TorusGeometry(r-.6,.35,4,48).rotateX(Math.PI/2).translate(0,y+1.1,0),rail);g.add(rl);
+    for(let i=0;i<32;i++){const a=i/32*Math.PI*2;g.add(new THREE.Mesh(new THREE.BoxGeometry(.5,1.2,.5).translate(Math.cos(a)*(r-.6),y+.6,Math.sin(a)*(r-.6)),rail))}
+    t.userData.neon=0x4a463c;landmarkLights.push(t)}
+  const top=y;
+  // the six devas, kneeling with their offerings, round the second tier
+  for(let i=0;i<6;i++){const a=(i+.5)/6*Math.PI*2,r=23,d=new THREE.Group();d.position.set(Math.cos(a)*r,T[0][1]+T[1][1],Math.sin(a)*r);d.rotation.y=-a-Math.PI/2;
+    d.add(new THREE.Mesh(new THREE.CylinderGeometry(.9,1.3,2.6,8).translate(0,1.3,0),bronze),new THREE.Mesh(new THREE.SphereGeometry(.6,8,6).translate(0,3.1,0),bronze),new THREE.Mesh(new THREE.BoxGeometry(1,.6,1).translate(0,2.4,1.1),bronze));g.add(d)}
+  // lotus throne
+  g.add(new THREE.Mesh(new THREE.CylinderGeometry(13,11,4.5,32).translate(0,top+2.25,0),bronze));
+  for(let i=0;i<18;i++){const a=i/18*Math.PI*2,p=new THREE.Mesh(new THREE.SphereGeometry(2.6,10,8),bronze);p.scale.set(1,1.5,.55);p.position.set(Math.cos(a)*12.6,top+3.4,Math.sin(a)*12.6);p.rotation.y=-a+Math.PI/2;p.rotation.x=-.35;g.add(p)}
+  const Y=top+4.5;
+  const part=(geo,px,py,pz,sx,sy,sz)=>{const m=new THREE.Mesh(geo,bronze);m.position.set(px,Y+py,pz);m.scale.set(sx||1,sy||1,sz||1);g.add(m);return m};
+  const limb=(a,b2,r0,r1)=>{const A=new THREE.Vector3(a[0],Y+a[1],a[2]),B=new THREE.Vector3(b2[0],Y+b2[1],b2[2]),L=A.distanceTo(B);
+    const m=new THREE.Mesh(new THREE.CylinderGeometry(r1,r0,L,12),bronze);m.position.copy(A).add(B).multiplyScalar(.5);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),B.clone().sub(A).normalize());g.add(m);
+    const j=new THREE.Mesh(new THREE.SphereGeometry(r1,10,8),bronze);j.position.copy(B);g.add(j);return m};
+  part(new THREE.SphereGeometry(1,24,14),0,3,1,11.5,3.6,7.5);                      // crossed legs under the robe
+  part(new THREE.CylinderGeometry(6.4,8.2,12,24).translate(0,6,0),0,4,0,1,1,.72);    // torso
+  part(new THREE.SphereGeometry(1,24,12),0,15.6,0,8,3.4,5.2);                       // shoulders
+  part(new THREE.CylinderGeometry(2.2,2.6,3,14),0,18.2,0);                          // neck
+  const head=part(new THREE.SphereGeometry(4.2,24,18),0,22.4,.3,1,1.15,1.02);       // head
+  part(new THREE.SphereGeometry(2.3,16,12),0,27.3,0,1,.9,1);                        // ushnisha (the topknot)
+  for(const sx of[-1,1])part(new THREE.BoxGeometry(.8,4.4,1.4),sx*4.2,21.4,-.2);    // long earlobes
+  // right hand raised (abhaya, removing affliction); left hand resting on the lap (varada, bestowing blessings)
+  limb([-7.2,15.2,0],[-9,9.4,1.6],2.1,1.8);limb([-9,9.4,1.6],[-8.6,15.4,5.2],1.8,1.3);part(new THREE.BoxGeometry(2.6,3.4,.9),-8.6,17.2,5.6);   // (the group is turned to face north, so the statue's right is -x here)
+  limb([7.2,15.2,0],[8.6,9,1.4],2.1,1.8);limb([8.6,9,1.4],[4.2,6.6,6.4],1.8,1.3);part(new THREE.BoxGeometry(2.8,.9,3),3.4,6.4,7.4);
+  head.userData.neon=0x4a3a22;landmarkLights.push(head);   // floodlit: the bronze material is shared, so the whole statue glows
+  scene.add(g);addCollider(x-31,x+31,z-31,z+31,b+top+34,'the Big Buddha');
+  // the 268 steps: a straight flight down the north face of the hill to the plateau
+  const sm=new THREE.MeshLambertMaterial({color:0xcfc9b8});let px=x,pz=z-31,py=b+T[0][1];
+  for(let i=0;i<26;i++){const nz=pz-7,ny=Math.min(py,Math.max(terrainAt(x,nz)+.4,py-3.2));const st=new THREE.Mesh(new THREE.BoxGeometry(8,Math.max(.6,py-ny+.6),7).translate(0,0,0),sm);st.position.set(x,(py+ny)/2-.3,pz-3.5);scene.add(st);pz=nz;py=ny;if(terrainAt(x,nz-7)>=py-.5)break}
+  // Po Lin Monastery: the main shrine hall and its neighbours, red walls under yellow tiled roofs
+  const [mx,mz]=BUDDHA.po,mb=terrainAt(mx,mz),wall=new THREE.MeshLambertMaterial({color:0xa8432c}),roof=new THREE.MeshLambertMaterial({color:0xd6a531});
+  for(const [dx,dz,w,d,h] of[[0,0,34,26,12],[0,-42,24,16,8],[-36,6,16,30,7],[36,6,16,30,7]]){const hx=mx+dx,hz=mz+dz,hb=Math.min(mb,terrainAt(hx,hz));
+    box(w,h+6,d,wall,hx,hb-6,hz);const r=new THREE.Mesh(new THREE.ConeGeometry(Math.hypot(w,d)/2+2,h*.55,4,1).rotateY(Math.PI/4).translate(0,h*.275,0),roof);r.scale.set((w+4)/Math.hypot(w,d),1,(d+4)/Math.hypot(w,d));r.position.set(hx,hb+h,hz);scene.add(r);
+    addCollider(hx-w/2,hx+w/2,hz-d/2,hz+d/2,hb+h*1.55,'Po Lin Monastery')}
 }
 function buildLandmarks(){
   const L=[];
@@ -5790,7 +5841,7 @@ async function boot(){
   const ld=document.getElementById('loading');
   try{await loadGeo(t=>ld.textContent=t)}catch(e){ld.textContent='COULD NOT LOAD MAP DATA. OPEN THIS PAGE FROM A WEB SERVER, NOT A FILE.';console.error(e);return}
   ld.textContent='BUILDING HONG KONG…';await new Promise(r=>setTimeout(r,20));
-  buildTerrain();buildRoads();buildLandmarks();buildCity();buildHappyValley();buildOceanPark();buildPeak();buildStreetScene();buildBillboards();buildAirport();buildGSE();buildPort();buildShips();buildRain();
+  buildTerrain();buildRoads();buildLandmarks();buildCity();buildHappyValley();buildOceanPark();buildBigBuddha();buildPeak();buildStreetScene();buildBillboards();buildAirport();buildGSE();buildPort();buildShips();buildRain();
   resize();showSetup();ld.hidden=true;
   requestAnimationFrame(frame);
 }
