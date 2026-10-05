@@ -723,7 +723,7 @@ async function loadGeo(progress){
   const mk=(R,nx,nz,src)=>{const h=new Float32Array(src.length);for(let i=0;i<src.length;i++)h[i]=src[i]/10;return {x0:R.x0,z0:R.z0,nx,nz,d:(R.x1-R.x0)/(nx-1),h}};
   GEO.O=mk(GEO.outer,hd[0],hd[1],hO);GEO.I=mk(GEO.inner,hd[2],hd[3],hI);
   for(const G of[GEO.O,GEO.I])for(let j=0;j<G.nz;j++)for(let i=0;i<G.nx;i++){const x=G.x0+i*G.d,z=G.z0+j*G.d;for(const w of WATER1998)if(x>w[0]&&x<w[1]&&z>w[2]&&z<w[3])G.h[j*G.nx+i]=-8;
-    const s=rwS(x,z),l=rwL(x,z);if(s>-140&&s<RWY.len+120&&l>-200&&l<180||APRON(s,l+60)||APRON(s,l-60))G.h[j*G.nx+i]=Math.min(G.h[j*G.nx+i],2.5)}
+    const s=rwS(x,z),l=rwL(x,z);if(s>-140&&s<RWY.len+120&&l>-200&&l<180||APRON(s,l+60)||APRON(s,l-60)||(s>-215&&s<-135&&l>-1010&&l<-690))G.h[j*G.nx+i]=Math.min(G.h[j*G.nx+i],2.5)}
   const nb=new Int32Array(bb,0,1)[0];GEO.B=new Int16Array(bb,4,nb*6);GEO.nb=nb;GEO.roads=roads;
   for(const t of[to,ti]){t.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());t.minFilter=THREE.LinearMipmapLinearFilter}
   TEX.outer=to;TEX.inner=ti;
@@ -1308,6 +1308,7 @@ const LANDMARK_CLEAR=[];
 function clearanceCap(x,z){const i=pathNearestGlobal(x,z);const p=PATH.pts[i];if(p.d<-60)return 999;const lat=Math.abs(pathLateral(i,x,z));return (p.alt-24)+Math.max(0,lat-200)*.55}
 function skipFootprint(x,z){
   const s=rwS(x,z),l=rwL(x,z);if(s>-170&&s<RWY.len+200&&l>-1240&&l<200)return true;        // Kai Tak airport (modern development there)
+  if(s>-218&&s<-140&&l>-1015&&l<-685)return true;                                        // the terminal car park on the landside strip
   if(x>-4400&&x<-2750&&z>500&&z<3150)return true;                                        // West Kowloon: 1998 reclamation, not yet built on
   for(const w of WATER1998)if(x>w[0]&&x<w[1]&&z>w[2]&&z<w[3])return true;
   if(Math.abs(x-WALLED.x)<WALLED.w/2+25&&Math.abs(z-WALLED.z)<WALLED.d/2+25)return true;
@@ -1794,11 +1795,7 @@ function tiBanner(){
 function buildTerminalFacade(){
   const p=rwP(TI_S,TI_L),G=new THREE.Group();G.position.set(p[0],RWY.elev,p[1]);G.rotation.y=-RWY.hdg*D2R;scene.add(G);
   const Z=55.12;   // the landside wall (s = -134)
-  const sign=canvasTex(2048,512,g=>{g.fillStyle='#f4f2ea';g.fillRect(0,0,2048,512);g.fillStyle='#fff';g.beginPath();g.arc(250,256,205,0,7);g.fill();g.strokeStyle='#1a1a1a';g.lineWidth=14;g.beginPath();g.arc(250,256,205,0,7);g.stroke();
-    g.fillStyle='#1a1a1a';g.textAlign='center';g.textBaseline='middle';g.font='bold 44px '+TI_FE;for(let i=1;i<=12;i++){const a=i/12*Math.PI*2;g.fillText(String(i),250+Math.sin(a)*160,256-Math.cos(a)*160)}
-    g.lineCap='round';g.lineWidth=16;g.beginPath();g.moveTo(250,256);g.lineTo(250+Math.sin(-1.05)*104,256-Math.cos(-1.05)*104);g.stroke();g.lineWidth=10;g.beginPath();g.moveTo(250,256);g.lineTo(250+Math.sin(.35)*150,256-Math.cos(.35)*150);g.stroke();
-    g.textAlign='left';g.fillStyle='#14202e';g.font='bold 92px '+TI_FE;g.fillText('HONG KONG INTERNATIONAL AIRPORT',520,150);g.font='bold 150px '+TI_FE;g.fillText('KAI TAK',520,290);g.font='bold 120px '+TI_FZ;g.fillText('香港啟德國際機場',520,430)});
-  const sm=new THREE.MeshBasicMaterial({map:sign}),sp=new THREE.Mesh(new THREE.PlaneGeometry(70,17.5),sm);sp.position.set(-24,15.2,Z);G.add(sp);
+  // (the clock and the airport sign are on the car park's end wall)
   const dark=new THREE.MeshBasicMaterial({color:0x1d2a30}),glass=canvasTex(1024,128,g=>{g.fillStyle='#22323a';g.fillRect(0,0,1024,128);g.fillStyle='#16222a';for(let i=0;i<=16;i++)g.fillRect(i*64-3,0,6,128);g.fillStyle='#4a6672';g.fillRect(0,60,1024,5)});
   const door=new THREE.Mesh(new THREE.PlaneGeometry(64,4.6),new THREE.MeshBasicMaterial({map:glass}));door.position.set(-24,2.5,Z);G.add(door);
   const cm=new THREE.MeshLambertMaterial({color:0xe8e5db});
@@ -2332,7 +2329,7 @@ function buildAirport(){
   buildSouthApron(placeAlong);
   buildAirfieldSigns(placeAlong);
   scene.add(grp);
-  // terminal: the pier runs along l, at right angles to the runway, its face (s = -78) toward the apron; the main block and the car park lie beyond its west end
+  // terminal: the pier runs along l, at right angles to the runway, its face (s = -78) toward the apron; the main block lies beyond its west end, the car park along its landside
   const termM=cityMaterial({color:0xd9d5c8}),roofM=new THREE.MeshLambertMaterial({color:0x8d8b84});
   const solid=(s0,s1,l0,l1,h,name,mat,roofCol)=>{ // a building as a box in runway coordinates, with its collider (split along the longer side so the bounding boxes stay tight)
     const ds=s1-s0,dl=l1-l0,m=new THREE.Mesh(new THREE.BoxGeometry(dl,h,ds).translate(0,h/2,0),mat||termM);placeAlong(m,(s0+s1)/2,(l0+l1)/2,RWY.elev);
@@ -2442,7 +2439,7 @@ function buildAirport(){
   }
   }}
   // the smaller maintenance and airline buildings on the landside edge of the strip, from the chart (west of the terminal block)
-  solid(-200,-150,-1060,-1010,14,'the Kai Tak maintenance offices');solid(-215,-165,-1005,-960,12,'the Kai Tak maintenance offices');solid(-182,-142,-935,-880,10,'the Kai Tak maintenance offices');
+  solid(-200,-150,-1060,-1010,14,'the Kai Tak maintenance offices');   // the car park now fills the strip in front of the terminal block
   solid(1975,2110,-505,-470,9,'the flight services building',cityMaterial({color:0xdedbd0}),new THREE.MeshLambertMaterial({color:0x4c4a46}));   // beside the helipads on the south apron
   // Control tower: on the roof of the passenger terminal at its runway end (the root of the pier), on the apron side, as in period photos: from the cab the
   // controllers looked down onto the taxiway and runway with the harbour beyond, and along the pier and apron toward Lion Rock.
@@ -2489,38 +2486,54 @@ function buildAirport(){
    const C=[rwP(TS-9,TL-11),rwP(TS+9,TL+11),rwP(TS-9,TL+11),rwP(TS+9,TL-11)];
    addCollider(Math.min(...C.map(q=>q[0])),Math.max(...C.map(q=>q[0])),Math.min(...C.map(q=>q[1])),Math.max(...C.map(q=>q[1])),R0+21,'the control tower');
    const E=rwP(TS+4.5,TL);ST.tower=[E[0],RWY.elev+R0+16.4,E[1]]}   // controller's eye, just inside the apron-side glass
-  // multi-storey car park beside the main terminal block: the spotters' roof
-  {const cs=36,cl=-955,ch=17,W=110,D=120;const cp=new THREE.Mesh(new THREE.BoxGeometry(W,ch,D).translate(0,ch/2,0),cityMaterial({color:0xcfcac0}));placeAlong(cp,cs,cl,RWY.elev);
-   for(let y=3.4;y<ch;y+=3.4){const sl=new THREE.Mesh(new THREE.BoxGeometry(W+1,.5,D+1).translate(0,y,0),new THREE.MeshLambertMaterial({color:0x9a968c}));placeAlong(sl,cs,cl,RWY.elev)}
-   // roof deck: asphalt with painted bays on the far side, a yellow kerb line and lane dashes
-   const R=ch+.3,cg=new THREE.Group();placeAlong(cg,cs,cl,RWY.elev);
-   const roof=new THREE.Mesh(new THREE.BoxGeometry(W,.3,D).translate(0,ch+.15,0),new THREE.MeshLambertMaterial({color:0x6e6c68}));cg.add(roof);
-   const deckTex=canvasTex(880,960,(g,w,h)=>{g.fillStyle='#6f6d69';g.fillRect(0,0,w,h);for(let i=0;i<2600;i++){g.fillStyle='rgba('+(Math.random()<.5?'0,0,0':'255,255,255')+','+(.03+Math.random()*.05)+')';g.fillRect(Math.random()*w,Math.random()*h,2+Math.random()*10,1+Math.random()*3)}
-    g.fillStyle='#f6f6f2';const bay=(x0,x1,edge)=>{for(let y=20;y<=h-20;y+=20)g.fillRect(x0,y-1,x1-x0,3);if(edge!==false){g.fillRect(x0-1,20,3,h-40);g.fillRect(x1-1,20,3,h-40)}}; // white bay lines: 5 x 2.5 m bays
-    bay(0,40);bay(100,140);bay(140,180,false);g.fillRect(179,20,3,h-40);bay(240,280);bay(280,320,false);g.fillRect(319,20,3,h-40);bay(380,420);bay(420,460,false);g.fillRect(459,20,3,h-40); // a row against the far wall, then three back-to-back double rows with aisles between
-    for(let y=40;y<h-40;y+=64)g.fillRect(w/2-1,y,3,32); // lane dashes
-    g.fillStyle='#d9b32a';g.fillRect(w-20,0,4,h);g.fillRect(0,0,w,4);g.fillRect(0,h-4,w,4)}); // kerb line inside the crowd barrier
-   const deck=new THREE.Mesh(new THREE.PlaneGeometry(W,D).rotateX(-Math.PI/2).translate(0,R+.02,0),new THREE.MeshLambertMaterial({map:deckTex}));cg.add(deck);
-   // parapet: four walls (outer edge W+1 x D+1), 1 m above the deck
-   const wallM=new THREE.MeshLambertMaterial({color:0xbdb8ad}),capM=new THREE.MeshLambertMaterial({color:0xd2cec3}),pH=.7;
-   for(const [x,z,w,d] of [[W/2+.25,0,.5,D+1],[-W/2-.25,0,.5,D+1],[0,D/2+.25,W+1,.5],[0,-D/2-.25,W+1,.5]]){const wl=new THREE.Mesh(new THREE.BoxGeometry(w,pH+.3,d).translate(x,ch+(pH+.3)/2,z),wallM);cg.add(wl);const cp2=new THREE.Mesh(new THREE.BoxGeometry(w+.12,.08,d+.12).translate(x,R+pH+.04,z),capM);cg.add(cp2)}
-   // railings: a pipe rail on posts along the top of the parapet (white on the runway side, as in the 1990s photos), plus grey crowd barriers set back 2.2 m
-   const dm=new THREE.Object3D(),railM=new THREE.MeshLambertMaterial({color:0xeeeeea}),barM=new THREE.MeshLambertMaterial({color:0x8b9094}),railPosts=[],barPosts=[];
-   const rail=(x0,z0,x1,z1,y,t,m,posts,step,ph)=>{const L=Math.hypot(x1-x0,z1-z0),a=Math.atan2(x1-x0,z1-z0);const r=new THREE.Mesh(new THREE.BoxGeometry(t,t,L).translate(0,y,0),m);r.position.set((x0+x1)/2,0,(z0+z1)/2);r.rotation.y=a;cg.add(r);
-    if(posts){const n=Math.max(1,Math.round(L/step));for(let i=0;i<=n;i++){const f=i/n;posts.push([x0+(x1-x0)*f,z0+(z1-z0)*f,ph])}}};
-   const topY=R+pH+.04;
-   for(const [x0,z0,x1,z1] of [[W/2+.25,-D/2,W/2+.25,D/2],[-W/2-.25,-D/2,-W/2-.25,D/2],[-W/2,D/2+.25,W/2,D/2+.25],[-W/2,-D/2-.25,W/2,-D/2-.25]]){rail(x0,z0,x1,z1,topY+.5,.07,railM,railPosts,2.6,.5);rail(x0,z0,x1,z1,topY+.25,.05,railM,null)}
-   rail(W/2-2.2,-D/2+2,W/2-2.2,D/2-2,R+1.05,.06,barM,barPosts,2.4,1.05);rail(W/2-2.2,-D/2+2,W/2-2.2,D/2-2,R+.55,.05,barM,null); // crowd barrier
-   const mkInst=(geo,mat,arr,fn)=>{const im=new THREE.InstancedMesh(geo,mat,arr.length);arr.forEach((p,i)=>{dm.position.set(p[0],fn(p),p[1]);dm.rotation.set(0,0,0);dm.scale.set(1,p[2]||1,1);dm.updateMatrix();im.setMatrixAt(i,dm.matrix)});cg.add(im);return im};
-   mkInst(new THREE.BoxGeometry(.07,1,.07),railM,railPosts,p=>topY+p[2]/2);mkInst(new THREE.BoxGeometry(.06,1,.06),barM,barPosts,p=>R+p[2]/2);
-   // lamp standards: black poles with white globes. Two staggered rows on the runway side (the nearer row 7 m in from the parapet), one row along the far edge
-   const lampPts=[];for(let z=-50;z<=50;z+=20)lampPts.push([W/2-7,z]);for(let z=-40;z<=40;z+=20)lampPts.push([W/2-30,z]);for(let z=-50;z<=50;z+=25)lampPts.push([-W/2+6,z]);
-   const poleM=new THREE.MeshLambertMaterial({color:0x1b1b1d}),globeM=new THREE.MeshLambertMaterial({color:0xf4f1e6});
-   mkInst(new THREE.CylinderGeometry(.07,.09,1,8),poleM,lampPts.map(p=>[p[0],p[1],5.2]),p=>R+p[2]/2);
-   mkInst(new THREE.CylinderGeometry(.22,.12,.3,10),poleM,lampPts,p=>R+5.3); // cap under the globe
-   const gl=mkInst(new THREE.SphereGeometry(.55,14,10),globeM,lampPts,p=>R+5.9);gl.material.userData={};gl.userData.neon=0xfff0c0;landmarkLights.push(gl);
-   // stairwell head at the north-east corner: white block, flat roof slab, steel door, green exit sign and a yellow caution board
-   {const sx=W/2-9,sz=-(D/2-8.5),SX=10,SZ=6,SH=3.6,fz=sz+SZ/2; // fz: the door face, looking back along the roof (local z runs against the runway's s axis)
+  // Multi-storey car park: a long block on the landside (north) of the passenger terminal, between the terminal and Prince Edward Road, parallel to the terminal and
+  // joined to it by covered footbridges. Two sections, as in the 1990s photos and the Kai Tak model: a taller far section toward the maintenance area and a lower near
+  // section toward the runway, whose end wall carries the clock and the airport sign. The spotters crowd the roof at that end, looking out over Kowloon City at the
+  // aircraft on the IGS turn. Runway coordinates: s -200 to -152 (the terminal's landside wall is at s -134/-140), l -1000 to -700.
+  {const S0=-200,S1=-152,cs=(S0+S1)/2,D=S1-S0,LF=-1000,LS=-830,LN=-700,H1=27.2,H2=23.8,NAME='the Kai Tak car park';
+   const bodyM=cityMaterial({color:0xd8d4ca}),slabM=new THREE.MeshLambertMaterial({color:0x9a968c}),wallM=new THREE.MeshLambertMaterial({color:0xe2ded4}),capM=new THREE.MeshLambertMaterial({color:0xd2cec3});
+   const railM=new THREE.MeshLambertMaterial({color:0xeeeeea}),poleM=new THREE.MeshLambertMaterial({color:0x1b1b1d}),globeM=new THREE.MeshLambertMaterial({color:0xf4f1e6}),dm=new THREE.Object3D();
+   const col=(s0,s1,l0,l1,h)=>{const c=[rwP(s0,l0),rwP(s0,l1),rwP(s1,l0),rwP(s1,l1)];addCollider(Math.min(...c.map(q=>q[0])),Math.max(...c.map(q=>q[0])),Math.min(...c.map(q=>q[1])),Math.max(...c.map(q=>q[1])),h,NAME);AIRBOX.push({s0,s1,l0,l1,name:NAME})};
+   const inst=(g,geo,mat,arr,set)=>{const im=new THREE.InstancedMesh(geo,mat,arr.length);arr.forEach((p,i)=>{set(p);dm.updateMatrix();im.setMatrixAt(i,dm.matrix);if(p.c!=null)im.setColorAt(i,new THREE.Color(p.c))});g.add(im);return im};
+   // roof deck texture: 40 m of deck (l) by the full depth (s): a row of 5 m bays along each long side and a back-to-back double row down the middle, aisles between
+   const deckTex=canvasTex(512,616,(g,w,h)=>{g.fillStyle='#6f6d69';g.fillRect(0,0,w,h);for(let i=0;i<1600;i++){g.fillStyle='rgba('+(Math.random()<.5?'0,0,0':'255,255,255')+','+(.03+Math.random()*.05)+')';g.fillRect(Math.random()*w,Math.random()*h,2+Math.random()*10,1+Math.random()*3)}
+    const k=h/D;g.fillStyle='#f6f6f2';const row=(y0,y1)=>{for(let x=0;x<w;x+=w/16)g.fillRect(x,y0*k,3,(y1-y0)*k);g.fillRect(0,y0*k,w,2);g.fillRect(0,y1*k-2,w,2)};
+    row(1.5,6.5);row(17,22);row(22,27);row(41.5,46.5);g.fillStyle='#d9b32a';for(const y of[11.5,34.5])for(let x=0;x<w;x+=64)g.fillRect(x,y*k-2,32,4)},true);
+   // one section of the building: a box with slab bands, a parapet and rail all round, the deck, lamps and parked cars; group local x = l (toward the runway), z = -s
+   const section=(l0,l1,h,near)=>{const len=l1-l0,lc=(l0+l1)/2,g=new THREE.Group();placeAlong(g,cs,lc,RWY.elev);const R=h+.3;
+    g.add(new THREE.Mesh(new THREE.BoxGeometry(len,h+3,D).translate(0,(h+3)/2-3,0),bodyM));   // footed 3 m below the apron level so no gap shows on the landside slope
+    for(let y=3.4;y<h;y+=3.4)g.add(new THREE.Mesh(new THREE.BoxGeometry(len+1,.6,D+1).translate(0,y,0),slabM));   // the open-deck floor slabs
+    g.add(new THREE.Mesh(new THREE.BoxGeometry(len,.3,D).translate(0,h+.15,0),new THREE.MeshLambertMaterial({color:0x6e6c68})));
+    const tx=deckTex.clone();tx.needsUpdate=true;tx.wrapS=tx.wrapT=THREE.RepeatWrapping;tx.repeat.set(len/40,1);
+    g.add(new THREE.Mesh(new THREE.PlaneGeometry(len,D).rotateX(-Math.PI/2).translate(0,R+.02,0),new THREE.MeshLambertMaterial({map:tx})));
+    const pH=.8,top=R+pH;
+    for(const[x,z,w,d]of[[len/2+.25,0,.5,D+1],[-len/2-.25,0,.5,D+1],[0,D/2+.25,len+1,.5],[0,-D/2-.25,len+1,.5]]){if(near&&x<-1)continue;   // the far end of the low section abuts the taller one
+     g.add(new THREE.Mesh(new THREE.BoxGeometry(w,pH+.3,d).translate(x,h+(pH+.3)/2,z),wallM));g.add(new THREE.Mesh(new THREE.BoxGeometry(w+.12,.08,d+.12).translate(x,top,z),capM));
+     g.add(new THREE.Mesh(new THREE.BoxGeometry(Math.max(w,.07),.07,Math.max(d,.07)).translate(x,top+.5,z),railM))}
+    const lamps=[];for(let x=-len/2+8;x<len/2-4;x+=22)for(const z of[-D/2+3,D/2-3])lamps.push({x,z});
+    inst(g,new THREE.CylinderGeometry(.07,.09,5.2,8),poleM,lamps,p=>{dm.position.set(p.x,R+2.6,p.z)});
+    const gl=inst(g,new THREE.SphereGeometry(.55,14,10),globeM,lamps,p=>{dm.position.set(p.x,R+5.9,p.z)});gl.userData.neon=0xfff0c0;landmarkLights.push(gl);
+    const cars=[],cc=[0xc9c9c9,0x2b3a55,0x8a1f1f,0xe8e4d8,0x1d1d20,0x3a5f4a,0xb8a23a,0x5a6f8c];
+    for(const zm of[4,19.5,24.5,44])for(let x=-len/2+1.4;x<len/2-1.4;x+=2.5){if(near&&x>len/2-30)continue;if(rnd()<.62)cars.push({x,z:D/2-zm,c:pick(cc)})}   // the spotters' end is kept clear
+    inst(g,new THREE.BoxGeometry(1.8,1.3,4.4).translate(0,.8,0),new THREE.MeshLambertMaterial({color:0xffffff}),cars,p=>{dm.position.set(p.x,R+.02,p.z);dm.rotation.set(0,0,0);dm.scale.set(1,1,1)});
+    col(S0,S1,l0,l1,h+3);return g};
+   section(LF,LS,H1,false);const near=section(LS,LN,H2,true);
+   // stair and lift towers on the terminal side, rising above the roofs
+   for(const[l,h,w]of[[LF+7,H1+6,10],[LS-7,H1+7,11],[LN-60,H2+6,9]]){placeAlong(new THREE.Mesh(new THREE.BoxGeometry(w,h,9).translate(0,h/2,0),wallM),S1-6,l,RWY.elev);placeAlong(new THREE.Mesh(new THREE.BoxGeometry(w+.6,.4,9.6).translate(0,h+.2,0),slabM),S1-6,l,RWY.elev)}
+   // covered footbridges across to the terminal's landside wall
+   const glassM=new THREE.MeshLambertMaterial({color:0x40565e}),bridgeM=new THREE.MeshLambertMaterial({color:0xe6e3da});
+   for(const l of[-975,-905,-785]){placeAlong(new THREE.Mesh(new THREE.BoxGeometry(7,3.4,15).translate(0,8.2,0),bridgeM),-145.5,l,RWY.elev);placeAlong(new THREE.Mesh(new THREE.BoxGeometry(7.1,1.6,13).translate(0,8.9,0),glassM),-145.5,l,RWY.elev)}
+   // the end wall toward the runway: the clock and the airport sign (moved here from the terminal), on a white panel that stands proud of the decks
+   {const sign=canvasTex(2048,640,g=>{g.fillStyle='#f4f2ea';g.fillRect(0,0,2048,640);const cx=300,cy=330;g.fillStyle='#fff';g.beginPath();g.arc(cx,cy,230,0,7);g.fill();g.strokeStyle='#1a1a1a';g.lineWidth=14;g.beginPath();g.arc(cx,cy,230,0,7);g.stroke();
+     g.fillStyle='#1a1a1a';g.textAlign='center';g.textBaseline='middle';g.font='bold 48px '+TI_FE;for(let i=1;i<=12;i++){const a=i/12*Math.PI*2;g.fillText(String(i),cx+Math.sin(a)*182,cy-Math.cos(a)*182)}
+     g.lineCap='round';g.lineWidth=18;g.beginPath();g.moveTo(cx,cy);g.lineTo(cx+Math.sin(-1.05)*118,cy-Math.cos(-1.05)*118);g.stroke();g.lineWidth=11;g.beginPath();g.moveTo(cx,cy);g.lineTo(cx+Math.sin(.35)*170,cy-Math.cos(.35)*170);g.stroke();
+     g.fillStyle='#b3201a';g.beginPath();g.arc(1290,110,40,0,7);g.fill();
+     g.fillStyle='#14202e';g.font='bold 100px '+TI_FE;g.fillText('HONG KONG',1290,215);g.fillText('INTERNATIONAL AIRPORT',1290,330);g.font='bold 110px '+TI_FE;g.fillText('KAI TAK',1290,445);g.font='bold 120px '+TI_FZ;g.fillText('香港啟德國際機場',1290,570)});
+    const pw=D-6,ph=pw*640/2048;
+    placeAlong(new THREE.Mesh(new THREE.BoxGeometry(.8,H2+4.1,D+.6).translate(0,(H2+4.1)/2-3,0),wallM),cs,LN+.4,RWY.elev);
+    const sp=new THREE.Mesh(new THREE.PlaneGeometry(pw,ph).rotateY(Math.PI/2),new THREE.MeshBasicMaterial({map:sign}));placeAlong(sp,cs,LN+.85,RWY.elev+H2-1.5-ph/2)}
+   // stairwell head on the low roof, behind the spotters, on the terminal side: white block, flat roof slab, steel door, green exit sign and a yellow caution board
+   {const R=H2+.3,cg=near,sx=(LN-LS)/2-42,sz=-(D/2-8.5),SX=10,SZ=6,SH=3.6,fz=sz+SZ/2; // fz: the door face, looking back along the roof (local z runs against the runway's s axis)
     const wm=new THREE.MeshLambertMaterial({color:0xe6e3da}),blk=new THREE.Mesh(new THREE.BoxGeometry(SX,SH,SZ).translate(sx,R+SH/2,sz),wm);cg.add(blk);
     const slab=new THREE.Mesh(new THREE.BoxGeometry(SX+.7,.25,SZ+.7).translate(sx,R+SH+.12,sz),new THREE.MeshLambertMaterial({color:0xa9a69e}));cg.add(slab);
     const frame=new THREE.Mesh(new THREE.BoxGeometry(2.7,2.7,.2).translate(sx,R+1.35,fz+.05),new THREE.MeshLambertMaterial({color:0x8f8c84}));cg.add(frame);
@@ -2533,13 +2546,15 @@ function buildAirport(){
     const wlamp=new THREE.Mesh(new THREE.BoxGeometry(.5,.2,.25).translate(sx,R+3.35,fz+.14),new THREE.MeshLambertMaterial({color:0xdedacb}));wlamp.userData.neon=0xfff0c0;landmarkLights.push(wlamp);cg.add(wlamp);
     const vent=new THREE.Mesh(new THREE.BoxGeometry(1.6,.9,1.2).translate(sx-2.5,R+SH+.7,sz),new THREE.MeshLambertMaterial({color:0x8d9296}));cg.add(vent);
     const tank=new THREE.Mesh(new THREE.CylinderGeometry(.8,.8,1.3,12).translate(sx+2.4,R+SH+.9,sz),new THREE.MeshLambertMaterial({color:0xb7b9b5}));cg.add(tank)}
-   // spotters with cameras along the runway-side parapet
-   const pm=[0xf0c9c9,0x2f4f8a,0xe9e6dc,0x8a2f2f,0x3a6b3a];{const cc=[0xc9c9c9,0x2b3a55,0x8a1f1f,0xe8e4d8,0x1d1d20,0x3a5f4a],cm=new THREE.BoxGeometry(4.4,1.3,1.8).translate(0,.8,0);
-    for(const xm of[2.5,15,20,32.5,37.5,50,55])for(let k=0;k<(D*8-40)/20;k++)if(Math.random()<.55){const c=new THREE.Mesh(cm,new THREE.MeshLambertMaterial({color:pick(cc)}));c.position.set(-W/2+xm,R+.02,-D/2+(30+20*k)/8-.1);cg.add(c)}}
-   for(let i=0;i<22;i++){const q=rwP(cs-50+i*4.6+rr(-1.5,1.5),cl+W/2-4.5-(i%3)*1.2);const body=new THREE.Mesh(new THREE.BoxGeometry(.5,1.1,.3).translate(0,.95,0),new THREE.MeshLambertMaterial({color:pick(pm)}));body.position.set(q[0],RWY.elev+ch+.3,q[1]);scene.add(body);
-     const legs=new THREE.Mesh(new THREE.BoxGeometry(.4,.8,.25).translate(0,.4,0),new THREE.MeshLambertMaterial({color:0x2b3550}));legs.position.copy(body.position);scene.add(legs);
-     const head=new THREE.Mesh(new THREE.SphereGeometry(.13,8,6),new THREE.MeshLambertMaterial({color:0x2a211a}));head.position.set(q[0],RWY.elev+ch+.3+1.65,q[1]);scene.add(head)}
-   const q=rwP(cs+8,cl+W/2-.6);SPOTS.carpark=[q[0],RWY.elev+ch+.3+1.75,q[1]];AIRBOX.push({s0:cs-D/2,s1:cs+D/2,l0:cl-W/2,l1:cl+W/2,name:'the Kai Tak car park'});const p=rwP(cs,cl);addCollider(p[0]-80,p[0]+80,p[1]-80,p[1]+80,RWY.elev+ch+1.2,'the Kai Tak car park')}
+   // the spotters: a dense crowd over the runway end of the low roof, thickest along the parapets
+   {const R=H2+.3,ppl=[],pm=[0xf0c9c9,0x2f4f8a,0xe9e6dc,0x8a2f2f,0x3a6b3a,0xe8d27a,0xffffff,0x1d1d20,0x9fb8d6];
+    const len=LN-LS;for(let i=0;i<520;i++){const edge=rnd();let x,z;
+     if(edge<.35){x=len/2-.9-rr(0,2.5);z=rr(-D/2+1,D/2-1)}else if(edge<.6){x=len/2-rr(1,34);z=(rnd()<.5?-1:1)*(D/2-.9-rr(0,2.5))}else{x=len/2-rr(3,26);z=rr(-D/2+3,D/2-3)}
+     ppl.push({x,z,c:pick(pm),h:rr(.9,1.08)})}
+    inst(near,new THREE.BoxGeometry(.48,.85,.3).translate(0,1.25,0),new THREE.MeshLambertMaterial({color:0xffffff}),ppl,p=>{dm.position.set(p.x,R,p.z);dm.scale.set(1,p.h,1)});
+    inst(near,new THREE.BoxGeometry(.4,.82,.26).translate(0,.41,0),new THREE.MeshLambertMaterial({color:0x2b3550}),ppl.map(p=>({x:p.x,z:p.z,h:p.h})),p=>{dm.position.set(p.x,R,p.z);dm.scale.set(1,p.h,1)});
+    inst(near,new THREE.SphereGeometry(.13,8,6).translate(0,1.83,0),new THREE.MeshLambertMaterial({color:0x2a211a}),ppl.map(p=>({x:p.x,z:p.z,h:p.h})),p=>{dm.position.set(p.x,R,p.z);dm.scale.set(1,p.h,1)});dm.scale.set(1,1,1)}
+   const q=rwP(cs+6,LN-1.2);SPOTS.carpark=[q[0],RWY.elev+H2+.3+1.75,q[1]]}
   // a junk moored off the runway in the harbour (south-west side)
   {const q=rwP(1650,330);const j=shipModel('junk');j.position.set(q[0],0,q[1]);j.rotation.y=-(RWY.hdg-90)*D2R;scene.add(j);const bow=new THREE.Vector3(-11,0,0).applyEuler(j.rotation);SPOTS.boat=[q[0]+bow.x,4.6,q[1]+bow.z];SPOTS.boatShip=j}
   // parked aircraft at the terminal, nose toward the pier
