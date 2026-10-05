@@ -2415,12 +2415,50 @@ function buildAirport(){
   // the smaller maintenance and airline buildings on the landside edge of the strip, from the chart (west of the terminal block)
   solid(-200,-150,-1060,-1010,14,'the Kai Tak maintenance offices');solid(-215,-165,-1005,-960,12,'the Kai Tak maintenance offices');solid(-182,-142,-935,-880,10,'the Kai Tak maintenance offices');
   solid(1975,2110,-505,-470,9,'the flight services building',cityMaterial({color:0xdedbd0}),new THREE.MeshLambertMaterial({color:0x4c4a46}));   // beside the helipads on the south apron
-  const TW=rwP(556,-473);ST.tower=[TW[0],RWY.elev+50,TW[1]];
-  {const bb=new THREE.Mesh(new THREE.BoxGeometry(90,7,80).translate(0,3.5,0),cityMaterial({color:0xcfcac0}));placeAlong(bb,556,-473,RWY.elev)}   // the tower's base building, an island in the apron
-  const shaft=new THREE.Mesh(new THREE.CylinderGeometry(4,5,44,8).translate(0,22,0),new THREE.MeshLambertMaterial({color:0xd9d5c8}));shaft.position.set(TW[0],RWY.elev,TW[1]);scene.add(shaft);
-  const cab=new THREE.Mesh(new THREE.CylinderGeometry(8,6,6,8).translate(0,47,0),new THREE.MeshLambertMaterial({color:0x2c3b44,emissive:0x0}));cab.position.set(TW[0],RWY.elev,TW[1]);cab.userData.neon=0x5c7f78;landmarkLights.push(cab);scene.add(cab);
-  const cabRoof=new THREE.Mesh(new THREE.CylinderGeometry(9,9,1.4,8).translate(0,50.6,0),new THREE.MeshLambertMaterial({color:0xcfcac0}));cabRoof.position.set(TW[0],RWY.elev,TW[1]);scene.add(cabRoof);
-  addCollider(TW[0]-9,TW[0]+9,TW[1]-9,TW[1]+9,52,'the control tower');
+  // Control tower: on the roof of the passenger terminal's main block, at its apron corner (period photos), not a separate building on the apron.
+  // A plant storey and a dark band rise off the terminal roof; the cab above has the glazing leaning outward (wider at the top, so controllers can see straight
+  // down onto the stands) on a chamfered, rectangular plan, a balcony rail at its foot and a deep flat roof with a dark fascia. Dishes and masts on the roof beside it.
+  {const TS=-33,TL=-879,R0=26,T=new THREE.Group();placeAlong(T,TS,TL,RWY.elev);
+   // a chamfered rectangle (half sizes w, d, corner cut c) as a ring of 8 points
+   const ring=(w,d,c)=>[[w-c,d],[-w+c,d],[-w,d-c],[-w,-d+c],[-w+c,-d],[w-c,-d],[w,-d+c],[w,d-c]];
+   // prism from a bottom ring to a top ring (leaning walls when they differ); each face is mapped 0..1 so a texture repeats per pane
+   const prism=(B,Tp,y0,y1,caps)=>{const P=[],U=[],I=[];const n=B.length;
+     for(let i=0;i<n;i++){const j=(i+1)%n,k=P.length/3;P.push(B[i][0],y0,B[i][1],B[j][0],y0,B[j][1],Tp[j][0],y1,Tp[j][1],Tp[i][0],y1,Tp[i][1]);U.push(0,0,1,0,1,1,0,1);I.push(k,k+2,k+1,k,k+3,k+2)}
+     if(caps)for(const[R,y,up]of[[Tp,y1,1],[B,y0,0]]){const k=P.length/3;for(const q of R){P.push(q[0],y,q[1]);U.push(.5,.5)}for(let i=1;i<n-1;i++)up?I.push(k,k+i+1,k+i):I.push(k,k+i,k+i+1)}
+     const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(P,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(U,2));g.setIndex(I);g.computeVertexNormals();return g};
+   const oct=(w,d,c,y,h,open)=>prism(ring(w,d,c),ring(w,d,c),y,y+h,!open);
+   const wallM=cityMaterial({color:0xdcd8cc}),darkM=new THREE.MeshLambertMaterial({color:0x2b3a4a}),slabM=new THREE.MeshLambertMaterial({color:0xd8d5cc});
+   // plant storey with a window band on every face
+   const stem=new THREE.Mesh(new THREE.BoxGeometry(18,10,14).translate(0,R0+5,0),wallM);T.add(stem);
+   const band=canvasTex(256,32,g=>{g.fillStyle='#dcd8cc';g.fillRect(0,0,256,32);g.fillStyle='#26343c';for(let i=0;i<8;i++)g.fillRect(i*32+4,9,24,14)});
+   const bm=new THREE.MeshLambertMaterial({map:band});
+   for(const[w,d,ry]of[[18,7.02,0],[18,-7.02,Math.PI],[14,9.02,Math.PI/2],[14,-9.02,-Math.PI/2]]){const q=new THREE.Mesh(new THREE.PlaneGeometry(w,2.6),bm);q.rotation.y=ry;q.position.set(ry===Math.PI/2?d:ry===-Math.PI/2?d:0,R0+6.4,ry===0||ry===Math.PI?d:0);T.add(q)}
+   // the dark storey under the cab, set back, and the cab floor slab with a balcony rail at its edge
+   T.add(new THREE.Mesh(oct(7.6,5.6,1.2,R0+10,3),darkM));
+   T.add(new THREE.Mesh(oct(9.4,7.4,1.6,R0+13,.7),slabM));
+   const rail=canvasTex(128,32,g=>{g.clearRect(0,0,128,32);g.fillStyle='#c9ccc8';g.fillRect(0,0,128,4);g.fillRect(0,16,128,2);for(let i=0;i<128;i+=16)g.fillRect(i,0,3,32)},true);rail.repeat.set(3,1);
+   T.add(new THREE.Mesh(oct(9.35,7.35,1.6,R0+13.7,1.1,true),new THREE.MeshLambertMaterial({map:rail,transparent:true,alphaTest:.4,side:THREE.DoubleSide})));
+   // cab: outward-leaning glazing with mullions, a sill and a head rail
+   const gl=canvasTex(128,128,g=>{const gr=g.createLinearGradient(0,0,0,128);gr.addColorStop(0,'#86a0ab');gr.addColorStop(.5,'#40575f');gr.addColorStop(1,'#25343b');g.fillStyle=gr;g.fillRect(0,0,128,128);
+     g.fillStyle='#d4d6d2';g.fillRect(0,0,5,128);g.fillRect(123,0,5,128);g.fillRect(62,0,4,128);g.fillRect(0,0,128,7);g.fillRect(0,120,128,8);g.fillStyle='#1c262c';g.fillRect(0,7,128,3)});
+   const cab=new THREE.Mesh(prism(ring(8.2,6.2,1.4),ring(9.6,7.6,1.7),R0+13.7,R0+19.3),new THREE.MeshLambertMaterial({map:gl,emissive:0x0,side:THREE.FrontSide}));cab.userData.neon=0x5c7f78;landmarkLights.push(cab);T.add(cab);
+   // flat roof overhanging the leaning glass, white soffit, dark fascia
+   T.add(new THREE.Mesh(oct(10.8,8.8,2,R0+19.3,.6),slabM));
+   T.add(new THREE.Mesh(oct(10.9,8.9,2,R0+19.9,1.2),darkM));
+   for(const x of[-6,6]){const m=new THREE.Mesh(new THREE.CylinderGeometry(.08,.12,3.5,4).translate(x,R0+22.8,0),darkM);T.add(m)}
+   const bcn=new THREE.Mesh(new THREE.BoxGeometry(.6,.6,.6).translate(0,R0+21.4,0),new THREE.MeshBasicMaterial({color:0xff2a20}));T.add(bcn);
+   // dishes and masts on the terminal roof behind the tower (landside)
+   const dishM=new THREE.MeshLambertMaterial({color:0xeceae4,side:THREE.DoubleSide}),frM=new THREE.MeshLambertMaterial({color:0x8b8e8c});
+   for(const[dx,dz,r,yaw]of[[-10,14,2.6,.4],[-4,15,3.1,.1],[3,14.5,3.1,-.2],[10,15.5,2.4,-.5],[14,9,1.8,-1.1]]){
+     const d=new THREE.Group();d.position.set(dx,R0+2.4,dz);d.rotation.y=yaw;T.add(d);
+     d.add(new THREE.Mesh(new THREE.BoxGeometry(.3,r*.9,.3).translate(0,r*.45,0),frM));
+     const bowl=new THREE.Mesh(new THREE.SphereGeometry(r,16,6,0,Math.PI*2,0,.5),dishM);bowl.rotation.x=Math.PI/2+.35;bowl.position.set(0,r*.95,r*.35);d.add(bowl);
+     d.add(new THREE.Mesh(new THREE.CylinderGeometry(.05,.05,r*.9,4).rotateX(Math.PI/2-.35).translate(0,r*1.1,-r*.05),frM))}
+   for(const[dx,dz,h]of[[-15,4,14],[16,-2,10],[-13,-9,8]]){T.add(new THREE.Mesh(new THREE.CylinderGeometry(.12,.2,h,4).translate(dx,R0+2.4+h/2,dz),frM));
+     for(let y=R0+4.4;y<R0+h;y+=2.6)T.add(new THREE.Mesh(new THREE.BoxGeometry(2.2,.08,.08).translate(dx,y,dz),frM))}
+   const C=[rwP(TS-9,TL-11),rwP(TS+9,TL+11),rwP(TS-9,TL+11),rwP(TS+9,TL-11)];
+   addCollider(Math.min(...C.map(q=>q[0])),Math.max(...C.map(q=>q[0])),Math.min(...C.map(q=>q[1])),Math.max(...C.map(q=>q[1])),R0+21,'the control tower');
+   const E=rwP(TS+4.5,TL);ST.tower=[E[0],RWY.elev+R0+16.4,E[1]]}   // controller's eye, just inside the apron-side glass
   // multi-storey car park beside the main terminal block: the spotters' roof
   {const cs=36,cl=-955,ch=17,W=110,D=120;const cp=new THREE.Mesh(new THREE.BoxGeometry(W,ch,D).translate(0,ch/2,0),cityMaterial({color:0xcfcac0}));placeAlong(cp,cs,cl,RWY.elev);
    for(let y=3.4;y<ch;y+=3.4){const sl=new THREE.Mesh(new THREE.BoxGeometry(W+1,.5,D+1).translate(0,y,0),new THREE.MeshLambertMaterial({color:0x9a968c}));placeAlong(sl,cs,cl,RWY.elev)}

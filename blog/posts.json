@@ -1,5 +1,37 @@
 [
   {
+    "slug": "control-tower-moved-to-terminal-roof",
+    "title": "The control tower is back on the terminal roof",
+    "dek": "Kai Tak's control tower now stands on the passenger terminal, where it really was, with its outward-leaning cab windows.",
+    "description": "The Kai Tak control tower moves to its real spot on the terminal roof, rebuilt from period photos with outward-leaning cab glass.",
+    "date": "2026-10-05",
+    "tag": "Update",
+    "category": "scenery",
+    "keywords": [
+      "control tower",
+      "Kai Tak tower",
+      "terminal",
+      "scenery",
+      "tower view",
+      "1998"
+    ],
+    "hero": "tower-close",
+    "hero_alt": "The control tower on the terminal roof, with outward-leaning cab windows.",
+    "hero_caption": "The rebuilt tower on the terminal roof.",
+    "card_kicker": "SCENERY · TOWER",
+    "card_title": "Tower on the terminal",
+    "card_sub": "Its real spot, with leaning glass",
+    "card_image": "tower-close",
+    "card_focus": 50,
+    "zh": {
+      "title": "控制塔返到客運大樓天台",
+      "dek": "啟德控制塔而家企喺客運大樓天台，即係佢真正嘅位置，仲有向外斜嘅控制室玻璃。",
+      "description": "啟德控制塔搬返去客運大樓天台嘅真實位置，跟舊相重建，控制室玻璃向外斜。",
+      "hero_alt": "客運大樓天台上嘅控制塔，控制室窗向外斜。",
+      "hero_caption": "重建後喺大樓天台嘅控制塔。"
+    }
+  },
+  {
     "slug": "follow-fly-kai-tak-on-facebook-and-instagram",
     "title": "Follow Fly Kai Tak on Facebook and Instagram",
     "dek": "Fly Kai Tak now has a Facebook page and an Instagram account, linked from the home screen and the blog footer.",
