@@ -1,5 +1,39 @@
 [
   {
+    "slug": "kwai-chung-container-terminal-detail",
+    "title": "Kwai Chung container terminals come to life",
+    "dek": "More ships alongside, more detailed quay cranes, terminal buildings, reefer racks, empties depots, yard tractors and lighters working cargo mid-stream.",
+    "description": "The Kwai Chung container terminals get more ships, detailed quay cranes, offices, truck gates, freight stations, depots, yard traffic and working lighters.",
+    "date": "2026-10-05",
+    "tag": "Feature",
+    "category": "scenery",
+    "keywords": [
+      "Kwai Chung",
+      "container terminal",
+      "Rambler Channel",
+      "quay cranes",
+      "container ships",
+      "lighters",
+      "Kai Tak",
+      "flight simulator"
+    ],
+    "hero": "kwai-chung-cranes-ships",
+    "hero_alt": "White quay cranes working container ships along a quay, with stacked yards and rubber-tyred gantries behind.",
+    "hero_caption": "Quay cranes working ships at the Kwai Chung container terminals.",
+    "card_kicker": "SCENERY · FEATURE",
+    "card_title": "Kwai Chung comes to life",
+    "card_sub": "Cranes, ships, gates and lighters",
+    "card_image": "kwai-chung-overview",
+    "card_focus": 50,
+    "zh": {
+      "title": "葵涌貨櫃碼頭活起嚟",
+      "dek": "更多船泊岸、更精細嘅岸邊吊機、碼頭大樓、雪櫃架、吉櫃場、碼頭拖頭，仲有躉船喺海上裝卸貨。",
+      "description": "葵涌貨櫃碼頭加咗更多船、精細嘅岸邊吊機、辦公大樓、貨車閘口、貨運站、吉櫃場、堆場交通同開工嘅躉船。",
+      "hero_alt": "白色岸邊吊機沿碼頭為貨櫃船裝卸，後面係貨櫃堆場同輪胎式龍門吊。",
+      "hero_caption": "葵涌貨櫃碼頭嘅岸邊吊機為船裝卸。"
+    }
+  },
+  {
     "slug": "apron-mast-lights-off-on-clear-days",
     "title": "Apron mast lights off on clear days",
     "dek": "The red floodlight masts now stay dark on a clear day and light up at night, in overcast weather and in fog.",

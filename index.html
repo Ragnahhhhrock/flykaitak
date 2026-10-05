@@ -1436,7 +1436,7 @@ function buildCity(){
     let h=lerp(lo,hi,Math.pow(rnd(),1.5));
     if(area<130)h*=.45;else if(area<300)h*=.75;else if(area>3000&&rnd()<.55)h=rr(12,28);
     const cap=clearanceCap(x,z)-(th-3.5);h=Math.min(h,cap);if(h<7)continue;
-    recs.push({x,z,y:th-1.5,w,d,ph,h:h+1.5,c:pick(pal),n:D.n})}
+    const rec={x,z,y:th-1.5,w,d,ph,h:h+1.5,c:pick(pal),n:D.n};if(!inPortYard(x,z))recs.push(rec)}
   markEstates(recs);
   bldMesh=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1).translate(0,.5,0),cityMat,recs.reduce((n,r)=>n+(r.est?0:1),0));
   const tc=new THREE.Color();let pi=0;
@@ -2859,7 +2859,7 @@ function buildShips(){
       const small=k==='junk'||k==='yacht';const ln=mkLn(laneOffset(base,f.w*(small?LANE_SMALL:1)),LANE_V[k]*rr(.85,1.15),true);
       const m=shipModel(k);addWake(m);scene.add(m);SHIPS.push({ln,m,s:ln.L*(i+rnd()*.6)/n,dir:1,wait:0})}}
   // moored and anchored: most of the harbour's shipping is going nowhere
-  const placed=[];const BERTH=[-10400,-200,-6000,1500];
+  const placed=PORT.placed.slice();const BERTH=[-10400,-200,-6000,1500];   // the container terminal berths are taken
   for(let i=0;i<7;i++)moor('container',shoreSpot(BERTH,45,150,300,placed,150));
   for(let i=0;i<4;i++)moor('freighter',shoreSpot(BERTH,40,140,300,placed,130));
   for(let i=0;i<6;i++)moor('tug',shoreSpot(BERTH,16,60,150,placed,35));
@@ -2877,6 +2877,419 @@ function buildShips(){
   const arr=[];for(const s of SHIPS)for(const l of s.m.userData.lights)arr.push(0,0,0,l[3]*1.4,l[4]*1.4,l[5]*1.4,l[6]===undefined?11:12,l[6]===undefined?-1:l[6]);
   shipLights=makeLights(arr);scene.add(shipLights);
 }
+/* ---------------- KWAI CHUNG CONTAINER TERMINALS (1998: CT1-CT8; CT9 on Tsing Yi came in 2003) ----------------
+   Quay lines traced from the terrain's water edge (sim metres). Each quay gets a concrete deck and crane rails, its operator's quay cranes,
+   container ships alongside, and a stacked yard behind it with rubber-tyred gantries and floodlight masts. The cranes really work: each one
+   runs a load or discharge cycle between a ship's bay and a tractor-trailer that drives in under the portal and away again.
+   Modern Terminals (CT1, CT2, CT5) had red-orange cranes; HIT (CT4, CT6, CT7) white; Sea-Land (CT3) grey; ACT and COSCO-HIT shared CT8. */
+const PORT={placed:[],cranes:[],ships:[],q:[],lights:null,flood:null,obst:null,built:false,yt:[],lighters:[]};
+const PORT_OPS={mtl:{leg:0xc8452a,boom:0xc8452a,house:0xe9e6dc},hit:{leg:0xe6e6e0,boom:0xe6e6e0,house:0x1f3f78},sea:{leg:0x9a9c96,boom:0x9a9c96,house:0xd8d4c8},
+  act:{leg:0x2d5fa0,boom:0x2d5fa0,house:0xeceae2},cos:{leg:0xe6e4dc,boom:0xe6e4dc,house:0x2a6a9a}};
+const PORT_QUAYS=[   // a,b: the water edge; ops: operator over the quay's length; cranes: how many; yard: inland depth of the stacks
+  {n:'CT5, CT1 and CT2',a:[-7455,-2480],b:[-7140,-1440],ops:['mtl'],cranes:13,yard:330},
+  {n:'CT3',a:[-7130,-1415],b:[-6560,-1575],ops:['sea'],cranes:4,yard:240},
+  {n:'CT4',a:[-7000,-1105],b:[-6500,-1255],ops:['hit'],cranes:7,yard:250},
+  {n:'CT6',a:[-7015,-1080],b:[-6805,-370],ops:['hit'],cranes:10,yard:620},
+  {n:'CT7',a:[-6795,-345],b:[-5960,-540],ops:['hit'],cranes:13,yard:560},
+  {n:'CT8',a:[-7150,180],b:[-5900,-205],ops:['act','cos'],cranes:16,yard:420},
+];
+const PORT_YARD=[[[-7480,-2720],[-7030,-2720],[-7000,-2120],[-6820,-1960],[-6560,-1720],[-6420,-1560],[-6260,-1250],[-6150,-1050],[-5900,-1000],[-5900,-560],[-6800,-350],[-7030,-1090],[-7140,-1430]],
+  [[-7300,150],[-5850,-230],[-5850,700],[-7300,700]]];
+function inPoly(P,x,z){let c=false;for(let i=0,j=P.length-1;i<P.length;j=i++){const a=P[i],b=P[j];if((a[1]>z)!==(b[1]>z)&&x<(b[0]-a[0])*(z-a[1])/(b[1]-a[1])+a[0])c=!c}return c}
+function inPortYard(x,z){for(const P of PORT_YARD)if(inPoly(P,x,z))return true;return false}
+// the Modern Terminals godowns behind CT1/CT2, each with its spiral truck ramp at the north end (as in the 1990s photographs)
+const PORT_BLD=[{c:[-7085,-1850],L:230,W:96,h:29,ramp:1,col:0xd9d6cc},{c:[-6940,-1895],L:240,W:100,h:31,ramp:1,col:0xb9bcb8},
+  {c:[-6310,-1030],L:110,W:32,h:13,col:0xe8e6de},{c:[-6560,30],L:150,W:40,h:15,col:0xdedbd2},{c:[-6080,-60],L:120,W:36,h:14,col:0xe2ded4},
+  // t: office (terminal offices, window bands, operator sign), gate (truck gate canopy and booths), shed (container freight station with dock doors),
+  // workshop (crane and vehicle maintenance), depot (empties stacked seven high, worked by top-lifters). q: the quay whose line it squares to.
+  {t:'office',c:[-6420,-1345],L:64,W:26,h:36,col:0xe4e1d8,q:1,op:'hit'},
+  {t:'gate',c:[-6360,-1490],L:56,W:22,h:8,col:0xd9d6cc,q:1,op:'mtl',n:9},
+  {t:'shed',c:[-6560,-1700],L:170,W:46,h:12,col:0xc9cbc6,q:1},
+  {t:'workshop',c:[-6620,-1850],L:70,W:36,h:17,col:0xb7bab6,q:1,op:'mtl'},
+  {t:'depot',c:[-6410,-1590],L:110,W:50,h:18,q:1},
+  {t:'office',c:[-5975,-880],L:46,W:20,h:25,col:0xe8e6de,q:4,op:'hit'},
+  {t:'gate',c:[-5975,-690],L:46,W:20,h:8,col:0xd9d6cc,q:4,op:'hit',n:7},
+  {t:'office',c:[-6600,490],L:70,W:24,h:29,col:0xe6e3da,q:5,op:'act'},
+  {t:'gate',c:[-6480,620],L:60,W:22,h:8,col:0xd9d6cc,q:5,op:'cos',n:10},
+  {t:'shed',c:[-6660,700],L:150,W:44,h:12,col:0xbfc3c4,q:5},
+  {t:'workshop',c:[-7210,420],L:60,W:34,h:16,col:0xb2b6b4,q:5,op:'act'},
+  {t:'workshop',c:[-6500,720],L:60,W:34,h:15,col:0xbabdba,q:5,op:'cos'},
+  {t:'depot',c:[-6880,640],L:130,W:56,h:18,q:5},
+  {t:'office',c:[-7320,-2620],L:48,W:22,h:30,col:0xe4e1d8,q:0,op:'mtl'}];
+function portRng(seed){let s=seed;return ()=>{s=(s*48271)%2147483647;return (s-1)/2147483646}}
+// static geometry merged into one vertex-coloured mesh: boxes standing on their base, and beams between two points
+function portMerger(){
+  const base=new THREE.BoxGeometry(1,1,1).translate(0,.5,0).toNonIndexed();const bp=base.attributes.position.array,bn=base.attributes.normal.array;
+  const P=[],N=[],C=[];const m=new THREE.Matrix4(),nm=new THREE.Matrix3(),v=new THREE.Vector3(),c=new THREE.Color(),q=new THREE.Quaternion(),e=new THREE.Euler(),p=new THREE.Vector3(),s=new THREE.Vector3(),Y=new THREE.Vector3(0,1,0),dir=new THREE.Vector3();
+  const put=(M,col)=>{if(M)m.premultiply(M);nm.getNormalMatrix(m);c.setHex(col);for(let i=0;i<bp.length;i+=3){v.set(bp[i],bp[i+1],bp[i+2]).applyMatrix4(m);P.push(v.x,v.y,v.z);v.set(bn[i],bn[i+1],bn[i+2]).applyMatrix3(nm).normalize();N.push(v.x,v.y,v.z);C.push(c.r,c.g,c.b)}};
+  return {
+    box(M,w,h,d,x,y,z,col,ry,rx){m.compose(p.set(x,y,z),q.setFromEuler(e.set(rx||0,ry||0,0)),s.set(w,h,d));put(M,col)},
+    seg(M,a,b,t,col,t2){dir.set(b[0]-a[0],b[1]-a[1],b[2]-a[2]);const L=dir.length();dir.multiplyScalar(1/L);m.compose(p.set(a[0],a[1],a[2]),q.setFromUnitVectors(Y,dir),s.set(t,L,t2||t));put(M,col)},
+    mesh(mat){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(P,3));g.setAttribute('normal',new THREE.Float32BufferAttribute(N,3));g.setAttribute('color',new THREE.Float32BufferAttribute(C,3));
+      g.computeBoundingSphere();return new THREE.Mesh(g,mat||new THREE.MeshLambertMaterial({vertexColors:true}))},
+    get n(){return P.length/3}};
+}
+// stacked containers: one instance per column; the shader paints each tier its own box (colour, seams, corrugation, door ends)
+function containerMaterial(reefer){
+  const m=new THREE.MeshLambertMaterial({color:0xffffff});
+  m.onBeforeCompile=sh=>{
+    sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nvarying float vTier;varying float vSeed;varying vec3 vLp;varying vec3 vNo;')
+      .replace('#include <begin_vertex>',`#include <begin_vertex>
+        vec3 sc=vec3(length(instanceMatrix[0].xyz),length(instanceMatrix[1].xyz),length(instanceMatrix[2].xyz));
+        vTier=position.y*sc.y/2.6;vLp=position*sc;vNo=normal;vSeed=fract(sin(dot(instanceMatrix[3].xz,vec2(12.9898,78.233)))*43758.5453);`);
+    sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nvarying float vTier;varying float vSeed;varying vec3 vLp;varying vec3 vNo;')
+      .replace('#include <color_fragment>',`#include <color_fragment>
+        float tier=floor(vTier);float h=fract(sin((tier+1.7)*(vSeed*91.7+3.1))*43758.5453);
+        vec3 k=h<.12?vec3(.62,.2,.14):h<.22?vec3(.17,.33,.55):h<.31?vec3(.2,.42,.26):h<.39?vec3(.86,.85,.8):h<.46?vec3(.78,.55,.18):h<.54?vec3(.45,.47,.48):
+          h<.61?vec3(.5,.26,.16):h<.68?vec3(.12,.2,.38):h<.74?vec3(.84,.36,.12):h<.8?vec3(.3,.52,.62):h<.87?vec3(.68,.66,.6):h<.93?vec3(.55,.12,.18):vec3(.25,.27,.28);
+        ${reefer?'k=vec3(.9,.9,.87)*(.93+.07*h);':''}
+        float f=fract(vTier);k*=mix(.55,1.,step(.04,f)*step(f,.97));
+        if(abs(vNo.z)>.5)k*=.9+.1*step(.5,fract(vLp.x/.55));
+        if(abs(vNo.x)>.5)k*=.84+.16*step(.12,abs(vLp.z));
+        if(vNo.y>.5)k*=1.06;
+        diffuseColor.rgb*=k*(.92+.16*fract(h*13.));`);
+  };
+  m.customProgramCacheKey=()=>reefer?'portReefers':'portBoxes';
+  return m;
+}
+// is (x,z) on or near one of the terminal buildings or depots?
+function portBldAt(x,z,pad){for(const b of PORT_BLD){if(!b.u)continue;const dx=x-b.c[0],dz=z-b.c[1];const u=dx*b.u[0]+dz*b.u[1],n=dx*b.u[1]*-1+dz*b.u[0];if(Math.abs(u)<b.L/2+(b.ramp?70:0)+pad&&Math.abs(n)<b.W/2+pad)return true}return false}
+const PORT_SIGN={mtl:0xc8452a,hit:0x1f3f78,act:0x2d5fa0,cos:0x2a6a9a,sea:0x6f7376};
+const PORT_TRUCK=[0xc93a2a,0x2f5c8a,0xe9e6dc,0xd9a03a,0x3d7a46,0x8a1f24];
+const PORT_BOXL=[0xa0332a,0x2c5487,0x346b44,0xdcd9cf,0xc78d2e,0x737779,0x7f4228,0x1f3361,0xd65c1f,0x4d859e];
+/* The terminal's other buildings, as merged geometry squared to their quay: office blocks with glass bands and the operator's sign on the roof,
+   truck gates (a canopy over the lanes, booths and barriers, lorries queuing), container freight stations with dock doors and trailers backed in,
+   maintenance workshops, and empty-container depots stacked seven high with their top-lifters. */
+function portBuilding(b,S,cols,Lflood,R){
+  const pr=(a,c)=>a+(c-a)*R(),pk=a=>a[Math.floor(R()*a.length)];
+  const y0=terrainAt(b.c[0],b.c[1]);const base=Math.min(y0,6)-.6;const ang=-Math.atan2(b.u[1],b.u[0]);
+  const M=new THREE.Matrix4().makeRotationY(ang).setPosition(b.c[0],base,b.c[1]);const L=b.L,W=b.W,h=b.h,sign=PORT_SIGN[b.op]||0x1f3f78;
+  const lamp=(x,y,z,sz)=>{const p=new THREE.Vector3(x,y,z).applyMatrix4(M);Lflood.push(p.x,p.y,p.z,1,.86,.62,sz||4,-1)};
+  const truck=(x,z,dz,boxed)=>{   // a tractor-trailer pointing along local z (dz = +1/-1: the way the tractor faces)
+    S.box(M,2.5,1.3,12.6,x,.4,z,0x2c2d2e);if(boxed)S.box(M,2.44,2.6,12.2,x,1.7,z,pk(PORT_BOXL));
+    S.box(M,2.5,3.1,5.4,x,0,z+dz*9.4,pk(PORT_TRUCK));S.box(M,2.52,1,1.2,x,2,z+dz*11.6,0x24303a)};
+  if(b.t==='office'){
+    S.box(M,L,h,W,0,0,0,b.col);
+    for(let y=4.6;y<h-2.5;y+=3.6)S.box(M,L+.3,1.7,W+.3,0,y,0,0x34414b);              // ribbon windows, every floor
+    S.box(M,L*.36,3.6,.8,0,0,W/2+.1,0x2a333a);S.box(M,L*.42,.5,6,0,3.9,W/2+3,b.col);    // glazed lobby and its canopy
+    S.box(M,L+.6,1.2,W+.6,0,h,0,0xb3b0a8);                                               // parapet
+    S.box(M,12,3.2,8,-L/4,h,-2,0x7a7f82);S.box(M,7,4.5,6,L/4,h,0,0x7a7f82);              // roof plant, lift motor room
+    S.box(M,L*.56,5.4,.7,0,h+1.2,W/2-1.6,sign);S.box(M,L*.5,1,.8,0,h+3.2,W/2-1.6,0xf2f0ea);S.seg(M,[-L*.2,h+1.2,W/2-3],[-L*.2,h,W/2-6],.3,0x5c5f61);S.seg(M,[L*.2,h+1.2,W/2-3],[L*.2,h,W/2-6],.3,0x5c5f61);   // the operator's roof sign
+    S.box(M,1.2,8,1.2,L/2-6,h,-W/2+4,0xd0d0cc);lamp(-L*.18,3.4,W/2+5.5,3.6);lamp(L*.18,3.4,W/2+5.5,3.6);
+  }else if(b.t==='gate'){
+    const n=b.n||8,lw=L/n;
+    for(let i=0;i<=n;i+=2){const x=-L/2+i*lw;for(const z of[-W/2+1,W/2-1])S.box(M,.8,6.6,.8,x,0,z,0x9a9d9f);lamp(x,6.1,0,3.4)}
+    S.box(M,L+2,1.1,W,0,6.6,0,0xe8e6de);S.box(M,L+2.3,.9,W+.3,0,6.7,0,sign);             // canopy and its fascia in the operator's colour
+    for(let i=1;i<n;i++){const x=-L/2+i*lw;S.box(M,1.3,.25,W-3,x,0,0,0xd8b23a);S.box(M,1.1,2.7,2.4,x,.25,1.5,0xeeebe2);S.box(M,1.15,.8,2.45,x,1.6,1.5,0x34414b)}   // islands and booths
+    for(let i=0;i<n;i++){const x=-L/2+(i+.5)*lw;S.box(M,lw-1.6,.18,.18,x,1.05,W/2-2.5,i%2?0xf2f0ea:0xc8452a);   // barrier arms
+      if(R()<.6)truck(x,W/2+8.5,-1,R()<.6);if(R()<.35)truck(x,-W/2-9,-1,R()<.5)}            // lorries queuing in and leaving
+    S.box(M,8,3,6,L/2+8,0,0,0xe2dfd6);S.box(M,8.2,.9,6.2,L/2+8,1.4,0,0x34414b);           // gate house
+  }else if(b.t==='shed'){
+    S.box(M,L,h,W,0,0,0,b.col);S.box(M,L+1,.8,W+1,0,h,0,0x8e9290);
+    for(let x=-L/2+3;x<L/2-1;x+=11)S.box(M,.5,h,W+.4,x,0,0,0xa9aca7);                    // portal frame lines on the cladding
+    for(const sd of[-1,1]){S.box(M,L,1.2,3,0,0,sd*(W/2+1.5),0x9c9a92);S.box(M,L,.4,5.5,0,6.2,sd*(W/2+2.7),0xd0cdc5);
+      for(let x=-L/2+6;x<L/2-4;x+=7.5){S.box(M,4,4.4,.4,x,1.2,sd*(W/2+.12),0x3a3e42);if(R()<.38)truck(x,sd*(W/2+3.2+6.3),sd,R()<.7)}}
+    S.box(M,L*.3,2.4,.4,0,h-3.4,W/2+.3,sign);
+  }else if(b.t==='workshop'){
+    S.box(M,L,h,W,0,0,0,b.col);S.box(M,L*.85,3,W*.36,0,h,0,0x9ea2a0);S.box(M,L*.85,1,W*.38,0,h+1.4,0,0x34414b);   // roof monitor with its glazing
+    S.box(M,L+.2,1.2,W+.2,0,h-2.6,0,sign);
+    for(let i=0;i<3;i++)S.box(M,13,12,.4,-L/3+i*L/3,0,W/2+.12,0x5a5f63);                  // big doors
+    for(let i=0;i<4;i++)S.box(M,pr(3,8),pr(1,2.5),pr(2,4),pr(-L/2,L/2),0,W/2+pr(6,16),pk([0x6f7376,0xd8b23a,0x3a3e42]));   // spares on the hardstand
+    S.box(M,12.4,.9,2.6,L/2+10,0,W/2-6,0xd8b23a);lamp(0,h-1,W/2+2,4);
+  }else if(b.t==='depot'){
+    const v=new THREE.Vector3();
+    for(let j=0;j<Math.floor(W/2.75);j++){if(j%7===6)continue;const lz=-W/2+1.5+j*2.75;   // rows of empties, an aisle every seven rows for the top-lifters
+      for(let i=0;i<Math.floor(L/12.9);i++){const lx=-L/2+6.4+i*12.9;v.set(lx,0,lz).applyMatrix4(M);
+        if(!landAt(v.x,v.z)||terrainAt(v.x,v.z)>6||R()<.06)continue;cols.push([v.x,terrainAt(v.x,v.z)-.05,v.z,12.2,Math.round(pr(4.6,7.4))*2.6,2.44,ang])}}
+    for(let k=0;k<3;k++){const a=Math.min(Math.floor(W/2.75)/7-1,k),lz=-W/2+1.5+(6+7*Math.max(0,Math.floor(pr(0,a+.99))))*2.75,lx=pr(-L/2+20,L/2-20),hy=pr(6,16);   // top-lifters in the aisles
+      S.box(M,7,3,4.2,lx,.6,lz,0xc8452a);S.box(M,2.4,2.4,2.2,lx-1,3.6,lz,0x34414b);for(const d of[-1.4,1.4])S.box(M,.5,20,.5,lx+4.1,.6,lz+d,0x2a2b2c);
+      S.box(M,2.6,.9,12.4,lx+4.8,hy,lz,0xd8b23a);if(R()<.6)S.box(M,2.44,2.6,12.2,lx+4.8,hy-2.6,lz,pk(PORT_BOXL));for(const x of[-2.2,2.2])S.box(M,1.2,1.2,1.2,lx+x,0,lz+(lz>0?-2.4:2.4),0x1d1e1f)}
+  }
+  b.base=base;const c=Math.abs(Math.cos(ang)),s=Math.abs(Math.sin(ang));const ex=c*L/2+s*W/2,ez=s*L/2+c*W/2;
+  addCollider(b.c[0]-ex,b.c[0]+ex,b.c[1]-ez,b.c[1]+ez,base+h+(b.t==='office'?7:4),b.t==='depot'?'the empty container stacks':b.t==='gate'?'the terminal gate':'the container terminal buildings');
+}
+/* A lighter: Hong Kong's mid-stream workhorse, a steel barge with its own derrick, lashed to a ship's seaward side and swinging boxes
+   between the ship's deck and its own hold while the quay cranes work the other side. x0,z0: its centre in the ship's frame. */
+function portLighter(S,M,x0,z0,sh,R){
+  const sg=Math.sign(z0),dk=2.2;
+  S.box(M,40,3.6,12,x0,-1.4,z0,0x3b3029);S.box(M,40.4,.6,12.4,x0,dk,z0,0x8a3a22);S.box(M,26,.3,9,x0+4,dk-.1,z0,0x4a4440);   // hull, gunwale, hold
+  for(let k=0;k<3;k++)S.box(M,12.2,2.6,2.44,x0+4,dk,z0+(k-1)*2.6,PORT_BOXL[Math.floor(R()*PORT_BOXL.length)]);
+  S.box(M,6,4,7,x0-16,dk,z0,0xe8e4d8);S.box(M,6.4,.4,7.4,x0-16,dk+4,z0,0x2f5c8a);S.box(M,6.1,.9,7.1,x0-16,dk+2.6,z0,0x2a333a);   // wheelhouse
+  S.box(M,1.2,26,1.2,x0-9,dk,z0,0xd9a03a);for(const d of[-3,3])S.seg(M,[x0-13,dk,z0+d],[x0-9,dk+24,z0],.45,0xd9a03a);   // derrick post and its legs
+  for(let x=x0-18;x<x0+20;x+=6)S.box(M,1.6,1.6,.6,x,0,z0-sg*6.4,0x1d1e1f);                // tyre fenders against the ship
+  const H0=dk+3,BL=30,EL=.85,tipX=BL*Math.cos(EL),tipY=BL*Math.sin(EL);                    // boom heel just above the deck; tip about 25 m up
+  const g=new THREE.Group();g.position.copy(new THREE.Vector3(x0-9,H0,z0).applyMatrix4(M));g.rotation.y=Math.atan2(-M.elements[2],M.elements[0]);
+  const piv=new THREE.Group();g.add(piv);const yel=new THREE.MeshLambertMaterial({color:0xd9a03a}),dark=new THREE.MeshLambertMaterial({color:0x2a2a2a});
+  const boom=new THREE.Mesh(new THREE.BoxGeometry(BL,.8,.8).translate(BL/2,0,0),yel);boom.rotation.z=EL;piv.add(boom);
+  const lift=new THREE.Mesh(new THREE.BoxGeometry(1,.14,.14).translate(.5,0,0),dark);lift.position.y=23;lift.scale.x=Math.hypot(tipX,tipY-23);lift.rotation.z=Math.atan2(tipY-23,tipX);piv.add(lift);   // topping lift
+  const rope=new THREE.Mesh(new THREE.BoxGeometry(.14,1,.14).translate(0,-.5,0),dark);rope.position.set(tipX,tipY,0);piv.add(rope);
+  const box=new THREE.Mesh(new THREE.BoxGeometry(12.2,2.6,2.44).translate(0,-1.3,0),new THREE.MeshLambertMaterial({color:PORT_BOXL[Math.floor(R()*PORT_BOXL.length)]}));box.position.x=tipX;box.rotation.y=Math.PI/2;piv.add(box);
+  const hook=new THREE.Mesh(new THREE.BoxGeometry(1.2,.8,1.2),dark);hook.position.x=tipX;piv.add(hook);
+  scene.add(g);
+  // the stack top under the tip when it swings over the ship (ship-local), so the box sets down on it
+  const tx=x0-9,tz=z0-sg*tipX;let bi=0,bd=1e9;sh.bays.forEach((x,i)=>{if(Math.abs(x-tx)<bd){bd=Math.abs(x-tx);bi=i}});
+  const j=Math.max(0,Math.min(sh.rows-1,Math.round((tz+((sh.rows-1)/2)*2.5)/2.5)));const top=(bd<8?sh.dk+sh.hm[bi][j]*2.6:sh.dk)+2.6-H0;
+  const out=new THREE.Vector3(0,0,sg).transformDirection(M);
+  PORT.lighters.push({g,piv,rope,box,hook,tipY,out:[out.x,out.z],thS:sg*Math.PI/2,top:Math.min(top,tipY-8),deck:dk+2.6-H0,per:60+R()*30,t:R()*90});
+}
+function updateLighters(dt){
+  for(const Lt of PORT.lighters){Lt.t+=dt;const p=(Lt.t/Lt.per)%1,hi=Lt.tipY-4,ss=x=>x*x*(3-2*x);
+    let th,y,has;   // discharge: lower at the ship, hoist with a box, swing over the hold, lower, hoist empty, swing back
+    if(p<.12){th=Lt.thS;y=hi+(Lt.top-hi)*ss(p/.12);has=false}
+    else if(p<.24){th=Lt.thS;y=Lt.top+(hi-Lt.top)*ss((p-.12)/.12);has=true}
+    else if(p<.44){th=Lt.thS*(1-ss((p-.24)/.2));y=hi;has=true}
+    else if(p<.56){th=0;y=hi+(Lt.deck-hi)*ss((p-.44)/.12);has=true}
+    else if(p<.66){th=0;y=Lt.deck+(hi-Lt.deck)*ss((p-.56)/.1);has=false}
+    else if(p<.86){th=Lt.thS*ss((p-.66)/.2);y=hi;has=false}
+    else{th=Lt.thS;y=hi;has=false}
+    Lt.piv.rotation.y=th;Lt.rope.scale.y=Math.max(.1,Lt.tipY-y);Lt.box.visible=has;Lt.box.position.y=y;Lt.hook.position.y=y+.4}
+}
+/* Yard tractors: terminal tractor-trailers running the roads between the stacks, some with a box, some empty, turning at the end of each road. */
+function portYardTraffic(R,pr,pk){
+  const runs=[];
+  for(const Q of PORT_QUAYS){const ds=[-48];for(let d=-78.4;d>-Q.yard+8;d-=27)ds.push(d);
+    for(const d of ds){let r0=null;for(let s=0;s<=Q.L+6;s+=6){const [x,z]=Q.P(Math.min(s,Q.L),Q.wall+d);
+      const ok=s<=Q.L&&inPortYard(x,z)&&landAt(x,z)&&terrainAt(x,z)<5.6&&!portBldAt(x,z,6);
+      if(ok&&r0===null)r0=s;if(!ok&&r0!==null){if(s-6-r0>=60)runs.push({Q,d,s0:r0+8,s1:s-14});r0=null}}}}
+  for(const r of runs){const n=Math.max(1,Math.floor((r.s1-r.s0)/130)+(R()<.5?1:0));
+    for(let i=0;i<n;i++)PORT.yt.push({...r,s:pr(r.s0,r.s1),dir:R()<.5?1:-1,v:pr(5,8),wait:0,has:R()<.65})}
+  const n=PORT.yt.length;if(!n)return;
+  const mk=(geo,col)=>{const m=new THREE.InstancedMesh(geo,new THREE.MeshLambertMaterial({color:col}),n);m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);m.frustumCulled=false;scene.add(m);return m};
+  PORT.ytm={tractor:mk(new THREE.BoxGeometry(5.4,3.1,2.5).translate(0,1.55,0),0xffffff),trailer:mk(new THREE.BoxGeometry(12.6,1.3,2.5).translate(0,.65,0),0x2c2d2e),box:mk(new THREE.BoxGeometry(12.2,2.6,2.44).translate(0,1.3,0),0xffffff)};
+  const c=new THREE.Color();PORT.yt.forEach((t,i)=>{PORT.ytm.tractor.setColorAt(i,c.setHex(pk(PORT_TRUCK)));PORT.ytm.box.setColorAt(i,c.setHex(pk(PORT_BOXL)))});
+}
+function updateYardTraffic(dt){
+  if(!PORT.ytm)return;const T=PORT.ytm,m=new THREE.Matrix4(),q=new THREE.Quaternion(),p=new THREE.Vector3(),one=new THREE.Vector3(1,1,1),hide=new THREE.Matrix4().makeScale(0,0,0);
+  PORT.yt.forEach((t,i)=>{
+    if(t.wait>0)t.wait-=dt;else{t.s+=t.v*t.dir*dt;if(t.s>t.s1){t.s=t.s1;t.dir=-1;t.wait=2+Math.random()*6;if(Math.random()<.4)t.has=!t.has}if(t.s<t.s0){t.s=t.s0;t.dir=1;t.wait=2+Math.random()*6;if(Math.random()<.4)t.has=!t.has}}
+    const Q=t.Q,yaw=-Math.atan2(Q.u[1],Q.u[0])+(t.dir<0?Math.PI:0);q.setFromAxisAngle(_YAX,yaw);
+    const [x,z]=Q.P(t.s,Q.wall+t.d),y=Math.max(terrainAt(x,z),3.5)+.05;
+    m.compose(p.set(x,y+.3,z),q,one);T.trailer.setMatrixAt(i,m);
+    if(t.has){m.compose(p.set(x,y+1.6,z),q,one);T.box.setMatrixAt(i,m)}else T.box.setMatrixAt(i,hide);
+    const [tx,tz]=Q.P(t.s+t.dir*9.5,Q.wall+t.d);m.compose(p.set(tx,y,tz),q,one);T.tractor.setMatrixAt(i,m)});
+  for(const k in T)T[k].instanceMatrix.needsUpdate=true;
+}
+function buildPort(){
+  const R=portRng(19980706);const pr=(a,b)=>a+(b-a)*R();const pk=a=>a[Math.floor(R()*a.length)];
+  const S=portMerger(),cols=[],rcols=[],mv=new THREE.Vector3();
+  const Lobst=[],Lflood=[];
+  // occupancy grid so yards from neighbouring quays never stack on each other
+  const OCC=new Set(),oc=(x,z)=>Math.floor(x/9)+','+Math.floor(z/9);
+  const bldAt=portBldAt;
+  // quay frames: u along the quay, n to seaward, right-handed (u x up = n)
+  for(const Q of PORT_QUAYS){
+    let a=Q.a,b=Q.b;let dx=b[0]-a[0],dz=b[1]-a[1],L=Math.hypot(dx,dz);let u=[dx/L,dz/L],n=[-u[1],u[0]];
+    const mid=[(a[0]+b[0])/2,(a[1]+b[1])/2];if(terrainAt(mid[0]+n[0]*80,mid[1]+n[1]*80)>0){[a,b]=[b,a];u=[-u[0],-u[1]];n=[-u[1],u[0]];Q.flip=true}
+    // the wall face: seaward of every bit of terrain above the water along the line
+    let wall=0;for(let s=0;s<=L;s+=8){let last=-20;for(let d=-20;d<=40;d+=1){const x=a[0]+u[0]*s+n[0]*d,z=a[1]+u[1]*s+n[1]*d;if(terrainAt(x,z)>-.5)last=d}wall=Math.max(wall,last+1)}
+    wall=Math.min(wall,24);
+    const M=new THREE.Matrix4().makeBasis(new THREE.Vector3(u[0],0,u[1]),new THREE.Vector3(0,1,0),new THREE.Vector3(n[0],0,n[1])).setPosition(a[0],0,a[1]);
+    Object.assign(Q,{A:a,u,n,L,wall,M,P:(s,d)=>[a[0]+u[0]*s+n[0]*d,a[1]+u[1]*s+n[1]*d]});
+    for(let s=0;s<=L;s+=50)PORT.placed.push([...Q.P(s,wall+40),95]);
+  }
+  for(const b of PORT_BLD){const Q=PORT_QUAYS[b.q||0];b.u=Q.u}
+  const deckY=4.3;
+  // ---- quay decks, crane rails, fenders, bollards
+  for(const Q of PORT_QUAYS){const M=Q.M,L=Q.L,w=Q.wall;
+    S.box(M,L,deckY+4,w+52,L/2,-4,w-(w+52)/2,0x9c9a92);                       // the deck and its wall face
+    S.box(M,L,.06,.35,L/2,deckY,w-1.2,0xd8b23a);                                 // yellow edge line
+    for(const d of[w-3,w-33.5])S.box(M,L,.12,.5,L/2,deckY,d,0x3a3c3e);           // crane rails
+    S.box(M,L,.04,1,L/2,deckY,w-48,0xe8e6de);                                    // white lane line behind the cranes
+    for(let s=10;s<L-5;s+=18){S.box(M,1.6,3,1,s,.2,w+.4,0x1d1e1f)}                // fenders on the wall face
+    for(let s=15;s<L-5;s+=30){S.box(M,.8,.8,.8,s,deckY,w-1.4,0x2a2b2c)}           // bollards
+  }
+  // ---- buildings
+  {const stripe=canvasTex(64,256,(g,W,H)=>{g.fillStyle='#ece9e0';g.fillRect(0,0,W,H);for(let y=0;y<H;y+=32){g.fillStyle='#24272b';g.fillRect(0,y+18,W,11)}},true);
+   const wallT=canvasTex(256,256,(g,W,H)=>{g.fillStyle='#fff';g.fillRect(0,0,W,H);for(let y=0;y<H;y+=32){g.fillStyle='#8f969b';g.fillRect(0,y+12,W,9);for(let x=0;x<W;x+=16){g.fillStyle='#646b70';g.fillRect(x+3,y+13,9,7)}}g.fillStyle='#cfccc4';for(let x=0;x<W;x+=64)g.fillRect(x,0,5,H)},true);
+   for(const b of PORT_BLD){const y0=terrainAt(b.c[0],b.c[1]);const base=Math.min(y0,6)-1;const ang=-Math.atan2(b.u[1],b.u[0]);
+     if(b.t){portBuilding(b,S,cols,Lflood,R);continue}
+     const mat=new THREE.MeshLambertMaterial({color:b.col,map:wallT.clone()});mat.map.needsUpdate=true;mat.map.repeat.set(b.L/40,(b.h+1)/26);
+     const g=new THREE.Group();g.position.set(b.c[0],base,b.c[1]);g.rotation.y=ang;
+     const bx=new THREE.Mesh(new THREE.BoxGeometry(b.L,b.h+1,b.W).translate(0,(b.h+1)/2,0),[mat,mat,new THREE.MeshLambertMaterial({color:0x8e9290}),mat,mat,mat]);g.add(bx);
+     for(let x=-b.L/2+12;x<b.L/2;x+=24)g.add(new THREE.Mesh(new THREE.BoxGeometry(8,2.2,6).translate(x,b.h+2.1,0),new THREE.MeshLambertMaterial({color:0x6f7476})));   // roof plant
+     if(b.ramp){   // the spiral ramp: a striped stadium-shaped drum, long side across the godown's end
+       const rm=new THREE.MeshLambertMaterial({map:stripe.clone()});rm.map.needsUpdate=true;rm.map.repeat.set(8,(b.h+4)/26);
+       const r=20,lx=b.W*.7,h=b.h+4,rg=new THREE.Group();rg.position.set(-b.L/2-r+2,0,0);
+       rg.add(new THREE.Mesh(new THREE.BoxGeometry(2*r,h,lx).translate(0,h/2,0),rm));
+       for(const sd of[-1,1])rg.add(new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,24,1,false,sd>0?0:Math.PI,Math.PI).translate(0,h/2,sd*lx/2),rm));
+       rg.add(new THREE.Mesh(new THREE.CylinderGeometry(r*.55,r*.55,h+.5,20).translate(0,h/2,0).scale(1,1,1+lx/(1.1*r)),new THREE.MeshLambertMaterial({color:0x3c4044})));
+       g.add(rg)}
+     scene.add(g);const c=Math.abs(Math.cos(ang)),s=Math.abs(Math.sin(ang));const L2=b.L/2+(b.ramp?42:0),ex=c*L2+s*b.W/2,ez=s*L2+c*b.W/2;addCollider(b.c[0]-ex,b.c[0]+ex,b.c[1]-ez,b.c[1]+ez,base+b.h+4,'the container terminal godowns')}}
+  // ---- ships alongside and the cranes that work them
+  const hullCols=[0x1e2a3a,0x2b2d30,0x6b2320,0x24402e,0x1f3f6a,0x3a3d40,0x5a1a1a,0xc9c5ba];
+  const shipFrame=(Q,s,beam,dir)=>{const d=Q.wall+3+beam/2;const p=Q.P(s,d);const uu=[Q.u[0]*dir,Q.u[1]*dir];
+    return new THREE.Matrix4().makeBasis(new THREE.Vector3(uu[0],0,uu[1]),new THREE.Vector3(0,1,0),new THREE.Vector3(-uu[1],0,uu[0])).setPosition(p[0],0,p[1])};
+  for(const Q of PORT_QUAYS){
+    const ops=Q.ops,opAt=s=>PORT_OPS[ops[Math.min(ops.length-1,Math.floor(s/Q.L*ops.length))]];
+    // berth plan along the quay
+    const ships=[];let s=pr(15,60);
+    while(s<Q.L-150){const len=Math.round(pr(175,290));if(s+len>Q.L-15)break;if(R()<.07){s+=pr(90,200);continue}
+      ships.push({s0:s,len,beam:Math.round(Math.min(40,len*.138+pr(-1,2))),dir:R()<.5?1:-1});s+=len+pr(28,65)}
+    // cranes: 2-5 on each ship (at bay centres, clear of the bridge), the rest parked with their booms raised
+    let left=Q.cranes;const cranes=[];
+    for(const sh of ships){
+      const len=sh.len,half=len/2,sc=sh.s0+half;sh.sc=sc;const bridgeX=-half+len*.17;   // ship-local x (bow +x)
+      sh.bays=[];for(let x=half-24;x>-half+10;x-=13.4){if(Math.abs(x-bridgeX)<15||Math.abs(x-(bridgeX-14))<6)continue;sh.bays.push(x)}
+      sh.rows=Math.floor((sh.beam-2)/2.5);sh.hm=sh.bays.map((x,i)=>{const fwd=(x-(-half))/len;const top=fwd>.8?Math.round(pr(1,3)):Math.round(pr(2,5));return Array.from({length:sh.rows},(_,j)=>{const edge=Math.min(j,sh.rows-1-j);return Math.max(0,top-(edge===0&&R()<.5?1:0)-(R()<.1?1:0))})});
+      if(R()<.25)for(let i=0;i<sh.hm.length;i++)if(R()<.35)sh.hm[i]=sh.hm[i].map(()=>0);   // part-discharged: some bays empty, hatch covers bare
+      const k=Math.min(left,Math.max(2,Math.min(5,Math.round(len/58))));left-=k;
+      const usable=sh.bays.filter(x=>Math.abs(x-bridgeX)>26);const pickB=[];for(let i=0;i<k;i++){const t=(i+.5)/k;pickB.push(usable[Math.min(usable.length-1,Math.floor(t*usable.length))])}
+      for(const bx of pickB){const qs=sc+bx*sh.dir;cranes.push({s:qs,ship:sh,bayX:bx,work:true})}
+      PORT.ships.push(sh);sh.Q=Q}
+    // idle cranes in the gaps, booms up
+    const taken=cranes.map(c=>c.s);for(let t=20;t<Q.L-20&&left>0;t+=29){if(taken.some(x=>Math.abs(x-t)<30))continue;if(ships.some(sh=>t>sh.s0-12&&t<sh.s0+sh.len+12)&&R()<.85)continue;cranes.push({s:t,work:false});taken.push(t);left--}
+    for(const c of cranes){c.Q=Q;c.op=opAt(c.s);PORT.cranes.push(c)}
+    // ---- the ships
+    for(const sh of ships){
+      const M=shipFrame(Q,sh.sc,sh.beam,sh.dir);sh.M=M;const len=sh.len,half=len/2,B=sh.beam,hcol=pk(hullCols),dk=9.5;
+      S.box(M,len-22,dk+5,B,-11,-5,0,hcol);                                       // hull
+      for(let k=0;k<4;k++){const w=B*(1-k*.22),l=6;S.box(M,l,dk+5+k*.6,w,half-22+k*l+l/2-1,-5,0,hcol)}      // bow, narrowing
+      S.box(M,len-20,4.6,B+.2,-10,-4.8,0,0x7a2620);                                // boot-topping red at the waterline
+      S.box(M,len-22,.5,B+.25,-11,dk-.4,0,0xe0ddd2);                               // sheer line
+      const bx0=-half+len*.17;
+      S.box(M,16,22,B*.82,bx0,dk,0,0xf0eee8);                                      // accommodation block
+      S.box(M,9,2.6,B+2,bx0+2,dk+22,0,0xf0eee8);S.box(M,9.4,1.2,B+2.2,bx0+2,dk+20.2,0,0x2c3e50);   // bridge, wheelhouse windows
+      S.box(M,6,10,7,bx0-12,dk+6,0,pk([0xc9a23a,0x2f5c8a,0xb5302a,0x1d1e20,0x3d7a46]));S.box(M,6.2,1.6,7.2,bx0-12,dk+14,0,0x111214);   // funnel and its cap
+      for(const x of sh.bays)S.box(M,12.6,.5,B-2,x,dk,0,0x6e726f);                  // hatch covers
+      S.box(M,2.4,8,2.4,half-24,dk,0,0xd9a03a);                                    // forward mast
+      S.box(M,1,4.2,B-1.5,half-27,dk,0,0xe0ddd2);S.box(M,len*.09,1.6,B,half-len*.045-2,dk+.2,0,hcol);   // breakwater, forecastle bulwark
+      for(const x of sh.bays)if(x-6.7>-half+12&&Math.abs(x-6.7-bx0)>14)S.box(M,.9,5.4,B-2.4,x-6.7,dk,0,0x8e918c);   // lashing bridges between the bays
+      S.seg(M,[bx0+2,dk+24.6,0],[bx0+2,dk+31,0],.35,0xe8e6e0);S.box(M,.3,.3,7,bx0+2,dk+29.5,0,0xe8e6e0);S.box(M,3.2,.5,1,bx0+2,dk+27.6,0,0x2a2b2c);   // radar mast, yard, scanner
+      for(const sd of[-1,1]){S.box(M,7,2.2,2.6,bx0-1,dk+11,sd*(B*.41+1.4),0xe2611c);S.box(M,8,.4,.4,bx0-1,dk+14,sd*(B*.41+1.4),0x5c5f61)}   // lifeboats in their davits
+      S.box(M,10,3,B*.7,-half+1,dk-2,0,hcol);                                     // poop deck at the stern
+      // deck cargo (columns), stored so the cranes can find the stack tops
+      sh.dk=dk+.5;sh.hm.forEach((row,i)=>row.forEach((h,j)=>{if(!h)return;const z=-((sh.rows-1)/2)*2.5+j*2.5;const p=new THREE.Vector3(sh.bays[i],sh.dk,z).applyMatrix4(M);
+        const yaw=Math.atan2(-M.elements[2],M.elements[0]);cols.push([p.x,p.y,p.z,12.2,h*2.6,2.44,yaw])}));
+      // mooring lines, bow and stern, to the bollards
+      for(const [x,ds] of[[half-8,22],[half-14,40],[-half+6,-22],[-half+12,-40]]){const p0=new THREE.Vector3(x,dk+.3,-B/2*sh.dir).applyMatrix4(M);
+        const qp=Q.P(sh.sc+(x+ds)*sh.dir,Q.wall-1.4);S.seg(null,[p0.x,p0.y,p0.z],[qp[0],deckY+.6,qp[1]],.25,0x2b2a26)}
+      const hw=Math.hypot(len/2,B/2);const cen=new THREE.Vector3().setFromMatrixPosition(M);addCollider(cen.x-hw,cen.x+hw,cen.z-hw,cen.z+hw,dk+24,'a container ship');
+      PORT.placed.push([cen.x,cen.z,len/2+30]);
+      if(R()<.4){const x0=pr(-half*.45,half*.55);portLighter(S,M,x0,sh.dir*(B/2+7.2),sh,R)}   // a lighter working cargo over the seaward side, as in Hong Kong mid-stream practice
+      Lflood.push(...[[bx0,dk+24,0],[bx0-12,dk+17,0],[half-6,dk+3,0]].map(([x,y,z])=>{const p=new THREE.Vector3(x,y,z).applyMatrix4(M);return [p.x,p.y,p.z,1,.9,.72,5,-1]}).flat());
+    }
+  }
+  // ---- crane structures (merged), with the moving parts as instances
+  const nC=PORT.cranes.length;
+  for(const c of PORT.cranes){const Q=c.Q,o=c.op,y0=deckY,zs=Q.wall-3;   // crane-local: x along the quay, z seaward from the seaside rail
+    const M=new THREE.Matrix4().copy(Q.M).multiply(new THREE.Matrix4().makeTranslation(c.s,0,zs));c.M=M;c.zs=zs;
+    const legC=o.leg,top=y0+44;
+    for(const xs of[-8.5,8.5]){for(const z of[0,-30.5]){S.box(M,2.2,top-y0-1,2.2,xs,y0+1.5,z,legC);S.box(M,4.5,1.6,3,xs,y0,z,0x2a2b2c)}   // legs and bogies
+      S.box(M,2,2,32.7,xs,y0+16,-15.25,legC);S.seg(M,[xs,y0+3,0],[xs,y0+15.5,-30.5],.8,legC);S.box(M,2.4,3.2,36,xs,top-1.6,-15.25,legC)}   // portal ties, brace, portal beams
+    S.box(M,19.4,2.4,2.4,0,y0+34,0,legC);S.box(M,19.4,2.4,2.4,0,y0+34,-30.5,legC);S.box(M,19.4,1.6,2.2,0,y0+15,0,legC);S.box(M,19.4,1.6,2.2,0,y0+15,-30.5,legC);
+    // girders: backreach to the landside, boom seaward (raised when the crane is idle)
+    const gy=top+.2;for(const xs of[-4.2,4.2]){S.box(M,1.6,3.2,52,xs,gy,-24,o.boom)}
+    S.box(M,10,6,13,0,gy+3.2,-42,o.house);S.box(M,10.4,.6,13.4,0,gy+9.2,-42,0x55585a);       // machinery house on the backreach
+    S.box(M,10.3,1.4,13.3,0,gy+6.6,-42,o.leg===o.house?0x2a2b2c:o.leg);                        // operator band round the house
+    S.seg(M,[-8.5,y0+16,-30.5],[0,y0+33,-30.5],.7,legC);S.seg(M,[8.5,y0+16,-30.5],[0,y0+33,-30.5],.7,legC);   // landside K-brace
+    for(let k=0;k<9;k++){const y=y0+1.5+k*4.6,zz=-30.5+(k%2?2.6:-2.6);S.seg(M,[10.2,y,-30.5-(k%2?2.6:-2.6)],[10.2,y+4.6,zz],.5,0x5c5f61)}   // stair tower up a landside leg
+    S.box(M,2.4,.3,6,10.2,top-1.5,-30.5,0x5c5f61);
+    for(let z=-48;z<-2;z+=8){S.seg(M,[-4.2,gy+3.3,z],[4.2,gy+3.3,z+4],.25,o.boom);S.seg(M,[4.2,gy+3.3,z+4],[-4.2,gy+3.3,z+8],.25,o.boom)}   // backreach lacing
+    S.box(M,1.4,.2,52,0,gy+.4,-24,0x7a7d7f);                                                  // walkway between the girders
+    const apex=[0,top+30,-13];
+    for(const xs of[-5.8,5.8]){S.seg(M,[xs,gy+3,1],[xs*.9,apex[1],apex[2]],1.5,legC);S.seg(M,[xs,gy+3,-30.5],[xs*.9,apex[1],apex[2]],1.5,legC);S.seg(M,[xs*.9,apex[1],apex[2]],[xs,gy+3,-49],.45,0x3a3a3a)}
+    S.box(M,10,2,2.4,0,apex[1]-1,apex[2],legC);
+    if(c.work){for(const xs of[-4.2,4.2]){S.box(M,1.6,3.2,52,xs,gy,25,o.boom);S.seg(M,[xs*.9,apex[1],apex[2]],[xs,gy+3,26],.4,0x3a3a3a);S.seg(M,[xs*.9,apex[1],apex[2]],[xs,gy+3,50],.4,0x3a3a3a)}
+      for(let z=2;z<48;z+=8){S.seg(M,[-4.2,gy+3.3,z],[4.2,gy+3.3,z+4],.25,o.boom);S.seg(M,[4.2,gy+3.3,z+4],[-4.2,gy+3.3,z+8],.25,o.boom)}S.box(M,1.4,.2,50,0,gy+.4,26,0x7a7d7f);   // boom lacing, walkway
+      const p=new THREE.Vector3(0,apex[1]+1,apex[2]).applyMatrix4(M);Lobst.push(p.x,p.y,p.z,1,.08,.05,3.2,-1);const tip=new THREE.Vector3(0,gy+3.6,51).applyMatrix4(M);Lobst.push(tip.x,tip.y,tip.z,1,.08,.05,2.6,-1)}
+    else{for(const xs of[-4.2,4.2]){S.box(M,1.6,52,3.2,xs,gy+1.6,1,o.boom);   // boom stands up from the hinge
+        S.seg(M,[xs*.9,apex[1],apex[2]],[xs,gy+50,4],.4,0x3a3a3a)}
+      for(let y=gy+4;y<gy+50;y+=8){S.seg(M,[-4.2,y,2.6],[4.2,y+4,2.6],.25,o.boom);S.seg(M,[4.2,y+4,2.6],[-4.2,y+8,2.6],.25,o.boom)}
+      const tip=new THREE.Vector3(0,gy+54,1).applyMatrix4(M);Lobst.push(tip.x,tip.y,tip.z,1,.08,.05,3.2,-1)}
+    for(const z of[-6,-24,20,38])if(c.work||z<0){const p=new THREE.Vector3(0,gy-1,z).applyMatrix4(M);Lflood.push(p.x,p.y,p.z,1,.86,.6,4.6,-1)}
+    const ctr=new THREE.Vector3(0,0,c.work?0:-20).applyMatrix4(M);const R0=c.work?56:42;addCollider(ctr.x-R0,ctr.x+R0,ctr.z-R0,ctr.z+R0,c.work?top+31:gy+55,'a container crane');
+  }
+  // ---- the yards: blocks of six rows, 40 ft slots, rubber-tyred gantries and high-mast lights
+  const rtgCol=[0xe2c23a,0xe9e6dc];
+  for(const Q of PORT_QUAYS){const depth=Q.yard;
+    for(let d=-58;d>-depth;d-=27){for(let s=12;s<Q.L-12;s+=148){
+      const bm=pr(.6,4.2),slots=[];let ok=0;
+      for(let i=0;i<10;i++)for(let j=0;j<6;j++){const ss=s+i*12.9+6.1,dd=d-j*2.75;if(ss>Q.L-8)continue;const [x,z]=Q.P(ss,Q.wall+dd);const k=oc(x,z);
+        if(OCC.has(k)||!inPortYard(x,z)||!landAt(x,z)||terrainAt(x,z)>5.4||terrainAt(x+6,z+6)>5.4||terrainAt(x-6,z-6)>5.4||bldAt(x,z,10))continue;
+        slots.push([x,z,k]);ok++}
+      if(ok<12)continue;
+      const reefer=R()<.11;   // reefer blocks: white boxes no more than three high, plugged into steel racks with walkways
+      for(const [x,z,k] of slots){OCC.add(k);if(R()<.07)continue;const h=reefer?Math.round(pr(1.6,3.4)):Math.max(1,Math.min(5,Math.round(bm+pr(-1.3,1.3))));(reefer?rcols:cols).push([x,terrainAt(x,z)-.05,z,12.2,h*2.6,2.44,-Math.atan2(Q.u[1],Q.u[0])])}
+      if(reefer){const y=terrainAt(...Q.P(s+60,Q.wall+d))-.1,d0=Q.wall+d+2.2,d1=Q.wall+d-5*2.75-2.2;
+        for(let i=0;i<=10;i+=2){const ss=s+i*12.9-.3;if(ss>Q.L-8)break;
+          for(const dd of[d0,d1])S.box(Q.M,.5,9,.5,ss,y,dd,0x6f7376);
+          for(const hy of[3,6,9])S.box(Q.M,1.4,.25,d0-d1,ss,y+hy,(d0+d1)/2,0xd8b23a)}}
+      if(R()<.55){const si=s+pr(10,110),M=Q.M,y=terrainAt(...Q.P(si,Q.wall+d))-.1,col=pk(rtgCol),d0=Q.wall+d+3,d1=Q.wall+d-6*2.75-4;   // an RTG straddling the block
+        for(const dd of[d0,d1]){for(const ds of[-4,4])S.box(M,1.2,18,1.2,si+ds,y,dd,col);S.box(M,9.5,1.4,1.4,si,y+.5,dd,0x2a2b2c);S.box(M,9,1.2,1.4,si,y+17.5,dd,col)}
+        for(const ds of[-4,4])S.box(M,1.2,1.6,d0-d1,si+ds,y+17.5,(d0+d1)/2,col);S.box(M,4,2.4,3.5,si,y+15.6,(d0+d1)/2+pr(-6,6),0x3c4044)}
+    }}
+    for(let d=-90;d>-depth;d-=150)for(let s=60;s<Q.L;s+=170){const [x,z]=Q.P(s,Q.wall+d);if(!inPortYard(x,z)||!landAt(x,z)||terrainAt(x,z)>5.4||bldAt(x,z,6))continue;const y=terrainAt(x,z);
+      S.seg(null,[x,y,z],[x,y+34,z],1.1,0x8f9396);S.box(null,5,1.4,5,x,y+34,z,0x55585a);for(const [ox,oz] of[[2,2],[-2,-2],[2,-2],[-2,2]])Lflood.push(x+ox,y+34.5,z+oz,1,.82,.55,5.5,-1)}
+  }
+  const static_=S.mesh();static_.name='port';scene.add(static_);
+  // ---- containers: yards and deck cargo
+  {const im=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1).translate(0,.5,0),containerMaterial(),cols.length);const m=new THREE.Matrix4(),q=new THREE.Quaternion(),e=new THREE.Euler(),p=new THREE.Vector3(),s=new THREE.Vector3();
+   cols.forEach((c,i)=>{m.compose(p.set(c[0],c[1],c[2]),q.setFromEuler(e.set(0,c[6],0)),s.set(c[3],c[4],c[5]));im.setMatrixAt(i,m)});im.name='portBoxes';scene.add(im);PORT.boxes=im;PORT.nBoxes=cols.length;
+   if(rcols.length){const rm=new THREE.InstancedMesh(im.geometry,containerMaterial(true),rcols.length);rcols.forEach((c,i)=>{m.compose(p.set(c[0],c[1],c[2]),q.setFromEuler(e.set(0,c[6],0)),s.set(c[3],c[4],c[5]));rm.setMatrixAt(i,m)});rm.name='portReefers';scene.add(rm)}}
+  portYardTraffic(R,pr,pk);
+  // ---- moving parts: trolley, cab, spreader, two ropes, the box being moved; tractor, trailer and its box
+  const mk=(geo,col,n)=>{const m=new THREE.InstancedMesh(geo,new THREE.MeshLambertMaterial({color:col}),n);m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);m.frustumCulled=false;scene.add(m);return m};
+  const work=PORT.cranes.filter(c=>c.work);const nw=work.length;
+  PORT.mv={trolley:mk(new THREE.BoxGeometry(9,3.6,10),0x55585a,nw),cab:mk(new THREE.BoxGeometry(3,3,3),0xe9e6dc,nw),spreader:mk(new THREE.BoxGeometry(12.4,.9,2.6),0xd8b23a,nw),
+    rope:mk(new THREE.BoxGeometry(.18,1,.18).translate(0,-.5,0),0x2a2a2a,nw*2),box:mk(new THREE.BoxGeometry(12.2,2.6,2.44),0xffffff,nw),
+    tractor:mk(new THREE.BoxGeometry(5.5,3.2,2.5).translate(0,1.6,0),0xffffff,nw),trailer:mk(new THREE.BoxGeometry(12.6,1.3,2.5).translate(0,.65,0),0x2c2d2e,nw),tbox:mk(new THREE.BoxGeometry(12.2,2.6,2.44).translate(0,1.3,0),0xffffff,nw)};
+  const BOXC=[0xa0332a,0x2c5487,0x346b44,0xdcd9cf,0xc78d2e,0x737779,0x7f4228,0x1f3361,0xd65c1f,0x4d859e,0x8c1f2e];
+  const tractorC=[0xc93a2a,0x2f5c8a,0xe9e6dc,0xd9a03a,0x3d7a46];
+  work.forEach((c,i)=>{c.i=i;c.mode=R()<.5?1:-1;c.t=pr(-14,30);c.y=pr(26,40);c.wait=pr(0,8);c.has=false;c.boxC=new THREE.Color(pk(BOXC));
+    const sh=c.ship,bi=sh.bays.indexOf(c.bayX),H=sh.hm[bi];
+    c.rowZ=j=>(c.Q.wall+3+sh.beam/2)-c.zs+(-((sh.rows-1)/2)*2.5+j*2.5)*sh.dir;     // crane-local z of row j of the bay under the crane
+    c.stackTop=j=>sh.dk+H[j]*2.6;
+    c.pickRow=()=>{const cand=[];for(let j=0;j<sh.rows;j++)if(c.mode<0?H[j]>0:H[j]<6)cand.push(j);if(!cand.length){c.mode=-c.mode;return c.pickRow()}c.row=cand[Math.floor(R()*cand.length)]};
+    if(!H.some(h=>h>0))c.mode=1;c.pickRow();
+    const sd=c.s<75?1:c.s>c.Q.L-75?-1:(R()<.5?1:-1);
+    c.truck={x:0,st:R()<.5?'gone':'wait',w:pr(0,15),has:c.mode>0,boxC:new THREE.Color(pk(BOXC)),dir:sd,fix:c.s<75||c.s>c.Q.L-75};
+    PORT.mv.tractor.setColorAt(i,new THREE.Color(pk(tractorC)));PORT.mv.box.setColorAt(i,c.boxC);PORT.mv.tbox.setColorAt(i,c.truck.boxC)});
+  PORT.work=work;PORT.R=R;
+  PORT.obst=makeLights(Lobst);scene.add(PORT.obst);PORT.flood=makeLights(Lflood);scene.add(PORT.flood);
+  PORT.built=true;
+}
+/* Each working crane runs a cycle. Discharge (mode -1): down to the stack top on the ship, lock on, hoist, trolley in over the lane, wait for a
+   tractor, lower onto its trailer, release, hoist, trolley back out to the next row. Load (mode +1) runs the same path the other way round.
+   The tractor drives in under the portal, waits for its box (or to lose it) and drives off; another comes in after a gap. */
+const PORT_V={hoist:2.4,trolley:3.6,truck:6},PORT_BOXC=[0xa0332a,0x2c5487,0x346b44,0xdcd9cf,0xc78d2e,0x737779,0x7f4228,0x1f3361,0xd65c1f];
+function updatePort(dt){
+  if(!PORT.built)return;const cp=camera.position;if(Math.hypot(cp.x+6800,cp.z+1000)>16000)return;
+  const MV=PORT.mv,m=PORT._m||(PORT._m=new THREE.Matrix4()),p=new THREE.Vector3(),q=new THREE.Quaternion(),s=new THREE.Vector3(),hide=new THREE.Matrix4().makeScale(0,0,0);
+  const yHi=4.3+40,laneZ=-15,yTruck=4.3+1.6,R=PORT.R,trolleyY=4.3+44.2+3.2;
+  for(const c of PORT.work){const T=c.truck;
+    // the tractor-trailer: in under the portal, wait, out the far side, gone a while
+    if(T.st==='gone'){T.w-=dt;if(T.w<=0){T.st='in';if(!T.fix)T.dir=R()<.5?1:-1;T.x=-60*T.dir;T.has=c.mode>0;if(T.has)T.boxC.setHex(PORT_BOXC[Math.floor(R()*PORT_BOXC.length)])}}
+    else if(T.st==='in'){T.x+=PORT_V.truck*dt*T.dir;if(T.x*T.dir>=0){T.x=0;T.st='wait'}}
+    else if(T.st==='out'){T.x+=PORT_V.truck*dt*T.dir;if(T.x*T.dir>60){T.st='gone';T.w=R()*14+4}}
+    const atLane=T.st==='wait';
+    // the crane: hoist clear before any trolley travel, then lower to the target
+    const target=(z,y)=>{const dz=z-c.t,dy=y-c.y;
+      if(Math.abs(dz)>.05){if(c.y<yHi-.05){c.y=Math.min(yHi,c.y+PORT_V.hoist*dt);return false}c.t+=Math.sign(dz)*Math.min(Math.abs(dz),PORT_V.trolley*dt);return false}
+      if(Math.abs(dy)>.05){c.y+=Math.sign(dy)*Math.min(Math.abs(dy),PORT_V.hoist*dt);return false}return true};
+    if(c.flip&&!c.has&&(T.st==='gone'||T.st==='out')){c.flip=false;c.mode=-c.mode;c.pickRow()}
+    if(c.wait>0)c.wait-=dt;
+    else{const atL=Math.abs(c.t-laneZ)<.06;
+      if(c.mode<0){   // discharge: ship -> trailer
+        if(!c.has){if(target(c.rowZ(c.row),c.stackTop(c.row)+.05)){c.has=true;c.y-=2.6;c.wait=2;c.boxC.setHex(PORT_BOXC[Math.floor(R()*PORT_BOXC.length)])}}
+        else if(atL&&atLane&&!T.has){if(target(laneZ,yTruck+.05)){c.has=false;c.y+=2.6;T.has=true;T.boxC.copy(c.boxC);c.wait=2;T.st='out';c.pickRow();if(R()<.15)c.flip=true}}
+        else target(laneZ,yHi-10)}
+      else{           // load: trailer -> ship
+        if(!c.has){if(atL&&atLane&&T.has){if(target(laneZ,yTruck+2.65)){c.has=true;c.y-=2.6;T.has=false;c.boxC.copy(T.boxC);c.wait=2;T.st='out'}}else target(laneZ,yHi-10)}
+        else if(target(c.rowZ(c.row),c.stackTop(c.row)+.05)){c.has=false;c.y+=2.6;c.wait=2;c.pickRow();if(R()<.15)c.flip=true}}}
+    // pose the parts (crane-local, then into the world)
+    const M=c.M,i=c.i;const put=(mesh,k,x,y,z,sy)=>{m.compose(p.set(x,y,z),q.identity(),s.set(1,sy||1,1));m.premultiply(M);mesh.setMatrixAt(k,m)};
+    put(MV.trolley,i,0,trolleyY+1.8,c.t);put(MV.cab,i,0,trolleyY-4.6,c.t+4);
+    const sp=c.y+(c.has?2.6:0);put(MV.spreader,i,0,sp+.45,c.t);
+    for(const k of[0,1])put(MV.rope,i*2+k,k?3.4:-3.4,trolleyY,c.t,Math.max(.1,trolleyY-sp-.9));
+    if(c.has){put(MV.box,i,0,c.y+1.3,c.t);MV.box.setColorAt(i,c.boxC)}else MV.box.setMatrixAt(i,hide);
+    if(T.st==='gone'){MV.tractor.setMatrixAt(i,hide);MV.trailer.setMatrixAt(i,hide);MV.tbox.setMatrixAt(i,hide)}
+    else{put(MV.tractor,i,T.x+T.dir*9.6,4.3,laneZ);put(MV.trailer,i,T.x,4.3+.3,laneZ);
+      if(T.has){put(MV.tbox,i,T.x,yTruck+.02,laneZ);MV.tbox.setColorAt(i,T.boxC)}else MV.tbox.setMatrixAt(i,hide)}
+  }
+  for(const k in MV){MV[k].instanceMatrix.needsUpdate=true;if(MV[k].instanceColor)MV[k].instanceColor.needsUpdate=true}
+  updateYardTraffic(dt);updateLighters(dt);
+}
+const _YAX=new THREE.Vector3(0,1,0);
 function updateShips(dt,t){
   const lp=shipLights.geometry.attributes.position;let li=0;
   for(const S of SHIPS){const ln=S.ln;
@@ -3516,7 +3929,8 @@ function applyEnvironment(){
   ENV.fogBase=fog;ENV.dens=dens;
   for(const S of SHIPS)if(S.m.userData.wake){const m=S.m.userData.wake.material;m.opacity=lerp(.35,over?.6:.85,k);m.color.setHex(hexMix(0x2a3438,0xffffff,k))}
   setWater();if(obstructionLights)obstructionLights.visible=n||over||fogW;
-  if(apronMasts)apronMasts.lights.visible=n||over||fogW;   // apron mast lamps and obstruction lights: off on a clear day
+  if(apronMasts)apronMasts.lights.visible=n||over||fogW;
+  if(PORT.obst){PORT.obst.visible=n||over||fogW;PORT.flood.visible=n}   // apron mast lamps and obstruction lights: off on a clear day
   for(const m of TERRAIN_MATS){const kd=over?.72:fogW?.8:1;if(m.userData.street)m.color.setHex(m.userData.base||(m.userData.base=m.color.getHex())).multiplyScalar(lerp(.25,kd,k));else m.color.setScalar(lerp(.11,kd,k))}
   for(const m of APR_MATS){const f=lerp(.55,over?.72:fogW?.8:1,k);if(m.userData.tint)m.color.copy(m.userData.tint).multiplyScalar(f);else m.color.setScalar(f)}   // textured paint is white times its map; flat-colour paint keeps its tint
   streetLights.visible=n;carLights&&(carLights.visible=n);shipLights.visible=true;
@@ -5335,7 +5749,7 @@ function frame(now,manual){
   atcUpdate(dt);
   const t=now/1000;LIGHT_U.uTime.value=t;WATER_U.uTime.value=t;
   const sdt=dt*(mode==='fly'?CFG.ts:1);
-  if(!paused){updateTraffic(sdt,CFG.night);updateShips(sdt,t);updateFX(dt);updateDamageFX(dt)}
+  if(!paused){updateTraffic(sdt,CFG.night);updateShips(sdt,t);updatePort(sdt);updateFX(dt);updateDamageFX(dt)}
   fidsTick(now);updateAI();rcHud();if(mode==='fly'&&!paused&&CFG.game!=='watch')playerHit();for(const b of BRIDGE)bridgeSet(b,b.e,b.R);if(gseLamps)updateGSE();
   updateAircraftVisual();if(hoops)hoops.visible=CFG.guide&&!SPOTS[CFG.view]&&!TVIEWS[CFG.view]&&CFG.view!=='tower';
   if(deckGroup&&deckGroup.visible){drawDisplays(dt);animateDeck()}
@@ -5376,7 +5790,7 @@ async function boot(){
   const ld=document.getElementById('loading');
   try{await loadGeo(t=>ld.textContent=t)}catch(e){ld.textContent='COULD NOT LOAD MAP DATA. OPEN THIS PAGE FROM A WEB SERVER, NOT A FILE.';console.error(e);return}
   ld.textContent='BUILDING HONG KONG…';await new Promise(r=>setTimeout(r,20));
-  buildTerrain();buildRoads();buildLandmarks();buildCity();buildHappyValley();buildOceanPark();buildPeak();buildStreetScene();buildBillboards();buildAirport();buildGSE();buildShips();buildRain();
+  buildTerrain();buildRoads();buildLandmarks();buildCity();buildHappyValley();buildOceanPark();buildPeak();buildStreetScene();buildBillboards();buildAirport();buildGSE();buildPort();buildShips();buildRain();
   resize();showSetup();ld.hidden=true;
   requestAnimationFrame(frame);
 }
@@ -5384,9 +5798,9 @@ const fontsReady=document.fonts&&document.fonts.ready?Promise.race([document.fon
 fontsReady.then(()=>setTimeout(boot,30));
 
 /* test hooks */
-window.__kt={masts:()=>apronMasts,SHIPS,FAIRWAYS,waterAt,laneOffset,rwP,STAND_C,CTY,stS,NCG,ESTATES,RC,rcEv,rcVac,rcRoll,rcStrip,rcClearBy,rcTakeoffWhy,rcView,rcPlayer,CYC,onPaved,gearPaved,rwS,LINKS,rb:()=>rbMasts13,bat:buildingAt,setHour,solarState,SUN_DIR,MOON_DIR,ENV,AI,CFG,ST,COACH,LESSON,keys,coachUpdate,coachResync,coachGo,rwL,get PATH(){return PATH},LND,setRunway,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,{rwy:'13',conc:false},o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.conc&&CFG.game==='watch'?'watchC':CFG.rwy==='31'&&CFG.game!=='learn'?CFG.game+'31':CFG.game}]`).checked=true;hourIn.value=o.hour!==undefined?o.hour:CFG.night?22:15;showHour();startFlight()},
+window.__kt={masts:()=>apronMasts,port:()=>PORT,geo:()=>GEO,inPortYard,PORT_QUAYS,PORT_BLD,SHIPS,FAIRWAYS,waterAt,laneOffset,rwP,STAND_C,CTY,stS,NCG,ESTATES,RC,rcEv,rcVac,rcRoll,rcStrip,rcClearBy,rcTakeoffWhy,rcView,rcPlayer,CYC,onPaved,gearPaved,rwS,LINKS,rb:()=>rbMasts13,bat:buildingAt,setHour,solarState,SUN_DIR,MOON_DIR,ENV,AI,CFG,ST,COACH,LESSON,keys,coachUpdate,coachResync,coachGo,rwL,get PATH(){return PATH},LND,setRunway,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,{rwy:'13',conc:false},o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.conc&&CFG.game==='watch'?'watchC':CFG.rwy==='31'&&CFG.game!=='learn'?CFG.game+'31':CFG.game}]`).checked=true;hourIn.value=o.hour!==undefined?o.hour:CFG.night?22:15;showHour();startFlight()},
   run:(sec)=>{if(CFG.game==='watch'){ST.t+=sec;return {t:ST.t}}const h=1/120;for(let i=0;i<sec*120&&!ST.ended;i++){physStep(h);if(i%60===0)recordHistory();if(i%12===0)aiTick()}return {ended:ST.ended,td:ST.td,t:ST.t,x:ST.x,y:ST.y,z:ST.z,V:ST.V/KT,d:PATH.pts[ST.pi].d}},
-  get mode(){return mode},updateAI,AIC,footOf,GSE,GSE_KINDS,AIRBOX,rwS,BGRID,updateGSE,gseLamps:()=>gseLamps,fpAt,fpDist,hitOn,damageModel,aiHit,DEBRIS,EMIT,aiTick,ctl(){return aiControl},get CFG(){return CFG},frame:(now)=>frame(now,true),get FOCUS(){return FOCUS},step:()=>physStep(1/120),rwS,setZoom:z=>{CFG.zoom=z},get AI(){return AI},get GSE(){return GSE},get BRIDGE(){return BRIDGE},STAND_S,STAND_TY,lineupT,lineupT31,arrivalPts,tugAt,standL,PB,get parked(){return parked},gseAt:(t)=>{ST.t=t;updateGSE();return GSE.map(e=>({k:e.kind,x:e.p.x,z:e.p.z,psi:e.p.psi,lift:e.lift}))},get shipLights(){return shipLights},get SHIPS(){return SHIPS},get DISP(){return DISP},get deck(){return deckGroup},get streetCam(){return STREET_CAM},get BB(){return BB},get water(){return water},get camera(){return camera},get nStreets(){return STREETS.length},drawDisplays,look,setView,terrainAt,buildingAt,groundInfo};
+  get mode(){return mode},updateAI,AIC,footOf,GSE,GSE_KINDS,AIRBOX,rwS,BGRID,updateGSE,gseLamps:()=>gseLamps,fpAt,fpDist,hitOn,damageModel,aiHit,DEBRIS,EMIT,aiTick,ctl(){return aiControl},get CFG(){return CFG},frame:(now)=>frame(now,true),get FOCUS(){return FOCUS},step:()=>physStep(1/120),rwS,setZoom:z=>{CFG.zoom=z},get AI(){return AI},get GSE(){return GSE},get BRIDGE(){return BRIDGE},STAND_S,STAND_TY,lineupT,lineupT31,arrivalPts,tugAt,standL,PB,get parked(){return parked},gseAt:(t)=>{ST.t=t;updateGSE();return GSE.map(e=>({k:e.kind,x:e.p.x,z:e.p.z,psi:e.p.psi,lift:e.lift}))},get shipLights(){return shipLights},get PORT(){return PORT},get SHIPS(){return SHIPS},get DISP(){return DISP},get deck(){return deckGroup},get streetCam(){return STREET_CAM},get BB(){return BB},get water(){return water},get camera(){return camera},get nStreets(){return STREETS.length},drawDisplays,look,setView,terrainAt,buildingAt,groundInfo};
 })();
 </script>
 <!--/FRAG:BODY-->
