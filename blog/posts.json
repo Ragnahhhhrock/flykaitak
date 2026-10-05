@@ -1,5 +1,37 @@
 [
   {
+    "slug": "red-floodlight-masts-over-the-stands",
+    "title": "Red floodlight masts over the stands",
+    "dek": "Kai Tak's tall red apron floodlight masts now stand between the parked aircraft on every row of stands, lit at night.",
+    "description": "Tall red floodlight masts now stand between the stands across the Kai Tak apron, as in 1998 photos, with lamps and obstruction lights at night.",
+    "date": "2026-10-05",
+    "tag": "New",
+    "category": "scenery",
+    "keywords": [
+      "apron floodlights",
+      "floodlight masts",
+      "Kai Tak apron",
+      "stands",
+      "Kai Tak",
+      "flight simulator"
+    ],
+    "hero": "apron-masts-remote",
+    "hero_alt": "Red floodlight masts with lamp frames standing past the noses of aircraft parked on the remote stands at Kai Tak.",
+    "hero_caption": "The red floodlight masts by the remote stands.",
+    "card_kicker": "SCENERY · APRON",
+    "card_title": "Red floodlight masts",
+    "card_sub": "Between the stands, lit at night",
+    "card_image": "apron-masts-closeup",
+    "card_focus": 50,
+    "zh": {
+      "title": "停機位上嘅紅色射燈柱",
+      "dek": "啟德停機坪又高又紅嘅射燈柱，而家企喺每排停機位嘅飛機之間，夜晚會著燈。",
+      "description": "啟德停機坪而家有又高又紅嘅射燈柱企喺停機位之間，同 1998 年舊相一樣，夜晚有射燈同障礙燈。",
+      "hero_alt": "紅色射燈柱連燈架，企喺啟德遠端停機位飛機機頭前面。",
+      "hero_caption": "遠端停機位旁邊嘅紅色射燈柱。"
+    }
+  },
+  {
     "slug": "car-park-at-the-runway-end-and-airport-hotel",
     "title": "The car park moves to the runway end, with the airport hotel and its footbridge",
     "dek": "The car park now stands where the aerial photos show it, and the airport hotel stands across Prince Edward Road East, joined by its cable-stayed footbridge.",

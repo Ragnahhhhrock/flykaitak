@@ -2124,6 +2124,46 @@ const APN={A:-96,D3:73,D2:283,D1:497,stop:-44,end:-862,
 // nose toward the terminal, to the stop line (nose, s). l: each stand's centre line.
 const MID={l:[-250,-328,-406,-484,-562,-640],nose:150};
 const MID_TY=['a333','b772','','a343','b744',''];   // the aircraft parked at stands 21-26 (blank: empty stand)
+/* ---------------- apron floodlight masts ----------------
+   Kai Tak's stands were lit by tall, slender red masts standing in the gaps between the stands, each with a floodlight head on top
+   (period photos, 1998). Here they stand at the nose end of every row of stands, in the gap between neighbouring stand boxes, so they are
+   clear of wingtips, jet bridges and the pushback tugs. Each entry: [s, l, ds, dl]: the foot (runway coordinates) and the way the lamps face. */
+const MAST_H=28;
+function apronMastSpots(){const o=[],mid=(a,b)=>(a+b)/2;
+  // terminal stands 1-8: against the pier face, between the tug bay (S+30) of one stand and the bridge rotunda (S-12) of the next
+  for(let j=0;j<NST-1;j++)o.push([-74,-mid(STAND_S[j]+30,STAND_S[j+1]-14),1,0]);
+  // stands 21-26: just past the nose stop line, toward the terminal
+  for(let i=0;i<MID.l.length-1;i++)o.push([MID.nose-16,mid(MID.l[i],MID.l[i+1]),1,0]);
+  // remote stands 11-19: past the noses, just beyond the apron buses' outer lane (s = 413; the buses leave each stand through the gap)
+  for(let i=0;i<APN.remote.length-1;i++)o.push([APN.D2+140,mid(APN.remote[i],APN.remote[i+1]),-1,0]);
+  // cargo stands 41-46: on the nose stop line, short of the forklift lane in front of the cargo terminal
+  for(let i=0;i<STAND_C.length-1;i++)o.push([CARGO_NOSE+4,2000-mid(STAND_C[i],STAND_C[i+1]),-1,0]);
+  // south apron stands 71-81: along the far edge, past the noses
+  for(let i=0;i<SOUTH.st.length-1;i++)o.push([mid(SOUTH.st[i],SOUTH.st[i+1]),SOUTH.nose-8,0,1]);
+  // east apron stands 51-57: along the boundary edge, past the noses
+  for(let i=0;i<EAST.st.length-1;i++){const q=eastP(mid(EAST.st[i],EAST.st[i+1]),6);o.push([q[0],q[1],EAST.n[0],EAST.n[1]])}
+  return o}
+let apronMasts=null;
+function buildApronMasts(){
+  const spots=apronMastSpots(),n=spots.length,red=new THREE.MeshLambertMaterial({color:0xb8291f}),
+    lampTex=canvasTex(256,96,(g,W,H)=>{g.fillStyle='#2e3134';g.fillRect(0,0,W,H);g.fillStyle='#eef0ea';for(let r=0;r<2;r++)for(let c=0;c<5;c++)g.fillRect(10+c*49,8+r*46,40,36)}),
+    lamp=new THREE.MeshLambertMaterial({color:0xffffff,map:lampTex,emissiveMap:lampTex,emissive:0x000000}),dark=new THREE.MeshLambertMaterial({color:0x3c3f42});
+  // the mast tapers from 0.8 m at the foot to 0.35 m; a ladder cage of a platform under the head; the head is a red frame carrying two rows of lamps
+  const parts=[[new THREE.CylinderGeometry(.35,.8,MAST_H,8).translate(0,MAST_H/2,0),red],
+    [new THREE.CylinderGeometry(1.6,1.6,.35,10).translate(0,MAST_H-1.2,0),dark],
+    [new THREE.BoxGeometry(7.6,3.4,.5).translate(0,MAST_H+1.2,0),red],
+    [new THREE.BoxGeometry(6.8,2.6,.7).translate(0,MAST_H+1.2,-.35),lamp]];
+  const meshes=parts.map(([g,m])=>{const im=new THREE.InstancedMesh(g,m,n);scene.add(im);return im});
+  const M4=new THREE.Matrix4(),Q=new THREE.Quaternion(),V=new THREE.Vector3(),ONE=new THREE.Vector3(1,1,1),Y=new THREE.Vector3(0,1,0),L=[];
+  spots.forEach(([s,l,ds,dl],i)=>{const p=rwP(s,l);V.set(p[0],RWY.elev,p[1]);Q.setFromAxisAngle(Y,-hdgOf(ds,dl));M4.compose(V,Q,ONE);
+    for(const im of meshes)im.setMatrixAt(i,M4);
+    addCollider(p[0]-2,p[0]+2,p[1]-2,p[1]+2,RWY.elev+MAST_H+3,'an apron floodlight mast');
+    // the lamps (bright, warm), and a red obstruction light on top
+    const f=rwP(s+ds*1.2,l+dl*1.2);L.push(f[0],RWY.elev+MAST_H+1.2,f[1],1,.95,.8,14,-1);L.push(p[0],RWY.elev+MAST_H+3.2,p[1],1,.1,.06,4,-1)});
+  for(const im of meshes)im.instanceMatrix.needsUpdate=true;
+  meshes[3].userData.neon=0xfff2cc;landmarkLights.push(meshes[3]);
+  const lights=makeLights(L);scene.add(lights);
+  apronMasts={spots,meshes,lights};return apronMasts}
 /* ---------------- pavement map ----------------
    Aircraft on the ground stay on the grey tarmac and never cross the green grass. This is the one description of that tarmac: it draws the
    runway, taxiway A, the link taxiways and the apron (buildAirport), routes the taxiing aircraft (arrivalPts) and checks them (onPaved).
@@ -2638,6 +2678,7 @@ function buildAirport(){
   // parked[...]: east apron stands 51-57, nose toward the boundary road
   EAST_TY.forEach((ty,i)=>{if(!ty)return;const opt={tail:[0xd9732b,0x1d6f6a,0,0x23406e,0x24607a,0xb53a2c][i],gear:true},m=buildAircraftModel(AC[ty],opt);m.userData.spec={type:ty,opt};m.userData.type=ty;
     const q=eastP(EAST.st[i],EAST.nose+.39*AC[ty].len),p=rwP(q[0],q[1]);m.position.set(p[0],RWY.elev,p[1]);m.rotation.y=-hdgOf(-EAST.n[0],-EAST.n[1]);scene.add(m);parked.push(m)});
+  buildApronMasts();
   // lights
   // edge lights turn amber over the last 600 m, and the landing threshold is green (red at the far end), for each direction
   const mkRwyLights=dir=>{const Lr=[];
@@ -5342,7 +5383,7 @@ const fontsReady=document.fonts&&document.fonts.ready?Promise.race([document.fon
 fontsReady.then(()=>setTimeout(boot,30));
 
 /* test hooks */
-window.__kt={SHIPS,FAIRWAYS,waterAt,laneOffset,rwP,STAND_C,CTY,stS,NCG,ESTATES,RC,rcEv,rcVac,rcRoll,rcStrip,rcClearBy,rcTakeoffWhy,rcView,rcPlayer,CYC,onPaved,gearPaved,rwS,LINKS,rb:()=>rbMasts13,bat:buildingAt,setHour,solarState,SUN_DIR,MOON_DIR,ENV,AI,CFG,ST,COACH,LESSON,keys,coachUpdate,coachResync,coachGo,rwL,get PATH(){return PATH},LND,setRunway,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,{rwy:'13',conc:false},o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.conc&&CFG.game==='watch'?'watchC':CFG.rwy==='31'&&CFG.game!=='learn'?CFG.game+'31':CFG.game}]`).checked=true;hourIn.value=o.hour!==undefined?o.hour:CFG.night?22:15;showHour();startFlight()},
+window.__kt={masts:()=>apronMasts,SHIPS,FAIRWAYS,waterAt,laneOffset,rwP,STAND_C,CTY,stS,NCG,ESTATES,RC,rcEv,rcVac,rcRoll,rcStrip,rcClearBy,rcTakeoffWhy,rcView,rcPlayer,CYC,onPaved,gearPaved,rwS,LINKS,rb:()=>rbMasts13,bat:buildingAt,setHour,solarState,SUN_DIR,MOON_DIR,ENV,AI,CFG,ST,COACH,LESSON,keys,coachUpdate,coachResync,coachGo,rwL,get PATH(){return PATH},LND,setRunway,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,{rwy:'13',conc:false},o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.conc&&CFG.game==='watch'?'watchC':CFG.rwy==='31'&&CFG.game!=='learn'?CFG.game+'31':CFG.game}]`).checked=true;hourIn.value=o.hour!==undefined?o.hour:CFG.night?22:15;showHour();startFlight()},
   run:(sec)=>{if(CFG.game==='watch'){ST.t+=sec;return {t:ST.t}}const h=1/120;for(let i=0;i<sec*120&&!ST.ended;i++){physStep(h);if(i%60===0)recordHistory();if(i%12===0)aiTick()}return {ended:ST.ended,td:ST.td,t:ST.t,x:ST.x,y:ST.y,z:ST.z,V:ST.V/KT,d:PATH.pts[ST.pi].d}},
   get mode(){return mode},updateAI,AIC,footOf,GSE,GSE_KINDS,AIRBOX,rwS,BGRID,updateGSE,gseLamps:()=>gseLamps,fpAt,fpDist,hitOn,damageModel,aiHit,DEBRIS,EMIT,aiTick,ctl(){return aiControl},get CFG(){return CFG},frame:(now)=>frame(now,true),get FOCUS(){return FOCUS},step:()=>physStep(1/120),rwS,setZoom:z=>{CFG.zoom=z},get AI(){return AI},get GSE(){return GSE},get BRIDGE(){return BRIDGE},STAND_S,STAND_TY,lineupT,lineupT31,arrivalPts,tugAt,standL,PB,get parked(){return parked},gseAt:(t)=>{ST.t=t;updateGSE();return GSE.map(e=>({k:e.kind,x:e.p.x,z:e.p.z,psi:e.p.psi,lift:e.lift}))},get shipLights(){return shipLights},get SHIPS(){return SHIPS},get DISP(){return DISP},get deck(){return deckGroup},get streetCam(){return STREET_CAM},get BB(){return BB},get water(){return water},get camera(){return camera},get nStreets(){return STREETS.length},drawDisplays,look,setView,terrainAt,buildingAt,groundInfo};
 })();
