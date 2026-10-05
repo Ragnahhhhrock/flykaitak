@@ -2529,8 +2529,8 @@ function buildAirport(){
      const legs=new THREE.Mesh(new THREE.BoxGeometry(.4,.8,.25).translate(0,.4,0),new THREE.MeshLambertMaterial({color:0x2b3550}));legs.position.copy(body.position);scene.add(legs);
      const head=new THREE.Mesh(new THREE.SphereGeometry(.13,8,6),new THREE.MeshLambertMaterial({color:0x2a211a}));head.position.set(q[0],RWY.elev+ch+.3+1.65,q[1]);scene.add(head)}
    const q=rwP(cs+8,cl+W/2-.6);SPOTS.carpark=[q[0],RWY.elev+ch+.3+1.75,q[1]];AIRBOX.push({s0:cs-D/2,s1:cs+D/2,l0:cl-W/2,l1:cl+W/2,name:'the Kai Tak car park'});const p=rwP(cs,cl);addCollider(p[0]-80,p[0]+80,p[1]-80,p[1]+80,RWY.elev+ch+1.2,'the Kai Tak car park')}
-  // the "boat in the harbour" viewpoint, low on the water off the runway (south-west side); no vessel is drawn, as nothing sailed here under the approach
-  {const q=rwP(1650,330);const bow=new THREE.Vector3(-11,0,0).applyEuler(new THREE.Euler(0,-(RWY.hdg-90)*D2R,0));SPOTS.boat=[q[0]+bow.x,4.6,q[1]+bow.z]}
+  // a junk moored off the runway in the harbour (south-west side)
+  {const q=rwP(1650,330);const j=shipModel('junk');j.position.set(q[0],0,q[1]);j.rotation.y=-(RWY.hdg-90)*D2R;scene.add(j);const bow=new THREE.Vector3(-11,0,0).applyEuler(j.rotation);SPOTS.boat=[q[0]+bow.x,4.6,q[1]+bow.z];SPOTS.boatShip=j}
   // parked aircraft at the terminal, nose toward the pier
   const types=STAND_TY,TAILS=[0x1d6f6a,0xb53a2c,0x23406e,0x6a1f2f,0x1d6f6a,0x3a5f2e,0x23406e,0xb53a2c];
   for(let i=0;i<NST;i++){const opt={tail:TAILS[i],gear:true},m=buildAircraftModel(AC[types[i]],opt);m.userData.spec={type:types[i],opt};m.userData.type=types[i];const w=G2W(STAND_S[i],standL(types[i])),p=rwP(w[0],w[1]);m.position.set(p[0],RWY.elev,p[1]);m.rotation.y=-(RWY.hdg+180)*D2R;m.scale.setScalar(1);scene.add(m);parked.push(m)}
@@ -2666,13 +2666,12 @@ function addWake(g){const L=g.userData.len;const wake=new THREE.Mesh(new THREE.P
 function box2(w,h,d,m,x,y,z){const b=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);b.position.set(x,y+h/2,z);return b}
 let shipLights;
 function waterAt(x,z,clear){if(inAirport(x,z))return false;for(const [dx,dz] of[[0,0],[clear,0],[-clear,0],[0,clear],[0,-clear]])if(terrainAt(x+dx,z+dz)>-0.3)return false;return true}
-// keep harbour craft well clear of the runway: no boats in the water around the strip (Kowloon Bay and off the runway end)
-function nearRunway(x,z,r){const a=rwP(-300,0),b=rwP(RWY.len+900,0),dx=b[0]-a[0],dz=b[1]-a[1];const t=clamp(((x-a[0])*dx+(z-a[1])*dz)/(dx*dx+dz*dz),0,1);return Math.hypot(x-a[0]-dx*t,z-a[1]-dz*t)<r}
-const RWY_CLEAR=900;
+// no craft in the water inlet under the taxiways to the south apron (runway coordinates: between the runway-side taxiway and the south apron, out past its far end)
+function inInlet(x,z){const s=rwS(x,z),l=rwL(x,z);return s>SOUTH.s0-40&&s<SOUTH.s1+200&&l<-80&&l>SOUTH.l1-25}
 function randomRoute(box,clear,n){
-  for(let tries=0;tries<60;tries++){const p0=[rr(box[0],box[2]),rr(box[1],box[3])];if(!waterAt(p0[0],p0[1],clear)||nearRunway(p0[0],p0[1],RWY_CLEAR))continue;const pts=[p0];
+  for(let tries=0;tries<60;tries++){const p0=[rr(box[0],box[2]),rr(box[1],box[3])];if(!waterAt(p0[0],p0[1],clear)||inInlet(p0[0],p0[1]))continue;const pts=[p0];
     for(let k=0;k<n*8&&pts.length<n;k++){const a=pts[pts.length-1];const ang=rnd()*Math.PI*2,d=rr(500,2600);const b=[a[0]+Math.cos(ang)*d,a[1]+Math.sin(ang)*d];if(b[0]<box[0]||b[0]>box[2]||b[1]<box[1]||b[1]>box[3])continue;
-      let ok=true;for(let s=0;s<=d;s+=40){const x=lerp(a[0],b[0],s/d),z=lerp(a[1],b[1],s/d);if(!waterAt(x,z,clear)||nearRunway(x,z,RWY_CLEAR)){ok=false;break}}if(ok)pts.push(b)}
+      let ok=true;for(let s=0;s<=d;s+=40){const x=lerp(a[0],b[0],s/d),z=lerp(a[1],b[1],s/d);if(!waterAt(x,z,clear)||inInlet(x,z)){ok=false;break}}if(ok)pts.push(b)}
     if(pts.length>=2)return pts}
   return null}
 // Traffic lanes traced from the Marine Department charts "Traffic Separation Schemes and Principal Fairways" and "Ma Wan Marine Traffic Control"
@@ -2693,14 +2692,14 @@ function nearLane(x,z,r){for(const f of FAIRWAYS){const p=f.p;for(let i=1;i<p.le
 function landW(x,z){return terrainAt(x,z)>-0.3||inAirport(x,z)}
 // alongside a quay or shore: clear water at rIn, land within rOut; heading runs along the shore
 function shoreSpot(box,rIn,rOut,avoid,placed,rad){
-  for(let t=0;t<400;t++){const x=rr(box[0],box[2]),z=rr(box[1],box[3]);if(landW(x,z)||nearLane(x,z,avoid)||nearRunway(x,z,RWY_CLEAR))continue;
+  for(let t=0;t<400;t++){const x=rr(box[0],box[2]),z=rr(box[1],box[3]);if(landW(x,z)||nearLane(x,z,avoid)||inInlet(x,z))continue;
     let ok=true,lx=0,lz=0;for(let k=0;k<12;k++){const a=k/12*6.2832,c=Math.cos(a),s=Math.sin(a);if(landW(x+c*rIn,z+s*rIn)){ok=false;break}if(landW(x+c*rOut,z+s*rOut)){lx+=c;lz+=s}}
     if(!ok||(!lx&&!lz))continue;if(placed.some(q=>Math.hypot(q[0]-x,q[1]-z)<q[2]+rad))continue;
     placed.push([x,z,rad]);return [x,z,Math.atan2(lz,lx)+Math.PI/2+(rnd()<.5?Math.PI:0)]}
   return null}
 // at anchor in open water: ships lie to the tide, all roughly the same way
 function anchorSpot(box,clear,avoid,placed,rad){
-  for(let t=0;t<200;t++){const x=rr(box[0],box[2]),z=rr(box[1],box[3]);if(!waterAt(x,z,clear)||nearLane(x,z,avoid)||nearRunway(x,z,RWY_CLEAR))continue;
+  for(let t=0;t<200;t++){const x=rr(box[0],box[2]),z=rr(box[1],box[3]);if(!waterAt(x,z,clear)||nearLane(x,z,avoid)||inInlet(x,z))continue;
     if(placed.some(q=>Math.hypot(q[0]-x,q[1]-z)<q[2]+rad))continue;placed.push([x,z,rad]);return [x,z,.3+rr(-.3,.3)+(rnd()<.5?Math.PI:0)]}
   return null}
 // a vessel that is not going anywhere: anchor lights only, no wake
@@ -2715,10 +2714,9 @@ function buildShips(){
     {k:'ferry',p:[[-1400,3700],[-3150,4520]],v:7.5,n:2,stop:true},
     {k:'ferry',p:[[-1400,3700],[0,4300],[1200,4500]],v:8,n:1},
   ];
-  // no craft in Kowloon Bay beside the runway: there was no maritime traffic there under the approach
-  const HARB=[-9500,2500,7600,5700],CWB=[-1200,3300,1200,4400];
+  const HARB=[-9500,2500,7600,5700],BAY=[300,-400,4300,3300],CWB=[-1200,3300,1200,4400];
   // working craft that cross and roam: tugs, walla-walla launches and the marine police
-  const plan=[['tug',3,HARB,12,5],['launch',6,HARB,6,6],['police',3,HARB,10,9]];
+  const plan=[['tug',3,HARB,12,5],['tug',2,BAY,12,4.5],['launch',6,HARB,6,6],['launch',3,BAY,6,5.5],['police',3,HARB,10,9],['police',1,BAY,10,8]];
   for(const [k,n,box,clear,v] of plan)for(let i=0;i<n;i++){const p=randomRoute(box,clear,Math.floor(rr(3,6)));if(p)lanes.push({k,p,v:v*rr(.8,1.2),n:1})}
   for(const ln of lanes){ln.c=[0];for(let i=1;i<ln.p.length;i++)ln.c.push(ln.c[i-1]+Math.hypot(ln.p[i][0]-ln.p[i-1][0],ln.p[i][1]-ln.p[i-1][1]));ln.L=ln.c[ln.c.length-1];
     for(let i=0;i<ln.n;i++){const m=shipModel(ln.k);addWake(m);scene.add(m);SHIPS.push({ln,m,s:ln.L*(i/ln.n)+rr(0,ln.L*.2),dir:i%2?-1:1,wait:0})}}
@@ -2734,7 +2732,9 @@ function buildShips(){
   for(let i=0;i<6;i++)moor('tug',shoreSpot(BERTH,16,60,150,placed,35));
   const ANCH=[[-12400,1200,-9800,3500],[-9500,1500,-6500,2400],[-15500,-1800,-13200,3000]];
   for(let i=0;i<16;i++)moor(i%5<3?'freighter':'container',anchorSpot(ANCH[i%3],150,500,placed,260));
+  for(let i=0;i<5;i++)moor('junk',shoreSpot(BAY,14,50,120,placed,40));
   for(let i=0;i<5;i++)moor('junk',shoreSpot(CWB,14,50,120,placed,40));
+  for(let i=0;i<8;i++)moor('yacht',shoreSpot(BAY,16,55,120,placed,45));
   for(let i=0;i<8;i++)moor('yacht',shoreSpot(CWB,16,55,120,placed,45));
   for(let i=0;i<8;i++)moor('launch',shoreSpot(HARB,10,40,120,placed,30));
   for(let i=0;i<2;i++)moor('police',shoreSpot(HARB,12,45,120,placed,40));

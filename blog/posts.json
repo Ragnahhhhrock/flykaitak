@@ -1,5 +1,36 @@
 [
   {
+    "slug": "boats-along-the-seawall-not-in-the-inlet",
+    "title": "Boats along the seawall, not in the inlet",
+    "dek": "Harbour craft come right up to the runway seawall again, but keep out of the inlet under the south apron taxiways.",
+    "description": "Boats pass right alongside Kai Tak's runway seawall again, as in the 1990s, but never enter the inlet under the taxiways to the south apron.",
+    "date": "2026-10-05",
+    "tag": "Fix",
+    "category": "scenery",
+    "keywords": [
+      "Kowloon Bay",
+      "harbour traffic",
+      "junks",
+      "seawall",
+      "south apron"
+    ],
+    "hero": "south-apron-inlet-clear",
+    "hero_alt": "The water inlet between the runway-side taxiway and the south apron, empty, with boats out in the harbour beyond.",
+    "hero_caption": "The inlet to the south apron stays clear.",
+    "card_kicker": "SCENERY · FIX",
+    "card_title": "Boats by the seawall",
+    "card_sub": "None in the south apron inlet",
+    "card_image": "south-apron-inlet-clear",
+    "card_focus": 50,
+    "zh": {
+      "title": "船沿海堤行，唔入水道",
+      "dek": "海港嘅船又可以駛到跑道海堤旁邊，但唔會入南停機坪滑行道下面嘅水道。",
+      "description": "船又再沿住啟德跑道海堤經過，好似九十年代咁，但唔會駛入通去南停機坪嘅滑行道下面嘅水道。",
+      "hero_alt": "跑道側滑行道同南停機坪之間嘅水道，冇船，遠處海港有船。",
+      "hero_caption": "通去南停機坪嘅水道保持冇船。"
+    }
+  },
+  {
     "slug": "wider-taxi-spacing",
     "title": "Wider spacing between taxiing aircraft",
     "dek": "Ground control now keeps taxiing jets twice as far apart, except in the queue for take-off.",
@@ -28,37 +59,6 @@
       "description": "啟德滑行中嘅飛機而家喺滑行道上面保持雙倍距離，喺跑道尾排隊起飛嘅仍然可以貼近。",
       "hero_alt": "兩架客機喺 13 號跑道入口旁邊嘅 A 滑行道上面滑行，距離拉得好開，後面係客運大樓停機位。",
       "hero_caption": "兩架飛機喺 A 滑行道，保持較闊嘅距離。"
-    }
-  },
-  {
-    "slug": "no-boats-beside-the-runway",
-    "title": "No boats beside the runway",
-    "dek": "Kowloon Bay and the water off the strip are now clear of junks, yachts and harbour craft.",
-    "description": "Junks, yachts and harbour craft no longer moor or roam beside Kai Tak's runway; the water in Kowloon Bay and off the strip is now clear.",
-    "date": "2026-10-05",
-    "tag": "Fix",
-    "category": "scenery",
-    "keywords": [
-      "Kowloon Bay",
-      "harbour traffic",
-      "junks",
-      "Kai Tak runway",
-      "scenery fix"
-    ],
-    "hero": "runway-water-clear",
-    "hero_alt": "Looking along the Kai Tak runway from low over the harbour, with open water beside the strip and no boats.",
-    "hero_caption": "Clear water alongside the runway.",
-    "card_kicker": "SCENERY · FIX",
-    "card_title": "Clear water",
-    "card_sub": "No boats beside the runway",
-    "card_image": "runway-water-clear",
-    "card_focus": 50,
-    "zh": {
-      "title": "跑道旁邊冇船",
-      "dek": "九龍灣同跑道對開嘅水面而家冇帆船、遊艇同其他船。",
-      "description": "帆船、遊艇同海港小船唔再喺啟德跑道旁邊泊或者行，九龍灣同跑道對開嘅水面而家清晒。",
-      "hero_alt": "喺海面低空沿住啟德跑道望過去，跑道旁邊係一片冇船嘅水面。",
-      "hero_caption": "跑道旁邊嘅水面清晒。"
     }
   },
   {
