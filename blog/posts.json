@@ -1,5 +1,37 @@
 [
  {
+  "slug": "checkerboard-turn-wider-and-higher",
+  "title": "The checkerboard turn now starts at 650 ft, 2 NM out",
+  "dek": "A wider, higher right turn that matches how Kai Tak's IGS 13 approach was flown, plus an aviation-orange checkerboard.",
+  "description": "Kai Tak's checkerboard turn now starts about 2 NM out at 650 ft and rolls out near 140 ft, with an orange-and-white checkerboard.",
+  "date": "2026-10-05",
+  "tag": "Update",
+  "category": "flying",
+  "keywords": [
+   "checkerboard turn",
+   "IGS 13",
+   "Kai Tak approach",
+   "650 ft",
+   "checkerboard hill",
+   "Runway 31 missed approach"
+  ],
+  "hero": "checkerboard-turn-mid",
+  "hero_alt": "A 747 halfway through the checkerboard turn, with the orange-and-white checkerboard on the hill to the left.",
+  "hero_caption": "Halfway round the wider checkerboard turn.",
+  "card_kicker": "FLYING · IGS 13",
+  "card_title": "A truer checkerboard turn",
+  "card_sub": "In at 650 ft, out at 140 ft",
+  "card_image": "checkerboard-turn-mid",
+  "card_focus": 50,
+  "zh": {
+   "title": "格仔山轉彎而家喺 2 海里外、650 呎開始",
+   "dek": "轉彎闊咗、高咗，同啟德 IGS 13 進場真實飛法一樣，格仔山都變返航空橙色。",
+   "description": "啟德格仔山轉彎而家喺約 2 海里外、650 呎開始，約 140 呎對正跑道，格仔山改做橙白色。",
+   "hero_alt": "一架 747 轉到一半，左邊山上有橙白格仔。",
+   "hero_caption": "轉到一半嘅格仔山彎。"
+  }
+ },
+ {
   "slug": "south-apron-one-bridge-and-widened-taxiway",
   "title": "One bridge, a joined-up apron and a wider taxiway",
   "dek": "The flight apron now runs on into the south apron, a single bridge crosses the inlet, and the taxiway tarmac widens toward the 31 end.",
