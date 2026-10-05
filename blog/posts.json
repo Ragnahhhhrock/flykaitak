@@ -1,5 +1,36 @@
 [
   {
+    "slug": "wider-taxi-spacing",
+    "title": "Wider spacing between taxiing aircraft",
+    "dek": "Ground control now keeps taxiing jets twice as far apart, except in the queue for take-off.",
+    "description": "Taxiing aircraft at Kai Tak now keep double the gap on the taxiways. Departures queuing at the runway end can still close up.",
+    "date": "2026-10-05",
+    "tag": "Fix",
+    "category": "flying",
+    "keywords": [
+      "taxiing",
+      "ground control",
+      "separation",
+      "taxiway A",
+      "Kai Tak traffic"
+    ],
+    "hero": "taxi-spacing-doubled",
+    "hero_alt": "Two airliners taxiing along taxiway A beside the Runway 13 threshold, well apart, with the terminal stands behind.",
+    "hero_caption": "Two jets on taxiway A, holding the wider gap.",
+    "card_kicker": "FIX · GROUND TRAFFIC",
+    "card_title": "More room to taxi",
+    "card_sub": "Double the gap on the taxiways",
+    "card_image": "taxi-spacing-doubled",
+    "card_focus": 50,
+    "zh": {
+      "title": "滑行飛機之間距離加闊",
+      "dek": "地面管制而家令滑行中嘅飛機相距多一倍，排隊起飛除外。",
+      "description": "啟德滑行中嘅飛機而家喺滑行道上面保持雙倍距離，喺跑道尾排隊起飛嘅仍然可以貼近。",
+      "hero_alt": "兩架客機喺 13 號跑道入口旁邊嘅 A 滑行道上面滑行，距離拉得好開，後面係客運大樓停機位。",
+      "hero_caption": "兩架飛機喺 A 滑行道，保持較闊嘅距離。"
+    }
+  },
+  {
     "slug": "no-boats-beside-the-runway",
     "title": "No boats beside the runway",
     "dek": "Kowloon Bay and the water off the strip are now clear of junks, yachts and harbour craft.",

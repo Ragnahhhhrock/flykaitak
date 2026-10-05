@@ -3916,8 +3916,12 @@ function aiHit(ea,eb,t){
   if(window.__kt)window.__kt.hits=(window.__kt.hits||[]).concat([{t,a:ea.A.short,b:eb.A.short,ka:ha.k,kb:hb.k,ia:ea.i,ib:eb.i,ya:ea.y,yb:eb.y}])}
 
 // ---- ground control
-const AIC={commit:1,rejoin:0,lowStill:0,agem:1,stillMg:5,dyn:1,t:null,ref:null,snap:new Map(),step:.5,margin:9,dec:.6,acc:.35,sec:-1,off:false,maxHold:0,OFF:(()=>{const o=[];for(let i=0;i<=20;i++)o.push(i*1.2);for(let t=27;t<=72;t+=3)o.push(t);return o})()};
+const AIC={commit:1,rejoin:0,lowStill:0,agem:1,stillMg:10,dyn:1,t:null,ref:null,snap:new Map(),step:.5,margin:18,qS:320,dec:.6,acc:.35,sec:-1,off:false,maxHold:0,OFF:(()=>{const o=[];for(let i=0;i<=20;i++)o.push(i*1.2);for(let t=27;t<=72;t+=3)o.push(t);return o})()};
 // who gives way: arrivals before departures, and within a kind the one further along its turnaround (the one at the head of the queue)
+// taxiing traffic keeps twice the room it used to. Half of it (the old spacing) is allowed only on the apron lanes, at the stands (either aircraft on them), and in
+// the departure queue: taxiway A and the link onto the runway at the departure end, where aircraft waiting to take off may close up
+const aiOnApron=p=>!!p&&rwL(p.x,p.z)<APN.A-60;   // well inside the stand lanes: the mouth of a lane counts as taxiway
+const aiInQ=p=>{if(!p)return false;const s=rwS(p.x,p.z),d=LND.dir>0?s:RWY.len-s,l=rwL(p.x,p.z);return d<AIC.qS&&l>APN.A-25&&l<25};
 const aiRank=i=>{const a=AI[i],k=a.kf&&AIC.dyn?a.kf(a.tau):-1;return (a.role==='arrival'?1:a.role==='departure'?2:3)*2000+1000-clamp(k,-1,999)+i*.001};
 function aiCtlInit(t){AIC.t=t;AIC.ref=AI[0]||null;AIC.snap.clear();AIC.sec=Math.floor(t);AIC.maxHold=0;
   for(const a of AI){a.tau=t;a.r=1;a.hold=0;a.wreck=false;a.wp=null;a.hitT=Infinity;a.ga=null;a.rce=null;a.rwhy=null}aiSnap()}
@@ -3940,14 +3944,15 @@ function aiCtlStep(dt){
     const p1=s[1],v=p1?Math.hypot(p1.x-p0.x,p1.z-p0.z,p1.y-p0.y)/OFF[1]:0;cls[i]=p0.y>E+1.5||v>12?'fast':mv?'taxi':'frozen'}
   const at=(i,k)=>{const c=fp[i]||(fp[i]=[]);let f=c[k];if(f===undefined){const s=S[i],p=s[Math.min(k,s.length-1)];f=c[k]=p?fpAt(footOf(AC[AI[i].type]),p.x,p.z,p.psi,p.y):null}return f};
   const cmNow=new Array(n).fill(false);
-  if(!AIC.off)for(let i=0;i<n;i++){if(cls[i]!=='taxi')continue;const ri=aiRank(i),mgI=AIC.agem?Math.max(2.5,AIC.margin-Math.max(0,AI[i].hold-20)*.25):AIC.margin;   // a long wait makes the room asked for smaller, so a gridlock of near neighbours always dissolves
+  if(!AIC.off)for(let i=0;i<n;i++){if(cls[i]!=='taxi')continue;const ri=aiRank(i),mgI=AIC.agem?Math.max(5,AIC.margin-Math.max(0,AI[i].hold-20)*.25):AIC.margin,depI=AI[i].role==='departure';   // a long wait makes the room asked for smaller, so a gridlock of near neighbours always dissolves
     for(let j=0;j<n&&!hold[i];j++){if(j===i||cls[j]==='gone'||cls[j]==='air')continue;
       const cj=cls[j];let kMax=K,mg=mgI;
-      if(cj==='taxi'&&aiRank(j)>ri&&!AI[j].cm){if(!(AI[j].r<.3&&S[j][0])||!(AIC.lowStill||AI[j].stand===AI[i].stand))continue;kMax=5;mg=Math.min(mg,4)}   // a lower rank may be waiting in the way: never drive into it, though it need not be given room
-      const still=cj==='frozen'||AI[j].r<.3;if(still)mg=Math.min(mg,AIC.stillMg);   // something standing still needs less room than something that may move
+      if(cj==='taxi'&&aiRank(j)>ri&&!AI[j].cm){if(!(AI[j].r<.3&&S[j][0])||!(AIC.lowStill||AI[j].stand===AI[i].stand))continue;kMax=5;mg=Math.min(mg,8)}   // a lower rank may be waiting in the way: never drive into it, though it need not be given room
+      const still=cj==='frozen'||AI[j].r<.3;if(still)mg=Math.min(mg,AIC.stillMg);const q0=S[i][0],q1=S[j][0],close=aiOnApron(q0)||aiOnApron(q1)||depI&&AI[j].role==='departure'&&aiInQ(q0)&&aiInQ(q1);   // judged on where both are now, so the room asked for does not flicker along the look-ahead   // something standing still needs less room than something that may move
       for(let k=0;k<=kMax;k++){const si=S[i],sj=S[j],pi=si[Math.min(k,si.length-1)],pj=sj[Math.min(still?0:k,sj.length-1)];if(!pi||!pj||Math.abs(pi.x-pj.x)>115||Math.abs(pi.z-pj.z)>115)continue;   // far apart: no footprints needed
         const A=at(i,k),B=at(j,still?0:k);if(!A||!B||!vOver(A,B))continue;
-        if(fpDist(A,B,mg)<mg){
+        const m2=close?mg/2:mg;
+        if(fpDist(A,B,m2)<m2){
           // an aircraft that could not stop here without blocking the other's way is committed: it carries on and the other gives way
           if(AIC.commit&&aiRank(j)<ri&&cj==='taxi'&&!still){const Z=at(i,Math.min(2,S[i].length-1));let blk=false;
             if(Z)for(let k2=0;k2<=K&&!blk;k2++){const Bj=at(j,k2);if(Bj&&vOver(Z,Bj)&&fpDist(Z,Bj,4)<4)blk=true}
