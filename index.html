@@ -633,24 +633,30 @@ const rwP=(s,l)=>[s*RWY.u[0]+l*RWY.r[0],s*RWY.u[1]+l*RWY.r[1]];
 const IGS_HDG=88, GP=3.1*D2R, VIGS=[Math.sin(IGS_HDG*D2R),-Math.cos(IGS_HDG*D2R)];
 
 const PATH13=(()=>{
-  // Checkerboard turn as flown in 1998: enter the right turn about 2 NM from touchdown at ~650 ft, roll out on runway heading
-  // at ~140 ft about 0.25 NM before the threshold; roughly half a minute in the turn. P is where the 088 IGS course crosses
-  // the extended runway centreline, Rt the turn radius that fits those heights on the 3.1 degree path.
-  const sP=-1960, P=rwP(sP,0), Rt=3500, tl=Rt*Math.tan((RWY.hdg-IGS_HDG)/2*D2R);
-  const A=[P[0]-tl*VIGS[0],P[1]-tl*VIGS[1]];
+  // Checkerboard turn as flown in 1998: enter the right turn about 2 NM from touchdown at ~650 ft and roll out on runway
+  // heading at ~140 ft about 0.25 NM before the threshold, roughly half a minute in the turn. The turn tightens as it goes:
+  // a gentle bank past the checkerboard, then the curvature ramps up to the steep bank of the famous photos (R 1,300 m,
+  // about 25 degrees at approach speed) for the last few seconds before roll-out.
+  const TURN=[[1980,1/6000,1/6000],[600,1/6000,1/1300],[250,1/1300,1/1300]];  // [length m, curvature at start, at end]
+  const TQ=[];{let x=0,z=0,h=IGS_HDG*D2R;const tot=(RWY.hdg-IGS_HDG)*D2R;let turned=0;TQ.push([0,0,h,TURN[0][1]]);
+   for(const [L,k0,k1] of TURN){const n=Math.ceil(L/25);for(let i=0;i<n;i++){const ka=lerp(k0,k1,(i+.5)/n),ds=L/n;let dh=ka*ds;
+     if(turned+dh>tot)dh=tot-turned;const hm=h+dh/2;x+=Math.sin(hm)*ds;z-=Math.cos(hm)*ds;h+=dh;turned+=dh;TQ.push([x,z,h,lerp(k0,k1,(i+1)/n)])}}
+   TQ[TQ.length-1][2]=RWY.hdg*D2R}
+  // where the 088 course and the extended centreline cross (P), from the shape of the turn: entry A on the course, exit B on the centreline
+  const E=TQ[TQ.length-1],u=VIGS,w=RWY.u,det=u[0]*w[1]-u[1]*w[0];
+  const ta=(E[0]*w[1]-E[1]*w[0])/det, tb=(u[0]*E[1]-u[1]*E[0])/det;
+  const sB=-470, sP=sB-tb, P=rwP(sP,0), A=[P[0]-ta*u[0],P[1]-ta*u[1]];
   const LEN1=13900, S=[A[0]-LEN1*VIGS[0],A[1]-LEN1*VIGS[1]];
   const pts=[];const push=(x,z,h,k)=>pts.push({x,z,h:h*D2R,k});
   const n1=Math.ceil(LEN1/25);
   for(let i=0;i<n1;i++){const t=i/n1;push(lerp(S[0],A[0],t),lerp(S[1],A[1],t),IGS_HDG,0)}
-  const rA=[Math.cos(IGS_HDG*D2R),Math.sin(IGS_HDG*D2R)], C=[A[0]+Rt*rA[0],A[1]+Rt*rA[1]];
-  const turn=RWY.hdg-IGS_HDG, n2=Math.ceil(Rt*turn*D2R/25);
-  for(let i=0;i<n2;i++){const h=IGS_HDG+turn*i/n2,hr=h*D2R;push(C[0]-Rt*Math.cos(hr),C[1]-Rt*Math.sin(hr),h,1/Rt)}
-  const sB=sP+tl, n3=Math.ceil((RWY.len-sB)/25);
+  for(let i=0;i<TQ.length-1;i++){const q=TQ[i];pts.push({x:A[0]+q[0],z:A[1]+q[1],h:q[2],k:q[3]})}
+  const n2=TQ.length-1, n3=Math.ceil((RWY.len-sB)/25);
   for(let i=0;i<=n3;i++){const s=sB+(RWY.len-sB)*i/n3,p=rwP(s,0);push(p[0],p[1],RWY.hdg,0)}
   let c=0;pts[0].c=0;for(let i=1;i<pts.length;i++){c+=Math.hypot(pts[i].x-pts[i-1].x,pts[i].z-pts[i-1].z);pts[i].c=c}
   const iB=n1+n2; const thrC=pts[iB].c-sB; // threshold at s=0 along final
   for(const p of pts){p.d=thrC-p.c;p.alt=RWY.elev+Math.max(0,15+p.d*Math.tan(GP))}
-  return {pts,A,P,C,S,Rt,iA:n1,iB,turnD:pts[n1].d};
+  return {pts,A,P,S,iA:n1,iB,turnD:pts[n1].d};
 })();
 // Runway 31, the easterly approach: a straight-in final on the reciprocal of the runway heading, from 15 km out over the sea
 // east of Kowloon, through the Lei Yue Mun gap (about 3 km out) and across Kowloon Bay. Same 3.1 degree path. d is the distance
