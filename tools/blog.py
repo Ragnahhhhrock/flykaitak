@@ -113,6 +113,7 @@ def head(title, desc, canonical, og_image, og_alt, og_type="website", extra="", 
     return f"""<!doctype html>
 <html lang="en">
 <head>
+<script>if(location.protocol==="http:"&&/(^|\\.)flykaitak\\.com$/.test(location.hostname))location.replace("https://flykaitak.com"+location.pathname+location.search+location.hash);</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>{E(title)}</title>
