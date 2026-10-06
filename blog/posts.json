@@ -1,5 +1,39 @@
 [
   {
+    "slug": "real-1998-road-network",
+    "title": "The real road network, as it was in 1998",
+    "dek": "Traffic now drives the Transport Department's surveyed road centrelines, with every road built after 1998 taken out.",
+    "description": "Fly Kai Tak's traffic now uses Hong Kong's official road network, with Route 8, the Hung Hom Bypass, Kai Tak and other post-1998 roads removed.",
+    "date": "2026-10-06",
+    "tag": "Update",
+    "category": "scenery",
+    "keywords": [
+      "road network",
+      "1998",
+      "Transport Department",
+      "Kwun Tong Bypass",
+      "West Kowloon",
+      "Route 8",
+      "Kai Tak",
+      "flight simulator"
+    ],
+    "hero": "road-network-1998-west-kowloon",
+    "hero_alt": "Looking south-west over Yau Ma Tei at the bare West Kowloon reclamation, with the expressway along its edge and Hong Kong Island across the harbour.",
+    "hero_caption": "West Kowloon in 1998: an empty reclamation and one new expressway.",
+    "card_kicker": "SCENERY · UPDATE",
+    "card_title": "The 1998 road network",
+    "card_sub": "Real centrelines, no post-1998 roads",
+    "card_image": "road-network-1998-west-kowloon",
+    "card_focus": 50,
+    "zh": {
+      "title": "1998 年真實嘅路網",
+      "dek": "而家啲車行運輸署實測嘅道路中線，1998 年之後先起嘅路全部拎走。",
+      "description": "飛啟德嘅交通而家用香港官方路網，8 號幹線、紅磡繞道、啟德同其他 1998 年後嘅路已經拎走。",
+      "hero_alt": "喺油麻地上空向西南望，西九龍填海區仲係一片空地，快速公路沿住邊行，海港對面係香港島。",
+      "hero_caption": "1998 年嘅西九龍：一片空嘅填海區同一條新快速公路。"
+    }
+  },
+  {
     "slug": "regal-kaitak-hotel-rebuilt",
     "title": "The Regal Kai Tak Hotel, rebuilt from photos",
     "dek": "The airport hotel across Prince Edward Road East now has its real L-shaped plan, glass bands, brick ends, podium terrace and name.",

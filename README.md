@@ -7,12 +7,12 @@ You start descending over Tsing Yi at about 3,100 ft on the instrument guidance 
 Play at https://flykaitak.com, or serve the folder with any static web server (`python3 -m http.server`) and open `index.html`. Opening the file directly won't work because the map data is fetched.
 
 ## Real Hong Kong
-- The aerial imagery, coastline, main roads and about 24,000 building footprints come from the Hong Kong Lands Department's open data. Terrain is SRTM elevation with building bumps filtered out
+- The aerial imagery, coastline and about 24,000 building footprints come from the Hong Kong Lands Department's open data. The roads are the Transport Department's road network centrelines with every road built after 1998 taken out (Route 8, Tsing Yi North Coastal Road, Hung Hom Bypass, Central-Wan Chai Bypass, Kai Tak and West Kowloon Cultural District streets), rebuilt with `python3 tools/roads.py`. Terrain is SRTM elevation with building bumps filtered out
 - The runway is fitted to the old Kai Tak strip (threshold 13 at 22.3256°N 114.1926°E, true heading 134.08°)
 - 1998 corrections: no buildings on the Kai Tak site or the West Kowloon reclamation, and the Central Reclamation Phase III waterfront is harbour again
-- Rebuild the assets with `python3 tools/fetch.py && python3 tools/build.py`
+- Rebuild the assets with `python3 tools/fetch.py && python3 tools/build.py && python3 tools/roads.py`
 
-Data: © Lands Department, HKSAR Government (CSDI). Public housing estates: Housing Authority via DATA.GOV.HK, hosted by Esri China (Hong Kong) Ltd. Elevation: SRTM via AWS Terrain Tiles.
+Data: © Lands Department, HKSAR Government (CSDI). Roads: Transport Department Intelligent Road Network via DATA.GOV.HK, packaged by Esri China (Hong Kong) Ltd. Public housing estates: Housing Authority via DATA.GOV.HK, hosted by Esri China (Hong Kong) Ltd. Elevation: SRTM via AWS Terrain Tiles.
 
 ## MVP features
 - Aircraft: 747-400, 777-200, A330-300, A340-300 (plus a delta-wing supersonic jet that only visits Plane Spotter), each with its own flight model (mass, wing area, thrust, Vref, roll rate, flap labels and limits)

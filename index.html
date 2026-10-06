@@ -1455,7 +1455,7 @@ function buildCity(){
    obstructionLights=makeLights(L);scene.add(obstructionLights)}
   // street lights along the main roads, plus scattered estate lighting
   const L=[];
-  for(const rd of ROADS)for(let s=0;s<rd.L;s+=42){const p=roadPoint(rd,s);for(const sd of[-1,1]){const x=p[0]+Math.cos(p[2])*11*sd,z=p[1]+Math.sin(p[2])*11*sd;L.push(x,Math.max(terrainAt(x,z),.6)+10,z,1,.66,.3,3,-1)}}
+  for(const rd of ROADS)for(let s=0;s<rd.L;s+=60){const p=roadPoint(rd,s);for(const sd of[-1,1]){const x=p[0]+Math.cos(p[2])*11*sd,z=p[1]+Math.sin(p[2])*11*sd;L.push(x,Math.max(terrainAt(x,z),.6)+10,z,1,.66,.3,3,-1)}}
   for(let i=0;i<7000&&recs.length;i++){const r=recs[Math.floor(rnd()*recs.length)];const x=r.x+rr(-40,40),z=r.z+rr(-40,40);if(!landAt(x,z)||inAirport(x,z))continue;const w=rnd();L.push(x,terrainAt(x,z)+8,z,1,w<.8?.62:.92,w<.8?.28:.85,2.4,-1)}
   streetLights=makeLights(L);scene.add(streetLights);
   return recs;

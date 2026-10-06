@@ -1,6 +1,6 @@
 """Build Fly Kai Tak geo assets from cached tiles (run fetch.py first).
 Outputs in ../assets:
-  aerial_outer.jpg  aerial_inner.jpg  terrain.json  buildings.json  roads.json (binary grids as base64)
+  aerial_outer.jpg  aerial_inner.jpg  terrain.json  buildings.json (binary grids as base64); roads: tools/roads.py
 """
 import os,sys,json,math,struct
 import numpy as np
@@ -81,43 +81,5 @@ B=np.array(rows,dtype='<i2')
 b64json('buildings',struct.pack('<i',len(B))+B.tobytes())
 print('buildings',len(B))
 
-# ---------- main roads ----------
-rm=((r==255)&(abs(g-225)<6)&(abs(b-169)<8))|((r==255)&(abs(g-211)<6)&(abs(b-127)<8))|((r==255)&(abs(g-176)<6)&(b<40))
-rm=rm[::2,::2];rm=morphology.binary_closing(rm,morphology.disk(2));rm=morphology.remove_small_objects(rm,400)
-sk=morphology.skeletonize(rm)
-nb=ndimage.convolve(sk.astype(int),np.ones((3,3),int),mode='constant')-1
-nb=np.where(sk,nb,0)
-node=sk&(nb!=2)
-H,W=sk.shape;visited=np.zeros_like(sk)
-def pt(yx):
-    cy,cx=yx;mx=o16[0]+(cx*2+1)/256;my=o16[1]+(cy*2+1)/256;n=2**16
-    lon=mx/n*360-180;lat=math.degrees(math.atan(math.sinh(math.pi*(1-2*my/n))));return to_xz(lat,lon)
-def neigh(y,x):
-    for dy in(-1,0,1):
-        for dx in(-1,0,1):
-            if (dy or dx) and 0<=y+dy<H and 0<=x+dx<W and sk[y+dy,x+dx]: yield y+dy,x+dx
-def rdp(P,eps):
-    if len(P)<3: return P
-    a=np.array(P[0]);bq=np.array(P[-1]);d=bq-a;L=np.hypot(*d)or 1
-    ds=[abs(d[0]*(a[1]-p[1])-d[1]*(a[0]-p[0]))/L for p in P[1:-1]];i=int(np.argmax(ds))+1
-    if ds[i-1]>eps: return rdp(P[:i+1],eps)[:-1]+rdp(P[i:],eps)
-    return [P[0],P[-1]]
-lines=[]
-sys.setrecursionlimit(10000)
-ys,xs=np.nonzero(node)
-for y0,x0 in zip(ys,xs):
-    for n1 in neigh(y0,x0):
-        if visited[n1] : continue
-        path=[(y0,x0),n1];visited[n1]=True;prev=(y0,x0);cur=n1
-        while not node[cur]:
-            nxt=[q for q in neigh(*cur) if q!=prev and not visited[q]]
-            if not nxt:
-                nxt=[q for q in neigh(*cur) if q!=prev and node[q]]
-                if not nxt: break
-            prev,cur=cur,nxt[0];path.append(cur)
-            if not node[cur]: visited[cur]=True
-        P=[pt(q) for q in path]
-        L=sum(math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]) for i in range(1,len(P)))
-        if L>250: lines.append([[round(a),round(b)] for a,b in rdp(P,6)])
-json.dump(lines,open(f'{OUT}/roads.json','w'),separators=(',',':'))
-print('roads',len(lines),os.path.getsize(f'{OUT}/roads.json')//1024,'KB')
+# ---------- roads ----------
+# roads.json and streets.json come from the Transport Department road network: see tools/roads.py
