@@ -1,5 +1,39 @@
 [
   {
+    "slug": "kowloon-walled-city-rebuilt",
+    "title": "Kowloon Walled City, rebuilt from photographs",
+    "dek": "The Walled City is now one packed block of interlocking buildings, with balconies, aerials, rooftop shacks, shop signs and lit windows at night.",
+    "description": "Kowloon Walled City is rebuilt as one solid mass of 10 to 14 storey blocks with balconies, aerials, rooftop shacks, shop signs and tube-lit windows at night.",
+    "date": "2026-10-06",
+    "tag": "Update",
+    "category": "scenery",
+    "keywords": [
+      "Kowloon Walled City",
+      "Kowloon City",
+      "Kai Tak approach",
+      "1998 park",
+      "shop signs",
+      "TV aerials",
+      "flight simulator",
+      "Kai Tak"
+    ],
+    "hero": "kwc-aerial",
+    "hero_alt": "Kowloon Walled City from above: a dense block of grey and green buildings with a ragged roofline, surrounded by roads and taller apartment towers.",
+    "hero_caption": "The Walled City from the turn onto final over Kowloon City.",
+    "card_kicker": "SCENERY · UPDATE",
+    "card_title": "Kowloon Walled City, rebuilt",
+    "card_sub": "One packed block, with signs, aerials and lit windows",
+    "card_image": "kwc-aerial",
+    "card_focus": 50,
+    "zh": {
+      "title": "照相重砌嘅九龍寨城",
+      "dek": "寨城而家係一大舊互相扣埋嘅樓，有露台、天線、天台棚屋、招牌，夜晚窗戶亮燈。",
+      "description": "九龍寨城重砌成一大舊 10 至 14 層嘅樓，有露台、天線、天台棚屋、招牌，夜晚窗戶亮起光管燈。",
+      "hero_alt": "喺高空望九龍寨城：一大舊灰色同綠色嘅樓，屋頂線參差不齊，四周係道路同較高嘅住宅大廈。",
+      "hero_caption": "轉入最後進場、喺九龍城上面望到嘅寨城。"
+    }
+  },
+  {
     "slug": "terminal-gates-nullah-and-tank-farm",
     "title": "Terminal gate blocks, the nullah and the tank farm",
     "dek": "The terminal now has gate blocks sticking out from its apron face, the storm-water nullah crosses the apron under taxi bridges, and the fuel tanks sit where the photos show them.",

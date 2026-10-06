@@ -1785,20 +1785,119 @@ function buildCheckerboard(){
   const fl=makeLights(F);scene.add(fl);buildCheckerboard.flood=fl;
 }
 function buildWalledCity(){
+  // Kowloon Walled City before 1994: about 300 interlocked blocks packed into one solid mass, 10-14 storeys right up to the
+  // edge (the airport height limit kept the roofs near 45 m), cage balconies and air conditioners on the facades, a forest of
+  // TV aerials, shacks, water tanks and plants on the roofs, shop signs and low sheds at street level.
+  // Own seeded RNG so the rest of the world (built after this with rnd()) is unchanged.
   walledGroup=new THREE.Group();parkGroup=new THREE.Group();
-  const n=330,mesh=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1).translate(0,.5,0),cityMaterial(),n);
-  const cols=[0x9c958a,0x8b8478,0xa79f8c,0x7e786e,0xb2a993,0x8f8a7c,0x9a8f7b];const tc=new THREE.Color();
-  const base=terrainAt(WALLED.x,WALLED.z);
-  for(let i=0;i<n;i++){const x=WALLED.x+rr(-WALLED.w/2,WALLED.w/2),z=WALLED.z+rr(-WALLED.d/2,WALLED.d/2);const w=rr(6,16),d=rr(6,16);const edge=Math.min(WALLED.w/2-Math.abs(x-WALLED.x),WALLED.d/2-Math.abs(z-WALLED.z));const h=edge<8?rr(18,34):rr(33,44);
-    _m4.compose(_v.set(x,base-1,z),_q.identity(),_s.set(w,h+1,d));mesh.setMatrixAt(i,_m4);tc.setHex(pick(cols));mesh.setColorAt(i,tc)}
+  const s0=SEED;let ks=19931;const R=()=>{ks=(ks*16807)%2147483647;return (ks-1)/2147483646},RR=(a,b)=>a+(b-a)*R(),PK=a=>a[Math.floor(R()*a.length)];
+  const base=terrainAt(WALLED.x,WALLED.z),hw=WALLED.w/2,hd=WALLED.d/2,X=WALLED.x,Z=WALLED.z;
+  const cols=[0xa8a497,0x9c9a8c,0xb7b29f,0x8e8c80,0xa9b3a3,0x9fb0ad,0xc4bba4,0x857f73,0xb9b8b0,0x96a39a];
+  const blocks=[],faces=[],rows=[];
+  let z=-hd;while(z<hd-4){let dz=Math.min(RR(8,14),hd-z);if(hd-z-dz<6)dz=hd-z;rows.push([z,z+dz]);z+=dz}
+  rows.forEach(([z0,z1],ri)=>{const first=ri===0,last=ri===rows.length-1,j=first||last?8:5;
+    const xs=-hw+RR(0,j),xe=hw-RR(0,j);let x=xs;
+    while(x<xe-3){let dx=Math.min(RR(7,14),xe-x);if(xe-x-dx<5)dx=xe-x;const L=x===xs,Rt=x+dx>=xe-.01,edge=first||last||L||Rt;
+      let st=Math.floor(RR(10,15));if(!edge&&R()<.12)st=Math.floor(RR(4,9));if(!edge&&R()<.05)st=1;   // a few older low blocks and light wells inside
+      const h=Math.min(44,st*2.8+RR(.4,1.2)),a=z0+(first?RR(0,2.5):0),b=z1-(last?RR(0,2.5):0);
+      blocks.push({x:x+dx/2,z:(a+b)/2,w:dx,d:b-a,h,c:PK(cols)});
+      if(first)faces.push({u0:x,u1:x+dx,p:a,nx:0,nz:-1,h});if(last)faces.push({u0:x,u1:x+dx,p:b,nx:0,nz:1,h});
+      if(L)faces.push({u0:a,u1:b,p:x,nx:-1,nz:0,h});if(Rt)faces.push({u0:a,u1:b,p:x+dx,nx:1,nz:0,h});
+      x+=dx}});
+  const fpt=(f,u,out)=>f.nz?[u,f.p+f.nz*out]:[f.p+f.nx*out,u];
+  const extra=[];   // enclosed balconies and add-ons bulging out of the outer walls
+  for(const f of faces){const n=1+Math.floor(R()*2.2);for(let i=0;i<n;i++){const w=RR(3,7),u=RR(f.u0+w/2,Math.max(f.u0+w/2,f.u1-w/2)),dep=RR(.8,1.6),y0=Math.floor(RR(2,14))*2.8,y1=Math.max(y0+5.6,f.h-RR(0,8));
+    const [px,pz]=fpt(f,u,dep/2);extra.push({x:px,z:pz,w:f.nz?w:dep,d:f.nz?dep:w,y0,h:y1-y0,c:PK(cols)})}}
+  const all=blocks.concat(extra),mesh=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1).translate(0,.5,0),kwcMaterial(base),all.length),tc=new THREE.Color();
+  all.forEach((b,i)=>{const y0=b.y0===undefined?-1:b.y0;_m4.compose(_v.set(X+b.x,base+y0,Z+b.z),_q.identity(),_s.set(b.w,b.h-y0,b.d));mesh.setMatrixAt(i,_m4);mesh.setColorAt(i,tc.setHex(b.c))});
   walledGroup.add(mesh);
-  const ap=[];for(let i=0;i<260;i++){const x=WALLED.x+rr(-WALLED.w/2,WALLED.w/2),z=WALLED.z+rr(-WALLED.d/2,WALLED.d/2);const y=base+rr(40,44);ap.push(x,y,z,x+rr(-1,1),y+rr(3,7),z+rr(-1,1))}
-  const ag=new THREE.BufferGeometry();ag.setAttribute('position',new THREE.Float32BufferAttribute(ap,3));walledGroup.add(new THREE.LineSegments(ag,new THREE.LineBasicMaterial({color:0x2a2a2a})));
+  // roofs: shacks and pigeon lofts, water tanks, plants, TV aerials
+  const sheds=[],tanks=[],plants=[],ant=[],shedCols=[0x7a5a40,0x6f6a62,0x4f6f8f,0x8a8270,0x5d4a3c,0x9a9890];
+  for(const b of blocks){if(b.h<20)continue;const top=base+b.h,rx=()=>X+b.x+RR(-b.w/2+1.5,b.w/2-1.5),rz=()=>Z+b.z+RR(-b.d/2+1.5,b.d/2-1.5);
+    if(R()<.45)sheds.push([rx(),top,rz(),RR(2.5,5.5),RR(2,2.8),RR(2.5,5.5),PK(shedCols)]);
+    if(R()<.5)for(let k=0,n=1+Math.floor(R()*2);k<n;k++)tanks.push([rx(),top,rz(),RR(.6,1.1),RR(1.3,2.2)]);
+    if(R()<.3)plants.push([rx(),top,rz(),RR(.8,1.6),RR(.6,1.4),RR(.8,1.6),PK([0x3f6b35,0x4d7a3c,0x35592e])]);
+    const n=2+Math.floor(R()*5);for(let k=0;k<n;k++){const x=rx(),zz=rz(),hgt=RR(3,9.5),tx=x+RR(-.5,.5),tz=zz+RR(-.5,.5);ant.push(x,top,zz,tx,top+hgt,tz);
+      for(let c=0,m=1+Math.floor(R()*3);c<m;c++){const t=RR(.55,.97),l=RR(.7,1.6),a=R()*Math.PI,cx=x+(tx-x)*t,cy=top+hgt*t,cz=zz+(tz-zz)*t;ant.push(cx-Math.cos(a)*l,cy,cz-Math.sin(a)*l,cx+Math.cos(a)*l,cy,cz+Math.sin(a)*l)}}}
+  // low sheds along the foot of the walls, most on the south side (Tung Tsing Road)
+  for(const f of faces){if(R()>(f.nz>0?.75:.3))continue;const w=RR(3,6),dep=RR(3,5),u=RR(f.u0+w/2,Math.max(f.u0+w/2,f.u1-w/2)),[px,pz]=fpt(f,u,dep/2);
+    sheds.push([X+px,base-.5,Z+pz,f.nz?w:dep,RR(2.8,4.2),f.nz?dep:w,PK(shedCols)])}
+  const box=new THREE.BoxGeometry(1,1,1).translate(0,.5,0);
+  const inst=(geo,mat,list,fn)=>{if(!list.length)return;const m=new THREE.InstancedMesh(geo,mat,list.length);list.forEach((v,i)=>fn(m,v,i));walledGroup.add(m)};
+  inst(box,new THREE.MeshLambertMaterial({color:0xffffff}),sheds.concat(plants),(m,v,i)=>{_m4.compose(_v.set(v[0],v[1],v[2]),_q.identity(),_s.set(v[3],v[4],v[5]));m.setMatrixAt(i,_m4);m.setColorAt(i,tc.setHex(v[6]))});
+  inst(new THREE.CylinderGeometry(1,1,1,10).translate(0,.5,0),new THREE.MeshLambertMaterial({color:0x8d8a82}),tanks,(m,v,i)=>{_m4.compose(_v.set(v[0],v[1],v[2]),_q.identity(),_s.set(v[3],v[4],v[3]));m.setMatrixAt(i,_m4)});
+  const ag=new THREE.BufferGeometry();ag.setAttribute('position',new THREE.Float32BufferAttribute(ant,3));walledGroup.add(new THREE.LineSegments(ag,new THREE.LineBasicMaterial({color:0x2b2b2b})));
+  walledGroup.add(kwcSigns(faces,R,RR,base,X,Z,fpt));
+  SEED=s0;for(let i=0;i<3540;i++)rnd();   // the old model drew 3540 numbers from rnd(); keep the world after it the same
   const yamen=new THREE.Mesh(new THREE.BoxGeometry(24,7,14).translate(0,3.5,0),new THREE.MeshLambertMaterial({color:0x9a8f80}));yamen.position.set(WALLED.x,base,WALLED.z);parkGroup.add(yamen);
   const roof=new THREE.Mesh(new THREE.ConeGeometry(17,5,4).translate(0,9.5,0),new THREE.MeshLambertMaterial({color:0x3d3a35}));roof.rotation.y=Math.PI/4;roof.scale.set(1,1,.6);roof.position.set(WALLED.x,base,WALLED.z);parkGroup.add(roof);
   WALLED.col={x0:WALLED.x-WALLED.w/2,x1:WALLED.x+WALLED.w/2,z0:WALLED.z-WALLED.d/2,z1:WALLED.z+WALLED.d/2,top:base+44,name:'Kowloon Walled City'};addCollider(WALLED.col.x0,WALLED.col.x1,WALLED.col.z0,WALLED.col.z1,base+44,'Kowloon Walled City');
   for(const a of BGRID.values())for(const b of a)if(b.name==='Kowloon Walled City')WALLED.ref=b;
   scene.add(walledGroup,parkGroup);
+}
+// Walled City facades: narrow storeys (2.8 m), small windows, cage balconies, air conditioners, painted patches, rain streaks,
+// open shopfronts on the ground floor; at night most windows show fluorescent tube light.
+function kwcMaterial(base){
+  const m=new THREE.MeshLambertMaterial({color:0xffffff});
+  m.onBeforeCompile=sh=>{
+    sh.uniforms.uNight=CITY_U.uNight;sh.uniforms.uBase={value:base};
+    sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 vWP;varying vec3 vON;varying float vSeed;')
+     .replace('#include <project_vertex>',`#include <project_vertex>
+      vec4 cw=instanceMatrix*vec4(transformed,1.);vSeed=fract(sin(dot(instanceMatrix[3].xz,vec2(12.9898,78.233)))*43758.5453);
+      cw=modelMatrix*cw;vWP=cw.xyz;vON=normalize(mat3(modelMatrix)*normal);`);
+    sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nvarying vec3 vWP;varying vec3 vON;varying float vSeed;uniform float uNight;uniform float uBase;\nfloat kh(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}')
+     .replace('#include <emissivemap_fragment>',`#include <emissivemap_fragment>
+      if(abs(vON.y)<.5){
+        vec2 nn=normalize(vON.xz);float u=dot(vWP.xz,vec2(-nn.y,nn.x));float fy=(vWP.y-uBase)/2.8;
+        float bx=u/2.3;vec2 cell=vec2(floor(bx),floor(fy));vec2 f=vec2(fract(bx),fract(fy));
+        float h=kh(cell+vSeed*13.1),hb=kh(floor(vec2(bx/3.,fy/4.))+vSeed*7.7);
+        diffuseColor.rgb*=hb<.2?vec3(.84,.96,.86):hb<.33?vec3(.8,.92,.95):hb<.45?vec3(1.04,1.,.9):hb<.52?vec3(.72,.72,.7):vec3(1.);
+        float sc=floor(u*1.6),st=step(.5,kh(vec2(sc,1.)))*smoothstep(.2,1.,fract(-fy*.06+kh(vec2(sc,9.))));
+        diffuseColor.rgb*=1.-.3*st;
+        if(fy<1.){
+          float op=step(.06,f.x)*step(f.x,.94)*step(f.y,.78);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.09,.08,.07),op*.9);
+          totalEmissiveRadiance+=vec3(1.,.8,.55)*op*uNight*.55*step(.3,h);
+        }else{
+          float win=step(.16,f.x)*step(f.x,.84)*step(.3,f.y)*step(f.y,.84),blank=step(.93,h),cage=step(.58,h)*step(h,.8),ac=step(.8,h)*step(h,.93);
+          diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*.3+vec3(.04,.05,.05),win*(1.-blank)*.85);
+          float bars=cage*step(.1,f.x)*step(f.x,.9)*step(.22,f.y)*step(f.y,.9)*max(step(.75,fract(f.x*10.)),step(.88,fract(f.y*4.)));
+          diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.33,.34,.32),bars);
+          float acu=ac*step(.5,f.x)*step(f.x,.86)*step(.1,f.y)*step(f.y,.36);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.8,.79,.74),acu);
+          float r=fract(h*5.1),lit=step(.32,fract(h*13.7))*win*(1.-blank)*(1.-bars)*(1.-acu);
+          vec3 wc=r<.55?vec3(.72,1.,.84):r<.85?vec3(.88,.94,1.):vec3(1.,.74,.44);
+          totalEmissiveRadiance+=wc*lit*uNight*(.4+.45*fract(h*29.3));
+        }
+      }else if(vON.y>.5){diffuseColor.rgb*=.5+.3*kh(floor(vWP.xz/2.5));}`);
+  };
+  m.customProgramCacheKey=()=> 'kwc';
+  return m;
+}
+// Shop signs at street level: boards flat on the wall and vertical signs sticking out over the street, lit at night.
+function kwcSigns(faces,R,RR,base,X,Z,fpt){
+  const words=['牙科','牙醫','診所','茶餐廳','麵家','士多','五金','魚蛋廠','理髮','雜貨','藥房','冰室','粥麵','燒臘','洗衣','鐘錶','食品廠','膠袋','印刷','電器','米舖','涼茶','醫務所','酒家'];
+  const pal=[['#f2efe6','#b0201c'],['#b3241e','#f6f0e0'],['#e9c23a','#1a1a1a'],['#1f4f8a','#f4f4f4'],['#2c6e45','#f4f0e0'],['#f2efe6','#1a1a1a'],['#c33a1a','#f2d24a']];
+  const han='"Noto Serif TC","PMingLiU","MingLiU","SimSun","Songti TC",serif';
+  const tex=canvasTex(1024,1024,(g)=>{
+    const grime=(x,y,w,h)=>{for(let i=0;i<60;i++){g.fillStyle=`rgba(40,30,20,${Math.random()*.12})`;g.fillRect(x+Math.random()*w,y+Math.random()*h,2+Math.random()*10,2+Math.random()*18)}};
+    for(let i=0;i<16;i++){const x=(i%4)*256,y=Math.floor(i/4)*128,p=pal[i%pal.length],t=words[i];g.fillStyle=p[0];g.fillRect(x,y,256,128);g.strokeStyle=p[1];g.lineWidth=5;g.strokeRect(x+8,y+8,240,112);
+      g.fillStyle=p[1];g.font=`900 ${Math.min(84,210/t.length)}px ${han}`;g.textAlign='center';g.textBaseline='middle';g.fillText(t,x+128,y+66);grime(x,y,256,128)}
+    for(let i=0;i<16;i++){const x=(i%8)*128,y=512+Math.floor(i/8)*256,p=pal[(i+3)%pal.length],t=words[(i+5)%words.length];g.fillStyle=p[0];g.fillRect(x,y,128,256);g.strokeStyle=p[1];g.lineWidth=4;g.strokeRect(x+6,y+6,116,244);
+      g.fillStyle=p[1];const fs=Math.min(78,220/t.length);g.font=`900 ${fs}px ${han}`;g.textAlign='center';g.textBaseline='middle';[...t].forEach((c,k)=>g.fillText(c,x+64,y+128+(k-(t.length-1)/2)*fs*1.05));grime(x,y,128,256)}});
+  const P=[],U=[],N=[];
+  const quad=(cx,cy,cz,ax,az,w,h,uv)=>{const nx=-az,nz=ax,hx=ax*w/2,hz=az*w/2,y0=cy,y1=cy+h,[u0,v0,u1,v1]=uv;
+    P.push(cx-hx,y0,cz-hz,cx+hx,y0,cz+hz,cx+hx,y1,cz+hz,cx-hx,y0,cz-hz,cx+hx,y1,cz+hz,cx-hx,y1,cz-hz);
+    U.push(u0,v0,u1,v0,u1,v1,u0,v0,u1,v1,u0,v1);for(let i=0;i<6;i++)N.push(nx,0,nz)};
+  for(const f of faces){const len=f.u1-f.u0,n=Math.round(len/(f.nz>0?5:11)*RR(.7,1.3));
+    for(let i=0;i<n;i++){const u=RR(f.u0+1.5,f.u1-1.5);
+      if(R()<.55){const c=Math.floor(R()*16),w=RR(1,1.3),h=RR(2.4,4.2),[px,pz]=fpt(f,u,.4+w/2),uv=[(c%8)/8,1-(512+Math.floor(c/8)*256+256)/1024,(c%8+1)/8,1-(512+Math.floor(c/8)*256)/1024];
+        const y=base+RR(2.9,8);quad(X+px-f.nz*.03,y,Z+pz+f.nx*.03,f.nx,f.nz,w,h,uv);quad(X+px+f.nz*.03,y,Z+pz-f.nx*.03,-f.nx,-f.nz,w,h,uv)}   // vertical sign at right angles to the wall, printed both sides
+      else{const c=Math.floor(R()*16),w=RR(2.6,4.6),[px,pz]=fpt(f,u,.15),uv=[(c%4)/4,1-(Math.floor(c/4)*128+128)/1024,(c%4+1)/4,1-Math.floor(c/4)*128/1024];
+        quad(X+px,base+RR(2.7,5.5),Z+pz,f.nz,-f.nx,w,w/2,uv)}}}                                                       // board flat on the wall
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(P,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(U,2));g.setAttribute('normal',new THREE.Float32BufferAttribute(N,3));
+  const m=new THREE.MeshLambertMaterial({map:tex});
+  m.onBeforeCompile=sh=>{sh.uniforms.uNight=CITY_U.uNight;sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nuniform float uNight;').replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\ntotalEmissiveRadiance+=diffuseColor.rgb*uNight*.6;')};
+  m.customProgramCacheKey=()=> 'kwcsign';
+  return new THREE.Mesh(g,m);
 }
 function setWalled(on){walledGroup.visible=on;parkGroup.visible=!on;WALLED.on=on;if(WALLED.ref)WALLED.ref.top=on?WALLED.col.top:-99}
 
