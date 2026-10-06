@@ -2101,6 +2101,11 @@ const GAPC=STAND_C.map((S,j)=>{const n=STAND_C[j+1];return n==null?36:Math.min(4
 const PB={T:52,hold:3,d1:85,R:18,v:2.8,hitch:6.4,tug:[30,-719.5]};  // pushback: seconds, connect time, straight run (m), turn radius (m), speed, tug centre to nose gear, tug bay (S offset, L)
 const PB_D=PB.d1+Math.PI/2*PB.R;                  // the main gear is pushed straight back, then round a quarter circle so the nose points along the pier toward taxiway A
 const BRIDGE=[];
+// the pier's outline (runway coordinates): face = the gate blocks' apron face (the stand line), back = the slab's set-back face, gates: each gate block's l span
+// (stands 1-4, stand 5, stands 6-8; each holds its stands' bridge rotundas at l = -(S-12))
+// the fuel tank farm past the terminal's north-east end (runway coordinates): two rows of tanks inside a bund [s0, s1, l0, l1]
+const TANKS={big:{s:-90,r:12.5,h:15,l:[-1038,-1066,-1094]},slim:{s:-127,r:8,h:18,l:[-1033,-1052,-1071,-1090]},bund:[-139,-73,-1112,-1018]};
+const TERM={face:-78,back:-97,gates:[[-392,-144],[-450,-422],[-740,-507]]};
 // Remote stands 11-19 on lane D2 have no jet bridge. Aircraft park nose-in on them (tail toward the lane) and the passengers ride apron buses
 // from the bus gate at the pier. That only happens when every jet bridge is taken: the 6 scheduled turnarounds and the 2 parked aircraft hold all 8.
 const REM_TY=['b772','a333','b744',null,'a343','b772',null,null,null];   // the aircraft on remote stands 11-19 (null: empty)
@@ -2225,6 +2230,15 @@ const PAVE={rw:(RWY.wid+14)/2,twy:13,end:20,link:{w:30,slant:38,l0:-36,l1:APN.A+
   pads:[[0,-78,20],[RWY.len,-78,20],[1867,APN.A,20],[1486,APN.A,20]]};
 // The south apron runs on from the main apron (s0 = 780, its far end), and the tarmac closes the head of the inlet (head). One bridge, A9, crosses the inlet.
 const SOUTH={s0:780,s1:2180,l0:-520,l1:-340,b4:-362,conn:[1800],head:{s0:780,s1:830},st:[0,1,2,3,4,5,6,7,8,9,10].map(i=>1040+72*i),nose:-500,pads:[[1985,-405],[2065,-405]]};
+/* The Kai Tak nullah: the storm-water channel that crossed the apron to the head of the inlet (1996 chart, the Technocratic plan, the 1990s aerials). It comes out from
+   under the north-east end of the terminal and runs parallel to the runway, between the stands and the maintenance apron: an open, walled channel with grass verges
+   and a railing, crossed by three taxi bridges (br, bw wide), opening into a grassed oval basin, then into a culvert under the cargo apron that comes out at the head
+   of the inlet. l: the centre line, w: the channel, verge: the grass each side. */
+const NUL={l:-885,w:12,verge:6,s0:-24,s1:455,br:[60,165,273],bw:40,oval:{s0:360,s1:455,hw:26}};
+function inNullah(s,l,m){m=m||0;const N=NUL;if(s<N.s0-m||s>N.s1+m)return false;
+  for(const b of N.br)if(Math.abs(s-b)<N.bw/2-m)return false;                                   // on a bridge
+  if(Math.abs(l-N.l)<N.w/2+N.verge+m)return true;                                               // the channel and its verges
+  const O=N.oval,c=(O.s0+O.s1)/2;return((s-c)/((O.s1-O.s0)/2+m))**2+((l-N.l)/(O.hw+m))**2<1}   // the oval basin
 // the widened taxiway tarmac on the apron side toward the Runway 31 end (period aerial photo): out to l0 from taxiway A's edge, tapered at both ends
 const WIDE={s0:2560,s1:3180,l0:-190,l1:-105,taper:120};
 const wideL=s=>{const W=WIDE;if(s<=W.s0||s>=W.s1)return W.l1;const u=Math.min(1,(s-W.s0)/W.taper,(W.s1-s)/W.taper);return W.l1+(W.l0-W.l1)*u};   // outer edge of the widened tarmac at s
@@ -2239,6 +2253,7 @@ function leadOnLines(){if(!LEAD_ON){const A=APN.A,d=Math.min(TAXI_R,.45*150,.45*
 const segDist=(s,l,a,b)=>{const dx=b[0]-a[0],dy=b[1]-a[1],t=clamp(((s-a[0])*dx+(l-a[1])*dy)/(dx*dx+dy*dy),0,1);return Math.hypot(s-a[0]-t*dx,l-a[1]-t*dy)};
 // Is the ground point (s,l) tarmac? m shrinks every paved area by m metres, so a wheel must be at least that far inside the edge.
 function onPaved(s,l,m){m=m||0;
+  if(inNullah(s,l,m))return false;                                                                                             // the open nullah and its verges
   if(s>-PAVE.end&&s<RWY.len+PAVE.end){if(Math.abs(l)<PAVE.rw-m||Math.abs(l-APN.A)<PAVE.twy-m)return true}                   // runway with shoulders, taxiway A
   const P=PAVE.apron;if(s>P.s0+m&&s<P.s1-m&&l>P.l0+m&&l<P.l1-m)return true;                                                  // concrete apron, lanes and stands
   {const Q=SOUTH;if(s>Q.s0+m&&s<Q.s1-m&&l>Q.l0+m&&l<Q.l1-m)return true;for(const c of Q.conn)if(Math.abs(s-c)<13-m&&l<-96&&l>Q.l1)return true;if(s>Q.head.s0&&s<Q.head.s1-m&&l<-96&&l>Q.l1)return true}   // south apron, the tarmac over the head of the inlet and the bridge
@@ -2413,13 +2428,55 @@ function buildSouthApron(placeAlong){
   const tx=new THREE.CanvasTexture(c);tx.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
   const mat=new THREE.MeshBasicMaterial({map:tx,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-5,polygonOffsetUnits:-5});APR_MATS.push(mat);
   placeAlong(new THREE.Mesh(new THREE.PlaneGeometry(Q.l1-Q.l0,Q.s1-Q.s0).rotateX(-Math.PI/2),mat),(Q.s0+Q.s1)/2,(Q.l0+Q.l1)/2,E+.07)}
+/* The nullah (NUL): the cut in the apron slabs is the channel; this adds the water, the weed line on its walls, the grass verges and oval basin, the railings,
+   the bridges' kerbs and edge lines, the culvert mouths at both ends of the open stretch and the outfall at the head of the inlet. Runway coordinates. */
+function buildNullah(placeAlong){
+  const N=NUL,E=RWY.elev,a=N.l+N.w/2,b=N.l-N.w/2,open=[];let s=N.s0;for(const c of N.br){open.push([s,c-N.bw/2]);s=c+N.bw/2}open.push([s,N.s1]);
+  const flat=(o,y)=>{o.rotateX(-Math.PI/2);return o};
+  const waterM=new THREE.MeshLambertMaterial({color:0x2c3a3c}),weedM=new THREE.MeshLambertMaterial({color:0x4f5640}),
+    grassM=new THREE.MeshLambertMaterial({color:0x7b8a62,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}),
+    railM=new THREE.MeshLambertMaterial({color:0xd9d8cf}),darkM=new THREE.MeshBasicMaterial({color:0x101210}),headM=new THREE.MeshLambertMaterial({color:0xbdbab0}),
+    yel=new THREE.MeshBasicMaterial({color:0xe8b100,polygonOffset:true,polygonOffsetFactor:-6,polygonOffsetUnits:-6}),blk=new THREE.MeshLambertMaterial({color:0x222326});
+  const WY=E-1.2;   // the water, 1.2 m down
+  // water along the whole cut (under the bridges too), and a dark weed line on both walls
+  placeAlong(new THREE.Mesh(flat(new THREE.PlaneGeometry(N.w,N.s1-N.s0)),waterM),(N.s0+N.s1)/2,N.l,WY);
+  for(const l of[a-.03,b+.03])placeAlong(new THREE.Mesh(new THREE.PlaneGeometry(N.s1-N.s0,.5).rotateY(Math.PI/2*(l>N.l?-1:1)),weedM),(N.s0+N.s1)/2,l,WY+.25);
+  // grass verges each side of every open stretch; the oval basin is grass too, either side of the channel
+  for(const[s0,s1]of open)for(const sd of[1,-1])placeAlong(new THREE.Mesh(flat(new THREE.PlaneGeometry(N.verge,s1-s0)),grassM),(s0+s1)/2,N.l+sd*(N.w/2+N.verge/2),E+.06);
+  {const O=N.oval,c=(O.s0+O.s1)/2,A=(O.s1-O.s0)/2;
+   for(const sd of[1,-1]){const sh=new THREE.Shape(),e=N.w/2,n=40;   // x = l offset from the centre line, y = s offset from the oval's centre
+     sh.moveTo(sd*e,-A*Math.sqrt(1-(e/O.hw)**2));for(let i=0;i<=n;i++){const t=-Math.PI/2+Math.PI*i/n,x=O.hw*Math.cos(t),y=A*Math.sin(t);if(Math.abs(x)>=e)sh.lineTo(sd*x,y)}
+     sh.lineTo(sd*e,A*Math.sqrt(1-(e/O.hw)**2));sh.closePath();
+     const g=new THREE.ShapeGeometry(sh);g.rotateX(-Math.PI/2);placeAlong(new THREE.Mesh(g,grassM),c,N.l,E+.061)}}
+  // railings on both lips of every open stretch: posts every 3 m, a top rail and a mid rail
+  {const pts=[];for(const[s0,s1]of open)for(const l of[a-.3,b+.3]){for(let q=s0+1;q<=s1-1;q+=3)pts.push([q,l]);
+     for(const y of[1.1,.55])placeAlong(new THREE.Mesh(new THREE.BoxGeometry(.08,.08,s1-s0-2).translate(0,y,0),railM),(s0+s1)/2,l,E)}
+   const im=new THREE.InstancedMesh(new THREE.BoxGeometry(.1,1.15,.1).translate(0,.575,0),railM,pts.length),M4=new THREE.Matrix4();
+   pts.forEach(([q,l],i)=>{const p=rwP(q,l);M4.makeTranslation(p[0],E,p[1]);im.setMatrixAt(i,M4)});im.instanceMatrix.needsUpdate=true;scene.add(im)}
+  // the bridges: a yellow-and-black kerb on each edge over the channel and verges, and the yellow deck edge lines out across the apron
+  for(const c of N.br)for(const sd of[-1,1]){const se=c+sd*(N.bw/2-.4),L=N.w+2*N.verge;
+    for(let k=0;k<L/2;k++)placeAlong(new THREE.Mesh(new THREE.BoxGeometry(2,.5,.6).translate(0,.25,0),k%2?blk:yel),se,N.l-L/2+1+2*k,E);
+    placeAlong(new THREE.Mesh(flat(new THREE.PlaneGeometry(L+30,.5)),yel),se-sd*2,N.l,E+.08)}
+  // culvert mouths: under the terminal (s0) and where the channel goes under the cargo apron (s1), two dark barrels in a concrete headwall
+  for(const[se,f]of[[N.s0,1],[N.s1,-1]]){placeAlong(new THREE.Mesh(new THREE.BoxGeometry(N.w,1.4,.3).translate(0,.7,0),headM),se+f*.15,N.l,WY);
+    for(const d of[-3,3])placeAlong(new THREE.Mesh(new THREE.BoxGeometry(4.6,1.2,.2),darkM),se+f*.31,N.l+d,WY+.6)}
+  // the outfall into the head of the inlet: a headwall on the seawall with three dark barrels just above the water
+  // (the culvert's concrete roof runs on past the head tarmac over the strip of shore to the water's edge, s = 905)
+  {const s0=SOUTH.head.s1,se=905;placeAlong(new THREE.Mesh(new THREE.BoxGeometry(24,E+2,se-s0).translate(0,(E+2)/2-2,0),headM),(s0+se)/2,-245,0);
+   placeAlong(new THREE.Mesh(new THREE.BoxGeometry(26,E+3,1.2).translate(0,(E+3)/2-3,0),headM),se+.6,-245,.4);
+   for(const d of[-7,0,7])placeAlong(new THREE.Mesh(new THREE.BoxGeometry(5,2.4,.3).translate(0,1.2,0),darkM),se+1.25,-245+d,-1)}
+}
 function buildAirport(){
   const grp=new THREE.Group();grp.position.set(0,0,0);
   const placeAlong=(m,s,l,y)=>{const p=rwP(s,l);m.position.set(p[0],y,p[1]);m.rotation.y=-RWY.hdg*D2R;grp.add(m);return m};
   // reclaimed strip & apron (boxes down to the seabed)
   const strip=new THREE.Mesh(new THREE.BoxGeometry(280,22,RWY.len+170).translate(0,-11+RWY.elev,0),new THREE.MeshLambertMaterial({color:0x7b8a62}));placeAlong(strip,RWY.len/2-10,-10,0);
   const sea=new THREE.Mesh(new THREE.BoxGeometry(284,1.2,RWY.len+174).translate(0,RWY.elev-1,0),new THREE.MeshLambertMaterial({color:0x8d8a80}));placeAlong(sea,RWY.len/2-10,-10,0);
-  const apron=new THREE.Mesh(new THREE.BoxGeometry(1097,22,930).translate(0,-11+RWY.elev+.02,0),new THREE.MeshLambertMaterial({color:0xa6a49b}));placeAlong(apron,315,-631.5,0);   // out to taxiway A, so there is no grass gap between them
+  // the apron, out to taxiway A so there is no grass gap between them: s -150 to 780, l -83 to -1180, built in pieces round the open nullah (NUL) so the channel is a real cut
+  const apronM=new THREE.MeshLambertMaterial({color:0xa6a49b});
+  const slab=(s0,s1,l0,l1)=>placeAlong(new THREE.Mesh(new THREE.BoxGeometry(l1-l0,22,s1-s0).translate(0,-11+RWY.elev+.02,0),apronM),(s0+s1)/2,(l0+l1)/2,0);
+  {const N=NUL,a=N.l+N.w/2,b=N.l-N.w/2;slab(-150,780,a,-83);slab(-150,780,-1180,b);slab(-150,N.s0,b,a);slab(N.s1,780,b,a);
+   for(const c of N.br)slab(c-N.bw/2,c+N.bw/2,b,a)}   // the taxi bridges fill the cut
   // runway, shoulders, taxiway
   const asph=new THREE.MeshLambertMaterial({color:0x3e3f42,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1});
   const rw=new THREE.Mesh(new THREE.PlaneGeometry(RWY.wid+14,RWY.len+40).rotateX(-Math.PI/2),asph);placeAlong(rw,RWY.len/2,0,RWY.elev+.05);
@@ -2448,6 +2505,7 @@ function buildAirport(){
   for(const l of[-30,30]){const e=new THREE.Mesh(new THREE.PlaneGeometry(.9,RWY.len-800).rotateX(-Math.PI/2),mk);placeAlong(e,RWY.len/2,l,RWY.elev+.08)}
   buildApronMarkings(placeAlong);
   buildSouthApron(placeAlong);
+  buildNullah(placeAlong);
   // the east apron: a concrete platform on the outline, its top just under the main apron's where they overlap
   {const sh=new THREE.Shape();EAST.poly.forEach((p,k)=>k?sh.lineTo(p[1],p[0]):sh.moveTo(p[1],p[0]));sh.closePath();
    placeAlong(new THREE.Mesh(new THREE.ExtrudeGeometry(sh,{depth:22,bevelEnabled:false}).rotateX(-Math.PI/2).translate(0,-22,0),new THREE.MeshLambertMaterial({color:0xa6a49b})),0,0,RWY.elev+.01)}
@@ -2463,9 +2521,19 @@ function buildAirport(){
       const c=[rwP(sp[0],sp[2]),rwP(sp[0],sp[3]),rwP(sp[1],sp[2]),rwP(sp[1],sp[3])];addCollider(Math.min(...c.map(q=>q[0])),Math.max(...c.map(q=>q[0])),Math.min(...c.map(q=>q[1])),Math.max(...c.map(q=>q[1])),h+3,name);
       AIRBOX.push({s0:sp[0],s1:sp[1],l0:sp[2],l1:sp[3],name})}
     return m};
-  solid(-140,-78,-866,-144,22,'the Kai Tak terminal');                       // the pier, stands 1-8 along its face
+  // The pier is not a plain box (1990s aerials, the airport maps and the World Flyer plan): a long slab, its apron face set back, with lower gate blocks protruding from
+  // that face. The big ones at the two ends carry the jet bridges of stands 1-4 and 6-8, a small gate pod carries stand 5's; between them the slab's face is set back.
+  solid(-140,TERM.back,-866,-144,22,'the Kai Tak terminal');                 // the slab
+  for(const[l0,l1]of TERM.gates)solid(TERM.back,TERM.face,l0,l1,14,'the Kai Tak terminal');   // the gate blocks, their face on the stand line (s = -78)
   solid(-134,-24,-1012,-866,26,'the Kai Tak terminal');                      // main terminal block
-  solid(-134,-96,-286,-144,12,'the Kai Tak terminal',termM);                 // the airline offices at the root of the pier
+  {// a glazed gate-lounge band along each gate block's apron face, level with the jet bridges, lit at night
+   const gl=canvasTex(512,64,g=>{g.fillStyle='#24333b';g.fillRect(0,0,512,64);g.fillStyle='#d6d3c8';for(let i=0;i<=16;i++)g.fillRect(i*32-2,0,4,64);g.fillRect(0,0,512,5);g.fillRect(0,59,512,5);g.fillStyle='#3d5560';g.fillRect(0,8,512,10)});
+   gl.wrapS=THREE.RepeatWrapping;
+   for(const[l0,l1]of TERM.gates){const t=gl.clone();t.needsUpdate=true;t.repeat.set((l1-l0)/48,1);
+     const m=new THREE.Mesh(new THREE.PlaneGeometry(l1-l0,3.6).rotateY(Math.PI),new THREE.MeshLambertMaterial({map:t,emissive:0x000000}));placeAlong(m,TERM.face+.06,(l0+l1)/2,RWY.elev+7.2);
+     m.userData.neon=0xffe2a0;landmarkLights.push(m);
+     // a dark band of the ground-floor baggage hall under it
+     placeAlong(new THREE.Mesh(new THREE.PlaneGeometry(l1-l0,2.4).rotateY(Math.PI),new THREE.MeshLambertMaterial({color:0x3a3f42})),TERM.face+.05,(l0+l1)/2,RWY.elev+1.6)}}
   buildJetBridges(placeAlong);
   buildTerminalFacade();
   // The cargo terminal stands at the north-east end of the apron (as on the chart): its west face is the airside, with a roller door and a canopy at each of the
@@ -2523,11 +2591,22 @@ function buildAirport(){
     return face(sc,lf+.05,w,w/4,y,new THREE.MeshLambertMaterial({map:t,transparent:true}),false)};
    const pole=(s,l,h)=>{const g=new THREE.Group();g.add(new THREE.Mesh(new THREE.CylinderGeometry(.22,.3,h,6).translate(0,h/2,0),new THREE.MeshLambertMaterial({color:0x8f959a})));
     const hd=new THREE.Mesh(new THREE.BoxGeometry(3.2,.6,1.4).translate(0,h+.2,0),new THREE.MeshLambertMaterial({color:0xf2efe2,emissive:0x000000}));hd.userData.neon=0xfff0c0;landmarkLights.push(hd);g.add(hd);placeAlong(g,s,l,RWY.elev)};
-   // fuel tank farm: between the passenger terminal and the first hangar, as on the model photos
-   M=MAIN;
-   {const tk=new THREE.MeshLambertMaterial({color:0x969a9c}),band=new THREE.MeshLambertMaterial({color:0xe9e7df});
-    for(const s of[22,58,94])for(const l of[-1085,-1127,-1169]){placeAlong(new THREE.Mesh(new THREE.CylinderGeometry(15,15,16,20).translate(0,8,0),tk),s,l,RWY.elev);placeAlong(new THREE.Mesh(new THREE.CylinderGeometry(15.3,15.3,3,20).translate(0,11,0),band),s,l,RWY.elev);placeAlong(new THREE.Mesh(new THREE.CylinderGeometry(13,15,1.2,20).translate(0,16.6,0),new THREE.MeshLambertMaterial({color:0x777b7e})),s,l,RWY.elev)}
-    const r=[rwP(4,-1190),rwP(4,-1068),rwP(112,-1190),rwP(112,-1068)],q=[M.f(4,-1190),M.f(4,-1068),M.f(112,-1190),M.f(112,-1068)];addCollider(Math.min(...r.map(q=>q[0])),Math.max(...r.map(q=>q[0])),Math.min(...r.map(q=>q[1])),Math.max(...r.map(q=>q[1])),22,'the fuel tanks');AIRBOX.push({s0:Math.min(...q.map(a=>a[0])),s1:Math.max(...q.map(a=>a[0])),l0:Math.min(...q.map(a=>a[1])),l1:Math.max(...q.map(a=>a[1])),name:'the fuel tanks'})}
+   // fuel tank farm (1990s aerials, the World Flyer plan): just past the north-east end of the terminal, on its landside half, in line with the building rather than
+   // turned with the hangars. Two rows inside a low bund: three big squat tanks on the apron side, four slimmer, taller ones behind them toward the road.
+   // Runway coordinates (PA, RP: not the strip frame).
+   {const tk=new THREE.MeshLambertMaterial({color:0xb9b6ac}),tk2=new THREE.MeshLambertMaterial({color:0xa9a69c}),band=new THREE.MeshLambertMaterial({color:0xe9e7df}),
+      top=new THREE.MeshLambertMaterial({color:0x8d8f8c}),bund=new THREE.MeshLambertMaterial({color:0xc4c0b4}),floor=new THREE.MeshLambertMaterial({color:0x8f8a7c,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
+    const T=TANKS,tank=(s,l,r,h,m)=>{PA(new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,24).translate(0,h/2,0),m),s,l,RWY.elev);
+      PA(new THREE.Mesh(new THREE.CylinderGeometry(r+.2,r+.2,1.4,24).translate(0,h*.72,0),band),s,l,RWY.elev);
+      PA(new THREE.Mesh(new THREE.CylinderGeometry(r*.15,r,r*.18,24).translate(0,h+r*.09,0),top),s,l,RWY.elev);
+      PA(new THREE.Mesh(new THREE.BoxGeometry(.5,h+1,.5).translate(r+.3,(h+1)/2,0),top),s,l,RWY.elev)};   // the stair up the side
+    for(const l of T.big.l)tank(T.big.s,l,T.big.r,T.big.h,tk);
+    for(const l of T.slim.l)tank(T.slim.s,l,T.slim.r,T.slim.h,tk2);
+    const[s0,s1,l0,l1]=T.bund;
+    PA(new THREE.Mesh(new THREE.PlaneGeometry(l1-l0,s1-s0).rotateX(-Math.PI/2),floor),(s0+s1)/2,(l0+l1)/2,RWY.elev+.06);
+    for(const[a,b,c,d]of[[s0,s1,l0,l0+.6],[s0,s1,l1-.6,l1],[s0,s0+.6,l0,l1],[s1-.6,s1,l0,l1]])PA(new THREE.Mesh(new THREE.BoxGeometry(d-c,1.6,b-a).translate(0,.8,0),bund),(a+b)/2,(c+d)/2,RWY.elev);
+    const r=[RP(s0,l0),RP(s0,l1),RP(s1,l0),RP(s1,l1)];addCollider(Math.min(...r.map(q=>q[0])),Math.max(...r.map(q=>q[0])),Math.min(...r.map(q=>q[1])),Math.max(...r.map(q=>q[1])),T.slim.h+3,'the fuel tanks');
+    AIRBOX.push({s0,s1,l0,l1,name:'the fuel tanks'})}
    M=MAIN;
    // concrete over the flight apron in front of the hangars, round the bays, the compound and the maintenance aircraft (same colour as the main apron)
    {const bit=new THREE.MeshLambertMaterial({color:0xa6a49b,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
@@ -2566,13 +2645,15 @@ function buildAirport(){
   }
   }}
   // the smaller maintenance and airline buildings on the landside edge of the strip, from the chart (west of the terminal block)
-  solid(-200,-150,-1060,-1010,14,'the Kai Tak maintenance offices');solid(-215,-165,-1005,-960,12,'the Kai Tak maintenance offices');solid(-182,-142,-935,-880,10,'the Kai Tak maintenance offices');
+  solid(-200,-152,-1175,-1125,9,'the Kai Tak maintenance offices');   // low and white, beyond the tank farm (as in the aerials)
+  solid(-215,-165,-1005,-960,12,'the Kai Tak maintenance offices');solid(-182,-142,-935,-880,10,'the Kai Tak maintenance offices');
   solid(1975,2110,-505,-470,9,'the flight services building',cityMaterial({color:0xdedbd0}),new THREE.MeshLambertMaterial({color:0x4c4a46}));   // beside the helipads on the south apron
   // Control tower: on the roof of the passenger terminal at its runway end (the root of the pier), on the apron side, as in period photos: from the cab the
   // controllers looked down onto the taxiway and runway with the harbour beyond, and along the pier and apron toward Lion Rock.
   // A plant storey and a dark band rise off the terminal roof; the cab above has the glazing leaning outward (wider at the top, so controllers can see straight
   // down onto the stands) on a chamfered, rectangular plan, a balcony rail at its foot and a deep flat roof with a dark fascia. Dishes and masts on the roof beside it.
-  {const TS=-100,TL=-170,R0=22,T=new THREE.Group();placeAlong(T,TS,TL,RWY.elev);
+  {const TS=-106,TL=-170,R0=22,T=new THREE.Group();   // on the slab, behind the set-back face (TERM.back)
+  placeAlong(T,TS,TL,RWY.elev);
    // a chamfered rectangle (half sizes w, d, corner cut c) as a ring of 8 points
    const ring=(w,d,c)=>[[w-c,d],[-w+c,d],[-w,d-c],[-w,-d+c],[-w+c,-d],[w-c,-d],[w,-d+c],[w,d-c]];
    // prism from a bottom ring to a top ring (leaning walls when they differ); each face is mapped 0..1 so a texture repeats per pane
@@ -2603,7 +2684,7 @@ function buildAirport(){
    const bcn=new THREE.Mesh(new THREE.BoxGeometry(.6,.6,.6).translate(0,R0+21.4,0),new THREE.MeshBasicMaterial({color:0xff2a20}));T.add(bcn);
    // dishes and masts on the terminal roof behind the tower (landside)
    const dishM=new THREE.MeshLambertMaterial({color:0xeceae4,side:THREE.DoubleSide}),frM=new THREE.MeshLambertMaterial({color:0x8b8e8c});
-   for(const[dx,dz,r,yaw]of[[-10,-14,2.6,2.7],[-4,-15,3.1,3],[3,-14.5,3.1,3.3],[10,-15.5,2.4,3.6],[14,-9,1.8,4.2]]){
+   for(const[dx,dz,r,yaw]of[[-10,14,2.6,2.7],[-4,15,3.1,3],[3,14.5,3.1,3.3],[10,15.5,2.4,3.6],[14,9,1.8,4.2]]){
      const d=new THREE.Group();d.position.set(dx,R0+2.4,dz);d.rotation.y=yaw;T.add(d);
      d.add(new THREE.Mesh(new THREE.BoxGeometry(.3,r*.9,.3).translate(0,r*.45,0),frM));
      const bowl=new THREE.Mesh(new THREE.SphereGeometry(r,16,6,0,Math.PI*2,0,.5),dishM);bowl.rotation.x=Math.PI/2+.35;bowl.position.set(0,r*.95,r*.35);d.add(bowl);

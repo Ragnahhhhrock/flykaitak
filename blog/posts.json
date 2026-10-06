@@ -1,5 +1,40 @@
 [
   {
+    "slug": "terminal-gates-nullah-and-tank-farm",
+    "title": "Terminal gate blocks, the nullah and the tank farm",
+    "dek": "The terminal now has gate blocks sticking out from its apron face, the storm-water nullah crosses the apron under taxi bridges, and the fuel tanks sit where the photos show them.",
+    "description": "Kai Tak's terminal gets protruding gate blocks for its jet bridges, the nullah crosses the apron under three taxi bridges, and the tank farm moves.",
+    "date": "2026-10-06",
+    "tag": "Update",
+    "category": "scenery",
+    "keywords": [
+      "Kai Tak terminal",
+      "jet bridges",
+      "Kai Tak nullah",
+      "drainage channel",
+      "taxi bridge",
+      "fuel tanks",
+      "apron",
+      "Kai Tak",
+      "flight simulator"
+    ],
+    "hero": "terminal-nullah-tanks-aerial",
+    "hero_alt": "Kai Tak from above the Kowloon City side: the terminal with gate blocks on its apron face, the tank farm at its far end, and a channel crossing the apron.",
+    "hero_caption": "The terminal, the tank farm and the nullah from over Kowloon City.",
+    "card_kicker": "SCENERY · UPDATE",
+    "card_title": "Gates, nullah and tanks",
+    "card_sub": "The terminal, the apron channel and the tank farm redrawn",
+    "card_image": "terminal-nullah-tanks-aerial",
+    "card_focus": 50,
+    "zh": {
+      "title": "登機閘口大樓、明渠同油缸區",
+      "dek": "客運大樓停機坪嗰面而家有凸出嘅閘口大樓，雨水明渠喺滑行橋底下橫過停機坪，油缸亦搬返去相入面嘅位置。",
+      "description": "啟德客運大樓多咗凸出嘅登機閘口大樓，明渠喺三條滑行橋底下橫過停機坪，油缸區亦搬咗位。",
+      "hero_alt": "喺九龍城上空望啟德：客運大樓停機坪嗰面有閘口大樓凸出，盡頭係油缸區，一條明渠橫過停機坪。",
+      "hero_caption": "喺九龍城上空望客運大樓、油缸區同明渠。"
+    }
+  },
+  {
     "slug": "real-1998-road-network",
     "title": "The real road network, as it was in 1998",
     "dek": "Traffic now drives the Transport Department's surveyed road centrelines, with every road built after 1998 taken out.",
