@@ -1696,17 +1696,51 @@ function buildBigBuddha(){
     box(w,h+6,d,wall,hx,hb-6,hz);const r=new THREE.Mesh(new THREE.ConeGeometry(Math.hypot(w,d)/2+2,h*.55,4,1).rotateY(Math.PI/4).translate(0,h*.275,0),roof);r.scale.set((w+4)/Math.hypot(w,d),1,(d+4)/Math.hypot(w,d));r.position.set(hx,hb+h,hz);scene.add(r);
     addCollider(hx-w/2,hx+w/2,hz-d/2,hz+d/2,hb+h*1.55,'Po Lin Monastery')}
 }
+/* geometry helpers for the steel-and-glass landmarks: merge many bars into one mesh, and bars between two points */
+function mergeGeos(list){let n=0;const parts=list.map(g=>{const ng=g.index?g.toNonIndexed():g;n+=ng.attributes.position.count;return ng});
+  const P=new Float32Array(n*3),N=new Float32Array(n*3);let o=0;for(const g of parts){P.set(g.attributes.position.array,o*3);N.set(g.attributes.normal.array,o*3);o+=g.attributes.position.count}
+  const r=new THREE.BufferGeometry();r.setAttribute('position',new THREE.BufferAttribute(P,3));r.setAttribute('normal',new THREE.BufferAttribute(N,3));return r}
+const _strutObj=new THREE.Object3D();
+function strutGeo(a,b,t){const A=new THREE.Vector3(a[0],a[1],a[2]),B=new THREE.Vector3(b[0],b[1],b[2]),g=new THREE.BoxGeometry(t,t,A.distanceTo(B));
+  _strutObj.position.copy(A).add(B).multiplyScalar(.5);_strutObj.lookAt(B);_strutObj.updateMatrix();g.applyMatrix4(_strutObj.matrix);return g}
+function colGeo(x,z,w,y0,y1){return new THREE.BoxGeometry(w,y1-y0,w).translate(x,(y0+y1)/2,z)}
 function buildLandmarks(){
   const L=[];
-  // Bank of China Tower (1990): four triangular shafts stepping up, white cross-bracing, twin masts
-  {const [x,z]=LM.boc,base=gAt(LM.boc),s=52;const g=new THREE.Group();g.position.set(x,base,z);g.rotation.y=.18;
-   const tri=(h,rot)=>{const sh=new THREE.Shape();sh.moveTo(0,0);sh.lineTo(s/2,0);sh.lineTo(0,s/2);sh.lineTo(0,0);const eg=new THREE.ExtrudeGeometry(sh,{depth:h,bevelEnabled:false});eg.rotateX(-Math.PI/2);const m=new THREE.Mesh(eg,glassMat(0x6f8394));m.rotation.y=rot;g.add(m)};
-   tri(315,0);tri(250,Math.PI/2);tri(190,Math.PI);tri(130,-Math.PI/2);
-   g.add(new THREE.Mesh(new THREE.BoxGeometry(s,70,s).translate(0,35,0),glassMat(0x6f8394)));
-   const xm=new THREE.LineBasicMaterial({color:0xf2f2f2});const xs=[];for(let k=0;k<4;k++){const y0=k*60+10,y1=y0+60;for(const sd of[-1,1]){xs.push(-s/2-.3,y0,sd*(s/2+.3),s/2+.3,y1,sd*(s/2+.3),s/2+.3,y0,sd*(s/2+.3),-s/2-.3,y1,sd*(s/2+.3));xs.push(sd*(s/2+.3),y0,-s/2-.3,sd*(s/2+.3),y1,s/2+.3,sd*(s/2+.3),y0,s/2+.3,sd*(s/2+.3),y1,-s/2-.3)}}
-   const xg=new THREE.BufferGeometry();xg.setAttribute('position',new THREE.Float32BufferAttribute(xs,3));g.add(new THREE.LineSegments(xg,xm));
-   for(const o of[[-3,2],[3,-2]]){const mm=new THREE.Mesh(new THREE.CylinderGeometry(.5,.8,55,6).translate(0,27,0),new THREE.MeshLambertMaterial({color:0xbfc4c8}));mm.position.set(o[0],315,o[1]);g.add(mm)}
-   scene.add(g);towerCollider(x,z,s,s,370,'Bank of China Tower');L.push(x,base+372,z,1,.1,.1,4,.3);}
+  // Bank of China Tower (1990, I. M. Pei): a 52 m square cut by its diagonals into four triangular prisms that stop at floors 25, 38, 51 and 70,
+  // each capped by a sloping roof; white-clad steel X-bracing across every face, five columns (four corners and a centre), twin 52 m masts.
+  // At night the bracing, columns and roof edges are lit as lines of white-blue light; the glass shows its lit floors.
+  {const [x,z]=LM.boc,base=gAt(LM.boc),s=52,h=s/2,drop=38,Hhi=[315,250,195,140],RY=.18,cr=Math.cos(RY),sr=Math.sin(RY);
+   const g=new THREE.Group();g.position.set(x,base,z);g.rotation.y=RY;
+   const glassM=cityMaterial({color:0x7396aa,side:THREE.DoubleSide}),roofM=new THREE.MeshLambertMaterial({color:0xc9d2d8,side:THREE.DoubleSide}),frameM=new THREE.MeshLambertMaterial({color:0xf3f4f2});
+   const R=(k,p)=>{let px=p[0],pz=p[2];for(let i=0;i<k;i++){const t=px;px=-pz;pz=t}return[px,p[1],pz]};   // quarter-turns about the centre
+   const WLD=p=>[x+p[0]*cr+p[2]*sr,base+p[1],z-p[0]*sr+p[2]*cr];
+   const fr=[],Lp=[];
+   for(let k=0;k<4;k++){const H=Hhi[k],lo=H-drop,mid=H-drop/2;
+     const A0=[-h,0,-h],B0=[h,0,-h],O0=[0,0,0],A=[-h,H,-h],B=[h,lo,-h],O=[0,mid,0],c=R(k,[0,H*.4,-h/3]);
+     const tris=(pts,idx)=>{const out=[];for(const t of idx){let [p,q,r]=t.map(i=>R(k,pts[i]));const v1=[q[0]-p[0],q[1]-p[1],q[2]-p[2]],v2=[r[0]-p[0],r[1]-p[1],r[2]-p[2]];
+        const n=[v1[1]*v2[2]-v1[2]*v2[1],v1[2]*v2[0]-v1[0]*v2[2],v1[0]*v2[1]-v1[1]*v2[0]];if(n[0]*(p[0]-c[0])+n[1]*(p[1]-c[1])+n[2]*(p[2]-c[2])<0)[q,r]=[r,q];out.push(...p,...q,...r)}return out};
+     const mk=(arr,mat)=>{const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(arr,3));geo.computeVertexNormals();const m=new THREE.Mesh(geo,mat);g.add(m);return m};
+     const pts=[A0,B0,O0,A,B,O];
+     mk(tris(pts,[[0,1,4],[0,4,3],[2,0,3],[2,3,5],[1,2,5],[1,5,4]]),glassM);          // outer face and the two diagonal walls
+     const rf=mk(tris(pts,[[3,4,5]]),roofM);if(k===0){rf.userData.neon=0x40607c;landmarkLights.push(rf)}
+     // roof edges and the corner column, as white bars
+     const up=(p)=>R(k,p);fr.push(strutGeo(up([-h,H,-h]),up([h,lo,-h]),1.2),strutGeo(up([-h,H,-h]),up([0,mid,0]),1.2),strutGeo(up([h,lo,-h]),up([0,mid,0]),1.2));
+     const ca=up([-h,0,-h]);fr.push(colGeo(ca[0],ca[2],2.6,0,H));
+     // X-bracing across this face: square bays 56 m tall, clipped under the sloping roof
+     const roofAt=u=>H-drop*(u+h)/s,fz=-h-.9;
+     const seg=(u0,y0,u1,y1,t)=>{const f0=roofAt(u0)-y0-.6,f1=roofAt(u1)-y1-.6;if(f0<0&&f1<0)return;if(f0<0||f1<0){const tt=f0/(f0-f1);if(f0<0){u0+=(u1-u0)*tt;y0+=(y1-y0)*tt}else{u1=u0+(u1-u0)*tt;y1=y0+(y1-y0)*tt}}
+       fr.push(strutGeo(up([u0,y0,fz]),up([u1,y1,fz]),t))};
+     for(let j=0;j<6;j++){const ya=14+56*j,yb=ya+56;seg(-h,ya,h,yb,1.5);seg(h,ya,-h,yb,1.5);seg(-h,ya,h,ya,1.9);seg(-h,yb,h,yb,1.9)}
+   }
+   fr.push(colGeo(0,0,3,0,Hhi[0]-drop/2+1));                                      // the centre column
+   // the two 52 m masts on the tallest roof (a flashing red light on each)
+   for(const [u,zz,ph] of[[-16,-22,.3],[-5,-22,.62]]){const ry=Hhi[0]-drop*(u+h)/s,mm=new THREE.Mesh(new THREE.CylinderGeometry(.55,.9,52,8).translate(u,ry+26-1,zz),frameM);g.add(mm);
+     const w=WLD([u,ry+52,zz]);Lp.push(w[0],w[1]+1,w[2],1,.1,.1,4,ph)}
+   for(let k=0;k<4;k++){const w=WLD(R(k,[-h,Hhi[k]+1.5,-h]));Lp.push(w[0],w[1],w[2],.75,.85,1,2.2,-1)}   // the lit roof corners
+   const frame=new THREE.Mesh(mergeGeos(fr),frameM);frame.userData.neon=0xa9c6e8;g.add(frame);landmarkLights.push(frame);
+   // the granite podium
+   g.add(new THREE.Mesh(new THREE.BoxGeometry(62,12,62).translate(0,6,0),new THREE.MeshLambertMaterial({color:0xb9b4a7})));
+   scene.add(g);towerCollider(x,z,s,s,372,'Bank of China Tower');L.push(...Lp)}
   // Central Plaza (1992): gold triangular tower, glass pyramid crown, mast
   {const [x,z]=LM.plaza,b=gAt(LM.plaza),r=34;const g=new THREE.Group();g.position.set(x,b,z);
    const shaft=new THREE.Mesh(new THREE.CylinderGeometry(r,r,300,3).translate(0,150,0),glassMat(0xc2a462));shaft.rotation.y=.3;g.add(shaft);
@@ -1720,8 +1754,33 @@ function buildLandmarks(){
      g.add(new THREE.Mesh(new THREE.BoxGeometry(40-i*4,10,40-i*4).translate(0,245+i*10,0),glassMat(0x55606b)))}
    g.add(new THREE.Mesh(new THREE.CylinderGeometry(.5,.8,46,6).translate(0,300,0),new THREE.MeshLambertMaterial({color:0xcccccc})));
    scene.add(g);towerCollider(x,z,56,56,346,'The Center');L.push(x,b+348,z,1,.1,.1,4,.1)}
-  // HSBC Main Building (1985): grey steel, stepped masses
-  {const [x,z]=LM.hsbc,b=gAt(LM.hsbc);box(72,180,40,glassMat(0x9ea6aa),x,b,z,.15);box(72,140,14,glassMat(0x8f979b),x+3,b,z+24,.15);towerCollider(x,z,72,72,180,'HSBC Building')}
+  // HSBC Main Building (1985, Foster): a steel coat-hanger structure. Eight masts, each a cluster of four tubes, carry five levels of double-storey
+  // trusses with exposed X-bracing; the glass floors hang between them in three stepped sections (29, 35 and 44 storeys), over an open public plaza.
+  // Atrium wall on the harbour side, the sunscoop mirror on the south, window-cleaning gantries on the roof, bronze lions at the door. Masts and trusses are floodlit at night.
+  {const [x,z]=LM.hsbc,b=gAt(LM.hsbc),RY=.15,cr=Math.cos(RY),sr=Math.sin(RY);const g=new THREE.Group();g.position.set(x,b,z);g.rotation.y=RY;
+   const ZN=[[-36,-9,118],[-9,9,148],[9,36,180]],MX=[[-27,118],[-9,148],[9,180],[27,180]],mz=17,gd=15,pl=12;
+   const glass=cityMaterial({color:0x5e6f79}),steelM=new THREE.MeshLambertMaterial({color:0xa4abb0}),mastM=new THREE.MeshLambertMaterial({color:0x8f979c}),
+     atriumM=new THREE.MeshLambertMaterial({color:0x9db0b8}),mirM=new THREE.MeshLambertMaterial({color:0xc8d3d8}),bronze=new THREE.MeshLambertMaterial({color:0x6b4f2a});
+   const tr=[],ms=[];
+   for(const [x0,x1,T] of ZN)g.add(new THREE.Mesh(new THREE.BoxGeometry(x1-x0,T-pl,gd*2).translate((x0+x1)/2,pl+(T-pl)/2,0),glass));   // the hung floors, above the open plaza
+   for(const [mx,T] of MX)for(const sz of[-1,1])for(const ox of[-1.6,1.6])for(const oz of[-1.6,1.6])ms.push(new THREE.BoxGeometry(1.5,T,1.5).translate(mx+ox,T/2,sz*mz+oz));   // the masts: four tubes each
+   for(const [x0,x1,T] of ZN){for(let y0=T-8;y0>=10;y0-=36){const y1=y0+8;
+       for(const sz of[-1,1]){tr.push(strutGeo([x0,y0,sz*mz],[x1,y0,sz*mz],1.3),strutGeo([x0,y1,sz*mz],[x1,y1,sz*mz],1.3));
+         const bx=[x0,x1].map(v=>Math.max(-27,Math.min(27,v)));   // X-bracing in the bays between masts; the ends are plain cantilevers
+         for(const [a,c] of[[Math.max(x0,-27),Math.min(x1,27)]])if(c>a){tr.push(strutGeo([a,y0,sz*mz],[c,y1,sz*mz],.95),strutGeo([c,y0,sz*mz],[a,y1,sz*mz],.95))}}
+       for(const sx of[x0,x1]){if(sx!==-36&&sx!==36)continue;tr.push(strutGeo([sx,y0,-mz],[sx,y1,mz],.95),strutGeo([sx,y0,mz],[sx,y1,-mz],.95),strutGeo([sx,y0,-mz],[sx,y0,mz],1.3),strutGeo([sx,y1,-mz],[sx,y1,mz],1.3))}}}
+   // roof: window-cleaning gantries and a plant room on the tallest section
+   for(const sz of[-8,8]){tr.push(colGeo(20,sz,2.4,180,194),strutGeo([8,194,sz],[34,194,sz],1.8))}
+   const truss=new THREE.Mesh(mergeGeos(tr),steelM);truss.userData.neon=0x5d6870;g.add(truss);landmarkLights.push(truss);
+   const mast=new THREE.Mesh(mergeGeos(ms),mastM);mast.userData.neon=0x4b565e;g.add(mast);landmarkLights.push(mast);
+   g.add(new THREE.Mesh(new THREE.BoxGeometry(14,8,10).translate(22,184,0),new THREE.MeshLambertMaterial({color:0x6b7378})));
+   // the atrium wall on the north (harbour) face, lit warm at night, and the sunscoop mirror on the south face
+   const at=new THREE.Mesh(new THREE.BoxGeometry(14,52,.6).translate(0,pl+26,-gd-.3),atriumM);at.userData.neon=0xffd9a0;g.add(at);landmarkLights.push(at);
+   const sc=new THREE.Mesh(new THREE.BoxGeometry(12,18,.6),mirM);sc.position.set(0,52,gd+3);sc.rotation.x=.55;g.add(sc);
+   // the two bronze lions, Stephen and Stitt, and the plaza steps
+   for(const lx of[-7,7]){const l=new THREE.Mesh(new THREE.BoxGeometry(2.6,1.8,4.2).translate(lx,1.7,24),bronze),hd=new THREE.Mesh(new THREE.BoxGeometry(1.7,1.7,1.7).translate(lx,3.2,25.6),bronze);
+     g.add(l,hd,new THREE.Mesh(new THREE.BoxGeometry(3.4,.8,5).translate(lx,.4,24),new THREE.MeshLambertMaterial({color:0xb9b4a7})))}
+   scene.add(g);towerCollider(x,z,72,72,194,'HSBC Building');L.push(x+22*cr,b+196,z-22*sr,1,.1,.1,4,.55)}
   // Jardine House (1973): white with round windows
   {const [x,z]=LM.jardine,b=gAt(LM.jardine);const m=box(44,178,44,new THREE.MeshLambertMaterial({color:0xe8e6dc}),x,b,z,.1);
    const ct=canvasTex(64,64,(g)=>{g.fillStyle='#e8e6dc';g.fillRect(0,0,64,64);g.fillStyle='#3a4248';g.beginPath();g.arc(32,32,16,0,7);g.fill()},true);ct.repeat.set(12,48);m.material.map=ct;m.material.needsUpdate=true;

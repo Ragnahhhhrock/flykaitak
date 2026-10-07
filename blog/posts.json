@@ -1,5 +1,39 @@
 [
   {
+    "slug": "bank-of-china-hsbc-rebuilt",
+    "title": "Bank of China Tower and HSBC rebuilt",
+    "dek": "Central's two most famous towers now match the real buildings: the Bank of China's prisms and bracing, lit at night, and HSBC's masts and trusses.",
+    "description": "The Bank of China Tower and the HSBC Main Building are rebuilt to match the real towers, with the Bank of China's bracing lit as lines of light at night.",
+    "date": "2026-10-07",
+    "tag": "Update",
+    "category": "scenery",
+    "keywords": [
+      "Bank of China Tower",
+      "HSBC Main Building",
+      "Central",
+      "night lighting",
+      "landmarks",
+      "Hong Kong skyline",
+      "flight simulator",
+      "Kai Tak"
+    ],
+    "hero": "boc-rebuilt-night",
+    "hero_alt": "The Bank of China Tower at night, its X-bracing and roof edges lit as white-blue lines.",
+    "hero_caption": "The Bank of China Tower at night.",
+    "card_kicker": "SCENERY · UPDATE",
+    "card_title": "Bank of China and HSBC rebuilt",
+    "card_sub": "Central's towers, as they really look",
+    "card_image": "boc-rebuilt-night",
+    "card_focus": 50,
+    "zh": {
+      "title": "中銀大廈同匯豐總行重新砌過",
+      "dek": "中環兩座最出名嘅大廈而家更貼近真實：中銀嘅三角柱同支撐，夜晚亮燈，同匯豐嘅桁柱同桁架。",
+      "description": "中銀大廈同匯豐總行大廈重新砌過，更貼近真實，夜晚中銀嘅支撐亮成一條條光線。",
+      "hero_alt": "夜晚嘅中銀大廈，交叉支撐同頂邊亮成白藍色光線。",
+      "hero_caption": "夜晚嘅中銀大廈。"
+    }
+  },
+  {
     "slug": "star-ferry-piers-boats-and-timetable",
     "title": "Star Ferry piers, boats and timetable",
     "dek": "Central, Tsim Sha Tsui and Wan Chai piers, the green-and-white boats, and the Kowloon clock tower, on a timetable that follows the sim clock.",
