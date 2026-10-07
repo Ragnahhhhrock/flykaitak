@@ -4517,7 +4517,7 @@ function aiWrap(type,tail){const m=buildAircraftModel(AC[type],{tail,cheat:tail,
   const L=[];for(const p of m.userData.navPts)L.push(p[0],p[1],p[2],p[3],p[4],p[5],2.4,-1);for(const p of m.userData.strobePts)L.push(p[0],p[1],p[2],1,1,1,4,.37);
   const ll=makeLights([0,AC[type].cy-1,-AC[type].len*.48,1,.97,.9,9,-1]),lt=makeLights(L);ll.userData.isLights=lt.userData.isLights=true;m.add(lt,ll);m.userData.ll=ll;m.userData.type=type;return m}
 function buildAI(){
-  for(const a of AI){scene.remove(a.m)}AI.length=0;standsFree();
+  for(const a of AI){scene.remove(a.m)}AI.length=0;standsFree();buildHelis();
   const mk=(type,tail,fn,role)=>{const m=aiWrap(type,tail);scene.add(m);const a={m,fn,ll:m.userData.ll,type,tail,role,ga:null};AI.push(a);return a};
   const c0=PATH.pts[0].c,E=LND.id==='31',docks=[null,null,null,null,null,null],thrC=PATH.pts.find(q=>q.d<=0).c,tdAt=c=>(thrC+300-c)/76;
   const hide=j=>{parked[j].visible=false};   // parked: 0-7 terminal stands, 8-13 cargo stands 41-46
@@ -4552,7 +4552,7 @@ function animateSurfaces(m,ail,elev,flap,spl){const S=m.userData.surf;if(!S)retu
   for(const o of S.flap)o.h.rotation.x=clamp(flap,0,1)*34*D2R;
   for(const o of S.spl)o.h.rotation.x=-clamp(spl,0,1)*50*D2R}
 function buildAISchedule(phase,wrapNeg,conc){
-  for(const a of AI){scene.remove(a.m)}AI.length=0;standsFree();
+  for(const a of AI){scene.remove(a.m)}AI.length=0;standsFree();buildHelis();
   const mk=(type,tail,fn,role)=>{const m=aiWrap(type,tail);scene.add(m);const a={m,fn,ll:m.userData.ll,type,tail,role,ga:null};AI.push(a);return a};
   const E=LND.id==='31',dpf=E?departurePose31:departurePose,lnf=E?lineupT31:lineupT;
   const P=CYC,SL=CYC/(NACT+NCG),thrC=PATH.pts.find(p=>p.d<=0).c,c0=thrC+300-8000,thrK=(thrC-c0)/76;
@@ -4966,9 +4966,143 @@ function updateAI(){
     if(a.pp){a.v=Math.hypot(p.x-a.pp.x,p.z-a.pp.z,p.y-a.pp.y)/dt}a.pp={x:p.x,y:p.y,z:p.z,phi:p.phi||0,theta:p.theta||0};a.pt=t;a.p=p;
     a.ail=lerp(a.ail||0,clamp(dphi/(8*D2R),-1,1),.1);a.el=lerp(a.el||0,clamp(dth/(3*D2R),-1,1),.1);
     animateSurfaces(a.m,a.ail,a.el,p.gear>.5?(p.y>RWY.elev+.5?.85:p.spl?.85:.35):(p.y<900?.2:0),p.spl?1:0)}
-  aiCollide(t);
+  updateHeli(t);aiCollide(t);
 }
 
+/* =====================================================================
+   HELICOPTERS — Hong Kong, early July 1998. Like the AI airliners they are pure functions of sim time, so rewind and fast-forward just work.
+   Helipads (research notes in docs/helicopters.md):
+     Kai Tak, south apron: the Government Flying Service (GFS) base, two pads and the flight services building (from the AIP chart, see buildSouthApron).
+     Shun Tak Heliport, Sheung Wan: on the roof of the Macau ferry terminal (one pad since 1986); the Macau shuttle (Bell 222, replaced by the S-76C from 1997).
+     The Peninsula Hotel, Tsim Sha Tsui: a rooftop pad on the 1994 tower, certified in 1994, for guest and sightseeing flights.
+   Fleet: the GFS flew S-76 and S-70A Black Hawk helicopters in 1997 (6 and 3). The Macau shuttle flew the S-76C. Liveries are made up (no real brands).
+   ===================================================================== */
+const HELI=[],HPAD={};let heliBuilt=false;
+const HELI_KINDS={
+  // len: cabin length, wid/hgt: cabin width/height, R: rotor radius, hub: rotor hub height above the wheels, boom: tail boom length, fin: fin height, bl: blades, ret: retractable wheels
+  s76:{name:'Sikorsky S-76',len:9.6,wid:2.1,hgt:2.1,R:6.7,hub:4.0,boom:5.6,fin:2.1,bl:4,ret:true,cl:.7},
+  s70:{name:'Sikorsky S-70A',len:10.6,wid:2.35,hgt:2.4,R:8.18,hub:4.55,boom:6.4,fin:2.7,bl:4,ret:false,cl:.75}};
+function buildHeliModel(kind,col){
+  const P=HELI_KINDS[kind],g=new THREE.Group(),M=c=>new THREE.MeshLambertMaterial({color:c,side:THREE.DoubleSide});
+  const body=M(col.body),belly=M(col.belly),stripe=M(col.stripe),dark=M(0x23282c),glass=new THREE.MeshLambertMaterial({color:0x101c24}),metal=M(0x8d9296),bladeM=M(0x1b1d1f);
+  const cy=P.cl+P.hgt/2,hl=P.len/2,zc=0;
+  const ell=(mat,ts,tl,sc)=>{const m=new THREE.Mesh(new THREE.SphereGeometry(1,28,18,0,Math.PI*2,ts,tl),mat);m.scale.set(P.wid/2*sc,P.hgt/2*sc,hl*sc);m.position.set(0,cy,zc);g.add(m);return m};
+  ell(body,0,Math.PI*.56,1);ell(stripe,Math.PI*.56,Math.PI*.07,1.002);ell(belly,Math.PI*.63,Math.PI*.37,1);
+  // windscreen and cabin windows
+  {const w=new THREE.Mesh(new THREE.SphereGeometry(1,16,8,Math.PI*1.22,Math.PI*.56,Math.PI*.2,Math.PI*.3),glass);w.scale.set(P.wid/2*1.012,P.hgt/2*1.012,hl*1.012);w.position.set(0,cy,zc);g.add(w);
+   for(const sd of[-1,1]){const s=new THREE.Mesh(new THREE.BoxGeometry(.04,P.hgt*.26,P.len*.34),glass);s.position.set(sd*P.wid*.495,cy+P.hgt*.12,zc-P.len*.04);g.add(s)}}
+  // tail boom, fin, tail rotor and stabiliser
+  const bz0=zc+hl*.7,bz1=zc+hl+P.boom,by=cy+P.hgt*.22;
+  {const b=new THREE.Mesh(new THREE.CylinderGeometry(.2,.46,bz1-bz0,12).rotateX(Math.PI/2),body);b.position.set(0,by,(bz0+bz1)/2);g.add(b);
+   const f=new THREE.Mesh(new THREE.BoxGeometry(.16,P.fin,1.5),body);f.position.set(0,by+P.fin*.45,bz1-.35);f.rotation.x=-.32;g.add(f);
+   const fs=new THREE.Mesh(new THREE.BoxGeometry(.18,P.fin*.78,.5),stripe);fs.position.set(0,by+P.fin*.4,bz1-.5);fs.rotation.x=-.32;g.add(fs);
+   const st=new THREE.Mesh(new THREE.BoxGeometry(P.wid*1.5,.07,.75),body);st.position.set(0,by+.1,bz1-1.35);g.add(st)}
+  const tail=new THREE.Group();tail.position.set(.32,by+P.fin*.82,bz1-.05);g.add(tail);
+  for(let i=0;i<2;i++){const b=new THREE.Mesh(new THREE.BoxGeometry(.04,P.R*.27,.2),bladeM);b.rotation.x=i*Math.PI/2;tail.add(b)}
+  // engines and gearbox fairing on the roof, mast
+  if(kind==='s70'){for(const sd of[-1,1]){const e=new THREE.Mesh(new THREE.CylinderGeometry(.42,.38,3.6,12).rotateX(Math.PI/2),dark);e.position.set(sd*.62,cy+P.hgt*.52,zc+.3);g.add(e)}}
+  else{const e=new THREE.Mesh(new THREE.BoxGeometry(1.5,.7,3.3),body);e.position.set(0,cy+P.hgt*.5,zc+.2);g.add(e)}
+  const mast=new THREE.Mesh(new THREE.CylinderGeometry(.14,.18,P.hub-cy-P.hgt*.45,10),dark);mast.position.set(0,(P.hub+cy+P.hgt*.45)/2,zc-.2);g.add(mast);
+  // main rotor: blades on a spinning group and a faint disc for the blur
+  const rotor=new THREE.Group();rotor.position.set(0,P.hub,zc-.2);g.add(rotor);
+  for(let i=0;i<P.bl;i++){const a=i/P.bl*Math.PI*2,b=new THREE.Mesh(new THREE.BoxGeometry(P.R-.35,.045,.36),bladeM);b.position.set(Math.cos(a)*(P.R+.35)/2,0,Math.sin(a)*(P.R+.35)/2);b.rotation.y=-a;rotor.add(b)}
+  const hubM=new THREE.Mesh(new THREE.CylinderGeometry(.3,.3,.22,12),dark);rotor.add(hubM);
+  const disc=new THREE.Mesh(new THREE.CircleGeometry(P.R,40).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0x2a2d30,transparent:true,opacity:.16,side:THREE.DoubleSide,depthWrite:false}));disc.position.copy(rotor.position);g.add(disc);
+  // wheels: three, retractable on the S-76; the S-70 has fixed main wheels and a tail wheel
+  const gear=new THREE.Group();g.add(gear);
+  const wheel=(x,y,z,r,w)=>{const m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,w,12).rotateZ(Math.PI/2),dark);m.position.set(x,y,z);gear.add(m);
+    const s=new THREE.Mesh(new THREE.CylinderGeometry(.05,.05,cy-P.hgt*.4-y,6),metal);s.position.set(x*.8,(y+cy-P.hgt*.4)/2,z);gear.add(s)};
+  if(kind==='s70'){wheel(-1.15,.42,zc+.2,.42,.28);wheel(1.15,.42,zc+.2,.42,.28);wheel(0,.3,bz1-.25,.3,.18)}
+  else{wheel(-1.2,.3,zc+1.2,.3,.22);wheel(1.2,.3,zc+1.2,.3,.22);wheel(0,.28,zc-hl*.6,.26,.16)}
+  // lights: red left, green right, white beacon on the fin, red beacon under the belly; a landing light on the nose
+  const ly=cy-P.hgt*.1,L=[-P.wid/2,ly,zc-.6,1,.12,.1,2.4,-1,P.wid/2,ly,zc-.6,.1,1,.2,2.4,-1,0,by+P.fin*.9,bz1-.4,1,1,1,4,.2,0,cy-P.hgt*.55,zc+.6,1,.1,.1,3,.62];
+  const lt=makeLights(L),ll=makeLights([0,cy-P.hgt*.35,zc-hl*.95,1,.97,.9,9,-1]);lt.userData.isLights=ll.userData.isLights=true;g.add(lt,ll);
+  g.rotation.order='YXZ';g.userData={rotor,disc,tail,gear,lt,ll,kind,fixed:!P.ret,R:P.R,len:P.len+P.boom};return g}
+const HLIV={gfs:{body:0xc4302a,belly:0xdedbd4,stripe:0xf2efe8},shuttle:{body:0xf1efe9,belly:0xd9d6cf,stripe:0x1d6f6a},hotel:{body:0x1f3a2e,belly:0xd9d6cf,stripe:0xc9a23a}};
+// the helipads: world positions (x east, z south), the height of the landing surface, and the way the parked helicopter faces
+function heliPads(){
+  if(HPAD.gfs1)return;
+  const g1=rwP(SOUTH.pads[0][0],SOUTH.pads[0][1]),g2=rwP(SOUTH.pads[1][0],SOUTH.pads[1][1]),pk1=rwP(2028,-444),pk2=rwP(2128,-404);
+  HPAD.gfs1={x:g1[0],y:RWY.elev,z:g1[1],h:RWY.hdg-90,name:'GFS pad 1'};HPAD.gfs2={x:g2[0],y:RWY.elev,z:g2[1],h:RWY.hdg-90,name:'GFS pad 2'};
+  HPAD.gfsP1={x:pk1[0],y:RWY.elev,z:pk1[1],h:RWY.hdg-70};HPAD.gfsP2={x:pk2[0],y:RWY.elev,z:pk2[1],h:RWY.hdg-110};   // parked on the apron beside the flight services building
+  const lat0=22.32558,lon0=114.19262,xz=(la,lo)=>[(lo-lon0)*103022,-(la-lat0)*110735];
+  const st=[-4185,4120];   // Shun Tak Heliport: the roof of the ferry terminal at the foot of Shun Tak Centre (about 30 m above the water)
+  HPAD.shun={x:st[0],y:30,z:st[1],h:80,name:'Shun Tak Heliport'};
+  const pn=xz(22.2952,114.1720),b=buildingAt(pn[0],pn[1],10);   // the Peninsula's 1994 tower
+  HPAD.pen={x:pn[0],y:(b?b.top:110)+.15,z:pn[1],h:60,name:'Peninsula Hotel'}}
+function heliPadScenery(){
+  const conc=new THREE.MeshLambertMaterial({color:0x9d9b93}),pier=new THREE.MeshLambertMaterial({color:0x86847d}),L=[];
+  const pad=(P,r)=>{   // a round pad with a white H in a yellow ring and green edge lights
+    const c=document.createElement('canvas');c.width=c.height=256;const g=c.getContext('2d');g.fillStyle='#4b4d50';g.beginPath();g.arc(128,128,126,0,7);g.fill();
+    g.strokeStyle='#e8b100';g.lineWidth=6;g.beginPath();g.arc(128,128,112,0,7);g.stroke();g.fillStyle='#ecece6';g.font='bold 150px Arial, Helvetica, sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText('H',128,138);
+    const tx=new THREE.CanvasTexture(c);tx.anisotropy=4;const m=new THREE.Mesh(new THREE.CircleGeometry(r,40).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({map:tx,polygonOffset:true,polygonOffsetFactor:-5,polygonOffsetUnits:-5}));
+    m.position.set(P.x,P.y+.06,P.z);m.rotation.y=-P.h*D2R;scene.add(m);APR_MATS.push(m.material);
+    for(let i=0;i<16;i++){const a=i/16*Math.PI*2;L.push(P.x+Math.cos(a)*(r+.6),P.y+.3,P.z+Math.sin(a)*(r+.6),.3,1,.4,3,-1)}};
+  // Shun Tak: a deck on piers over the water beside the ferry terminal
+  {const S=HPAD.shun,deck=new THREE.Mesh(new THREE.BoxGeometry(46,2.4,34),conc);deck.position.set(S.x,S.y-1.2,S.z);scene.add(deck);
+   for(const dx of[-19,0,19])for(const dz of[-12,12]){const c=new THREE.Mesh(new THREE.BoxGeometry(3,S.y+10,3),pier);c.position.set(S.x+dx,(S.y-10)/2-1.2,S.z+dz);scene.add(c)}
+   pad(S,13)}
+  // the Peninsula: a pad on the roof
+  {const P=HPAD.pen,pl=new THREE.Mesh(new THREE.CylinderGeometry(13,13,.3,32),conc);pl.position.set(P.x,P.y-.15,P.z);scene.add(pl);pad(P,11.5)}
+  for(const k of['gfs1','gfs2']){const P=HPAD[k];for(let i=0;i<16;i++){const a=i/16*Math.PI*2;L.push(P.x+Math.cos(a)*16,RWY.elev+.3,P.z+Math.sin(a)*16,.3,1,.4,3,-1)}}
+  const pts=makeLights(L);pts.userData.isLights=true;scene.add(pts)}
+// A flight plan: start [x,y,z,heading deg], legs [x,y,z,speed m/s,(heading deg)]. Cruise legs (y over 100 m) are lifted to clear the ground by 90 m.
+function hGround(x,z){let m=-9;for(let dx=-300;dx<=300;dx+=150)for(let dz=-300;dz<=300;dz+=150)m=Math.max(m,terrainAt(x+dx,z+dz));return m}
+function hPlan(t0,s,legs){const K=[{t:t0,x:s[0],y:s[1],z:s[2],h:s[3]}];let t=t0,p=s,h=s[3];
+  for(const q of legs){const y=q[1]>=100?Math.max(q[1],hGround(q[0],q[2])+90):q[1],d=Math.hypot(q[0]-p[0],y-p[1],q[2]-p[2]);t+=Math.max(.8,d/q[3]);if(q[4]!==undefined)h=q[4];K.push({t,x:q[0],y,z:q[2],h});p=[q[0],y,q[2]]}
+  return K}
+// position and velocity at time t along the keyframes: cubic Hermite with Catmull-Rom tangents, at rest at both ends
+function hHerm(K,t){const n=K.length,L=K[n-1];if(t<=K[0].t)return{x:K[0].x,y:K[0].y,z:K[0].z,vx:0,vy:0,vz:0};if(t>=L.t)return{x:L.x,y:L.y,z:L.z,vx:0,vy:0,vz:0};
+  let i=1;while(t>K[i].t)i++;i--;const a=K[i],b=K[i+1],h=b.t-a.t,u=(t-a.t)/h,u2=u*u,u3=u2*u,h00=2*u3-3*u2+1,h10=u3-2*u2+u,h01=-2*u3+3*u2,h11=u3-u2,
+    tg=(j,k)=>j<=0||j>=n-1?0:(K[j+1][k]-K[j-1][k])/(K[j+1].t-K[j-1].t),o={};
+  for(const k of['x','y','z']){const ma=tg(i,k),mb=tg(i+1,k);o[k]=h00*a[k]+h10*h*ma+h01*b[k]+h11*h*mb;o['v'+k]=((6*u2-6*u)*a[k]+(3*u2-4*u+1)*h*ma+(-6*u2+6*u)*b[k]+(3*u2-2*u)*h*mb)/h}
+  return o}
+function hHead(K,t){let i=1;const n=K.length;if(t<=K[0].t)return K[0].h*D2R;if(t>=K[n-1].t)return K[n-1].h*D2R;while(t>K[i].t)i++;const a=K[i-1],b=K[i],u=sstep(0,1,(t-a.t)/(b.t-a.t));return(a.h+angDiff(b.h*D2R,a.h*D2R)*R2D*u)*D2R}
+function hFly(K,t,pad){const c=hHerm(K,t),sp=Math.hypot(c.vx,c.vz),hk=hHead(K,t),hv=Math.atan2(c.vx,-c.vz),w=sstep(2,6,sp),psi=hk+angDiff(hv,hk)*w;
+  const c0=hHerm(K,t-.6),c1=hHerm(K,t+.6),h0=Math.atan2(c0.vx,-c0.vz),h1=Math.atan2(c1.vx,-c1.vz),s0=Math.hypot(c0.vx,c0.vz),s1=Math.hypot(c1.vx,c1.vz);
+  const rate=sp>6?angDiff(h1,h0)/1.2:0,phi=clamp(Math.atan(sp*rate/G),-.5,.5),acc=(s1-s0)/1.2,theta=clamp(-.045*acc-.0016*sp,-.2,.12);
+  const agl=c.y-pad.y;return{x:c.x,y:Math.max(c.y,pad.y),z:c.z,psi,theta,phi,rpm:1,gear:agl<22&&sp<30?1:0,fly:1,v:sp}}
+function hPark(P,rpm,kind){return{x:P.x,y:P.y,z:P.z,psi:P.h*D2R,theta:0,phi:0,rpm,gear:1,fly:0,v:0}}
+// an entity: a helicopter on a cycle of P seconds, offset off, with segments: park (rotors turning up before the end: up, turning down after the start: down), fly (keyframes K), away (out of sight)
+function heliAdd(kind,liv,pad,P,off,mk,id){const m=buildHeliModel(kind,HLIV[liv]);scene.add(m);const H={m,kind,id,pad,P,off,mk,p:null,rot:0,ok:null,segs:null,tag:liv};H.fn=t=>heliState(H,t);HELI.push(H);return H}
+function heliSegs(H,ok){H.ok=ok;H.segs=H.mk(ok,H)}
+function heliState(H,t){const ok=heliWx(H.tag);if(ok!==H.ok)heliSegs(H,ok);const tau=(((t+H.off)%H.P)+H.P)%H.P;
+  for(const s of H.segs){if(tau<s.a||tau>=s.b)continue;
+    if(s.type==='away')return null;
+    if(s.type==='fly')return hFly(s.K,tau,H.pad);
+    const up=s.up?sstep(s.b-s.up,s.b-s.up*.2,tau):0,dn=s.down?1-sstep(s.a+s.down*.2,s.a+s.down,tau):0;return hPark(H.pad,Math.max(up,dn))}
+  return hPark(H.pad,0)}
+// weather: the Macau shuttle and the hotel's flights do not go in a typhoon, a storm, fog or low cloud; the GFS flies in everything but a typhoon
+function heliWx(tag){const w=CFG.wx;return tag==='gfs'?w!=='typhoon':!(w==='typhoon'||w==='storm'||w==='fog'||w==='lowcloud')}
+function parkSegs(P){return[{type:'park',a:0,b:P}]}
+function buildHelis(){
+  for(const H of HELI)scene.remove(H.m);HELI.length=0;heliPads();if(!heliBuilt){heliBuilt=true;heliPadScenery()}
+  const e=RWY.elev,A=HPAD.gfs1,B=HPAD.gfs2,S=HPAD.shun,N=HPAD.pen;
+  // GFS Black Hawk from pad 1: a sortie out over Kwun Tong and back, every 700 s
+  heliAdd('s70','gfs',A,700,0,ok=>{if(!ok)return parkSegs(700);const K=hPlan(40,[A.x,e,A.z,A.h],[[A.x,e+9,A.z,3],[A.x+70,e+40,A.z-60,12,40],[A.x+1100,150,A.z-100,38],[A.x+2400,200,A.z+300,50],[A.x+3500,240,A.z-300,50],[A.x+2300,220,A.z-900,48,260],[A.x+900,150,A.z-500,44],[A.x+120,e+45,A.z-80,24],[A.x,e+10,A.z,6,A.h],[A.x,e,A.z,1.5]]);
+    return[{type:'park',a:0,b:K[0].t,up:26},{type:'fly',a:K[0].t,b:K[K.length-1].t,K},{type:'park',a:K[K.length-1].t,b:700,down:24}]},'gfs70');
+  // GFS S-76 from pad 2: out to Kowloon Bay and the harbour mouth, half a cycle later
+  heliAdd('s76','gfs',B,700,350,ok=>{if(!ok)return parkSegs(700);const K=hPlan(40,[B.x,e,B.z,B.h],[[B.x,e+8,B.z,3],[B.x+60,e+36,B.z+50,12,110],[B.x+800,140,B.z+500,36],[B.x+2200,170,B.z+1200,48],[B.x+3200,200,B.z+700,50],[B.x+1800,170,B.z+400,46,300],[B.x+400,120,B.z+150,40],[B.x+80,e+40,B.z+30,22],[B.x,e+9,B.z,6,B.h],[B.x,e,B.z,1.5]]);
+    return[{type:'park',a:0,b:K[0].t,up:26},{type:'fly',a:K[0].t,b:K[K.length-1].t,K},{type:'park',a:K[K.length-1].t,b:700,down:24}]},'gfs76');
+  // two more parked beside the flight services building (a Black Hawk and an S-76): the rest of the fleet
+  heliAdd('s70','gfs',HPAD.gfsP1,700,0,ok=>parkSegs(700),'gfsP1');heliAdd('s76','gfs',HPAD.gfsP2,700,0,ok=>parkSegs(700),'gfsP2');
+  // the Macau shuttle: two S-76C on a 1300 s cycle. Out over the western harbour and north of Lantau (out of sight past 30 km) and back from the west
+  const route=[[-5600,3950],[-10200,770],[-15250,-2750],[-23000,-2650],[-31000,-2500]];
+  const shuttle=(ok,H)=>{if(!ok)return H.id==='sh1'?parkSegs(1300):[{type:'away',a:0,b:1300}];
+    const KO=hPlan(40,[S.x,S.y,S.z,S.h],[[S.x,S.y+11,S.z,3],[S.x-110,S.y+45,S.z+20,13,262],...route.map(r=>[r[0],140,r[1],62])]),
+      KI=hPlan(740,[route[4][0],140,route[4][1],270],[...route.slice(0,4).reverse().map(r=>[r[0],140,r[1],62]),[S.x-260,S.y+50,S.z+30,40,82],[S.x-60,S.y+18,S.z+10,10,82],[S.x,S.y+9,S.z,3,S.h],[S.x,S.y,S.z,1.2]]);
+    return[{type:'park',a:0,b:KO[0].t,up:26},{type:'fly',a:KO[0].t,b:KO[KO.length-1].t,K:KO},{type:'away',a:KO[KO.length-1].t,b:KI[0].t},{type:'fly',a:KI[0].t,b:KI[KI.length-1].t,K:KI},{type:'park',a:KI[KI.length-1].t,b:1300,down:24}]};
+  heliAdd('s76','shuttle',S,1300,0,shuttle,'sh1');heliAdd('s76','shuttle',S,1300,650,shuttle,'sh2');
+  // the Peninsula's helicopter: a sightseeing flight round the harbour, once every 1100 s
+  heliAdd('s76','hotel',N,1100,0,ok=>{if(!ok)return parkSegs(1100);const K=hPlan(260,[N.x,N.y,N.z,N.h],[[N.x,N.y+10,N.z,3],[N.x-80,N.y+30,N.z+60,12,140],[-1000,170,3900,40],[-3300,200,4000,46],[-4400,210,3950,44],[-3600,180,3600,44],[-2500,160,3300,44,60],[N.x-220,N.y+34,N.z-30,26],[N.x,N.y+9,N.z,6,N.h],[N.x,N.y,N.z,1.4]]);
+    return[{type:'park',a:0,b:K[0].t,up:26},{type:'fly',a:K[0].t,b:K[K.length-1].t,K},{type:'park',a:K[K.length-1].t,b:1100,down:24}]},'pen')}
+function updateHeli(t){
+  for(const H of HELI){const p=H.fn(t);if(!p||Math.hypot(p.x,p.z)>30000){H.m.visible=false;H.p=null;continue}
+    const u=H.m.userData;H.m.visible=true;H.m.position.set(p.x,p.y,p.z);H.m.rotation.set(p.theta||0,-p.psi,-(p.phi||0),'YXZ');
+    const dt=clamp(t-(H.pt??t),0,.05);H.pt=t;H.rot+=p.rpm*dt*(p.rpm>.5?30:14);u.rotor.rotation.y=H.rot;u.tail.rotation.x=H.rot*2.2;
+    u.disc.visible=p.rpm>.6;u.disc.material.opacity=.05+.12*clamp((p.rpm-.6)/.4,0,1);
+    u.gear.visible=u.fixed||p.gear>.5;u.lt.visible=p.rpm>0;u.ll.visible=p.fly&&p.y-H.pad.y<350&&p.v>8;
+    H.p=p}}
 /* =====================================================================
    AIRPORT GROUND VEHICLES — catering trucks, baggage trains, pushback tugs, cargo handling (main-deck loaders, ULD dolly trains, forklifts, container trucks), fire tenders.
    Like the AI aircraft they are pure functions of sim time, so rewind and fast-forward just work.
@@ -5365,6 +5499,8 @@ function drawMap(){
     const air=q.y>RWY.elev+15;mc.save();mc.translate(px,pz);mc.rotate(q.psi);mc.fillStyle=air?'#ffd166':'#9fb3ad';mc.strokeStyle='#05090b';mc.lineWidth=1.5;
     mc.beginPath();mc.moveTo(0,-9);mc.lineTo(6,7);mc.lineTo(0,3);mc.lineTo(-6,7);mc.closePath();mc.stroke();mc.fill();mc.restore();
     if(air){mc.fillStyle='#ffd166';mc.fillText(String(Math.round(q.y/FT/100)),px+9,pz+5)}}
+  for(const H of HELI){if(!H.m.visible||!H.p||!H.p.fly)continue;const q=H.p,px=X(q.x),pz=Z(q.z);if(px<-12||px>W+12||pz<-12||pz>W+12)continue;nAc++;
+    mc.save();mc.translate(px,pz);mc.rotate(q.psi);mc.fillStyle='#7fd8ff';mc.strokeStyle='#05090b';mc.lineWidth=1.5;mc.beginPath();mc.arc(0,0,5,0,7);mc.stroke();mc.fill();mc.beginPath();mc.moveTo(0,-9);mc.lineTo(0,-5);mc.stroke();mc.restore()}   // helicopters: a round blip with a nose tick
   if(WT){const cx=X(camera.position.x),cz=Z(camera.position.z);mc.fillStyle='#8ff5a8';mc.strokeStyle='#05090b';mc.lineWidth=2;mc.beginPath();mc.arc(cx,cz,6,0,7);mc.stroke();mc.fill()}
   else{mc.save();mc.translate(W/2,W/2);mc.rotate(s.psi);mc.fillStyle='#8ff5a8';mc.strokeStyle='#05090b';mc.lineWidth=2;mc.beginPath();mc.moveTo(0,-14);mc.lineTo(9,10);mc.lineTo(0,5);mc.lineTo(-9,10);mc.closePath();mc.stroke();mc.fill();mc.restore()}
   mc.fillStyle='rgba(5,9,11,.7)';mc.fillRect(0,W-34,W,34);mc.fillStyle='#c9d4d0';mc.font='18px "B612 Mono",monospace';mc.fillText('N↑  6 km',10,W-11);mc.textAlign='right';mc.fillText(nAc+' traffic',W-10,W-11);mc.textAlign='left';
@@ -6074,7 +6210,7 @@ const fontsReady=document.fonts&&document.fonts.ready?Promise.race([document.fon
 fontsReady.then(()=>setTimeout(boot,30));
 
 /* test hooks */
-window.__kt={masts:()=>apronMasts,port:()=>PORT,geo:()=>GEO,inPortYard,PORT_QUAYS,PORT_BLD,SHIPS,FAIRWAYS,waterAt,laneOffset,rwP,STAND_C,CTY,stS,NCG,ESTATES,RC,rcEv,rcVac,rcRoll,rcStrip,rcClearBy,rcTakeoffWhy,rcView,rcPlayer,CYC,onPaved,gearPaved,rwS,LINKS,rb:()=>rbMasts13,bat:buildingAt,setHour,solarState,SUN_DIR,MOON_DIR,ENV,AI,CFG,ST,COACH,LESSON,keys,coachUpdate,coachResync,coachGo,rwL,get PATH(){return PATH},LND,setRunway,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,{rwy:'13',conc:false},o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.conc&&CFG.game==='watch'?'watchC':CFG.rwy==='31'&&CFG.game!=='learn'?CFG.game+'31':CFG.game}]`).checked=true;hourIn.value=o.hour!==undefined?o.hour:CFG.night?22:15;showHour();startFlight()},
+window.__kt={HELI,HPAD,updateHeli,hPlan,hHerm,hGround,masts:()=>apronMasts,port:()=>PORT,geo:()=>GEO,inPortYard,PORT_QUAYS,PORT_BLD,SHIPS,FAIRWAYS,waterAt,laneOffset,rwP,STAND_C,CTY,stS,NCG,ESTATES,RC,rcEv,rcVac,rcRoll,rcStrip,rcClearBy,rcTakeoffWhy,rcView,rcPlayer,CYC,onPaved,gearPaved,rwS,LINKS,rb:()=>rbMasts13,bat:buildingAt,setHour,solarState,SUN_DIR,MOON_DIR,ENV,AI,CFG,ST,COACH,LESSON,keys,coachUpdate,coachResync,coachGo,rwL,get PATH(){return PATH},LND,setRunway,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,{rwy:'13',conc:false},o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.conc&&CFG.game==='watch'?'watchC':CFG.rwy==='31'&&CFG.game!=='learn'?CFG.game+'31':CFG.game}]`).checked=true;hourIn.value=o.hour!==undefined?o.hour:CFG.night?22:15;showHour();startFlight()},
   run:(sec)=>{if(CFG.game==='watch'){ST.t+=sec;return {t:ST.t}}const h=1/120;for(let i=0;i<sec*120&&!ST.ended;i++){physStep(h);if(i%60===0)recordHistory();if(i%12===0)aiTick()}return {ended:ST.ended,td:ST.td,t:ST.t,x:ST.x,y:ST.y,z:ST.z,V:ST.V/KT,d:PATH.pts[ST.pi].d}},
   get mode(){return mode},updateAI,AIC,footOf,GSE,GSE_KINDS,AIRBOX,rwS,BGRID,updateGSE,gseLamps:()=>gseLamps,fpAt,fpDist,hitOn,damageModel,aiHit,DEBRIS,EMIT,aiTick,ctl(){return aiControl},get CFG(){return CFG},frame:(now)=>frame(now,true),get FOCUS(){return FOCUS},step:()=>physStep(1/120),rwS,setZoom:z=>{CFG.zoom=z},get AI(){return AI},get GSE(){return GSE},get BRIDGE(){return BRIDGE},STAND_S,STAND_TY,lineupT,lineupT31,arrivalPts,tugAt,standL,PB,get parked(){return parked},gseAt:(t)=>{ST.t=t;updateGSE();return GSE.map(e=>({k:e.kind,x:e.p.x,z:e.p.z,psi:e.p.psi,lift:e.lift}))},get shipLights(){return shipLights},get PORT(){return PORT},get SHIPS(){return SHIPS},get DISP(){return DISP},get deck(){return deckGroup},get streetCam(){return STREET_CAM},get BB(){return BB},get water(){return water},get camera(){return camera},get nStreets(){return STREETS.length},drawDisplays,look,setView,terrainAt,buildingAt,groundInfo};
 })();
