@@ -15,6 +15,10 @@ Research notes behind the helicopters in the sim (`HELICOPTERS` section of `inde
 
 Queen Elizabeth Hospital and Queen Mary Hospital have no helipad today, so no hospital pads are modelled.
 
+## The scenic tour
+
+The Peninsula helicopter's flight is the passenger tour (`penTour()` in `index.html`): Tsim Sha Tsui, Central, the Shun Tak terminal, Wan Chai, Causeway Bay, Kai Tak in view across the bay, Hung Hom, back to the roof. Captions name landmarks that are in the sim (Bank of China Tower, HSBC, Jardine House, the Convention Centre extension, Central Plaza, the Coliseum) and the helicopter facts above. Central Plaza (373.9 m, completed August 1992) and the Convention Centre extension (completed 1997) are from the Wikipedia and e-architect pages in the sources. Their English and Cantonese text is in `penTour()`; each is shown from the moment the helicopter reaches its waypoint, as a function of the sim clock.
+
 ## What is made up
 
 - Liveries. The GFS helicopters are red and white; the shuttle and hotel schemes are invented (no real brands).
@@ -33,3 +37,5 @@ Queen Elizabeth Hospital and Queen Mary Hospital have no helipad today, so no ho
 - Heliservices: https://en.wikipedia.org/wiki/Heliservices
 - 28 Squadron in Hong Kong: https://www.helis.com/database/sqd/28-Squadron
 - Shek Kong Airfield: https://en.wikipedia.org/wiki/Shek_Kong_Airfield
+- Central Plaza: https://en.wikipedia.org/wiki/Central_Plaza_(Hong_Kong)
+- Hong Kong Convention and Exhibition Centre: https://www.e-architect.com/hong-kong/hong-kong-convention-centre

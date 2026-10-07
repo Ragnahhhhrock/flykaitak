@@ -1,5 +1,41 @@
 [
   {
+    "slug": "helicopter-scenic-tour-hong-kong-harbour",
+    "title": "Hong Kong harbour helicopter scenic tour",
+    "dek": "Ride as a passenger in the Peninsula Hotel helicopter, with a guide on screen, over Central, Shun Tak, Wan Chai and Hung Hom.",
+    "description": "A new mode: ride in the window seat of the Peninsula Hotel helicopter on a four-minute scenic tour over Victoria Harbour, with captions in English and Cantonese.",
+    "date": "2026-10-07",
+    "tag": "New",
+    "category": "flying",
+    "keywords": [
+      "helicopter tour",
+      "Hong Kong harbour",
+      "Victoria Harbour",
+      "passenger view",
+      "Peninsula Hotel",
+      "Sikorsky S-76",
+      "Central",
+      "Wan Chai",
+      "flight simulator",
+      "Kai Tak"
+    ],
+    "hero": "tour-central",
+    "hero_alt": "From a helicopter window seat: Central on Hong Kong Island across Victoria Harbour, with a guide caption at the bottom of the screen.",
+    "hero_caption": "Approaching Central from the passenger seat.",
+    "card_kicker": "FLYING · NEW",
+    "card_title": "Hong Kong harbour helicopter scenic tour",
+    "card_sub": "Ride as a passenger over Victoria Harbour",
+    "card_image": "tour-central",
+    "card_focus": 50,
+    "zh": {
+      "title": "香港維港直升機觀光之旅",
+      "dek": "以乘客身份坐半島酒店嘅直升機，有畫面導賞字幕，飛越中環、信德、灣仔同紅磡。",
+      "description": "新模式：坐喺半島酒店直升機嘅窗口位，喺維多利亞港上空飛四分鐘觀光之旅，有中英文導賞字幕。",
+      "hero_alt": "喺直升機窗口位望出去：維港對岸嘅港島中環，畫面底部有導賞字幕。",
+      "hero_caption": "喺乘客座位望住接近中環。"
+    }
+  },
+  {
     "slug": "helicopters-over-hong-kong",
     "title": "Helicopters over Hong Kong, 1998",
     "dek": "The Government Flying Service at Kai Tak, the Macau shuttle from Shun Tak and a hotel helicopter on the Peninsula roof now fly in the sim.",

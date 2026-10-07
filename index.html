@@ -181,6 +181,9 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
 
 #toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 64px);transform:translateX(-50%);background:var(--panel);border:1px solid var(--line-2);padding:8px 14px;border-radius:3px;font-size:13px;letter-spacing:.04em;opacity:0;transition:opacity .25s;pointer-events:none;max-width:calc(100% - 32px);text-align:center}
 #toast.on{opacity:1}
+#tourCap{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 78px);transform:translateX(-50%);background:rgba(9,15,18,.82);border:1px solid var(--line-2);border-left:3px solid var(--jade-bright);padding:10px 16px;border-radius:3px;font-size:15px;line-height:1.45;letter-spacing:.02em;opacity:0;transition:opacity .4s;pointer-events:none;width:min(640px,calc(100vw - 28px));text-align:left;z-index:4}
+#tourCap.on{opacity:1}
+@media (prefers-reduced-motion:reduce){#tourCap{transition:none}}
 
 /* ---------- take-off lesson coach ---------- */
 #coach{position:fixed;z-index:3;left:50%;top:calc(env(safe-area-inset-top,0px) + 58px);transform:translateX(-50%);width:min(500px,calc(100% - 400px));min-width:300px;box-sizing:border-box;background:var(--panel-2);border:1px solid var(--line-2);border-left:4px solid var(--checker);border-radius:4px;padding:12px 14px;display:grid;grid-template-columns:minmax(0,1fr);gap:8px;backdrop-filter:blur(6px);box-shadow:0 12px 34px rgba(0,0,0,.5)}
@@ -407,7 +410,7 @@ body.bigmap #radio{top:calc(env(safe-area-inset-top,0px) + 396px)}
       <button class="btn" id="seatSide" type="button">Left</button>
     </div>
     <select id="viewSel" aria-label="Flight views">
-      <option value="" disabled selected>Flight views</option><option value="cockpit">Cockpit</option><option value="chase">Exterior</option><option value="tower">Tower</option><option value="cabin">Cabin seat</option>
+      <option value="" disabled selected>Flight views</option><option value="cockpit">Cockpit</option><option value="chase">Exterior</option><option value="tower">Tower</option><option value="cabin">Cabin seat</option><option value="heli" hidden>Helicopter cabin</option><option value="helix" hidden>Helicopter exterior</option>
     </select>
     <select id="spotSel" aria-label="Plane spotter views">
       <option value="" disabled selected>Plane spotter</option><option value="street">Kowloon City street</option><option value="ped">Prince Edward Road</option><option value="carpark">Car park roof</option><option value="boat">Boat in the harbour</option><option value="checker">Top of Checkerboard Hill</option><option value="lym">Lei Yue Mun (Runway 31)</option><option value="peak">The Peak</option>
@@ -451,6 +454,7 @@ body.bigmap #radio{top:calc(env(safe-area-inset-top,0px) + 396px)}
 </div>
 
 <div id="toast" role="status" aria-live="polite"></div>
+<div id="tourCap" role="status" aria-live="polite"></div>
 <div class="fids" id="fidsPlay" role="region" aria-label="Flight information" hidden></div>
 <div id="coach" hidden>
   <div class="coach-top"><span class="eyebrow" id="coachStep"></span><button class="btn" id="coachSkip" type="button">Skip lesson</button></div>
@@ -518,6 +522,7 @@ body.bigmap #radio{top:calc(env(safe-area-inset-top,0px) + 396px)}
           <label class="chip"><input type="radio" name="game" value="watch"><span>Plane Spotter</span></label>
           <label class="chip"><input type="radio" name="game" value="watch31"><span>Spotter · Runway 31</span></label>
           <label class="chip"><input type="radio" name="game" value="watchC"><span>Spotter · Concorde special</span></label>
+          <label class="chip"><input type="radio" name="game" value="tour"><span>Hong Kong harbour helicopter scenic tour</span></label>
         </div>
         <p id="modeNote" style="font-size:12.5px">Start on the IGS at 3,100 ft and land on Runway 13.</p>
       </fieldset>
@@ -684,7 +689,7 @@ const LND={id:'13',hdg:RWY.hdg,dir:1};
 let PATH=PATH13;
 const lS=(x,z)=>LND.dir>0?rwS(x,z):RWY.len-rwS(x,z);   // metres past the landing threshold, along the landing direction
 const lL=(x,z)=>LND.dir>0?rwL(x,z):-rwL(x,z);            // metres right of the landing centreline
-const modeId=()=>CFG.lesson?'lesson':CFG.lland?'lesson_land':LND.id==='31'&&CFG.game!=='learn'?CFG.game+'31':CFG.game;
+const modeId=()=>CFG.tour?'tour':CFG.lesson?'lesson':CFG.lland?'lesson_land':LND.id==='31'&&CFG.game!=='learn'?CFG.game+'31':CFG.game;
 function pathNearest(x,z,hint){
   const P=PATH.pts;let best=hint|0,bd=1e18;const a=Math.max(0,best-260),b=Math.min(P.length-1,best+260);
   for(let i=a;i<=b;i++){const dx=P[i].x-x,dz=P[i].z-z,d=dx*dx+dz*dz;if(d<bd){bd=d;best=i}}
@@ -773,7 +778,7 @@ const WX={
 };
 
 /* ---------------- state & settings ---------------- */
-const CFG={conc:false,game:'approach',lesson:false,lland:false,rwy:'13',zoom:1,ts:1,deck:false,hud:true,map:false,ac:'b744',night:false,hour:15,wx:'clear',lightning:false,clouds:true,guide:true,ap:false,walled:true,view:'cockpit',sound:true,radio:true,seatRow:34,seatLeft:true};
+const CFG={tour:false,conc:false,game:'approach',lesson:false,lland:false,rwy:'13',zoom:1,ts:1,deck:false,hud:true,map:false,ac:'b744',night:false,hour:15,wx:'clear',lightning:false,clouds:true,guide:true,ap:false,walled:true,view:'cockpit',sound:true,radio:true,seatRow:34,seatLeft:true};
 const ST={};let mode='loading'; // loading | attract | fly | ended
 let paused=false;
 
@@ -4927,7 +4932,7 @@ function rcTower(once,W){
       if(a.rwhy){if(once('hs'+i+':'+Math.round(ev.ent!==null?ev.ent:0))){radioSay('TWR',`${cs}, hold position, ${a.rwhy}.`);radioSay('OTH',`Holding position, ${cs}.`)}continue}
       if(!v.grd&&tEnt!==null&&tEnt>0&&tEnt<=9&&once('lu'+i+':'+Math.round(ev.ent)))radioSay('TWR',`${cs}, runway ${R}, line up and wait.`);
       else if(v.grd&&tLine!==null&&tLine>-3&&tLine<=2&&once('to'+i+':'+Math.round(ev.line))){radioSay('TWR',`${cs}, ${W}, runway ${R} cleared for takeoff.`);radioSay('OTH',`Cleared for takeoff ${R}, ${cs}.`)}}}}
-function rcHud(){const el=document.getElementById('flightid');if(!el||!RC.base)return;const t='RWY '+LND.id+' '+RC.stat.t+' · '+RC.base;if(el._rc!==t){el._rc=t;el.textContent=t;el.title=t}}   // the runway state first: the bar is narrow and cuts the end
+function rcHud(){const el=document.getElementById('flightid');if(!el||!RC.base)return;const t=CFG.tour?RC.base:'RWY '+LND.id+' '+RC.stat.t+' · '+RC.base;if(el._rc!==t){el._rc=t;el.textContent=t;el.title=t}}   // the runway state first: the bar is narrow and cuts the end
 
 // ---- touching: AI against AI and AI against the parked aircraft; the player is checked by playerHit
 const PARKED_FP=[];
@@ -4987,10 +4992,10 @@ function buildHeliModel(kind,col){
   const body=M(col.body),belly=M(col.belly),stripe=M(col.stripe),dark=M(0x23282c),glass=new THREE.MeshLambertMaterial({color:0x101c24}),metal=M(0x8d9296),bladeM=M(0x1b1d1f);
   const cy=P.cl+P.hgt/2,hl=P.len/2,zc=0;
   const ell=(mat,ts,tl,sc)=>{const m=new THREE.Mesh(new THREE.SphereGeometry(1,28,18,0,Math.PI*2,ts,tl),mat);m.scale.set(P.wid/2*sc,P.hgt/2*sc,hl*sc);m.position.set(0,cy,zc);g.add(m);return m};
-  ell(body,0,Math.PI*.56,1);ell(stripe,Math.PI*.56,Math.PI*.07,1.002);ell(belly,Math.PI*.63,Math.PI*.37,1);
+  const hull=[];hull.push(ell(body,0,Math.PI*.56,1),ell(stripe,Math.PI*.56,Math.PI*.07,1.002),ell(belly,Math.PI*.63,Math.PI*.37,1));
   // windscreen and cabin windows
-  {const w=new THREE.Mesh(new THREE.SphereGeometry(1,16,8,Math.PI*1.22,Math.PI*.56,Math.PI*.2,Math.PI*.3),glass);w.scale.set(P.wid/2*1.012,P.hgt/2*1.012,hl*1.012);w.position.set(0,cy,zc);g.add(w);
-   for(const sd of[-1,1]){const s=new THREE.Mesh(new THREE.BoxGeometry(.04,P.hgt*.26,P.len*.34),glass);s.position.set(sd*P.wid*.495,cy+P.hgt*.12,zc-P.len*.04);g.add(s)}}
+  {const w=new THREE.Mesh(new THREE.SphereGeometry(1,16,8,Math.PI*1.22,Math.PI*.56,Math.PI*.2,Math.PI*.3),glass);w.scale.set(P.wid/2*1.012,P.hgt/2*1.012,hl*1.012);w.position.set(0,cy,zc);g.add(w);hull.push(w);
+   for(const sd of[-1,1]){const s=new THREE.Mesh(new THREE.BoxGeometry(.04,P.hgt*.26,P.len*.34),glass);s.position.set(sd*P.wid*.495,cy+P.hgt*.12,zc-P.len*.04);g.add(s);hull.push(s)}}
   // tail boom, fin, tail rotor and stabiliser
   const bz0=zc+hl*.7,bz1=zc+hl+P.boom,by=cy+P.hgt*.22;
   {const b=new THREE.Mesh(new THREE.CylinderGeometry(.2,.46,bz1-bz0,12).rotateX(Math.PI/2),body);b.position.set(0,by,(bz0+bz1)/2);g.add(b);
@@ -5017,7 +5022,22 @@ function buildHeliModel(kind,col){
   // lights: red left, green right, white beacon on the fin, red beacon under the belly; a landing light on the nose
   const ly=cy-P.hgt*.1,L=[-P.wid/2,ly,zc-.6,1,.12,.1,2.4,-1,P.wid/2,ly,zc-.6,.1,1,.2,2.4,-1,0,by+P.fin*.9,bz1-.4,1,1,1,4,.2,0,cy-P.hgt*.55,zc+.6,1,.1,.1,3,.62];
   const lt=makeLights(L),ll=makeLights([0,cy-P.hgt*.35,zc-hl*.95,1,.97,.9,9,-1]);lt.userData.isLights=ll.userData.isLights=true;g.add(lt,ll);
-  g.rotation.order='YXZ';g.userData={rotor,disc,tail,gear,lt,ll,kind,fixed:!P.ret,R:P.R,len:P.len+P.boom};return g}
+  // the passenger cabin (S-76): shown only from the passenger seat, when the outer skin is hidden. Open windows along both sides, a bench seat, two pilots
+  let cab=null;if(kind==='s76'){cab=new THREE.Group();cab.visible=false;g.add(cab);
+    const bx=(w,h,l,x,y,z,m)=>{const q=new THREE.Mesh(new THREE.BoxGeometry(w,h,l),m);q.position.set(x,y,z);cab.add(q);return q},
+      liner=M(0xcfcac0),floorM=M(0x3a3d40),seatM=M(0x23364a),panel=M(0x15181b),skin=M(0xd9a47c),shirt=M(0xf1f1ee),hair=M(0x1c1a18);
+    bx(1.85,.06,6.4,0,.84,.5,floorM);bx(1.95,.08,6.7,0,2.78,.3,liner);bx(1.85,1.95,.08,0,1.8,3.42,liner);   // floor, roof, rear bulkhead
+    for(const sd of[-1,1]){bx(.08,.5,6.0,sd*.97,1.1,.45,liner);bx(.08,.4,6.0,sd*.97,2.58,.45,liner);   // sills and headers: the space between is the window
+      for(const z of[-1.1,2.35])bx(.12,1.2,.14,sd*.97,1.84,z,liner)}
+    bx(1.5,.1,.35,0,2.62,-3.05,panel);for(const sd of[-1,1]){const p=bx(.08,1.5,.08,sd*.72,2.0,-3.0,panel);p.rotation.x=-.5}   // windscreen header and posts
+    bx(1.4,.42,.5,0,1.28,-2.85,panel);bx(.32,.3,2.2,0,1.0,-1.85,panel);   // instrument panel, console
+    for(const sd of[-1,1]){bx(.5,.12,.5,sd*.45,1.0,-1.95,seatM);bx(.5,.72,.1,sd*.45,1.42,-1.68,seatM);   // pilot seats and the two pilots
+      bx(.38,.55,.24,sd*.45,1.5,-1.92,shirt);const h=new THREE.Mesh(new THREE.SphereGeometry(.115,12,10),skin);h.position.set(sd*.45,1.92,-1.9);cab.add(h);
+      const hr=new THREE.Mesh(new THREE.SphereGeometry(.12,12,10,0,Math.PI*2,0,Math.PI*.5),hair);hr.position.set(sd*.45,1.93,-1.9);cab.add(hr)}
+    bx(1.7,.14,.72,0,1.0,1.1,seatM);bx(1.7,.84,.12,0,1.5,1.52,seatM);   // the rear bench
+    bx(.38,.55,.26,.05,1.5,1.2,shirt);{const h=new THREE.Mesh(new THREE.SphereGeometry(.115,12,10),skin);h.position.set(.05,1.92,1.2);cab.add(h);const hr=new THREE.Mesh(new THREE.SphereGeometry(.12,12,10,0,Math.PI*2,0,Math.PI*.5),hair);hr.position.set(.05,1.93,1.2);cab.add(hr)}   // the passenger beside you
+    const cl=makeLights([-.4,1.5,-2.62,.3,1,.4,1.6,-1,0,1.5,-2.62,1,.7,.2,1.6,-1,.4,1.5,-2.62,.3,.9,1,1.6,-1,-.1,1.12,-2.5,1,.2,.2,1.4,.8]);cl.userData.isLights=true;cab.add(cl)}
+  g.rotation.order='YXZ';g.userData={rotor,disc,tail,gear,lt,ll,kind,cab,hull:hull,cabMats:cab?[...new Set(cab.children.map(c=>c.material).filter(m=>m&&m.emissive))]:[],fixed:!P.ret,R:P.R,len:P.len+P.boom};return g}
 const HLIV={gfs:{body:0xc4302a,belly:0xdedbd4,stripe:0xf2efe8},shuttle:{body:0xf1efe9,belly:0xd9d6cf,stripe:0x1d6f6a},hotel:{body:0x1f3a2e,belly:0xd9d6cf,stripe:0xc9a23a}};
 // the helipads: world positions (x east, z south), the height of the landing surface, and the way the parked helicopter faces
 function heliPads(){
@@ -5066,14 +5086,14 @@ function hPark(P,rpm,kind){return{x:P.x,y:P.y,z:P.z,psi:P.h*D2R,theta:0,phi:0,rp
 // an entity: a helicopter on a cycle of P seconds, offset off, with segments: park (rotors turning up before the end: up, turning down after the start: down), fly (keyframes K), away (out of sight)
 function heliAdd(kind,liv,pad,P,off,mk,id){const m=buildHeliModel(kind,HLIV[liv]);scene.add(m);const H={m,kind,id,pad,P,off,mk,p:null,rot:0,ok:null,segs:null,tag:liv};H.fn=t=>heliState(H,t);HELI.push(H);return H}
 function heliSegs(H,ok){H.ok=ok;H.segs=H.mk(ok,H)}
-function heliState(H,t){const ok=heliWx(H.tag);if(ok!==H.ok)heliSegs(H,ok);const tau=(((t+H.off)%H.P)+H.P)%H.P;
+function heliState(H,t){const ok=heliWx(H.tag,H.id);if(ok!==H.ok)heliSegs(H,ok);const tau=(((t+H.off)%H.P)+H.P)%H.P;
   for(const s of H.segs){if(tau<s.a||tau>=s.b)continue;
     if(s.type==='away')return null;
     if(s.type==='fly')return hFly(s.K,tau,H.pad);
     const up=s.up?sstep(s.b-s.up,s.b-s.up*.2,tau):0,dn=s.down?1-sstep(s.a+s.down*.2,s.a+s.down,tau):0;return hPark(H.pad,Math.max(up,dn))}
   return hPark(H.pad,0)}
 // weather: the Macau shuttle and the hotel's flights do not go in a typhoon, a storm, fog or low cloud; the GFS flies in everything but a typhoon
-function heliWx(tag){const w=CFG.wx;return tag==='gfs'?w!=='typhoon':!(w==='typhoon'||w==='storm'||w==='fog'||w==='lowcloud')}
+function heliWx(tag,id){const w=CFG.wx;if(CFG.tour&&id==='pen')return true;return tag==='gfs'?w!=='typhoon':!(w==='typhoon'||w==='storm'||w==='fog'||w==='lowcloud')}
 function parkSegs(P){return[{type:'park',a:0,b:P}]}
 function buildHelis(){
   for(const H of HELI)scene.remove(H.m);HELI.length=0;heliPads();if(!heliBuilt){heliBuilt=true;heliPadScenery()}
@@ -5093,16 +5113,43 @@ function buildHelis(){
       KI=hPlan(740,[route[4][0],140,route[4][1],270],[...route.slice(0,4).reverse().map(r=>[r[0],140,r[1],62]),[S.x-260,S.y+50,S.z+30,40,82],[S.x-60,S.y+18,S.z+10,10,82],[S.x,S.y+9,S.z,3,S.h],[S.x,S.y,S.z,1.2]]);
     return[{type:'park',a:0,b:KO[0].t,up:26},{type:'fly',a:KO[0].t,b:KO[KO.length-1].t,K:KO},{type:'away',a:KO[KO.length-1].t,b:KI[0].t},{type:'fly',a:KI[0].t,b:KI[KI.length-1].t,K:KI},{type:'park',a:KI[KI.length-1].t,b:1300,down:24}]};
   heliAdd('s76','shuttle',S,1300,0,shuttle,'sh1');heliAdd('s76','shuttle',S,1300,650,shuttle,'sh2');
-  // the Peninsula's helicopter: a sightseeing flight round the harbour, once every 1100 s
-  heliAdd('s76','hotel',N,1100,0,ok=>{if(!ok)return parkSegs(1100);const K=hPlan(260,[N.x,N.y,N.z,N.h],[[N.x,N.y+10,N.z,3],[N.x-80,N.y+30,N.z+60,12,140],[-1000,170,3900,40],[-3300,200,4000,46],[-4400,210,3950,44],[-3600,180,3600,44],[-2500,160,3300,44,60],[N.x-220,N.y+34,N.z-30,26],[N.x,N.y+9,N.z,6,N.h],[N.x,N.y,N.z,1.4]]);
+  // the Peninsula's helicopter: the scenic flight round the harbour (the same flight the passenger tour rides), once every 1100 s
+  heliAdd('s76','hotel',N,1100,0,ok=>{if(!ok)return parkSegs(1100);const T=penTour(),K=T.K;
     return[{type:'park',a:0,b:K[0].t,up:26},{type:'fly',a:K[0].t,b:K[K.length-1].t,K},{type:'park',a:K[K.length-1].t,b:1100,down:24}]},'pen')}
+// The scenic tour: Tsim Sha Tsui, across the harbour to Central, west to the Shun Tak ferry terminal, east past Wan Chai and Causeway Bay, over Hung Hom and back.
+// caps: [leg index, English, Cantonese, seconds shown]; each caption starts when the helicopter reaches the end of that leg.
+let PEN_TOUR=null;const _hE=new THREE.Vector3();
+function penTour(){if(PEN_TOUR)return PEN_TOUR;const N=HPAD.pen;
+  const legs=[[N.x,N.y+10,N.z,3],[N.x-80,N.y+35,N.z+60,12,225],[-2650,230,3900,40],[-3050,250,4120,45],[-3500,260,4150,42],[-3950,250,3950,40],[-3800,260,3700,38,100],[-3000,260,3900,44],
+    [-2250,260,4120,46],[-1500,260,4180,46],[-900,260,4100,44],[-550,250,3850,40,200],[-900,230,3300,44],[-1300,230,2950,42],[-1750,200,3100,40,300],[-1950,170,3250,36],[N.x+200,N.y+50,N.z-90,24,60],[N.x,N.y+10,N.z,6,N.h],[N.x,N.y,N.z,1.4]];
+  const K=hPlan(260,[N.x,N.y,N.z,N.h],legs.slice(0)),t0=K[0].t-30,
+    C=(k,en,zh,d)=>({t:K[k].t,en,zh,d:d||9}),
+    caps=[{t:t0+1,en:'Welcome aboard. This is a Sikorsky S-76 on the roof of the Peninsula Hotel in Tsim Sha Tsui. Drag to look around.',zh:'歡迎登機。呢架係半島酒店天台嘅西科斯基 S-76 直升機，位於尖沙咀。拖動畫面可以環顧四周。',d:12},
+      C(2,'Climbing out over Tsim Sha Tsui: the Cultural Centre and the Clock Tower are straight below.',      '喺尖沙咀上空爬升：文化中心同鐘樓就喺下面。'),
+      C(3,'Victoria Harbour. Star Ferries, junks, tugs and container ships cross it all day.',                  '維多利亞港。天星小輪、帆船、拖船同貨櫃船成日喺度穿梭。'),
+      C(4,'Central: Bank of China Tower, the HSBC building and Jardine House along the waterfront.',            '中環：海旁一帶有中銀大廈、匯豐總行同怡和大廈。',10),
+      C(6,'Ahead, the Shun Tak ferry terminal. The Macau helicopters leave from its roof.',                   '前面係信德中心嘅港澳碼頭，往澳門嘅直升機就喺天台起飛。'),
+      C(8,'Turning back east. Behind Central, Victoria Peak and the Peak Tower stand over the city.',          '轉頭向東飛。中環後面係太平山同山頂凌霄閣。',10),
+      C(10,'Wan Chai: the Convention Centre extension, finished in 1997, and Central Plaza, 374 m, finished in 1992.','灣仔：1997 年落成嘅會議展覽中心新翼，同 1992 年落成、374 米高嘅中環廣場。',11),
+      C(11,'Causeway Bay and Victoria Park. The sky over the harbour is busy: watch for the Macau shuttle.',   '銅鑼灣同維多利亞公園。維港上空好繁忙，留意往返澳門嘅穿梭直升機。',10),
+      C(12,'To the north-east, Kai Tak: Runway 13 runs out into Kowloon Bay, with jets landing and taking off.', '東北面係啟德：13 號跑道伸出九龍灣，客機不停升降。',10),
+      C(14,'Hung Hom, and the Coliseum, where the big concerts are.',                                          '紅磡同紅磡體育館，大型演唱會都喺度舉行。'),
+      C(16,'Back along the Kowloon waterfront to the Peninsula.',                                              '沿九龍海旁飛返半島酒店。'),
+      C(19,'Landed. Thank you for flying with us. The tour starts again in a moment.',                         '已經降落。多謝乘搭，旅程片刻後重新開始。',14)];
+  return PEN_TOUR={K,t0,end:K[K.length-1].t,caps}}
+
 function updateHeli(t){
+  if(CFG.tour&&mode==='fly'){const T=penTour();if(t>T.end+30){ST.t=T.t0;t=T.t0;HIST.length=0}tourTick(t)}
   for(const H of HELI){const p=H.fn(t);if(!p||Math.hypot(p.x,p.z)>30000){H.m.visible=false;H.p=null;continue}
-    const u=H.m.userData;H.m.visible=true;H.m.position.set(p.x,p.y,p.z);H.m.rotation.set(p.theta||0,-p.psi,-(p.phi||0),'YXZ');
+    const u=H.m.userData,inside=CFG.tour&&CFG.view==='heli'&&H.id==='pen';H.m.visible=true;H.m.position.set(p.x,p.y,p.z);H.m.rotation.set(p.theta||0,-p.psi,-(p.phi||0),'YXZ');
+    if(u.cab){u.cab.visible=inside;for(const m of u.hull)m.visible=!inside;if(inside){const e=lerp(.2,.05,CITY_U.uNight.value);for(const m of u.cabMats)m.emissive.setScalar(e)}}
     const dt=clamp(t-(H.pt??t),0,.05);H.pt=t;H.rot+=p.rpm*dt*(p.rpm>.5?30:14);u.rotor.rotation.y=H.rot;u.tail.rotation.x=H.rot*2.2;
-    u.disc.visible=p.rpm>.6;u.disc.material.opacity=.05+.12*clamp((p.rpm-.6)/.4,0,1);
+    u.disc.visible=p.rpm>.6&&!inside;u.disc.material.opacity=.05+.12*clamp((p.rpm-.6)/.4,0,1);
     u.gear.visible=u.fixed||p.gear>.5;u.lt.visible=p.rpm>0;u.ll.visible=p.fly&&p.y-H.pad.y<350&&p.v>8;
     H.p=p}}
+// the tour captions: shown for as long as the sim clock is inside a caption's window, so rewind and fast-forward show the right one
+function tourTick(t){const el=document.getElementById('tourCap');if(!el)return;const T=penTour();let c=null;for(const q of T.caps)if(t>=q.t&&t<q.t+q.d)c=q;
+  const x=c?(LANG==='zh'?c.zh:c.en):'';if(el.dataset.k!==x){el.dataset.k=x;el.textContent=x}el.classList.toggle('on',!!c)}
 /* =====================================================================
    AIRPORT GROUND VEHICLES — catering trucks, baggage trains, pushback tugs, cargo handling (main-deck loaders, ULD dolly trains, forklifts, container trucks), fire tenders.
    Like the AI aircraft they are pure functions of sim time, so rewind and fast-forward just work.
@@ -5345,7 +5392,7 @@ function focusTarget(){
 function updateCamera(dt){
   const s0=ST;const T=focusTarget();const s={x:T.x,y:T.y,z:T.z,psi:T.psi},a={cy:T.cy,span:T.span,len:T.len};const V=CFG.view;const A=s0.ac;
   if(mode==='attract'||!acModel){return}
-  camera.near=(V==='cockpit'||V==='cabin')?.05:TVIEWS[V]&&!TVIEWS[V].out?.12:1;
+  camera.near=(V==='cockpit'||V==='cabin'||V==='heli')?.05:TVIEWS[V]&&!TVIEWS[V].out?.12:1;
   if(TI.g)TI.g.visible=!!(TVIEWS[V]&&!TVIEWS[V].out);
   if(V==='cockpit'){
     const E=eyeOf(A);_v.set(E.x,E.y,E.z).applyQuaternion(acModel.quaternion).add(acModel.position);camera.position.copy(_v);
@@ -5365,6 +5412,14 @@ function updateCamera(dt){
     const gy=groundInfo(want.x,want.z).h+3;if(want.y<gy)want.y=gy;
     if(camera.userData.snap){camera.position.copy(want);camera.userData.snap=false}else camera.position.lerp(want,1-Math.exp(-dt*5));
     camera.lookAt(tx,ty,tz);camera.fov=58;
+  } else if(V==='heli'||V==='helix'){
+    // the passenger tour: V 'heli' is the left window seat on the rear bench of the Peninsula helicopter, 'helix' follows it from outside
+    const H=HELI.find(h=>h.id==='pen'),P=H&&H.p;
+    if(P){H.m.updateMatrixWorld(true);
+      if(V==='heli'){_hE.set(-.6,2.0,1.2);H.m.localToWorld(_hE);const vb=P.rpm*.004,tt=performance.now()/1000;camera.position.set(_hE.x+Math.sin(tt*53)*vb,_hE.y+Math.sin(tt*47)*vb,_hE.z+Math.cos(tt*61)*vb);
+        _ea.set(-5*D2R+look.pitch+Math.sin(tt*.7)*.004,32*D2R+look.yaw,0,'YXZ');_qa.setFromEuler(_ea);camera.quaternion.copy(H.m.quaternion).multiply(_qa);camera.fov=72/look.dist}
+      else{const d=34*look.dist,cp=look.orbitPitch+.22,fx=Math.sin(P.psi-look.orbitYaw-.7),fz=-Math.cos(P.psi-look.orbitYaw-.7);_v.set(P.x-fx*d*Math.cos(cp),P.y+3+d*Math.sin(cp),P.z-fz*d*Math.cos(cp));
+        const gy=groundInfo(_v.x,_v.z).h+3;if(_v.y<gy)_v.y=gy;if(camera.userData.snap){camera.position.copy(_v);camera.userData.snap=false}else camera.position.lerp(_v,1-Math.exp(-dt*6));camera.lookAt(P.x,P.y+1.8,P.z);camera.fov=58}}
   } else if(TVIEWS[V]){
     // inside (or in front of) the terminal: a fixed eye you can look around from; the interior is built the first time one is picked
     const T0=TVIEWS[V];if(!TI.g)tiBuild();
@@ -5409,12 +5464,12 @@ function drawHUD(){
   hc.setTransform(HDPR,0,0,HDPR,0,0);hc.clearRect(0,0,HW,HH);
   if(mode!=='fly')return;
   const s=ST,a=s.ac,V=CFG.view,k=clamp(Math.min(HW/1100,HH/760),.62,1.15);
-  if(CFG.game==='watch'){hc.shadowColor='rgba(0,0,0,.85)';hc.shadowBlur=4;const F=FOCUS;const y0=Math.max(70,HH*.1);
+  if(CFG.game==='watch'){hc.shadowColor='rgba(0,0,0,.85)';hc.shadowBlur=4;const F=CFG.tour?null:FOCUS;const y0=Math.max(70,HH*.1);
     if(F&&F.p){txt(AC[F.type].name+' · '+aiPhase(F),HW/2,y0,16*k,COL.txt,'center',700);
       txt(Math.round(Math.max(0,F.p.y-RWY.elev)/FT).toLocaleString('en')+' ft   '+Math.round((F.v||0)/KT)+' kt',HW/2,y0+22*k,14*k,COL.ph,'center')}
-    else txt('Waiting for the next movement…',HW/2,y0,15*k,COL.txt,'center');
+    else if(!CFG.tour)txt('Waiting for the next movement…',HW/2,y0,15*k,COL.txt,'center');
     const arr=AI.filter(x=>x.role==='arrival'&&x.p&&x.p.y>RWY.elev+3).length,dep=AI.filter(x=>x.role==='departure'&&x.p&&(x.v||0)>.5).length;
-    txt('PLANE SPOTTER · '+arr+' inbound · '+dep+' outbound · time '+CFG.ts+'×',HW/2,HH-28,12*k,COL.dim,'center');
+    if(CFG.tour){const H=HELI.find(h=>h.id==='pen'),p=H&&H.p;txt((LANG==='zh'?'直升機觀光 · 高度 ':'HELICOPTER TOUR · ')+(p?Math.round((p.y-0)/FT/10)*10:0).toLocaleString('en')+' ft · '+(p?Math.round((p.v||0)/KT):0)+' kt · '+(LANG==='zh'?'時間 ':'time ')+CFG.ts+'×',HW/2,HH-28,12*k,COL.dim,'center')}else txt('PLANE SPOTTER · '+arr+' inbound · '+dep+' outbound · time '+CFG.ts+'×',HW/2,HH-28,12*k,COL.dim,'center');
     if(paused){hc.font=`700 ${30*k}px "B612",sans-serif`;hc.textAlign='center';hc.fillStyle=COL.txt;hc.fillText('PAUSED',HW/2,HH*.32)}hc.shadowBlur=0;return}
   const P=PATH.pts,p=P[s.pi];
   const ias=s.V/KT,alt=(s.y)/FT,vs=s.vy/FT*60,ra=Math.max(0,s.ra/FT),hdg=((s.psi*R2D)%360+360)%360;
@@ -5614,9 +5669,9 @@ function toggleAP(on){ST.ap=on===undefined?!ST.ap:on;if(ST.ap)ST.apUsed=true;ST.
 function setClouds_on(on){CFG.clouds=on;for(const c of cloudLayers)c.visible=on;tog('clouds',on?'on':'off');syncButtons();toast('Clouds '+(on?'on':'off'))}
 function togglePause(){paused=!paused;tog('pause',paused?'on':'off');syncButtons()}
 function syncViewMenus(v){const f=document.getElementById('viewSel'),s=document.getElementById('spotSel'),m=document.getElementById('termSel');
-  f.value=['cockpit','chase','tower','cabin'].includes(v)?v:'';
+  f.value=['cockpit','chase','tower','cabin','heli','helix'].includes(v)?v:'';
   s.value=SPOTS[v]?v:'';m.value=TVIEWS[v]?v:''}
-function setView(v){if(CFG.game==='watch'&&(v==='cockpit'||v==='cabin'))v='carpark';if(mode==='fly'&&v!==CFG.view)track('view_change',{view:v});CFG.view=v;syncViewMenus(v);look.yaw=look.pitch=0;look.dist=1;camera.userData.snap=true;
+function setView(v){if(CFG.tour){if(v!=='heli'&&v!=='helix')v='heli'}else{if(v==='heli'||v==='helix')v='carpark';if(CFG.game==='watch'&&(v==='cockpit'||v==='cabin'))v='carpark'}if(mode==='fly'&&v!==CFG.view)track('view_change',{view:v});CFG.view=v;syncViewMenus(v);look.yaw=look.pitch=0;look.dist=1;camera.userData.snap=true;
   document.getElementById('cabin').hidden=v!=='cabin';document.getElementById('seatbox').hidden=v!=='cabin';
   if(mode==='fly'){const W=CFG.game==='watch';applyMap();document.getElementById('ctl').hidden=W||v==='cabin'||!!ST.ended}
   if(v==='cabin'&&!ST.ap&&!ST.onGround&&mode==='fly'&&CFG.game==='approach'){toggleAP(true);toast('The computer is flying. Enjoy the view from your seat.')}
@@ -5834,12 +5889,14 @@ for(const k in AC){const a=AC[k];if(a.spot)continue;const l=document.createEleme
 const wxChips=document.getElementById('wxChips'),wxSel=document.getElementById('wxSel');
 for(const k in WX){const l=document.createElement('label');l.className='chip';l.innerHTML=`<input type="radio" name="wx" value="${k}" ${k===CFG.wx?'checked':''}><span>${WX[k].label}</span>`;wxChips.appendChild(l);const o=document.createElement('option');o.value=k;o.textContent=WX[k].label;wxSel.appendChild(o)}
 const MODE_TXT={learnland:['Start the lesson','Ready to land? A guided IGS 13 approach, one step at a time: wheels down, flaps, speed, the turn at the checkerboard, the flare and the stop. No experience needed.'],learn:['Start the lesson','New to flying? A guided take-off on Runway 13, one step at a time: full power, stay straight, lift the nose, wheels up. No experience needed.'],approach:['Begin descent','Start on the IGS at 3,100 ft and land on Runway 13.'],approach31:['Begin descent','Start eight miles out over the sea at 2,700 ft, fly through the Lei Yue Mun gap and land on Runway 31.'],free31:['Line up on Runway 31','Start lined up on Runway 31, pointing at Kowloon City. Full thrust, pull back at about 150 kt, climb and turn left, then fly anywhere. Landings are graded but the flight carries on.'],free:['Line up on Runway 13','Start lined up on Runway 13. Full thrust, pull back at about 150 kt, then fly anywhere. Landings are graded but the flight carries on.'],
+  tour:['Take the tour','No flying. Ride as a passenger in the Peninsula Hotel helicopter on a scenic flight over Victoria Harbour: Central, the Shun Tak ferry terminal, Wan Chai, Causeway Bay and Hung Hom, then back to the rooftop. Drag to look around, switch to the exterior view, or speed up time.'],
   watchC:['Watch the airport','No flying. A Concorde is due in a few minutes: watch it land nose down, park at stand 6 and push back for take-off. It is on the flight board as a special. Pick a spectator spot, follow it, or speed up time.'],
   watch31:['Watch the airport','No flying. Runway 31 is in use: arrivals come in over Lei Yue Mun and departures roll toward Kowloon City. Pick a spectator spot, follow a jet, or speed up time.'],watch:['Watch the airport','No flying. Arrivals land every couple of minutes and departures roll in between. Pick a spectator spot, follow a jet, or speed up time.']};
 const HERO13=['IGS approach · Runway 13','Hit the checkerboard, turn right, land before the harbour.',document.getElementById('heroText').textContent];
+const HEROT=['Passenger · Peninsula Hotel helicopter','Hong Kong harbour helicopter scenic tour','Climb out of the Peninsula Hotel rooftop in Tsim Sha Tsui and fly over Victoria Harbour as a passenger: Central, the Shun Tak ferry terminal, Wan Chai, Causeway Bay and Hung Hom, with a guide on screen. Kai Tak is in view across the bay, and the jets keep landing.'];
 const HERO31=['Easterly approach · Runway 31','Through the Lei Yue Mun gap, then down onto the runway in the bay.','You start the descent about eight nautical miles out over the sea east of Kowloon at 2,700 ft, heading 314 on the runway line. Fly through the narrow Lei Yue Mun channel between the hills, cross Kowloon Bay low over the water and land on Runway 31.'];
 function syncMode(){const m=document.querySelector('input[name=game]:checked').value;document.getElementById('goLabel').textContent=MODE_TXT[m][0];document.getElementById('modeNote').textContent=MODE_TXT[m][1];
-  const H=m==='approach31'?HERO31:HERO13;document.getElementById('heroEye').textContent=H[0];document.getElementById('heroTitle').textContent=H[1];document.getElementById('heroText').textContent=H[2];applyLang()}
+  const H=m==='approach31'?HERO31:m==='tour'?HEROT:HERO13;document.getElementById('heroEye').textContent=H[0];document.getElementById('heroTitle').textContent=H[1];document.getElementById('heroText').textContent=H[2];applyLang()}
 for(const r of document.querySelectorAll('input[name=game]'))r.addEventListener('change',syncMode);
 /* LANGUAGE: English / Cantonese toggle for the home screen */
 const ZH={
@@ -5868,6 +5925,9 @@ const ZH={
 'Line up on Runway 13':'對正 13 號跑道','Runway 31 take-off':'31 號跑道起飛','Line up on Runway 31':'對正 31 號跑道','Spotter · Runway 31':'觀機 · 31 號跑道','Spotter · Concorde special':'觀機 · 協和式特別班','No flying. A Concorde is due in a few minutes: watch it land nose down, park at stand 6 and push back for take-off. It is on the flight board as a special. Pick a spectator spot, follow it, or speed up time.':'唔使飛。幾分鐘後有一架協和式客機到訪：睇住佢低頭降落、泊喺 6 號機位，然後推出起飛。航班資訊板會列為特別航班。揀個觀機位置、跟住佢，或者加快時間。','No flying. Runway 31 is in use: arrivals come in over Lei Yue Mun and departures roll toward Kowloon City. Pick a spectator spot, follow a jet, or speed up time.':'唔使飛。而家用 31 號跑道：抵港航班經鯉魚門進場，離港航班向九龍城滑行起飛。揀個觀機位置、跟住一架飛機，或者加快時間。','Start lined up on Runway 31, pointing at Kowloon City. Full thrust, pull back at about 150 kt, climb and turn left, then fly anywhere. Landings are graded but the flight carries on.':'對正 31 號跑道，機頭向住九龍城。推滿油門，約 150 節拉機頭，爬升後向左轉，之後隨便飛。降落會評分，但飛行會繼續。',
 'Start lined up on Runway 13. Full thrust, pull back at about 150 kt, then fly anywhere. Landings are graded but the flight carries on.':'由 13 號跑道起步。推滿油門，約 150 節時拉桿，之後可以飛去任何地方。降落會被評分，但飛行會繼續。',
 'Watch the airport':'觀看機場',
+'Hong Kong harbour helicopter scenic tour':'香港維港直升機觀光之旅','Take the tour':'開始旅程','Passenger · Peninsula Hotel helicopter':'乘客 · 半島酒店直升機','Helicopter cabin':'直升機機艙','Helicopter exterior':'直升機外觀',
+'No flying. Ride as a passenger in the Peninsula Hotel helicopter on a scenic flight over Victoria Harbour: Central, the Shun Tak ferry terminal, Wan Chai, Causeway Bay and Hung Hom, then back to the rooftop. Drag to look around, switch to the exterior view, or speed up time.':'唔使揸機。以乘客身份坐半島酒店嘅直升機，喺維多利亞港上空觀光：中環、信德中心港澳碼頭、灣仔、銅鑼灣同紅磡，然後返回天台。拖動畫面環顧四周，可以轉去外觀視角，或者加快時間。',
+'Climb out of the Peninsula Hotel rooftop in Tsim Sha Tsui and fly over Victoria Harbour as a passenger: Central, the Shun Tak ferry terminal, Wan Chai, Causeway Bay and Hung Hom, with a guide on screen. Kai Tak is in view across the bay, and the jets keep landing.':'由尖沙咀半島酒店天台起飛，以乘客身份飛越維多利亞港：中環、信德中心港澳碼頭、灣仔、銅鑼灣同紅磡，畫面有導賞字幕。對岸可以望到啟德，客機不停降落。',
 'No flying. Arrivals land every couple of minutes and departures roll in between. Pick a spectator spot, follow a jet, or speed up time.':'唔使駕駛。每隔幾分鐘就有航班降落，期間亦有航班起飛。揀個觀賞位置、跟住一架客機，或者加快時間。',
 'Four engines · upper-deck hump':'四引擎 · 上層艙隆起',
 'Two engines · new for 1996':'雙引擎 · 1996 年新機',
@@ -5929,7 +5989,7 @@ function applyLang(){
   for(const s of b.querySelectorAll('span'))s.classList.toggle('on',s.dataset.l===LANG)}
 document.getElementById('btnLang').addEventListener('click',e=>{LANG=LANG==='zh'?'en':'zh';try{localStorage.setItem('fkt-lang',LANG)}catch(_){}track('language_toggle',{language:LANG==='zh'?'cantonese':'english'});applyLang();fidsLast=-1e9;e.currentTarget.blur()});
 applyLang();
-function readSetup(){const gv=document.querySelector('input[name=game]:checked').value;CFG.lesson=gv==='learn';CFG.conc=gv==='watchC';CFG.lland=gv==='learnland';CFG.game=gv==='learnland'||gv==='approach31'?'approach':gv==='free31'?'free':gv==='watch31'||gv==='watchC'?'watch':CFG.lesson?'free':gv;CFG.rwy=gv==='approach31'||gv==='free31'||gv==='watch31'?'31':'13';CFG.ac=document.querySelector('input[name=ac]:checked').value;CFG.hour=parseFloat(document.getElementById('optHour').value)||0;CFG.night=solarState(CFG.hour).sunEl<0;CFG.wx=document.querySelector('input[name=wx]:checked').value;
+function readSetup(){const gv=document.querySelector('input[name=game]:checked').value;CFG.tour=gv==='tour';CFG.lesson=gv==='learn';CFG.conc=gv==='watchC';CFG.lland=gv==='learnland';CFG.game=gv==='learnland'||gv==='approach31'?'approach':gv==='free31'?'free':gv==='watch31'||gv==='watchC'||gv==='tour'?'watch':CFG.lesson?'free':gv;CFG.rwy=gv==='approach31'||gv==='free31'||gv==='watch31'?'31':'13';CFG.ac=document.querySelector('input[name=ac]:checked').value;CFG.hour=parseFloat(document.getElementById('optHour').value)||0;CFG.night=solarState(CFG.hour).sunEl<0;CFG.wx=document.querySelector('input[name=wx]:checked').value;
   CFG.lightning=document.getElementById('optLightning').checked;CFG.clouds=document.getElementById('optClouds').checked;CFG.map=document.getElementById('optMap').checked;CFG.guide=document.getElementById('optGuide').checked;CFG.ap=document.getElementById('optAP').checked;CFG.walled=document.getElementById('optWalled').checked;if(CFG.lland){CFG.ap=false;CFG.guide=true}}
 // Home screen: Day/Night, Weather, Clouds and Lightning change the live sim rendering behind the menu straight away.
 function applyHomeEnv(){if(mode!=='attract')return;const q=n=>document.querySelector('input[name='+n+']:checked');const wx=q('wx');
@@ -6013,23 +6073,26 @@ const STRIPE_LINK='https://buy.stripe.com/9B6cMX2TT3tPaFi0UcaAw00';
 const reducedMotion=()=>!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
 if(reducedMotion())reel.removeAttribute('autoplay');
 function reelShow(on){if(!reelOK)return;if(on&&!reducedMotion())reel.play().catch(()=>{});else reel.pause()}
-function showSetup(){hsRenderHome();setMore(false);try{if(screen.orientation&&screen.orientation.unlock)screen.orientation.unlock()}catch(e){}reelShow(true);flightEnd('quit');mode='attract';paused=false;for(const id of['bar','ctl','map','result','cabin'])document.getElementById(id).hidden=true;document.getElementById('setup').hidden=false;applyMap();sfx.stopAll();if(synth)synth.cancel();radioClear();coachHide();syncMode();
+function tourCapOff(){const e=document.getElementById('tourCap');if(e){e.classList.remove('on');e.dataset.k='';e.textContent=''}}
+function showSetup(){tourCapOff();hsRenderHome();setMore(false);try{if(screen.orientation&&screen.orientation.unlock)screen.orientation.unlock()}catch(e){}reelShow(true);flightEnd('quit');mode='attract';paused=false;for(const id of['bar','ctl','map','result','cabin'])document.getElementById(id).hidden=true;document.getElementById('setup').hidden=false;applyMap();sfx.stopAll();if(synth)synth.cancel();radioClear();coachHide();syncMode();
   clearFX();CFG.ap=true;setRunway('13');resetFlight();ST.ap=true;spawnAircraftModel();buildAI();CFG.view='chase';applyHomeEnv();setWalled(document.getElementById('optWalled').checked)}
 function startFlight(){
   setMore(false);reelShow(false);readSetup();setRunway(CFG.lesson?'13':CFG.rwy==='31'?'31':'13');flightEnd('restart');clearFX();mode='fly';paused=false;SEED=window.__capture?1998:1998+Math.floor(Math.random()*1000);
   for(const id of['setup','result'])document.getElementById(id).hidden=true;for(const id of['bar','ctl','map'])document.getElementById(id).hidden=false;
   resetFlight();ST.attempted=false;flightBegin();radioReset();HIST.length=0;spawnAircraftModel();FOCUS=null;
   if(CFG.game==='watch')buildAISchedule(CFG.phase??0,true,{n:CFG.concN??(CFG.conc?-1:2)});else if(CFG.game==='free')buildAISchedule(-100,false);else buildAI();
-  applyEnvironment();setWalled(CFG.walled);hoops.visible=CFG.guide&&CFG.game==='approach';wxSel.value=CFG.wx;
+  if(CFG.tour){ST.t=penTour().t0}   // the tour starts a few seconds before the rotors turn
+  tourCapOff();applyEnvironment();setWalled(CFG.walled);hoops.visible=CFG.guide&&CFG.game==='approach';wxSel.value=CFG.wx;
   const W=CFG.game==='watch';
-  RC.base=(W?'PLANE SPOTTER · KAI TAK'+(LND.id==='31'?' · RWY 31':''):ST.ac.short.toUpperCase()+' · '+(CFG.lesson?'TAKE-OFF LESSON':CFG.lland?'LANDING LESSON':CFG.game==='free'?'FREE FLIGHT'+(LND.id==='31'?' · RWY 31':''):LND.id==='31'?'RWY 31':'IGS 13'))+' · '+todLabel().toUpperCase()+' · '+WX[CFG.wx].label.toUpperCase();RC.stat={k:'clear',t:'CLEAR'};RC.V=null;RC.pl=null;RC.log.length=0;RC.viol=0;rcHud();
-  for(const o of document.querySelectorAll('#viewSel option,#spotSel option'))o.hidden=(W&&(o.value==='cockpit'||o.value==='cabin'))||(o.value==='lym'&&LND.id!=='31');
-  for(const id of['btnAP','btnHud','btnGuide','btnDeck'])document.getElementById(id).hidden=W;if(W)fidsOn=!compactMQ.matches;
+  RC.base=(CFG.tour?'HELICOPTER SCENIC TOUR · HARBOUR':W?'PLANE SPOTTER · KAI TAK'+(LND.id==='31'?' · RWY 31':''):ST.ac.short.toUpperCase()+' · '+(CFG.lesson?'TAKE-OFF LESSON':CFG.lland?'LANDING LESSON':CFG.game==='free'?'FREE FLIGHT'+(LND.id==='31'?' · RWY 31':''):LND.id==='31'?'RWY 31':'IGS 13'))+' · '+todLabel().toUpperCase()+' · '+WX[CFG.wx].label.toUpperCase();RC.stat={k:'clear',t:'CLEAR'};RC.V=null;RC.pl=null;RC.log.length=0;RC.viol=0;rcHud();
+  for(const o of document.querySelectorAll('#viewSel option,#spotSel option'))o.hidden=CFG.tour?!(o.value==='heli'||o.value==='helix'||o.value===''):(W&&(o.value==='cockpit'||o.value==='cabin'))||o.value==='heli'||o.value==='helix'||(o.value==='lym'&&LND.id!=='31');
+  for(const id of['spotSel','termSel'])document.getElementById(id).hidden=CFG.tour;
+  for(const id of['btnAP','btnHud','btnGuide','btnDeck'])document.getElementById(id).hidden=W;if(W)fidsOn=!compactMQ.matches&&!CFG.tour;
   if(W){for(const id of['ctl','map'])document.getElementById(id).hidden=true}
-  setView(W?'carpark':CFG.game==='free'?'chase':CFG.ap?'chase':'cockpit');
+  setView(CFG.tour?'heli':W?'carpark':CFG.game==='free'?'chase':CFG.ap?'chase':'cockpit');
   syncButtons();sfx.start();sfx.mute(CFG.sound);lightningT=rr(4,9);
   track('game_start',{flight_number:FLT.n,game_mode:modeId(),runway:LND.id,autopilot:CFG.ap,guide:CFG.guide,walled_city:CFG.walled,lightning:CFG.lightning});
-  if(CFG.lesson||CFG.lland)coachStart();else{coachHide();toast(W?'Plane Spotter mode. Pick a spot from the Plane spotter or Terminal interior menu, or Exterior to follow the jet. '+(TOUCH?'More > Time speeds up time.':'T speeds up time.'):CFG.game==='free'?(LND.id==='31'?(TOUCH?'Lined up on Runway 31. Slide thrust to full, pull back at about 150 kt. Kowloon City is dead ahead, so climb and turn left.':'Lined up on Runway 31. Full thrust (E), pull back at about 150 kt. Kowloon City is dead ahead, so climb and turn left.'):TOUCH?'Lined up on Runway 13. Slide thrust to full, pull back at about 150 kt.':'Lined up on Runway 13. Full thrust (E), pull back at about 150 kt.'):CFG.ap?'Autopilot engaged. Pick a view or a cabin seat.':LND.id==='31'?'Eight miles out over the sea, 2,700 ft, heading 314. Runway 31 is dead ahead. You have control.':'Established on the IGS, 3,100 ft. You have control.')}
+  if(CFG.lesson||CFG.lland)coachStart();else{coachHide();toast(CFG.tour?'Hong Kong harbour helicopter scenic tour. Drag to look around; use the views menu for the outside view'+(TOUCH?'.':', and T to speed up time.'):W?'Plane Spotter mode. Pick a spot from the Plane spotter or Terminal interior menu, or Exterior to follow the jet. '+(TOUCH?'More > Time speeds up time.':'T speeds up time.'):CFG.game==='free'?(LND.id==='31'?(TOUCH?'Lined up on Runway 31. Slide thrust to full, pull back at about 150 kt. Kowloon City is dead ahead, so climb and turn left.':'Lined up on Runway 31. Full thrust (E), pull back at about 150 kt. Kowloon City is dead ahead, so climb and turn left.'):TOUCH?'Lined up on Runway 13. Slide thrust to full, pull back at about 150 kt.':'Lined up on Runway 13. Full thrust (E), pull back at about 150 kt.'):CFG.ap?'Autopilot engaged. Pick a view or a cabin seat.':LND.id==='31'?'Eight miles out over the sea, 2,700 ft, heading 314. Runway 31 is dead ahead. You have control.':'Established on the IGS, 3,100 ft. You have control.')}
 }
 function showResult(){
   const s=ST,e=s.ended;if(!e||mode!=='fly')return;mode='ended';const card=document.getElementById('resCard');card.classList.toggle('crash',!!e.crash);
@@ -6184,7 +6247,8 @@ function frame(now,manual){
   updateRain(dt,mode==='attract'?w.rain*.4:w.rain,ST.wind||[0,0,0],camera.position);
   // PAPI colours
   for(const pl of[papi,papi31])if(pl&&pl.visible){const c=pl.geometry.attributes.color;const pp=pl.geometry.attributes.position;for(let i=0;i<4;i++){const dx=camera.position.x-pp.getX(i),dz=camera.position.z-pp.getZ(i);const ang=Math.atan2(camera.position.y-pp.getY(i),Math.hypot(dx,dz))*R2D;const thr=[3.6,3.27,2.93,2.6][i];const white=ang>thr;c.setXYZ(i,1,white?1:.12,white?1:.1)}c.needsUpdate=true}
-  if(mode==='fly'&&CFG.game==='watch'){const F=FOCUS;let thr=0;if(F&&F.p){const d=camera.position.distanceTo(_v.set(F.p.x,F.p.y,F.p.z));thr=clamp(1.3-d/1400,0,1)*((F.v||0)>3?1:0)}
+  if(mode==='fly'&&CFG.tour){const H=HELI.find(h=>h.id==='pen'),p=H&&H.p;sfx.update(p?p.rpm*.5:0,p?(p.v||0)*1.4:0,w.rain,CFG.view==='heli',{})}   // rotors and turbine; wind rises with speed
+  else if(mode==='fly'&&CFG.game==='watch'){const F=FOCUS;let thr=0;if(F&&F.p){const d=camera.position.distanceTo(_v.set(F.p.x,F.p.y,F.p.z));thr=clamp(1.3-d/1400,0,1)*((F.v||0)>3?1:0)}
     sfx.update(thr,0,w.rain,false,{rev:F&&F.p&&F.p.spl&&thr>.2})}
   else if(mode==='fly'){const s=ST,on=s.onGround&&!s.ended;const rev=on&&s.throttle<.12&&s.Gs>30*KT;
     const gm=s.gearPos>.01&&s.gearPos<.99;if(s._gp!==undefined&&((s._gp<.99&&s.gearPos>=.99)||(s._gp>.01&&s.gearPos<=.01)))sfx.clunk();s._gp=s.gearPos;
@@ -6210,7 +6274,7 @@ const fontsReady=document.fonts&&document.fonts.ready?Promise.race([document.fon
 fontsReady.then(()=>setTimeout(boot,30));
 
 /* test hooks */
-window.__kt={HELI,HPAD,updateHeli,hPlan,hHerm,hGround,masts:()=>apronMasts,port:()=>PORT,geo:()=>GEO,inPortYard,PORT_QUAYS,PORT_BLD,SHIPS,FAIRWAYS,waterAt,laneOffset,rwP,STAND_C,CTY,stS,NCG,ESTATES,RC,rcEv,rcVac,rcRoll,rcStrip,rcClearBy,rcTakeoffWhy,rcView,rcPlayer,CYC,onPaved,gearPaved,rwS,LINKS,rb:()=>rbMasts13,bat:buildingAt,setHour,solarState,SUN_DIR,MOON_DIR,ENV,AI,CFG,ST,COACH,LESSON,keys,coachUpdate,coachResync,coachGo,rwL,get PATH(){return PATH},LND,setRunway,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,{rwy:'13',conc:false},o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.conc&&CFG.game==='watch'?'watchC':CFG.rwy==='31'&&CFG.game!=='learn'?CFG.game+'31':CFG.game}]`).checked=true;hourIn.value=o.hour!==undefined?o.hour:CFG.night?22:15;showHour();startFlight()},
+window.__kt={penTour,HELI,HPAD,updateHeli,hPlan,hHerm,hGround,masts:()=>apronMasts,port:()=>PORT,geo:()=>GEO,inPortYard,PORT_QUAYS,PORT_BLD,SHIPS,FAIRWAYS,waterAt,laneOffset,rwP,STAND_C,CTY,stS,NCG,ESTATES,RC,rcEv,rcVac,rcRoll,rcStrip,rcClearBy,rcTakeoffWhy,rcView,rcPlayer,CYC,onPaved,gearPaved,rwS,LINKS,rb:()=>rbMasts13,bat:buildingAt,setHour,solarState,SUN_DIR,MOON_DIR,ENV,AI,CFG,ST,COACH,LESSON,keys,coachUpdate,coachResync,coachGo,rwL,get PATH(){return PATH},LND,setRunway,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,{rwy:'13',conc:false,tour:false},o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.tour?'tour':CFG.conc&&CFG.game==='watch'?'watchC':CFG.rwy==='31'&&CFG.game!=='learn'?CFG.game+'31':CFG.game}]`).checked=true;hourIn.value=o.hour!==undefined?o.hour:CFG.night?22:15;showHour();startFlight()},
   run:(sec)=>{if(CFG.game==='watch'){ST.t+=sec;return {t:ST.t}}const h=1/120;for(let i=0;i<sec*120&&!ST.ended;i++){physStep(h);if(i%60===0)recordHistory();if(i%12===0)aiTick()}return {ended:ST.ended,td:ST.td,t:ST.t,x:ST.x,y:ST.y,z:ST.z,V:ST.V/KT,d:PATH.pts[ST.pi].d}},
   get mode(){return mode},updateAI,AIC,footOf,GSE,GSE_KINDS,AIRBOX,rwS,BGRID,updateGSE,gseLamps:()=>gseLamps,fpAt,fpDist,hitOn,damageModel,aiHit,DEBRIS,EMIT,aiTick,ctl(){return aiControl},get CFG(){return CFG},frame:(now)=>frame(now,true),get FOCUS(){return FOCUS},step:()=>physStep(1/120),rwS,setZoom:z=>{CFG.zoom=z},get AI(){return AI},get GSE(){return GSE},get BRIDGE(){return BRIDGE},STAND_S,STAND_TY,lineupT,lineupT31,arrivalPts,tugAt,standL,PB,get parked(){return parked},gseAt:(t)=>{ST.t=t;updateGSE();return GSE.map(e=>({k:e.kind,x:e.p.x,z:e.p.z,psi:e.p.psi,lift:e.lift}))},get shipLights(){return shipLights},get PORT(){return PORT},get SHIPS(){return SHIPS},get DISP(){return DISP},get deck(){return deckGroup},get streetCam(){return STREET_CAM},get BB(){return BB},get water(){return water},get camera(){return camera},get nStreets(){return STREETS.length},drawDisplays,look,setView,terrainAt,buildingAt,groundInfo};
 })();
