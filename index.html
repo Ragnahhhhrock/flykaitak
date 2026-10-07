@@ -142,6 +142,11 @@ legend{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--
 .go{appearance:none;border:0;cursor:pointer;background:var(--jade);color:var(--livery-white);font-weight:700;font-size:15px;letter-spacing:.08em;text-transform:uppercase;padding:15px 18px;border-radius:3px;display:flex;justify-content:space-between;align-items:center}
 .go:hover{filter:brightness(1.08)}
 .go .k{font-family:var(--f-num);font-size:12px;opacity:.75}
+#btnGo{position:sticky;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);z-index:3;font-size:18px;padding:20px 22px;background:linear-gradient(180deg,var(--jade-bright),var(--jade));border:2px solid var(--livery-white);border-radius:4px;box-shadow:0 0 0 4px rgba(47,163,109,.35),0 10px 32px rgba(0,0,0,.7);animation:goPulse 2.4s ease-in-out infinite}
+#btnGo:hover,#btnGo:focus-visible{filter:brightness(1.12);animation-play-state:paused}
+#btnGo .k{opacity:.9}
+@keyframes goPulse{0%,100%{box-shadow:0 0 0 4px rgba(47,163,109,.35),0 10px 32px rgba(0,0,0,.7)}50%{box-shadow:0 0 0 10px rgba(47,163,109,0),0 10px 32px rgba(0,0,0,.7)}}
+@media (prefers-reduced-motion:reduce){#btnGo{animation:none}}
 details{border-top:1px solid var(--line);padding-top:14px}
 summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
 .keys{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 14px;margin-top:12px;font-size:12.5px}
