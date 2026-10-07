@@ -1,5 +1,41 @@
 [
   {
+    "slug": "helicopters-over-hong-kong",
+    "title": "Helicopters over Hong Kong, 1998",
+    "dek": "The Government Flying Service at Kai Tak, the Macau shuttle from Shun Tak and a hotel helicopter on the Peninsula roof now fly in the sim.",
+    "description": "Helicopters join the sim: GFS S-70 and S-76 from Kai Tak's south apron, the Macau shuttle from Shun Tak and a Peninsula Hotel rooftop helipad.",
+    "date": "2026-10-07",
+    "tag": "New",
+    "category": "aircraft",
+    "keywords": [
+      "helicopters",
+      "Hong Kong 1998",
+      "Government Flying Service",
+      "Kai Tak helipad",
+      "Shun Tak heliport",
+      "Peninsula helipad",
+      "Sikorsky S-76",
+      "Black Hawk",
+      "flight simulator",
+      "Kai Tak"
+    ],
+    "hero": "heli-gfs-pads",
+    "hero_alt": "Red helicopters on the two helipads of the Kai Tak south apron, beside the flight services building.",
+    "hero_caption": "The Government Flying Service pads on the Kai Tak south apron.",
+    "card_kicker": "AIRCRAFT · NEW",
+    "card_title": "Helicopters over Hong Kong",
+    "card_sub": "GFS, the Macau shuttle and a hotel rooftop pad",
+    "card_image": "heli-gfs-pads",
+    "card_focus": 50,
+    "zh": {
+      "title": "1998 年香港上空嘅直升機",
+      "dek": "啟德嘅政府飛行服務隊、信德中心往澳門嘅穿梭直升機，同半島酒店天台嘅直升機，而家都喺模擬器入面飛。",
+      "description": "直升機加入模擬器：啟德南停機坪嘅政府飛行服務隊 S-70 同 S-76、信德往澳門穿梭機，同半島酒店天台直升機坪。",
+      "hero_alt": "啟德南停機坪兩個直升機坪上嘅紅色直升機，旁邊係飛行服務大樓。",
+      "hero_caption": "啟德南停機坪上嘅政府飛行服務隊直升機坪。"
+    }
+  },
+  {
     "slug": "kowloon-walled-city-rebuilt",
     "title": "Kowloon Walled City, rebuilt from photographs",
     "dek": "The Walled City is now one packed block of interlocking buildings, with balconies, aerials, rooftop shacks, shop signs and lit windows at night.",
