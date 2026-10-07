@@ -1494,10 +1494,10 @@ let walledGroup,parkGroup,landmarkLights=[];
 function box(w,h,d,mat,x,y,z,ry){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d).translate(0,h/2,0),mat);m.position.set(x,y,z);if(ry)m.rotation.y=ry;scene.add(m);return m}
 function towerCollider(x,z,w,d,top,name){addCollider(x-w/2,x+w/2,z-d/2,z+d/2,top,name)}
 const LM={boc:[-3206,5120],hsbc:[-3433,4999],lippo:[-2938,5109],jardine:[-3392,4688],exch:[-3546,4578],ifc1:[-3484,4379],center:[-3917,4500],
-  plaza:[-1960,5010],hopewell:[-2125,5629],fefc:[-2845,5043],hkcec:[-2050,4610],clock:[-2400,3505],culture:[-2300,3440],peninsula:[-2119,3368],
-  coliseum:[-1109,2593],peak:[-4420,6005],cenPier:[-3150,4600]};
+  plaza:[-1960,5010],hopewell:[-2125,5629],fefc:[-2845,5043],hkcec:[-2050,4610],clock:[-2372,3556],culture:[-2300,3440],peninsula:[-2119,3368],
+  coliseum:[-1109,2593],peak:[-4420,6005],cenPier:[-3150,4660],tstPier:[-2425,3565],wcPier:[-1862,4592]};
 LANDMARK_CLEAR.push([-4454,6031,26]); // the Peak Lookout replaces any footprint there
-for(const [k,p] of Object.entries(LM))LANDMARK_CLEAR.push([p[0],p[1],k==='hkcec'?170:k==='exch'?90:k==='culture'?110:60]);
+for(const [k,p] of Object.entries(LM))LANDMARK_CLEAR.push([p[0],p[1],k==='hkcec'?170:k==='exch'?90:k==='culture'?110:k==='cenPier'?80:k==='tstPier'?70:60]);
 const gAt=(p)=>Math.max(terrainAt(p[0],p[1]),3.5);
 /* Happy Valley Racecourse and Ocean Park: stylised, placed at their real sites. Animated parts run from parkAnim. */
 let parkAnim=null;
@@ -1743,7 +1743,7 @@ function buildLandmarks(){
    const roof=new THREE.Mesh(roofGeo,new THREE.MeshLambertMaterial({color:0xcfd4d6,side:THREE.DoubleSide}));roof.position.y=30;g.add(roof);
    scene.add(g);towerCollider(x,z,260,170,46,'the Convention Centre')}
   // Tsim Sha Tsui: Clock Tower, Cultural Centre, Space Museum, Peninsula
-  {const b=gAt(LM.clock);box(7,40,7,new THREE.MeshLambertMaterial({color:0xb5643c}),LM.clock[0],b,LM.clock[1]);const sp=new THREE.Mesh(new THREE.ConeGeometry(3.4,8,4),new THREE.MeshLambertMaterial({color:0xb5643c}));sp.position.set(LM.clock[0],b+44,LM.clock[1]);sp.rotation.y=Math.PI/4;scene.add(sp);towerCollider(LM.clock[0],LM.clock[1],8,8,b+52,'the Clock Tower');
+  {buildKowloonClockTower(L);
    const cc=new THREE.Mesh(new THREE.CylinderGeometry(25,90,40,4,1).translate(0,20,0),new THREE.MeshLambertMaterial({color:0xd6b9a6}));cc.position.set(LM.culture[0],gAt(LM.culture),LM.culture[1]);cc.rotation.y=Math.PI/4+.3;cc.scale.set(1.6,1,.8);scene.add(cc);
    const dome=new THREE.Mesh(new THREE.SphereGeometry(22,20,10,0,Math.PI*2,0,Math.PI/2),new THREE.MeshLambertMaterial({color:0xe9e6dc}));dome.position.set(LM.culture[0]+70,gAt(LM.culture),LM.culture[1]-10);scene.add(dome);
    const pb=gAt(LM.peninsula);box(70,30,60,glassMat(0xe7dfcd),LM.peninsula[0],pb,LM.peninsula[1]);box(26,95,26,glassMat(0xe7dfcd),LM.peninsula[0],pb,LM.peninsula[1]+20);towerCollider(LM.peninsula[0],LM.peninsula[1],70,70,pb+95,'The Peninsula')}
@@ -1757,8 +1757,8 @@ function buildLandmarks(){
    const rgeo=new THREE.BufferGeometry();rgeo.setAttribute('position',new THREE.Float32BufferAttribute(rr,3));g.add(new THREE.LineSegments(rgeo,new THREE.LineBasicMaterial({color:0x6d6d68})));  // the Sky Terrace rail round the rim
    SPOTS.peak=[x+23,b+39.6,z-23];  // The Peak: on the Sky Terrace, looking out over the harbour to Kowloon
    scene.add(g);towerCollider(x,z,70,70,b+40,'the Peak Tower');L.push(x,b+40,z,1,.9,.7,4,-1)}
-  // Central Star Ferry pier, Edinburgh Place (1998 shoreline)
-  {box(26,9,110,new THREE.MeshLambertMaterial({color:0xd8d2c0}),LM.cenPier[0],0,LM.cenPier[1]-40);box(30,4,30,new THREE.MeshLambertMaterial({color:0x2f6b3e}),LM.cenPier[0],9,LM.cenPier[1]-80)}
+  // the Star Ferry piers at Central, Tsim Sha Tsui and Wan Chai (see the Star Ferry section)
+  buildStarFerryPiers(L);
   landmarkLights.lightPoints=makeLights(L);scene.add(landmarkLights.lightPoints);
   buildCheckerboard();buildWalledCity();
 }
@@ -3026,22 +3026,187 @@ function buildHoops(path){
 
 /* ---------------- harbour traffic ---------------- */
 const SHIPS=[];
+/* ---------------- STAR FERRY: boats, piers, clock towers and the timetable ----------------
+   Two services ran across the harbour in 1998: Central (Edinburgh Place) - Tsim Sha Tsui and Wan Chai - Tsim Sha Tsui. Both are run to a timetable
+   that follows the sim's clock of the day (the hour chosen on the home screen, then the seconds flown): Central - TST 06:30-23:30, a sailing about every
+   6-12 minutes each way (the Star Ferry's published pattern), a crossing of about 9 minutes; Wan Chai - TST 07:30-23:00 about every 10 minutes, 8 minutes.
+   The boats berth at the piers between sailings and lie there overnight. SF_ROUTES holds the berths, the sailings and the fleet. */
+const SF={ready:false,key:null,tod:0,el:0,boats:[],clocks:[],paths:new Map(),mats:{}};
+const sfH=(h,m)=>h*3600+(m||0)*60;
+const SF_ROUTES=[
+  {id:'cen',en:'Central - Tsim Sha Tsui',X:540,minDwell:75,n:5,
+   A:{slots:[[-3192.5,4590],[-3107.5,4590],[-3150,4592],[-3203.5,4590],[-3096.5,4590]],exit:[0,-1]},   // Central: outer berths of the two fingers, the slip between them, and rafted outboard
+   B:{slots:[[-2467.5,3650],[-2425,3650],[-2478.5,3650]],exit:[0,1]},                                    // Tsim Sha Tsui: west finger, the slip, rafted
+   first:sfH(6,30),last:sfH(23,30),bands:[[sfH(6,30),sfH(7,25),660],[sfH(7,25),sfH(9,55),360],[sfH(9,55),sfH(20,40),420],[sfH(20,40),sfH(23,31),660]]},
+  {id:'wch',en:'Wan Chai - Tsim Sha Tsui',X:480,minDwell:75,n:3,
+   A:{slots:[[-1822,4563.5],[-1822,4620.5],[-1822,4592]],exit:[1,0]},
+   B:{slots:[[-2382.5,3650],[-2371.5,3650],[-2360.5,3650]],exit:[0,1]},                                  // Tsim Sha Tsui: east finger
+   first:sfH(7,30),last:sfH(23,0),bands:[[sfH(7,30),sfH(23,1),600]]}];
+SF_ROUTES.forEach((R,i)=>R.i=i);
+function sfBuild(R){const hw=(t)=>{for(const b of R.bands)if(t>=b[0]&&t<b[1])return b[2];return R.bands[R.bands.length-1][2]};
+  R.dep=[[],[]];for(let t=R.first;t<=R.last;t+=hw(t))R.dep[0].push(t);for(let t=R.first+hw(R.first)/2;t<=R.last;t+=hw(t))R.dep[1].push(t);
+  for(const L of R.dep)if(L[L.length-1]<R.last-60)L.push(R.last)}   // the last sailing leaves on the dot
+function sfMat(c){return SF.mats[c]||(SF.mats[c]=new THREE.MeshLambertMaterial({color:c}))}
+// the fleet at its berths before the first sailing
+function sfSeek(tod){
+  for(const R of SF_ROUTES){if(!R.dep)sfBuild(R);R.ptr=[0,0];for(const P of[R.A,R.B])for(const s of P.slots)s.occ=null}
+  const cnt=[[0,0],[0,0],[0,0]];
+  for(const b of SF.boats){const R=SF_ROUTES[b.r],side=b.k%2,P=side?R.B:R.A,n=cnt[b.r][side]++,s=P.slots[n]||P.slots[0];
+    b.st='berth';b.pier=side;b.slot=s;b.since=n-1e6;b.hd=Math.atan2(-P.exit[1],-P.exit[0]);s.occ=b}
+  sfAdvance(tod)}
+function sfRound(pts,cut){const out=[pts[0]];
+  for(let i=1;i<pts.length-1;i++){const p0=pts[i-1],p1=pts[i],p2=pts[i+1],l0=Math.hypot(p1[0]-p0[0],p1[1]-p0[1]),l2=Math.hypot(p2[0]-p1[0],p2[1]-p1[1]),d=Math.min(cut,l0/2,l2/2);
+    const a=[p1[0]+(p0[0]-p1[0])/l0*d,p1[1]+(p0[1]-p1[1])/l0*d],c=[p1[0]+(p2[0]-p1[0])/l2*d,p1[1]+(p2[1]-p1[1])/l2*d];
+    for(let k=0;k<=8;k++){const u=k/8,w=1-u;out.push([w*w*a[0]+2*w*u*p1[0]+u*u*c[0],w*w*a[1]+2*w*u*p1[1]+u*u*c[1]])}}
+  out.push(pts[pts.length-1]);return out}
+// a sailing's track: straight out of the berth, across the harbour keeping to starboard, straight into the berth
+function sfPath(R,side,from,to){
+  const key=R.id+side+from+'|'+to,hit=SF.paths.get(key);if(hit)return hit;
+  const Pf=side?R.B:R.A,Pt=side?R.A:R.B,a=[from[0]+Pf.exit[0]*100,from[1]+Pf.exit[1]*100],q=[to[0]+Pt.exit[0]*100,to[1]+Pt.exit[1]*100];
+  const dx=q[0]-a[0],dz=q[1]-a[1],l=Math.hypot(dx,dz),nx=-dz/l*32,nz=dx/l*32;
+  const pts=sfRound([from,a,[a[0]+dx/3+nx,a[1]+dz/3+nz],[a[0]+dx*2/3+nx,a[1]+dz*2/3+nz],q,to],70),c=[0];
+  for(let i=1;i<pts.length;i++)c.push(c[i-1]+Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]));
+  const p={pts,c,L:c[c.length-1],endHd:Math.atan2(to[1]-q[1],to[0]-q[0])};SF.paths.set(key,p);return p}
+function sfDepart(R,side,T){
+  const mine=SF.boats.filter(b=>b.r===R.i);
+  for(const b of mine)if(b.st==='sail'&&b.t0+R.X<=T){b.st='berth';b.pier=1-b.side;b.slot=b.dest;b.since=b.t0+R.X;b.hd=b.path.endHd}
+  const cand=mine.filter(b=>b.st==='berth'&&b.pier===side&&T-b.since>=R.minDwell).sort((p,q)=>p.since-q.since);
+  if(!cand.length)return;   // no boat at this pier: the sailing does not run
+  const b=cand[0],P2=side?R.A:R.B,dest=P2.slots.find(s=>!s.occ)||P2.slots[0];
+  b.slot.occ=null;dest.occ=b;b.st='sail';b.side=side;b.t0=T;b.dest=dest;b.path=sfPath(R,side,b.slot,dest)}
+function sfAdvance(to){
+  for(const R of SF_ROUTES)for(;;){const ta=R.dep[0][R.ptr[0]],tb=R.dep[1][R.ptr[1]],side=tb===undefined||(ta!==undefined&&ta<=tb)?0:1,T=side?tb:ta;
+    if(T===undefined||T>to)break;R.ptr[side]++;sfDepart(R,side,T)}}
+function sfClock(dt){
+  if(!SF.ready||SF.key!==CFG.hour){SF.ready=true;SF.key=CFG.hour;SF.el=0;SF.tod=CFG.hour*3600;sfSeek(SF.tod)}
+  SF.el+=dt;const d=(CFG.hour*3600+SF.el)%86400;
+  if(d<SF.tod-1)sfSeek(d);else sfAdvance(d);SF.tod=d;
+  const hr=-(d/43200)*Math.PI*2,mn=-(d/3600)*Math.PI*2;for(const c of SF.clocks){c.h.rotation.z=hr;c.m.rotation.z=mn}}
+function sfPlace(S,b,t){
+  const R=SF_ROUTES[b.r],m=S.m;let x,z,hd,mv=0;
+  if(b.st==='sail'){const u=(SF.tod-b.t0)/R.X;
+    if(u<1){const f=u<=0?0:u*u*u*(u*(u*6-15)+10),s=f*b.path.L,c=b.path.c,p=b.path.pts;let i=1;while(i<c.length-1&&c[i]<s)i++;
+      const k=(s-c[i-1])/Math.max(.01,c[i]-c[i-1]),A=p[i-1],B=p[i];x=A[0]+(B[0]-A[0])*k;z=A[1]+(B[1]-A[1])*k;hd=Math.atan2(B[1]-A[1],B[0]-A[0]);mv=b.path.L/R.X*30*u*u*(1-u)*(1-u)}
+    else{x=b.dest[0];z=b.dest[1];hd=b.path.endHd}}
+  else{x=b.slot[0];z=b.slot[1];hd=b.hd}
+  const wob=mv>.5?.25:.1;m.position.set(x,Math.sin(t*.8+x)*wob,z);m.rotation.y=-hd;m.rotation.z=Math.sin(t*.6+z)*(mv>.5?.012:.004);
+  const W=m.userData.wake;if(W)W.visible=mv>.7}
+
+// merge a model's meshes that share a material into one mesh each (fewer draw calls)
+function sfMerge(g){
+  g.updateMatrix();const by=new Map();
+  for(const m of g.children.slice()){if(!m.isMesh||m.isInstancedMesh)continue;m.updateMatrix();const geo=m.geometry.clone().applyMatrix4(m.matrix);if(!by.has(m.material))by.set(m.material,[]);by.get(m.material).push(geo);g.remove(m)}
+  for(const [mat,list] of by){let n=0,ni=0;for(const q of list){n+=q.attributes.position.count;ni+=q.index.count}
+    const pos=new Float32Array(n*3),nor=new Float32Array(n*3),uv=new Float32Array(n*2),idx=new Uint32Array(ni);let o=0,io=0;
+    for(const q of list){pos.set(q.attributes.position.array,o*3);nor.set(q.attributes.normal.array,o*3);uv.set(q.attributes.uv.array,o*2);for(let i=0;i<q.index.count;i++)idx[io+i]=q.index.array[i]+o;o+=q.attributes.position.count;io+=q.index.count}
+    const mg=new THREE.BufferGeometry();mg.setAttribute('position',new THREE.BufferAttribute(pos,3));mg.setAttribute('normal',new THREE.BufferAttribute(nor,3));mg.setAttribute('uv',new THREE.BufferAttribute(uv,2));mg.setIndex(new THREE.BufferAttribute(idx,1));g.add(new THREE.Mesh(mg,mat))}}
+
 function starFerry(){
-  // double-ended Star Ferry: dark green hull, green band, white upper deck with lifebuoys, black-and-white funnel, a mast at each end
-  const g=new THREE.Group();const L=(c)=>new THREE.MeshLambertMaterial({color:c});
-  const hull=new THREE.Mesh(new THREE.CylinderGeometry(5.2,4.2,3.4,16,1).rotateZ(Math.PI/2).scale(1,1,1),L(0x23452d));hull.scale.set(1,1,1);
-  const hg=new THREE.BoxGeometry(38,3.4,10.4);const hm=new THREE.Mesh(hg,L(0x23452d));hm.position.y=.5;g.add(hm);
-  for(const e of[-1,1]){const tip=new THREE.Mesh(new THREE.CylinderGeometry(5.2,5.2,3.4,12,1,false,0,Math.PI),L(0x23452d));tip.position.set(e*19,.5,0);tip.rotation.y=e>0?0:Math.PI;g.add(tip)}
-  g.add(box2(38.5,2.6,10.6,L(0x2f7a45),0,2.2,0));
-  const deck=box2(32,2.8,10.2,L(0xf2f0e8),0,4.8,0);g.add(deck);
-  const buoyT=canvasTex(128,16,(c,w,h)=>{c.fillStyle='#f2f0e8';c.fillRect(0,0,w,h);c.strokeStyle='#d9d4c4';c.lineWidth=3;for(let i=0;i<8;i++){c.beginPath();c.arc(8+i*16,8,5,0,7);c.stroke()}},true);buoyT.repeat.set(2,1);
-  for(const sd of[-1,1]){const b=new THREE.Mesh(new THREE.PlaneGeometry(28,1.6),new THREE.MeshLambertMaterial({map:buoyT,side:THREE.DoubleSide}));b.position.set(0,6.4,sd*5.15);g.add(b)}
-  g.add(box2(30,.4,10.6,L(0xe6e3d8),0,7.6,0));
-  const fun=new THREE.Mesh(new THREE.CylinderGeometry(1.1,1.1,3.2,10),L(0x1a1a1a));fun.position.set(0,9.6,0);g.add(fun);
-  const band=new THREE.Mesh(new THREE.CylinderGeometry(1.15,1.15,.8,10),L(0xf2f0e8));band.position.set(0,9.4,0);g.add(band);
-  for(const e of[-1,1]){const m=new THREE.Mesh(new THREE.CylinderGeometry(.12,.15,9,5),L(0xe8e6de));m.position.set(e*13,12,0);g.add(m)}
-  g.userData.len=40;g.userData.lights=[[0,12,0,1,.95,.8],[15,6,5,1,.92,.7],[-15,6,-5,1,.92,.7],[5,6,5,1,.92,.7],[-5,6,-5,1,.92,.7]];return g;
+  // A Star Ferry of the 1950s-60s "Star" class, as still running in 1998: double-ended, a dark-green hull with a green rubbing band and black tyre fenders,
+  // a white saloon on the main deck with a window band and an open deck at each end, a smaller saloon above with a white roof edged in green, a small
+  // wheelhouse at each end of the roof, a black funnel with a white band amidships, a mast at each end and a row of lifebuoys along the upper rail.
+  const g=new THREE.Group(),M=sfMat,B=(w,h,d,m,x,y)=>box2(w,h,d,m,x,y,0);
+  if(!SF.tex){
+    const win=(em)=>canvasTex(256,32,(c,w,h)=>{c.fillStyle=em?'#000':'#f3f1ea';c.fillRect(0,0,w,h);c.fillStyle=em?'#fff':'#26343e';for(let i=0;i<8;i++)c.fillRect(i*32+4,6,24,20)},true);
+    SF.tex={win:win(false),em:win(true),
+      fen:canvasTex(256,16,(c,w,h)=>{c.fillStyle='#1e4a2e';c.fillRect(0,0,w,h);c.fillStyle='#111';for(let i=0;i<16;i++){c.beginPath();c.arc(8+i*16,8,6,0,7);c.fill()}},true),
+      buoy:canvasTex(128,16,(c,w,h)=>{c.fillStyle='#f2f0e8';c.fillRect(0,0,w,h);c.fillStyle='#d8412f';for(let i=0;i<8;i++){c.beginPath();c.arc(8+i*16,8,5,0,7);c.fill();c.fillStyle='#f2f0e8';c.beginPath();c.arc(8+i*16,8,2.4,0,7);c.fill();c.fillStyle='#d8412f'}},true)};
+    SF.tex.win.repeat.set(2,1);SF.tex.em.repeat.set(2,1);SF.tex.fen.repeat.set(2,1);SF.tex.buoy.repeat.set(2,1);
+    SF.winMat=new THREE.MeshLambertMaterial({map:SF.tex.win,emissiveMap:SF.tex.em,emissive:0x000000});SF.winMat.userData.neon=0xffe2a0;landmarkLights.push({material:SF.winMat,userData:{neon:0xffe2a0}});
+    SF.fenMat=new THREE.MeshLambertMaterial({map:SF.tex.fen});SF.buoyMat=new THREE.MeshLambertMaterial({map:SF.tex.buoy,side:THREE.DoubleSide});
+    SF.railG=(()=>{const r=[];for(const e of[-1,1])for(let k=0;k<=5;k++){const x=e*(14+k*1.1);r.push(x,3.2,4.7,x,4.3,4.7,x,3.2,-4.7,x,4.3,-4.7)}
+      for(const e of[-1,1]){r.push(e*14,4.3,4.7,e*19.2,4.3,4.7,e*14,4.3,-4.7,e*19.2,4.3,-4.7)}
+      const gg=new THREE.BufferGeometry();gg.setAttribute('position',new THREE.Float32BufferAttribute(r,3));return gg})();
+    SF.railM=new THREE.LineBasicMaterial({color:0xe8e6dc});SF.endG=new THREE.CylinderGeometry(4.9,4.9,3.6,14);SF.bandG=new THREE.CylinderGeometry(5.1,5.1,.7,14);SF.funG=new THREE.CylinderGeometry(1.0,1.15,4.6,10);SF.fbG=new THREE.CylinderGeometry(1.18,1.18,.9,10);SF.mastG=new THREE.CylinderGeometry(.1,.15,10,5)}
+  const hull=M(0x1e4a2e),band=M(0x2f7a45),white=M(0xf3f1ea),greyD=M(0x8d8a80),dk=M(0x25343d);
+  g.add(B(31,3.6,9.8,hull,0,-1.4));g.add(B(31,.7,10.2,band,0,2.2));
+  for(const e of[-1,1]){const c=new THREE.Mesh(SF.endG,hull);c.position.set(e*15.5,.4,0);g.add(c);const b=new THREE.Mesh(SF.bandG,band);b.position.set(e*15.5,2.55,0);g.add(b)}
+  for(const sd of[-1,1]){const f=new THREE.Mesh(new THREE.PlaneGeometry(31,1.2),SF.fenMat);f.position.set(0,.5,sd*4.93);if(sd<0)f.rotation.y=Math.PI;g.add(f)}
+  g.add(B(40,.3,9.8,greyD,0,2.9));
+  g.add(B(26,2.4,8.6,white,0,3.2));g.add(B(28,.35,9.0,M(0xe6e3d8),0,5.6));g.add(B(22,2.3,7.8,white,0,5.95));
+  g.add(B(26,.25,9.1,M(0x2f6b3e),0,8.15));g.add(B(26,.4,9.0,M(0xeeece4),0,8.4));
+  for(const [wd,y,zz] of[[26,4.4,4.32],[22,7.1,3.92]])for(const sd of[-1,1]){const p=new THREE.Mesh(new THREE.PlaneGeometry(wd,1.3),SF.winMat);p.position.set(0,y,sd*zz);if(sd<0)p.rotation.y=Math.PI;g.add(p)}
+  for(const sd of[-1,1]){const p=new THREE.Mesh(new THREE.PlaneGeometry(20,.9),SF.buoyMat);p.position.set(0,6.4,sd*4.52);g.add(p)}
+  g.add(new THREE.LineSegments(SF.railG,SF.railM));
+  for(const e of[-1,1]){g.add(B(3.2,2.2,4.6,white,e*9.5,8.8));g.add(B(3.25,.8,4.65,dk,e*9.5,9.5));g.add(B(3.8,.3,5.2,M(0x2f6b3e),e*9.5,11));
+    const mm=new THREE.Mesh(SF.mastG,M(0xe8e6de));mm.position.set(e*16.8,8.2,0);g.add(mm)}
+  const fun=new THREE.Mesh(SF.funG,M(0x1a1a1a));fun.position.set(0,10.7,0);g.add(fun);const fb=new THREE.Mesh(SF.fbG,M(0xf2f0e8));fb.position.set(0,10.4,0);g.add(fb);
+  sfMerge(g);
+  g.userData.len=40;g.userData.lights=[[0,12.5,0,1,.95,.8],[15,6,5,1,.92,.7],[-15,6,-5,1,.92,.7],[5,6,5,1,.92,.7],[-5,6,-5,1,.92,.7]];return g;
 }
+
+/* the piers: a landward hall, and two finger piers with canopies (local +z runs out over the water, x across) */
+function sfWallTex(rx,ry,em){return canvasTex(128,64,(c,w,h)=>{c.fillStyle=em?'#000':'#dcd6c6';c.fillRect(0,0,w,h);c.fillStyle=em?'#fff':'#2d3d46';for(const y0 of[10,38])for(let i=0;i<8;i++)c.fillRect(i*16+1,y0,14,16)},true)}
+function sfSignTex(en,zh,w,h){return canvasTex(w,h,(c,W,H)=>{c.fillStyle='#1d5634';c.fillRect(0,0,W,H);c.strokeStyle='#ece8da';c.lineWidth=5;c.strokeRect(7,7,W-14,H-14);c.fillStyle='#f4f1e6';c.textAlign='center';c.textBaseline='middle';
+  c.font='bold '+Math.round(H*.36)+'px '+TI_FE;c.fillText(en,W/2,H*.33);c.font='bold '+Math.round(H*.3)+'px '+TI_FZ;c.fillText(zh,W/2,H*.72)})}
+function sfPier(o,Lp){
+  const g=new THREE.Group(),th=Math.atan2(o.axis[0],o.axis[1]),cs=Math.cos(th),sn=Math.sin(th),Y=3.5;g.position.set(o.root[0],0,o.root[1]);g.rotation.y=th;
+  const W=(lx,lz)=>[o.root[0]+lx*cs+lz*sn,o.root[1]-lx*sn+lz*cs];
+  const bx=(w,h,d,mat,x,y,z)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d).translate(0,h/2,0),mat);m.position.set(x,y,z);g.add(m);return m};
+  const M=sfMat,conc=M(0x9b988f),dark=M(0x4d4c47),green=M(0x2f6b3e),cream=M(0xd2ccbb),white=M(0xdedbd0);
+  const wt=sfWallTex(1,1,false),we=sfWallTex(1,1,true);wt.repeat.set(o.hall.w/10,o.hall.h/8);we.repeat.copy(wt.repeat);
+  const wallM=new THREE.MeshLambertMaterial({map:wt,emissiveMap:we,emissive:0x000000});wallM.userData.neon=0xffe2a0;landmarkLights.push({material:wallM,userData:{neon:0xffe2a0}});
+  const hl=o.hall,hw=hl.w,hd=hl.d,hh=hl.h;
+  bx(hw,Y,hd+2,dark,0,0,-hd/2);                         // the podium the hall stands on
+  bx(hw,hh,hd,wallM,0,Y,-hd/2);bx(hw+3,.7,hd+4,cream,0,Y+hh,-hd/2);bx(hw+3,.5,.9,green,0,Y+hh-.4,2);   // hall, roof slab, green fascia over the pier front
+  const span=Math.max(...o.fingers.map(Math.abs))+o.fw/2+1.2;
+  bx(span*2,1.2,12,conc,0,Y-1.2,6);bx(span*2,.15,12,M(0x96938a),0,Y,6);                  // the landing across the roots of the fingers
+  bx(span*2+2,.6,12,white,0,Y+5.4,6);bx(span*2+2.2,.9,12.2,green,0,Y+4.7,6);              // its canopy
+  const sw=Math.min(30,hw*.5),sh=sw*.22;bx(sw+1.2,sh+1.2,.6,M(0x143f27),0,Y+hh+.2,-.6);   // the STAR FERRY sign on the roof edge
+  const sg=new THREE.Mesh(new THREE.PlaneGeometry(sw,sh),new THREE.MeshLambertMaterial({map:sfSignTex('STAR FERRY','天星小輪',512,112)}));sg.position.set(0,Y+hh+.8+sh/2,-.25);sg.userData.neon=0x808070;landmarkLights.push(sg);g.add(sg);
+  const posts=[],rails=[];
+  for(const fx of o.fingers){
+    bx(o.fw,2.4,o.len,dark,fx,-.1,o.len/2);bx(o.fw,1.2,o.len,conc,fx,Y-1.2,o.len/2);bx(o.fw,.15,o.len,M(0x96938a),fx,Y,o.len/2);
+    bx(o.fw+2.4,.9,o.len-18,green,fx,Y+5.1,(o.len+6)/2);bx(o.fw+1.8,.3,o.len-18,white,fx,Y+6,(o.len+6)/2);
+    for(let z=12;z<=o.len-6;z+=12)for(const sd of[-1,1])posts.push([fx+sd*(o.fw/2-.5),z]);
+    for(const sd of[-1,1]){const x=fx+sd*(o.fw/2-.2);rails.push(x,Y+1.1,6,x,Y+1.1,o.len-2);for(let z=8;z<=o.len-2;z+=4)rails.push(x,Y,z,x,Y+1.1,z);
+      for(let z=18;z<o.len-8;z+=22){const w=W(x,z);Lp.push(w[0],Y+5.6,w[1],1,.93,.75,4.5,-1)}}
+    const sgn=new THREE.Mesh(new THREE.PlaneGeometry(o.fw+2,3.2),new THREE.MeshLambertMaterial({map:sfSignTex(o.name[0],o.name[1],256,64)}));sgn.position.set(fx,Y+7.9,o.len-5.2);g.add(sgn);
+    const sgb=sgn.clone();sgb.rotation.y=Math.PI;sgb.position.z=o.len-5.4;g.add(sgb)}
+  const im=new THREE.InstancedMesh(new THREE.BoxGeometry(.7,5.2,.7).translate(0,2.6,0),M(0xcfcabb),posts.length),d=new THREE.Object3D();
+  posts.forEach((p,i)=>{d.position.set(p[0],Y,p[1]);d.updateMatrix();im.setMatrixAt(i,d.matrix)});g.add(im);
+  const rg=new THREE.BufferGeometry();rg.setAttribute('position',new THREE.Float32BufferAttribute(rails,3));g.add(new THREE.LineSegments(rg,new THREE.LineBasicMaterial({color:0xd8d5c8})));
+  scene.add(g);return {g,W}}
+function sfClockFace(parent,size,y,half,tex){
+  // four faces, each with an hour and a minute hand that follow the sim's clock of the day
+  for(let k=0;k<4;k++){const f=new THREE.Group();f.rotation.y=k*Math.PI/2;f.position.set(Math.sin(k*Math.PI/2)*half,y,Math.cos(k*Math.PI/2)*half);parent.add(f);
+    const face=new THREE.Mesh(new THREE.CircleGeometry(size/2,24),new THREE.MeshLambertMaterial({map:tex}));face.position.z=.06;face.userData.neon=0xffe9b0;landmarkLights.push(face);f.add(face);
+    const hand=(w,l,col,z)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w,l,.08).translate(0,l/2-.12*l,0),new THREE.MeshBasicMaterial({color:col}));m.position.z=z;f.add(m);return m};
+    SF.clocks.push({h:hand(size*.07,size*.28,0x151515,.12),m:hand(size*.045,size*.42,0x151515,.16)})}}
+function sfClockTex(){return canvasTex(128,128,(c,w,h)=>{c.fillStyle='#f4f1e6';c.fillRect(0,0,w,h);c.strokeStyle='#2a2a2a';c.lineWidth=6;c.beginPath();c.arc(64,64,58,0,7);c.stroke();c.lineWidth=4;
+  for(let i=0;i<12;i++){const a=i*Math.PI/6;c.beginPath();c.moveTo(64+Math.sin(a)*46,64-Math.cos(a)*46);c.lineTo(64+Math.sin(a)*54,64-Math.cos(a)*54);c.stroke()}})}
+function sfBrickMat(rx,ry){const t=canvasTex(64,64,(c,w,h)=>{c.fillStyle='#b9a58f';c.fillRect(0,0,w,h);for(let r=0;r<8;r++)for(let i=0;i<5;i++){const x=i*16-(r%2?8:0);c.fillStyle=['#a5452d','#9b3f29','#b14d33','#a04630'][(r*3+i)%4];c.fillRect(x+1,r*8+1,14,6)}},true);t.repeat.set(rx,ry);return new THREE.MeshLambertMaterial({map:t})}
+function buildKowloonClockTower(Lp){
+  // The Former Kowloon-Canton Railway Clock Tower (1915): red brick and granite, 44 m, four clock faces, a lantern and a pyramid roof with a lightning rod.
+  const [cx,cz]=LM.clock,b=gAt(LM.clock),g=new THREE.Group();g.position.set(cx,b,cz);
+  const gran=sfMat(0xaaa497),roof=sfMat(0x4b5155),bx=(w,h,d,mat,y)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d).translate(0,h/2,0),mat);m.position.y=y;g.add(m);return m};
+  bx(11.6,1.2,11.6,gran,0);bx(10.2,2.4,10.2,gran,1.2);
+  bx(8.4,24,8.4,sfBrickMat(2.6,7.6),3.6);for(const y of[9,15,21,26.6])bx(9,.7,9,gran,y);
+  bx(9.2,7.4,9.2,sfBrickMat(2.8,2.2),27.6);bx(10.2,.9,10.2,gran,35);
+  for(let k=0;k<4;k++){const s=new THREE.Mesh(new THREE.BoxGeometry(5.6,5.6,.4),gran);s.position.set(Math.sin(k*Math.PI/2)*4.7,31.3,Math.cos(k*Math.PI/2)*4.7);s.rotation.y=k*Math.PI/2;g.add(s)}
+  sfClockFace(g,4.6,31.3,4.95,sfClockTex());
+  bx(6,4.1,6,sfBrickMat(1.8,1.2),35.9);bx(6.8,.6,6.8,gran,40);
+  for(let k=0;k<4;k++){const a=new THREE.Mesh(new THREE.PlaneGeometry(2.2,2.8),new THREE.MeshLambertMaterial({color:0x2b2a28}));a.position.set(Math.sin(k*Math.PI/2)*3.02,37.9,Math.cos(k*Math.PI/2)*3.02);a.rotation.y=k*Math.PI/2;g.add(a)}
+  const py=new THREE.Mesh(new THREE.ConeGeometry(4.9,3.4,4).translate(0,1.7,0),roof);py.position.y=40.6;py.rotation.y=Math.PI/4;g.add(py);
+  const rod=new THREE.Mesh(new THREE.CylinderGeometry(.08,.14,7,5).translate(0,3.5,0),sfMat(0x8c8f91));rod.position.y=44;g.add(rod);
+  scene.add(g);towerCollider(cx,cz,10,10,b+51,'the Clock Tower');Lp.push(cx,b+12,cz+6,1,.9,.7,5,-1,cx,b+12,cz-6,1,.9,.7,5,-1)}
+function sfPierClock(g,x,z,Y){
+  // the Central pier's own clock tower: a plain cream shaft with a clock on each face
+  const tw=new THREE.Group();tw.position.set(x,Y,z);g.add(tw);
+  const sh=new THREE.Mesh(new THREE.BoxGeometry(7,30,7).translate(0,15,0),sfMat(0xd9d3c3));tw.add(sh);
+  const cap=new THREE.Mesh(new THREE.BoxGeometry(8.6,6.5,8.6).translate(0,3.25,0),sfMat(0xe3ded0));cap.position.y=30;tw.add(cap);
+  const top=new THREE.Mesh(new THREE.BoxGeometry(9.4,.8,9.4).translate(0,.4,0),sfMat(0x2f6b3e));top.position.y=36.5;tw.add(top);
+  const mast=new THREE.Mesh(new THREE.CylinderGeometry(.1,.14,6,5).translate(0,3,0),sfMat(0xe8e6de));mast.position.y=37.3;tw.add(mast);
+  sfClockFace(tw,4.8,33.2,4.35,sfClockTex())}
+function buildStarFerryPiers(Lp){
+  // Central, Edinburgh Place (1957 pier, 1998 shoreline): fingers run north into the harbour
+  {const p=sfPier({root:[-3150,4647],axis:[0,-1],fingers:[-30,30],fw:14,len:100,hall:{w:92,d:30,h:13},name:['CENTRAL','中環']},Lp);sfPierClock(p.g,-38,-8,3.5+0);
+   towerCollider(-3150+38,4647+8,8,8,3.5+37,'the Star Ferry pier clock tower')}
+  // Tsim Sha Tsui (1957 pier): fingers run south; the Clock Tower stands just to the east
+  sfPier({root:[-2425,3585],axis:[0,1],fingers:[-30,30],fw:14,len:105,hall:{w:76,d:40,h:11},name:['TSIM SHA TSUI','尖沙咀']},Lp);
+  // Wan Chai: a smaller pier at the shore east of the Convention Centre extension; fingers run east
+  sfPier({root:[-1862,4592],axis:[1,0],fingers:[-17,17],fw:12,len:80,hall:{w:52,d:24,h:8},name:['WAN CHAI','灣仔']},Lp)}
+
 function liner(kind){
   const g=new THREE.Group();const L=(c)=>new THREE.MeshLambertMaterial({color:c});const len=kind?290:250,bw=len*.11;
   g.add(box2(len,13,bw,L(kind?0x1f2433:0xf2f2ee),0,-3,0));g.add(box2(len*.96,1.2,bw*1.01,L(kind?0xb5302a:0x2f6db5),0,-3,0));
@@ -3125,14 +3290,10 @@ function anchorSpot(box,clear,avoid,placed,rad){
 function moor(kind,spot){if(!spot)return;const m=shipModel(kind);const L=m.userData.len,big=L>60;m.position.set(spot[0],0,spot[1]);m.rotation.y=-spot[2];scene.add(m);
   m.userData.lights=big?[[L*.45,14,0,1,.97,.88],[-L*.38,20,0,1,.9,.7]]:[[0,kind==='junk'?10:6,0,1,.97,.88]];SHIPS.push({ln:{v:0,static:true},m,s:0,dir:1})}
 function buildShips(){
-  // Star Ferries cross the harbour between their piers, in both directions
-  const lanes=[
-    {k:'ferry',p:[[-2540,3600],[-3150,4520]],v:7,n:3,stop:true},
-    {k:'ferry',p:[[-2470,3610],[-1820,4520]],v:6.5,n:2,stop:true},
-    {k:'ferry',p:[[-1400,3700],[-1820,4520]],v:7,n:2,stop:true},
-    {k:'ferry',p:[[-1400,3700],[-3150,4520]],v:7.5,n:2,stop:true},
-    {k:'ferry',p:[[-1400,3700],[0,4300],[1200,4500]],v:8,n:1},
-  ];
+  // Star Ferries: a fleet for each route, run to the timetable (SF_ROUTES)
+  SF.boats.length=0;
+  for(const R of SF_ROUTES)for(let k=0;k<R.n;k++){const m=shipModel('ferry');addWake(m);scene.add(m);const b={r:R.i,k,m};SF.boats.push(b);SHIPS.push({ln:{v:0,sf:b},m,s:0,dir:1,wait:0})}
+  const lanes=[];
   const HARB=[-9500,2500,7600,5700],BAY=[300,-400,4300,3300],CWB=[-1200,3300,1200,4400];
   // working craft that cross and roam: tugs, walla-walla launches and the marine police
   const plan=[['tug',3,HARB,12,5],['tug',2,BAY,12,4.5],['launch',6,HARB,6,6],['launch',3,BAY,6,5.5],['police',3,HARB,10,9],['police',1,BAY,10,8]];
@@ -3577,9 +3738,11 @@ function updatePort(dt){
 }
 const _YAX=new THREE.Vector3(0,1,0);
 function updateShips(dt,t){
+  sfClock(dt);
   const lp=shipLights.geometry.attributes.position;let li=0;
   for(const S of SHIPS){const ln=S.ln;
-    if(!ln.static){
+    if(ln.sf)sfPlace(S,ln.sf,t);
+    else if(!ln.static){
       if(S.wait>0)S.wait-=dt;else if(ln.loop){S.s+=ln.v*dt;if(S.s>=ln.L)S.s-=ln.L}else{S.s+=ln.v*S.dir*dt;if(S.s>ln.L){S.s=ln.L;S.dir=-1;if(ln.stop)S.wait=rr(20,40)}if(S.s<0){S.s=0;S.dir=1;if(ln.stop)S.wait=rr(20,40)}}
       let i=1;while(i<ln.c.length-1&&ln.c[i]<S.s)i++;const t2=(S.s-ln.c[i-1])/Math.max(1,ln.c[i]-ln.c[i-1]);const a=ln.p[i-1],b=ln.p[i];
       const x=lerp(a[0],b[0],t2),z=lerp(a[1],b[1],t2);let hd=Math.atan2(b[1]-a[1],b[0]-a[0]);if(S.dir<0)hd+=Math.PI;
@@ -6279,7 +6442,7 @@ const fontsReady=document.fonts&&document.fonts.ready?Promise.race([document.fon
 fontsReady.then(()=>setTimeout(boot,30));
 
 /* test hooks */
-window.__kt={penTour,HELI,HPAD,updateHeli,hPlan,hHerm,hGround,masts:()=>apronMasts,port:()=>PORT,geo:()=>GEO,inPortYard,PORT_QUAYS,PORT_BLD,SHIPS,FAIRWAYS,waterAt,laneOffset,rwP,STAND_C,CTY,stS,NCG,ESTATES,RC,rcEv,rcVac,rcRoll,rcStrip,rcClearBy,rcTakeoffWhy,rcView,rcPlayer,CYC,onPaved,gearPaved,rwS,LINKS,rb:()=>rbMasts13,bat:buildingAt,setHour,solarState,SUN_DIR,MOON_DIR,ENV,AI,CFG,ST,COACH,LESSON,keys,coachUpdate,coachResync,coachGo,rwL,get PATH(){return PATH},LND,setRunway,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,{rwy:'13',conc:false,tour:false},o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.tour?'tour':CFG.conc&&CFG.game==='watch'?'watchC':CFG.rwy==='31'&&CFG.game!=='learn'?CFG.game+'31':CFG.game}]`).checked=true;hourIn.value=o.hour!==undefined?o.hour:CFG.night?22:15;showHour();startFlight()},
+window.__kt={SF,SF_ROUTES,sfSeek,sfAdvance,penTour,HELI,HPAD,updateHeli,hPlan,hHerm,hGround,masts:()=>apronMasts,port:()=>PORT,geo:()=>GEO,inPortYard,PORT_QUAYS,PORT_BLD,SHIPS,FAIRWAYS,waterAt,laneOffset,rwP,STAND_C,CTY,stS,NCG,ESTATES,RC,rcEv,rcVac,rcRoll,rcStrip,rcClearBy,rcTakeoffWhy,rcView,rcPlayer,CYC,onPaved,gearPaved,rwS,LINKS,rb:()=>rbMasts13,bat:buildingAt,setHour,solarState,SUN_DIR,MOON_DIR,ENV,AI,CFG,ST,COACH,LESSON,keys,coachUpdate,coachResync,coachGo,rwL,get PATH(){return PATH},LND,setRunway,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,{rwy:'13',conc:false,tour:false},o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.tour?'tour':CFG.conc&&CFG.game==='watch'?'watchC':CFG.rwy==='31'&&CFG.game!=='learn'?CFG.game+'31':CFG.game}]`).checked=true;hourIn.value=o.hour!==undefined?o.hour:CFG.night?22:15;showHour();startFlight()},
   run:(sec)=>{if(CFG.game==='watch'){ST.t+=sec;return {t:ST.t}}const h=1/120;for(let i=0;i<sec*120&&!ST.ended;i++){physStep(h);if(i%60===0)recordHistory();if(i%12===0)aiTick()}return {ended:ST.ended,td:ST.td,t:ST.t,x:ST.x,y:ST.y,z:ST.z,V:ST.V/KT,d:PATH.pts[ST.pi].d}},
   get mode(){return mode},updateAI,AIC,footOf,GSE,GSE_KINDS,AIRBOX,rwS,BGRID,updateGSE,gseLamps:()=>gseLamps,fpAt,fpDist,hitOn,damageModel,aiHit,DEBRIS,EMIT,aiTick,ctl(){return aiControl},get CFG(){return CFG},frame:(now)=>frame(now,true),get FOCUS(){return FOCUS},step:()=>physStep(1/120),rwS,setZoom:z=>{CFG.zoom=z},get AI(){return AI},get GSE(){return GSE},get BRIDGE(){return BRIDGE},STAND_S,STAND_TY,lineupT,lineupT31,arrivalPts,tugAt,standL,PB,get parked(){return parked},gseAt:(t)=>{ST.t=t;updateGSE();return GSE.map(e=>({k:e.kind,x:e.p.x,z:e.p.z,psi:e.p.psi,lift:e.lift}))},get shipLights(){return shipLights},get PORT(){return PORT},get SHIPS(){return SHIPS},get DISP(){return DISP},get deck(){return deckGroup},get streetCam(){return STREET_CAM},get BB(){return BB},get water(){return water},get camera(){return camera},get nStreets(){return STREETS.length},drawDisplays,look,setView,terrainAt,buildingAt,groundInfo};
 })();
