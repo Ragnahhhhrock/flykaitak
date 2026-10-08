@@ -1,5 +1,42 @@
 [
   {
+    "slug": "fictional-airlines-of-kai-tak",
+    "title": "The made-up airlines of Kai Tak",
+    "dek": "Ten invented airlines, the aircraft they fly and the 1998 cities they serve, from Red Junk Air to the Concorde charter.",
+    "description": "Meet the made-up airlines at Fly Kai Tak: their codes, tail colours, aircraft and the long-haul and regional routes on the flight board.",
+    "date": "2026-10-08",
+    "tag": "Behind the scenes",
+    "category": "aircraft",
+    "keywords": [
+      "fictional airlines",
+      "Kai Tak airlines",
+      "flight information board",
+      "routes",
+      "747-400",
+      "A330-300",
+      "777-200",
+      "A340-300",
+      "cargo airlines",
+      "flight simulator",
+      "Kai Tak"
+    ],
+    "hero": "airlines-apron-tails",
+    "hero_alt": "Jets on the apron and taxiway at Kai Tak with red and gold tails, and the Hong Kong skyline beyond.",
+    "hero_caption": "Tail colours tell the airlines apart on the apron.",
+    "card_kicker": "AIRCRAFT · BEHIND THE SCENES",
+    "card_title": "The made-up airlines of Kai Tak",
+    "card_sub": "Fleets, colours and routes",
+    "card_image": "airlines-apron-tails",
+    "card_focus": 50,
+    "zh": {
+      "title": "啟德嘅虛構航空公司",
+      "dek": "十間虛構航空公司、佢哋飛嘅機種，同埋 1998 年佢哋去嘅城市，由 Red Junk Air 到協和包機。",
+      "description": "認識 Fly Kai Tak 入面嘅虛構航空公司：代號、機尾顏色、機種，同航班顯示板上嘅長途同區域航線。",
+      "hero_alt": "啟德停機坪同滑行道上有紅色同金色機尾嘅客機，遠處係香港天際線。",
+      "hero_caption": "睇機尾顏色就分到係邊間航空公司。"
+    }
+  },
+  {
     "slug": "bank-of-china-hsbc-rebuilt",
     "title": "Bank of China Tower and HSBC rebuilt",
     "dek": "Central's two most famous towers now match the real buildings: the Bank of China's prisms and bracing, lit at night, and HSBC's masts and trusses.",
