@@ -7,6 +7,7 @@ Outputs (assets/social/instagram):
   post-1-welcome.jpg ... post-3    1080x1350 (4:5 feed posts; key text sits in the centre 3:4 for the grid crop)
   story-1-welcome.jpg, story-2-turn.jpg, story-3-report-card.jpg   1080x1920 (text kept out of the top 250 / bottom 340 px)
   highlight-play/turn/apron/scores.png   1080x1920 highlight covers (icon in the centre circle)
+  `python3 tools/instagram.py flight605` renders only post-4a/4b/4c, the three-slide Flight 605 gallery (1080x1350)
 Photos come from the sim's own screenshots (cockpit off). No real airline names or logos.
 Needs: pip install playwright pillow.
 """
@@ -139,5 +140,33 @@ def main():
         b.close()
 
 
+def gallery(photo, pos, kicker, headline, sub):
+    """Gallery slide 1080x1350: the photo at native size across the top (nothing over the subject), text in a dark panel below."""
+    body = f"""<div class="c"><div class="photo" style="inset:auto;left:0;top:0;width:1080px;height:900px;background-size:auto 900px;background-position:{pos} 0"></div>
+<div style="position:absolute;left:0;top:740px;width:1080px;height:160px;background:linear-gradient(180deg,rgba(10,17,21,0),#0a1115)"></div>
+<div class="k" style="top:914px">{kicker}</div>
+<h1 style="top:952px;font-size:88px;line-height:1.04">{headline}</h1>
+<div class="s" style="top:1152px">{sub}</div>
+<div class="url" style="top:1212px">flykaitak.com</div>
+<div class="green" style="bottom:42px"></div><div class="chk" style="bottom:0"></div></div>"""
+    return dict(w=1080, h=1350, body=body, photo=photo, pos="center")
+
+
+def flight605():
+    """Three-slide gallery post (4:5) of the Flight 605 wreck scene, from the sim screenshots."""
+    OUT.mkdir(parents=True, exist_ok=True)
+    shots = ROOT / "assets" / "blog" / "shots"
+    specs = {
+        "post-4a-flight605-harbour": gallery(fb.data_uri(shots / "flight-605-wreck-overview.jpg"), "49%", "NOVEMBER 1993", "The 747 in<br>the harbour", "Flight 605, shown as an optional scene."),
+        "post-4b-flight605-nose": gallery(fb.data_uri(shots / "flight-605-wreck-nose.jpg"), "5%", "FLIGHT 605", "Nose on<br>the seawall", "The crushed nose, at the end of Runway 13."),
+        "post-4c-flight605-tail": gallery(fb.data_uri(shots / "flight-605-wreck-tail.jpg"), "59%", "FLIGHT 605", "Tail under<br>water", "The fin was cut off. Tick it on the home screen."),
+    }
+    with sync_playwright() as p:
+        b = p.chromium.launch()
+        for name, spec in specs.items():
+            render(b, name, spec)
+        b.close()
+
+
 if __name__ == "__main__":
-    main()
+    flight605() if "flight605" in sys.argv[1:] else main()

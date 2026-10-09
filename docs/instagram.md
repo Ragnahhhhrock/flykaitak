@@ -6,6 +6,7 @@ Images are in `assets/social/instagram/` (rebuild with `python3 tools/instagram.
 |---|---|---|
 | `profile.png` | Profile picture (circle crop) | 1080×1080 |
 | `post-1-welcome.jpg`, `post-2-turn.jpg`, `post-3-apron.jpg` | Feed posts (4:5). Key text sits inside the centre 3:4 so the grid crop keeps it | 1080×1350 |
+| `post-4a-flight605-harbour.jpg`, `post-4b-flight605-nose.jpg`, `post-4c-flight605-tail.jpg` | Three-slide gallery post (4:5): the Flight 605 wreck scene. Photo on top, text panel below. Render with `python3 tools/instagram.py flight605` | 1080×1350 |
 | `story-1-welcome.jpg`, `story-2-turn.jpg`, `story-3-report-card.jpg` | Stories. Text stays out of the top 250 px and bottom 340 px | 1080×1920 |
 | `highlight-play/turn/apron/scores.png` | Highlight covers (pick the cover in the app and drag to the centre circle) | 1080×1920 |
 
@@ -52,6 +53,13 @@ Eight stands, jet bridges that swing out to the door, pushback tugs and apron bu
 Watch the apron from the car park roof in Plane Spotter mode. Link in bio.
 
 #FlyKaiTak #KaiTak #PlaneSpotting #Aviation #HongKong
+
+### Post 4 · Flight 605 (gallery: `post-4a`, `post-4b`, `post-4c`)
+On 4 November 1993 a 747 overran Runway 13 at Kai Tak and came to rest in Victoria Harbour. Fly Kai Tak can now show it as an optional scene: nose on the seawall, tail under the water, fin cut off.
+
+Tick "Flight 605 wreck, November 1993" on the home screen. It is off by default, because the jet was gone long before 1998. Link in bio.
+
+#FlyKaiTak #KaiTak #啟德機場 #AviationHistory #HongKong #FlightSim
 
 ### Story 3 · Report card
 Every hand-flown landing is graded out of 100. 90+ is Captain. Add your own report card image to the story and tag @flykaitak.
