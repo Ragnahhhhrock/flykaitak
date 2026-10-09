@@ -164,7 +164,7 @@ def flight605():
     with sync_playwright() as p:
         b = p.chromium.launch()
         for name, spec in specs.items():
-            render(b, name, spec)
+            render(b, name, spec, "png")
         b.close()
 
 
