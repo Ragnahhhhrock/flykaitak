@@ -19,6 +19,7 @@
 <link rel="manifest" href="site.webmanifest">
 <!-- Google tag (gtag.js). Set the measurement ID below. With Google tag gateway on Cloudflare, set src to your first-party path (for example "/metrics/").
      It only loads on flykaitak.com, so the local copy and the Claude preview send nothing. -->
+<script src="/assets/api.js"></script>
 <script>
 window.FKT_ANALYTICS={id:'G-7MNP3SBEF8',src:'/metrics/',fallback:'https://www.googletagmanager.com/gtag/js',hosts:['flykaitak.com','www.flykaitak.com']};
 (function(c){window.dataLayer=window.dataLayer||[];window.gtag=function(){dataLayer.push(arguments)};
@@ -4178,7 +4179,13 @@ function apUpdate(dt){
 }
 
 /* ---------------- analytics events ---------------- */
-function track(name,params,beacon){try{if(window.gtag)gtag('event',name,Object.assign({aircraft:CFG.ac,weather:CFG.wx,time_of_day:CFG.night?'night':'day'},params||{},beacon?{transport_type:'beacon'}:{}))}catch(e){}}
+/* Anonymous counts for the public /stats/ page. Only on flykaitak.com, and only if FKT_API is set. */
+const STAT_EV={game_start:1,landing_attempt:1,landing:1,crash:1,missed_approach:1,aircraft_select:1,lesson_start:1,lesson_complete:1};
+function statPost(name,p){try{const api=window.FKT_API;if(!api||!STAT_EV[name]||!/(^|\.)flykaitak\.com$/.test(location.hostname))return;p=p||{};
+  const b={k:name,mode:p.game_mode||p.mode||(FLT&&FLT.game)||null,ac:p.aircraft||CFG.ac,wx:CFG.wx,tod:CFG.night?'night':'day',cause:p.cause,grade:p.grade,score:p.score,fpm:p.touchdown_fpm,secs:p.flight_seconds,ap:p.autopilot_used};
+  if(name==='lesson_start'||name==='lesson_complete')b.mode='lesson_'+(p.lesson||'');
+  fetch(api+'/events',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(b),keepalive:true}).catch(()=>{})}catch(e){}}
+function track(name,params,beacon){statPost(name,params);try{if(window.gtag)gtag('event',name,Object.assign({aircraft:CFG.ac,weather:CFG.wx,time_of_day:CFG.night?'night':'day'},params||{},beacon?{transport_type:'beacon'}:{}))}catch(e){}}
 /* ---------------- player stats (GA4 events) ----------------
    flight_end, landing_attempt, landing, crash, missed_approach, control_toggle, aircraft_select, setup_option, session_summary */
 const SESS={flights:0,attempts:0,landings:0,crashes:0,missed:0,flightSec:0,t0:performance.now()};
@@ -4238,7 +4245,7 @@ function gradeLanding(td){
    scores are also shared through a Cloudflare Worker + D1 database.
    Only hand-flown, un-rewound IGS 13 landings are ranked. Rank title comes from the score band.
    ===================================================================== */
-const HS_API='';
+const HS_API=window.FKT_API||'';
 const HS_KEY='fkt-scores',HS_NAME='fkt-callsign',HS_MAX=100;
 const HS_RANKS=[[90,'Captain'],[76,'First Officer'],[60,'Second Officer'],[45,'Flight Engineer'],[0,'Cadet']];
 const rankTitle=pts=>{for(const [m,t] of HS_RANKS)if(pts>=m)return t;return 'Cadet'};

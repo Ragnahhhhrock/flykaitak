@@ -1,0 +1,46 @@
+/* Fly Kai Tak stats dashboard. Sits on assets/blog/blog.css (night-cockpit design system). */
+.stathead{background:radial-gradient(ellipse at 85% 30%,rgba(47,163,109,.18),transparent 55%),var(--ink);border-bottom:1px solid var(--line)}
+.stathead .wrap{padding-top:40px;padding-bottom:32px}
+.stathead h1{font-size:clamp(34px,5.5vw,58px);line-height:1.05;margin:0 0 12px}
+.stathead .lede{margin:0;max-width:56ch;color:var(--muted);font-size:clamp(15px,2vw,18px);line-height:1.55}
+.statbody{padding-top:26px;padding-bottom:30px}
+.banner{border:1px solid var(--line-2);border-left:3px solid var(--amber);background:var(--panel-2);padding:12px 16px;border-radius:3px;margin:0 0 22px;font-size:14.5px;color:var(--text)}
+.meta{font-family:var(--f-num);font-size:11.5px;letter-spacing:.08em;color:var(--muted);margin:0 0 18px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:0 0 28px}
+.kpi{background:var(--panel-2);border:1px solid var(--line);border-radius:3px;padding:14px 16px 12px}
+.kpi .l{margin:0;font-family:var(--f-num);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.kpi .v{margin:6px 0 0;font-family:var(--f-ui);font-weight:700;font-size:clamp(28px,4vw,38px);line-height:1.1;color:var(--paper);font-variant-numeric:tabular-nums}
+.kpi .s{margin:4px 0 0;font-size:12.5px;color:var(--muted);line-height:1.4}
+.kpi.ok{border-top:3px solid var(--jade-bright)}.kpi.bad{border-top:3px solid var(--alarm)}.kpi.warn{border-top:3px solid var(--amber)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.card{background:var(--panel-2);border:1px solid var(--line);border-radius:3px;padding:18px 20px 16px;min-width:0}
+.card.wide{grid-column:1/-1}
+.card h2{margin:0 0 4px;font-size:18px;line-height:1.3}
+.card .sub{margin:0 0 14px;color:var(--muted);font-size:13.5px;line-height:1.45}
+.rows{list-style:none;margin:0;padding:0;display:grid;gap:7px}
+.row{display:grid;grid-template-columns:minmax(120px,44%) 1fr auto;align-items:center;gap:10px;font-size:14px}
+.row .n{color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .t{position:relative;height:12px;background:rgba(255,255,255,.05);border-radius:0 3px 3px 0}
+.row .b{position:absolute;left:0;top:0;bottom:0;background:var(--jade-bright);border-radius:0 4px 4px 0;min-width:2px}
+.row .c{font-family:var(--f-ui);font-size:13px;color:var(--paper);font-variant-numeric:tabular-nums;text-align:right;min-width:3ch}
+.row .c small{color:var(--muted);font-size:11px;margin-left:6px}
+.row.alt .b{background:var(--amber)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin:0 0 10px;font-size:13px;color:var(--text)}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.legend i{width:12px;height:12px;border-radius:2px;display:inline-block}
+.chart{position:relative}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart .grid line{stroke:var(--line);stroke-width:1}
+.chart text{font-family:var(--f-num);font-size:10.5px;fill:var(--muted)}
+.chart rect.hit{fill:transparent}
+.chart rect.hit:hover,.chart rect.hit:focus{fill:rgba(255,255,255,.06);outline:none}
+.tip{position:absolute;pointer-events:none;background:#0a1115;border:1px solid var(--line-2);border-radius:3px;padding:8px 10px;font-size:12.5px;line-height:1.5;color:var(--text);white-space:nowrap;z-index:3;transform:translate(-50%,-100%);opacity:0;transition:opacity .08s}
+.tip.on{opacity:1}.tip b{font-family:var(--f-num);color:var(--paper);font-weight:700}
+table.dt{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
+table.dt th,table.dt td{padding:5px 8px;border-bottom:1px solid var(--line);text-align:right;font-family:var(--f-ui);font-variant-numeric:tabular-nums}
+table.dt th:first-child,table.dt td:first-child{text-align:left;font-family:var(--f-ui)}
+table.dt th{color:var(--muted);font-weight:400;font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+details.tbl{margin-top:8px}details.tbl summary{cursor:pointer;color:var(--muted);font-size:13px}
+.empty{padding:40px 10px;text-align:center;color:var(--muted)}
+.note{color:var(--muted);font-size:13.5px;margin:26px 0 0;max-width:var(--read)}
+@media (max-width:760px){.grid{grid-template-columns:1fr}.row{grid-template-columns:minmax(86px,38%) 1fr auto}}
