@@ -1,5 +1,41 @@
 [
   {
+    "slug": "flight-605-wreck-at-the-runway-end",
+    "title": "Flight 605: the 747 wreck at the runway end",
+    "dek": "An optional 1993 scene: a 747-400 with a crushed nose against the seawall, its tail under the water and its fin cut off.",
+    "description": "Fly Kai Tak can show the Flight 605 wreck: a 747 nose-up on the seawall at the end of Runway 13, tail under water, fin removed. Tick it on the home screen.",
+    "date": "2026-10-09",
+    "tag": "History",
+    "category": "scenery",
+    "keywords": [
+      "Flight 605",
+      "1993 overrun",
+      "747-400",
+      "Kai Tak",
+      "Runway 13",
+      "Victoria Harbour",
+      "wreck",
+      "seawall",
+      "flight simulator",
+      "home screen option"
+    ],
+    "hero": "flight-605-wreck-overview",
+    "hero_alt": "A 747 with its nose against the seawall at the end of the Kai Tak runway and its body sloping down into Victoria Harbour, the tail under the water and the fin gone.",
+    "hero_caption": "The wreck from the harbour: nose on the seawall, body running out into the water.",
+    "card_kicker": "SCENERY · HISTORY",
+    "card_title": "The 747 in the harbour",
+    "card_sub": "Flight 605, November 1993",
+    "card_image": "flight-605-wreck-overview",
+    "card_focus": 50,
+    "zh": {
+      "title": "605 號航班：跑道盡頭嘅 747 殘骸",
+      "dek": "1993 年嘅可選場景：一架機頭撞扁、頂住海堤、機尾喺水下、垂直尾翼已被切除嘅 747-400。",
+      "description": "Fly Kai Tak 可以顯示 605 號航班殘骸：一架 747 機頭頂住 13 號跑道盡頭海堤，機尾喺水下，垂直尾翼已被拆除。喺主畫面剔選就得。",
+      "hero_alt": "一架 747 機頭頂住啟德跑道盡頭嘅海堤，機身斜斜插入維多利亞港，機尾喺水下，垂直尾翼已經冇咗。",
+      "hero_caption": "由海港方向睇殘骸：機頭頂住海堤，機身伸出水面。"
+    }
+  },
+  {
     "slug": "fictional-airlines-of-kai-tak",
     "title": "The made-up airlines of Kai Tak",
     "dek": "Ten invented airlines, the aircraft they fly and the 1998 cities they serve, from Red Junk Air to the Concorde charter.",

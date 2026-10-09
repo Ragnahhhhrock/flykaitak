@@ -559,6 +559,7 @@ body.bigmap #radio{top:calc(env(safe-area-inset-top,0px) + 396px)}
           <label class="tog"><input type="checkbox" id="optAP"><span>Computer flies the aircraft<small>Autopilot and autothrottle fly the approach. Pick a cabin seat and watch.</small></span></label>
           <label class="tog"><input type="checkbox" id="optMap"><span>Map with live aircraft<small>The corner map shows you and the other traffic. Tick to show it. M toggles it here and in flight.</small></span></label>
           <label class="tog"><input type="checkbox" id="optWalled" checked><span>Kowloon Walled City as it stood before 1994<small>It was demolished in 1993–94. Untick to see the 1998 park instead.</small></span></label>
+          <label class="tog"><input type="checkbox" id="optWreck"><span>Flight 605 wreck, November 1993<small>The 747 that overran Runway 13 into the harbour, shown where it came to rest. Tick to see it at the end of the runway.</small></span></label>
         </div>
       </fieldset>
       <button class="go" id="btnGo" type="button"><span id="goLabel">Begin descent</span><span class="k">ENTER</span></button>
@@ -783,7 +784,7 @@ const WX={
 };
 
 /* ---------------- state & settings ---------------- */
-const CFG={tour:false,conc:false,game:'approach',lesson:false,lland:false,rwy:'13',zoom:1,ts:1,deck:false,hud:true,map:false,ac:'b744',night:false,hour:15,wx:'clear',lightning:false,clouds:true,guide:true,ap:false,walled:true,view:'cockpit',sound:true,radio:true,seatRow:34,seatLeft:true};
+const CFG={tour:false,conc:false,game:'approach',lesson:false,lland:false,rwy:'13',zoom:1,ts:1,deck:false,hud:true,map:false,ac:'b744',night:false,hour:15,wx:'clear',lightning:false,clouds:true,guide:true,ap:false,walled:true,wreck:false,view:'cockpit',sound:true,radio:true,seatRow:34,seatLeft:true};
 const ST={};let mode='loading'; // loading | attract | fly | ended
 let paused=false;
 
@@ -1970,6 +1971,49 @@ function kwcSigns(faces,R,RR,base,X,Z,fpt){
   return new THREE.Mesh(g,m);
 }
 function setWalled(on){walledGroup.visible=on;parkGroup.visible=!on;WALLED.on=on;if(WALLED.ref)WALLED.ref.top=on?WALLED.col.top:-99}
+/* ---------------- FLIGHT 605 WRECK (4 November 1993) ----------------
+   A 747-400 landed long on Runway 13, ran off the far end through the approach lights, ground-looped and came to rest in
+   Victoria Harbour facing almost 180 degrees from its landing direction. The cabin stayed above water for the evacuation and the
+   aircraft sank tail first. The vertical stabiliser was removed with explosives soon after because it interfered with the ILS
+   signals for Runway 31; the nose and first-class cabin were damaged. It is not part of the 1998 scene, so the option is off by default.
+   Modelled from published accounts: nose up on the seawall at the Runway 31 end, nose back toward the runway, the aft fuselage and
+   inner engines under the water, fin cut off to a stump, nose crushed. */
+const WRECK={s:3462,l:-34,hdg:314,pitch:9,roll:-1,y:-4.1,g:null,on:false,hid:[]};
+function buildWreck(){
+  const a=AC.b744,L=a.len,m=buildAircraftModel(a),root=new THREE.Group();
+  // the gear is folded away under the water and the fin has been cut off, leaving a ragged stump
+  m.userData.gear.visible=false;
+  const fins=[];m.traverse(o=>{if(o.userData&&o.userData.fin)fins.push(o)});fins.forEach(o=>o.parent.remove(o));
+  const stump=new THREE.Mesh(new THREE.BoxGeometry(.5,2.6,6.5),new THREE.MeshLambertMaterial({color:0x2c3a39}));
+  stump.position.set(.25,a.cy+a.R*.55+1.1,L*.3+4.4);stump.rotation.x=-.5;m.add(stump);
+  // crushed, drooping, twisted nose: every mesh that belongs to the front of the fuselage is baked into group space and deformed alike
+  const parts=new Set([...(m.userData.parts.eng||[]),...(m.userData.parts.wing||[])]),skip=o=>{for(let p=o;p&&p!==m;p=p.parent)if(p===m.userData.gear||parts.has(p)||(p.userData&&p.userData.brk))return true;return false};
+  m.updateMatrixWorld(true);
+  const crush=v=>{const u=v.z+L/2;if(u>=15)return;const k=Math.pow(1-u/15,1.6);
+    v.y-=1.7*k*(.7+.3*Math.sin(v.x*.6));v.z+=4.4*k*(1+.3*Math.sign(v.x));v.x+=1.2*k;v.y+=.28*k*Math.sin(v.z*2.3+v.x*1.1)};
+  const tmp=new THREE.Vector3();
+  m.traverse(o=>{
+    if(!o.isMesh||skip(o)||!o.geometry||!o.geometry.attributes.position)return;
+    o.updateMatrix();const geo=o.geometry.clone();geo.applyMatrix4(o.matrix);const pos=geo.attributes.position;let hit=false;
+    for(let i=0;i<pos.count;i++){tmp.fromBufferAttribute(pos,i);if(tmp.z+L/2<15){hit=true;crush(tmp);pos.setXYZ(i,tmp.x,tmp.y,tmp.z)}}
+    if(!hit)return;pos.needsUpdate=true;geo.computeVertexNormals();geo.computeBoundingSphere();o.geometry=geo;o.position.set(0,0,0);o.rotation.set(0,0,0);o.scale.set(1,1,1);o.updateMatrix()});
+  // soot and sea water: a duller finish than a live aircraft
+  m.traverse(o=>{if(o.isMesh&&o.material&&o.material.color&&!o.material.userData.cabin){o.material=o.material.clone();o.material.color.multiplyScalar(.84)}});
+  root.add(m);
+  // placed from the nose: on the rock wall at the runway end, the body running out over the water along the runway line
+  const pr=WRECK.pitch*D2R,[nx,nz]=rwP(WRECK.s,WRECK.l),half=L/2*Math.cos(pr);
+  root.position.set(nx+RWY.u[0]*half,WRECK.y,nz+RWY.u[1]*half);
+  root.rotation.order='YXZ';root.rotation.y=-WRECK.hdg*D2R;root.rotation.x=pr;root.rotation.z=WRECK.roll*D2R;
+  // churned water and a thin fuel sheen where the hull meets the surface
+  const foamTex=canvasTex(128,256,(g,w,h)=>{g.save();g.translate(w/2,h/2);g.scale(1,h/w);const gr=g.createRadialGradient(0,0,w*.18,0,0,w*.5);gr.addColorStop(0,'rgba(255,255,255,0)');gr.addColorStop(.55,'rgba(235,245,245,.55)');gr.addColorStop(1,'rgba(235,245,245,0)');g.fillStyle=gr;g.fillRect(-w/2,-w/2*h/w,w,w*h/w);g.restore()});
+  const foam=new THREE.Mesh(new THREE.PlaneGeometry(30,72).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({map:foamTex,transparent:true,depthWrite:false,opacity:.55}));
+  foam.position.set(root.position.x+RWY.u[0]*10,.18,root.position.z+RWY.u[1]*10);foam.rotation.y=-WRECK.hdg*D2R;foam.renderOrder=2;foam.visible=false;scene.add(foam);WRECK.foam=foam;
+  root.visible=false;scene.add(root);WRECK.g=root;
+}
+function setWreck(on){WRECK.on=!!on;if(on&&!WRECK.g)buildWreck();if(WRECK.g){WRECK.g.visible=!!on;WRECK.foam.visible=!!on}
+  // moored and anchored vessels that would sit inside the wreck stay out of the way while it is shown
+  for(const S of WRECK.hid)S.m.visible=true;WRECK.hid=[];
+  if(on&&WRECK.g){const c=WRECK.g.position;for(const S of SHIPS)if(S.ln.static&&Math.hypot(S.m.position.x-c.x,S.m.position.z-c.z)<130){S.m.visible=false;WRECK.hid.push(S)}}}
 
 /* ---------------- airport ---------------- */
 let rbMasts13=[],rbMasts31=[],papi,papi31,rwyLights,rwyLights31,leadIn,leadIn31,approachLights,approachLights31,hoops,hoops13,hoops31,parked=[];
@@ -3809,7 +3853,7 @@ function updateShips(dt,t){
       S.m.position.set(x,Math.sin(t*.8+x)*.25,z);S.m.rotation.y=-hd;S.m.rotation.z=Math.sin(t*.6+z)*.012;
       if(S.m.userData.wake){const W=S.m.userData.wake,rev=S.m.userData.len===40&&S.dir<0;W.visible=S.wait<=0;W.position.x=(rev?1:-1)*S.m.userData.len*2.45;W.rotation.y=rev?Math.PI/2:-Math.PI/2}}
     S.m.updateMatrix();
-    for(const l of S.m.userData.lights){_v.set(l[0],l[1],l[2]).applyEuler(S.m.rotation).add(S.m.position);lp.setXYZ(li++,_v.x,_v.y,_v.z)}}
+    for(const l of S.m.userData.lights){if(S.m.visible===false){lp.setXYZ(li++,0,-1e4,0);continue}_v.set(l[0],l[1],l[2]).applyEuler(S.m.rotation).add(S.m.position);lp.setXYZ(li++,_v.x,_v.y,_v.z)}}
   lp.needsUpdate=true;
 }
 
@@ -3961,8 +4005,8 @@ function buildAircraftModel(a,opt={}){
   g.userData.surf=surf;g.userData.parts=PT;g.userData.wingGeo=wingGeo;g.userData.sweep=sweep;
   // fin
   {const sh=new THREE.Shape();const fh=a.tail,fc=dl?dl.fc:L*.14;sh.moveTo(0,0);sh.lineTo(fc,0);sh.lineTo(fc+fh*.95,fh);sh.lineTo(fc*.45+fh*.95,fh);sh.lineTo(0,0);
-   const eg=new THREE.ExtrudeGeometry(sh,{depth:.5,bevelEnabled:false});eg.rotateY(-Math.PI/2);const fin=new THREE.Mesh(eg,tailC);fin.position.set(.25,cy+R*(dl?.35:.55),dl?dl.fz:L*.3);g.add(fin);
-   const stripe=new THREE.Mesh(new THREE.BoxGeometry(.56,.9,fc*.9),new THREE.MeshLambertMaterial({color:0xef6a2c}));stripe.position.set(0,cy+R*(dl?.35:.55)+fh*.55,(dl?dl.fz:L*.3)+fc*.55+fh*.5);stripe.rotation.x=-.75;g.add(stripe)}
+   const eg=new THREE.ExtrudeGeometry(sh,{depth:.5,bevelEnabled:false});eg.rotateY(-Math.PI/2);const fin=new THREE.Mesh(eg,tailC);fin.position.set(.25,cy+R*(dl?.35:.55),dl?dl.fz:L*.3);fin.userData.fin=true;g.add(fin);
+   const stripe=new THREE.Mesh(new THREE.BoxGeometry(.56,.9,fc*.9),new THREE.MeshLambertMaterial({color:0xef6a2c}));stripe.position.set(0,cy+R*(dl?.35:.55)+fh*.55,(dl?dl.fz:L*.3)+fc*.55+fh*.5);stripe.rotation.x=-.75;stripe.userData.fin=true;g.add(stripe)}
   // landing gear
   const gear=new THREE.Group();const tyre=new THREE.MeshLambertMaterial({color:0x151515});
   const wheel=(x,z)=>{const w=new THREE.Mesh(new THREE.CylinderGeometry(.62,.62,.5,12).rotateZ(Math.PI/2),tyre);w.position.set(x,.62,z);gear.add(w)};
@@ -6175,6 +6219,8 @@ const ZH={
 'Autopilot and autothrottle fly the approach. Pick a cabin seat and watch.':'自動駕駛同自動油門負責進場。揀個客艙座位坐低睇。',
 'Kowloon Walled City as it stood before 1994':'1994 年前嘅九龍寨城',
 'It was demolished in 1993–94. Untick to see the 1998 park instead.':'寨城喺 1993–94 年拆卸。取消剔選就會睇到 1998 年嘅公園。',
+'Flight 605 wreck, November 1993':'1993 年 11 月 605 號航班殘骸',
+'The 747 that overran Runway 13 into the harbour, shown where it came to rest. Tick to see it at the end of the runway.':'衝出 13 號跑道、跌落海港嘅 747，顯示佢最後停低嘅位置。剔選就會喺跑道盡頭睇到。',
 'Controls':'操作',
 'High scores':'最高分','Rank':'官階','Callsign':'呼號','Score':'分數',
 'Captain':'機長','First Officer':'副機長','Second Officer':'第二副機師','Flight Engineer':'飛行機械師','Cadet':'見習機師',
@@ -6217,7 +6263,7 @@ function applyLang(){
 document.getElementById('btnLang').addEventListener('click',e=>{LANG=LANG==='zh'?'en':'zh';try{localStorage.setItem('fkt-lang',LANG)}catch(_){}track('language_toggle',{language:LANG==='zh'?'cantonese':'english'});applyLang();fidsLast=-1e9;e.currentTarget.blur()});
 applyLang();
 function readSetup(){const gv=document.querySelector('input[name=game]:checked').value;CFG.tour=gv==='tour';CFG.lesson=gv==='learn';CFG.conc=gv==='watchC';CFG.lland=gv==='learnland';CFG.game=gv==='learnland'||gv==='approach31'?'approach':gv==='free31'?'free':gv==='watch31'||gv==='watchC'||gv==='tour'?'watch':CFG.lesson?'free':gv;CFG.rwy=gv==='approach31'||gv==='free31'||gv==='watch31'?'31':'13';CFG.ac=document.querySelector('input[name=ac]:checked').value;CFG.hour=parseFloat(document.getElementById('optHour').value)||0;CFG.night=solarState(CFG.hour).sunEl<0;CFG.wx=document.querySelector('input[name=wx]:checked').value;
-  CFG.lightning=document.getElementById('optLightning').checked;CFG.clouds=document.getElementById('optClouds').checked;CFG.map=document.getElementById('optMap').checked;CFG.guide=document.getElementById('optGuide').checked;CFG.ap=document.getElementById('optAP').checked;CFG.walled=document.getElementById('optWalled').checked;if(CFG.lland){CFG.ap=false;CFG.guide=true}}
+  CFG.lightning=document.getElementById('optLightning').checked;CFG.clouds=document.getElementById('optClouds').checked;CFG.map=document.getElementById('optMap').checked;CFG.guide=document.getElementById('optGuide').checked;CFG.ap=document.getElementById('optAP').checked;CFG.walled=document.getElementById('optWalled').checked;CFG.wreck=document.getElementById('optWreck').checked;if(CFG.lland){CFG.ap=false;CFG.guide=true}}
 // Home screen: Day/Night, Weather, Clouds and Lightning change the live sim rendering behind the menu straight away.
 function applyHomeEnv(){if(mode!=='attract')return;const q=n=>document.querySelector('input[name='+n+']:checked');const wx=q('wx');
   CFG.hour=parseFloat(document.getElementById('optHour').value)||0;if(wx&&WX[wx.value])CFG.wx=wx.value;CFG.clouds=document.getElementById('optClouds').checked;CFG.lightning=document.getElementById('optLightning').checked;
@@ -6225,6 +6271,7 @@ function applyHomeEnv(){if(mode!=='attract')return;const q=n=>document.querySele
 document.getElementById('setup').addEventListener('change',e=>{const t=e.target;if(!t||t.tagName!=='INPUT')return;
   if(t.name==='tod'||t.id==='optHour'||t.name==='wx'||t.id==='optClouds'||t.id==='optLightning')applyHomeEnv();
   if(t.id==='optMap'){CFG.map=t.checked;applyMap()}
+  if(t.id==='optWreck')setWreck(t.checked);
   if(t.name==='ac')track('aircraft_select',{aircraft:t.value});
   else track('setup_option',{option:t.name||t.id,value:t.type==='checkbox'?(t.checked?'on':'off'):t.value})});
 const hourIn=document.getElementById('optHour'),hourOut=document.getElementById('hourOut');
@@ -6302,14 +6349,14 @@ if(reducedMotion())reel.removeAttribute('autoplay');
 function reelShow(on){if(!reelOK)return;if(on&&!reducedMotion())reel.play().catch(()=>{});else reel.pause()}
 function tourCapOff(){const e=document.getElementById('tourCap');if(e){e.classList.remove('on');e.dataset.k='';e.textContent=''}}
 function showSetup(){tourCapOff();hsRenderHome();setMore(false);try{if(screen.orientation&&screen.orientation.unlock)screen.orientation.unlock()}catch(e){}reelShow(true);flightEnd('quit');mode='attract';paused=false;for(const id of['bar','ctl','map','result','cabin'])document.getElementById(id).hidden=true;document.getElementById('setup').hidden=false;applyMap();sfx.stopAll();if(synth)synth.cancel();radioClear();coachHide();syncMode();
-  clearFX();CFG.ap=true;setRunway('13');resetFlight();ST.ap=true;spawnAircraftModel();buildAI();CFG.view='chase';applyHomeEnv();setWalled(document.getElementById('optWalled').checked)}
+  clearFX();CFG.ap=true;setRunway('13');resetFlight();ST.ap=true;spawnAircraftModel();buildAI();CFG.view='chase';applyHomeEnv();setWalled(document.getElementById('optWalled').checked);setWreck(document.getElementById('optWreck').checked)}
 function startFlight(){
   setMore(false);reelShow(false);readSetup();setRunway(CFG.lesson?'13':CFG.rwy==='31'?'31':'13');flightEnd('restart');clearFX();mode='fly';paused=false;SEED=window.__capture?1998:1998+Math.floor(Math.random()*1000);
   for(const id of['setup','result'])document.getElementById(id).hidden=true;for(const id of['bar','ctl','map'])document.getElementById(id).hidden=false;
   resetFlight();ST.attempted=false;flightBegin();radioReset();HIST.length=0;spawnAircraftModel();FOCUS=null;
   if(CFG.game==='watch')buildAISchedule(CFG.phase??0,true,{n:CFG.concN??(CFG.conc?-1:2)});else if(CFG.game==='free')buildAISchedule(-100,false);else buildAI();
   if(CFG.tour){ST.t=penTour().t0}   // the tour starts a few seconds before the rotors turn
-  tourCapOff();applyEnvironment();setWalled(CFG.walled);hoops.visible=CFG.guide&&CFG.game==='approach';wxSel.value=CFG.wx;
+  tourCapOff();applyEnvironment();setWalled(CFG.walled);setWreck(CFG.wreck);hoops.visible=CFG.guide&&CFG.game==='approach';wxSel.value=CFG.wx;
   const W=CFG.game==='watch';
   RC.base=(CFG.tour?'HELICOPTER SCENIC TOUR · HARBOUR':W?'PLANE SPOTTER · KAI TAK'+(LND.id==='31'?' · RWY 31':''):ST.ac.short.toUpperCase()+' · '+(CFG.lesson?'TAKE-OFF LESSON':CFG.lland?'LANDING LESSON':CFG.game==='free'?'FREE FLIGHT'+(LND.id==='31'?' · RWY 31':''):LND.id==='31'?'RWY 31':'IGS 13'))+' · '+todLabel().toUpperCase()+' · '+WX[CFG.wx].label.toUpperCase();RC.stat={k:'clear',t:'CLEAR'};RC.V=null;RC.pl=null;RC.log.length=0;RC.viol=0;rcHud();
   for(const o of document.querySelectorAll('#viewSel option,#spotSel option'))o.hidden=CFG.tour?!(o.value==='heli'||o.value==='helix'||o.value===''):(W&&(o.value==='cockpit'||o.value==='cabin'))||o.value==='heli'||o.value==='helix'||(o.value==='lym'&&LND.id!=='31');
@@ -6318,7 +6365,7 @@ function startFlight(){
   if(W){for(const id of['ctl','map'])document.getElementById(id).hidden=true}
   setView(CFG.tour?'heli':W?'carpark':CFG.game==='free'?'chase':CFG.ap?'chase':'cockpit');
   syncButtons();sfx.start();sfx.mute(CFG.sound);lightningT=rr(4,9);
-  track('game_start',{flight_number:FLT.n,game_mode:modeId(),runway:LND.id,autopilot:CFG.ap,guide:CFG.guide,walled_city:CFG.walled,lightning:CFG.lightning});
+  track('game_start',{flight_number:FLT.n,game_mode:modeId(),runway:LND.id,autopilot:CFG.ap,guide:CFG.guide,walled_city:CFG.walled,flight605_wreck:CFG.wreck,lightning:CFG.lightning});
   if(CFG.lesson||CFG.lland)coachStart();else{coachHide();toast(CFG.tour?'Hong Kong harbour helicopter scenic tour. Drag to look around; use the views menu for the outside view'+(TOUCH?'.':', and T to speed up time.'):W?'Plane Spotter mode. Pick a spot from the Plane spotter or Terminal interior menu, or Exterior to follow the jet. '+(TOUCH?'More > Time speeds up time.':'T speeds up time.'):CFG.game==='free'?(LND.id==='31'?(TOUCH?'Lined up on Runway 31. Slide thrust to full, pull back at about 150 kt. Kowloon City is dead ahead, so climb and turn left.':'Lined up on Runway 31. Full thrust (E), pull back at about 150 kt. Kowloon City is dead ahead, so climb and turn left.'):TOUCH?'Lined up on Runway 13. Slide thrust to full, pull back at about 150 kt.':'Lined up on Runway 13. Full thrust (E), pull back at about 150 kt.'):CFG.ap?'Autopilot engaged. Pick a view or a cabin seat.':LND.id==='31'?'Eight miles out over the sea, 2,700 ft, heading 314. Runway 31 is dead ahead. You have control.':'Established on the IGS, 3,100 ft. You have control.')}
 }
 function showResult(){
@@ -6501,7 +6548,7 @@ const fontsReady=document.fonts&&document.fonts.ready?Promise.race([document.fon
 fontsReady.then(()=>setTimeout(boot,30));
 
 /* test hooks */
-window.__kt={SF,SF_ROUTES,sfSeek,sfAdvance,penTour,HELI,HPAD,updateHeli,hPlan,hHerm,hGround,masts:()=>apronMasts,port:()=>PORT,geo:()=>GEO,inPortYard,PORT_QUAYS,PORT_BLD,SHIPS,FAIRWAYS,waterAt,laneOffset,rwP,STAND_C,CTY,stS,NCG,ESTATES,RC,rcEv,rcVac,rcRoll,rcStrip,rcClearBy,rcTakeoffWhy,rcView,rcPlayer,CYC,onPaved,gearPaved,rwS,LINKS,rb:()=>rbMasts13,bat:buildingAt,setHour,solarState,SUN_DIR,MOON_DIR,ENV,AI,CFG,ST,COACH,LESSON,keys,coachUpdate,coachResync,coachGo,rwL,get PATH(){return PATH},LND,setRunway,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,{rwy:'13',conc:false,tour:false},o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.tour?'tour':CFG.conc&&CFG.game==='watch'?'watchC':CFG.rwy==='31'&&CFG.game!=='learn'?CFG.game+'31':CFG.game}]`).checked=true;hourIn.value=o.hour!==undefined?o.hour:CFG.night?22:15;showHour();startFlight()},
+window.__kt={setWreck,WRECK,SF,SF_ROUTES,sfSeek,sfAdvance,penTour,HELI,HPAD,updateHeli,hPlan,hHerm,hGround,masts:()=>apronMasts,port:()=>PORT,geo:()=>GEO,inPortYard,PORT_QUAYS,PORT_BLD,SHIPS,FAIRWAYS,waterAt,laneOffset,rwP,STAND_C,CTY,stS,NCG,ESTATES,RC,rcEv,rcVac,rcRoll,rcStrip,rcClearBy,rcTakeoffWhy,rcView,rcPlayer,CYC,onPaved,gearPaved,rwS,LINKS,rb:()=>rbMasts13,bat:buildingAt,setHour,solarState,SUN_DIR,MOON_DIR,ENV,AI,CFG,ST,COACH,LESSON,keys,coachUpdate,coachResync,coachGo,rwL,get PATH(){return PATH},LND,setRunway,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,{rwy:'13',conc:false,tour:false},o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.tour?'tour':CFG.conc&&CFG.game==='watch'?'watchC':CFG.rwy==='31'&&CFG.game!=='learn'?CFG.game+'31':CFG.game}]`).checked=true;hourIn.value=o.hour!==undefined?o.hour:CFG.night?22:15;showHour();startFlight()},
   run:(sec)=>{if(CFG.game==='watch'){ST.t+=sec;return {t:ST.t}}const h=1/120;for(let i=0;i<sec*120&&!ST.ended;i++){physStep(h);if(i%60===0)recordHistory();if(i%12===0)aiTick()}return {ended:ST.ended,td:ST.td,t:ST.t,x:ST.x,y:ST.y,z:ST.z,V:ST.V/KT,d:PATH.pts[ST.pi].d}},
   get mode(){return mode},updateAI,AIC,footOf,GSE,GSE_KINDS,AIRBOX,rwS,BGRID,updateGSE,gseLamps:()=>gseLamps,fpAt,fpDist,hitOn,damageModel,aiHit,DEBRIS,EMIT,aiTick,ctl(){return aiControl},get CFG(){return CFG},frame:(now)=>frame(now,true),get FOCUS(){return FOCUS},step:()=>physStep(1/120),rwS,setZoom:z=>{CFG.zoom=z},get AI(){return AI},get GSE(){return GSE},get BRIDGE(){return BRIDGE},STAND_S,STAND_TY,lineupT,lineupT31,arrivalPts,tugAt,standL,PB,get parked(){return parked},gseAt:(t)=>{ST.t=t;updateGSE();return GSE.map(e=>({k:e.kind,x:e.p.x,z:e.p.z,psi:e.p.psi,lift:e.lift}))},get shipLights(){return shipLights},get PORT(){return PORT},get SHIPS(){return SHIPS},get DISP(){return DISP},get deck(){return deckGroup},get streetCam(){return STREET_CAM},get BB(){return BB},get water(){return water},get camera(){return camera},get nStreets(){return STREETS.length},drawDisplays,look,setView,terrainAt,buildingAt,groundInfo};
 })();

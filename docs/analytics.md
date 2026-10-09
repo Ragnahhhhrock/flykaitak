@@ -12,7 +12,7 @@ Every event carries `aircraft`, `weather` and `time_of_day`.
 
 | Event | When | Extra parameters |
 |---|---|---|
-| game_start | Begin descent / Fly it again | autopilot, guide, walled_city, lightning |
+| game_start | Begin descent / Fly it again | autopilot, guide, walled_city, flight605_wreck, lightning |
 | landing | Aircraft stops on the runway | grade, score, touchdown_fpm, touchdown_m, flight_seconds, autopilot_used |
 | crash | Any accident | cause, flight_seconds, distance_nm |
 | missed_approach | Go-around or overflight | cause, flight_seconds, distance_nm |
