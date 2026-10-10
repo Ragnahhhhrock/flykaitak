@@ -4346,7 +4346,7 @@ function pickVoice(){try{const v=synth.getVoices();voice=v.find(x=>/en-US/i.test
   guideV.en=gb.find(x=>/female|serena|kate|susan|hazel|libby|sonia|martha|stephanie/i.test(x.name))||gb[0]||v.find(x=>/en[-_](AU|IE|HK)/i.test(x.lang))||v.find(x=>/^en/i.test(x.lang))||null;
   guideV.zh=v.find(x=>/zh[-_]HK|yue/i.test(x.lang))||v.find(x=>/cantonese|粵|粤|sinji/i.test(x.name))||null}catch(e){}}
 if(synth){pickVoice();synth.onvoiceschanged=pickVoice}
-function speak(t,urgent){if(!synth||!CFG.sound||mode!=='fly')return;try{if(urgent)synth.cancel();if(!t)return;const u=new SpeechSynthesisUtterance(t);if(voice)u.voice=voice;u.rate=1.08;u.pitch=.75;u.volume=.9;synth.speak(u)}catch(e){}}
+function speak(t,urgent){if(!synth||!CFG.sound||mode!=='fly'||CFG.tour)return;try{if(urgent)synth.cancel();if(!t)return;const u=new SpeechSynthesisUtterance(t);if(voice)u.voice=voice;u.rate=1.08;u.pitch=.75;u.volume=.9;synth.speak(u)}catch(e){}}
 function say(t){if(t)toast(t)}
 
 /* =====================================================================
@@ -4373,14 +4373,14 @@ function radioShow(m){
   const el=document.getElementById('radio');el.hidden=false;
   const d=document.createElement('div');d.className='rl '+m.who;const b=document.createElement('b');b.textContent=RV[m.who].l;d.append(b,document.createTextNode(m.text));el.appendChild(d);
   RAD.lines.push({el:d,t:14});while(RAD.lines.length>4)RAD.lines.shift().el.remove();
-  if(synth&&CFG.sound){try{const u=new SpeechSynthesisUtterance(spokenize(m.text));const v=RV[m.who];if(voice)u.voice=voice;u.rate=v.r;u.pitch=v.p;u.volume=v.v;synth.speak(u)}catch(e){}}
+  if(synth&&CFG.sound&&!CFG.tour){try{const u=new SpeechSynthesisUtterance(spokenize(m.text));const v=RV[m.who];if(voice)u.voice=voice;u.rate=v.r;u.pitch=v.p;u.volume=v.v;synth.speak(u)}catch(e){}}
 }
 function radioPump(dt){
   for(let i=RAD.lines.length-1;i>=0;i--){const l=RAD.lines[i];l.t-=dt;if(l.t<=0){l.el.remove();RAD.lines.splice(i,1)}}
   if(!RAD.lines.length&&!RAD.cur)document.getElementById('radio').hidden=true;
-  if(RAD.cur){RAD.cur.t-=dt;if(RAD.cur.t<=0){RAD.cur=null;RAD.gap=.5+Math.random()*.6;if(CFG.sound)sfx.squelch()}}
+  if(RAD.cur){RAD.cur.t-=dt;if(RAD.cur.t<=0){RAD.cur=null;RAD.gap=.5+Math.random()*.6;if(CFG.sound&&!CFG.tour)sfx.squelch()}}
   else if(RAD.gap>0)RAD.gap-=dt;
-  if(!RAD.cur&&RAD.gap<=0&&RAD.q.length){const m=RAD.q.shift();m.t=Math.max(2,spokenize(m.text).length*.056)+.3;RAD.cur=m;if(CFG.sound)sfx.squelch();radioShow(m)}
+  if(!RAD.cur&&RAD.gap<=0&&RAD.q.length){const m=RAD.q.shift();m.t=Math.max(2,spokenize(m.text).length*.056)+.3;RAD.cur=m;if(CFG.sound&&!CFG.tour)sfx.squelch();radioShow(m)}
 }
 // Random crew chatter is only for Approach. Every runway clearance, to the AI traffic or to the player, comes from runway control (rcTower and atcUpdate)
 function chatter(freq){
@@ -5440,7 +5440,7 @@ function tourTick(t){const el=document.getElementById('tourCap');if(!el)return;c
   const x=c?(LANG==='zh'?c.zh:c.en):'';if(el.dataset.k!==x){el.dataset.k=x;el.textContent=x;tourSay(c,t)}el.classList.toggle('on',!!c);
   if(TG.u&&(CFG.ts>1||!CFG.sound))tourHush()}
 // the tour guide speaks each caption as it appears: at normal time only, and only if it is fresh (a rewind into the middle of one stays quiet).
-// The rotors duck under the voice. No Cantonese voice in the browser: the Cantonese captions stay silent.
+// The rotors duck under the voice. On the tour the radio is text only (radioShow, radioPump): the guide is the only voice. No Cantonese voice in the browser: the Cantonese captions stay silent.
 const TG={u:null};
 function tourTalk(on){const el=document.getElementById('tourCap');if(el)el.classList.toggle('talk',on)}
 function tourHush(){if(TG.u){TG.u=null;if(synth)synth.cancel()}sfx.duck(1);tourTalk(false)}
@@ -6575,7 +6575,7 @@ const fontsReady=document.fonts&&document.fonts.ready?Promise.race([document.fon
 fontsReady.then(()=>setTimeout(boot,30));
 
 /* test hooks */
-window.__kt={setWreck,WRECK,SF,SF_ROUTES,sfSeek,sfAdvance,penTour,HELI,HPAD,updateHeli,hPlan,hHerm,hGround,masts:()=>apronMasts,port:()=>PORT,geo:()=>GEO,inPortYard,PORT_QUAYS,PORT_BLD,SHIPS,FAIRWAYS,waterAt,laneOffset,rwP,STAND_C,CTY,stS,NCG,ESTATES,RC,rcEv,rcVac,rcRoll,rcStrip,rcClearBy,rcTakeoffWhy,rcView,rcPlayer,CYC,onPaved,gearPaved,rwS,LINKS,rb:()=>rbMasts13,bat:buildingAt,setHour,solarState,SUN_DIR,MOON_DIR,ENV,AI,CFG,ST,COACH,LESSON,keys,coachUpdate,coachResync,coachGo,rwL,get PATH(){return PATH},LND,setRunway,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,{rwy:'13',conc:false,tour:false},o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.tour?'tour':CFG.conc&&CFG.game==='watch'?'watchC':CFG.rwy==='31'&&CFG.game!=='learn'?CFG.game+'31':CFG.game}]`).checked=true;hourIn.value=o.hour!==undefined?o.hour:CFG.night?22:15;showHour();startFlight()},
+window.__kt={radioSay,radioPump,RAD,setWreck,WRECK,SF,SF_ROUTES,sfSeek,sfAdvance,penTour,HELI,HPAD,updateHeli,hPlan,hHerm,hGround,masts:()=>apronMasts,port:()=>PORT,geo:()=>GEO,inPortYard,PORT_QUAYS,PORT_BLD,SHIPS,FAIRWAYS,waterAt,laneOffset,rwP,STAND_C,CTY,stS,NCG,ESTATES,RC,rcEv,rcVac,rcRoll,rcStrip,rcClearBy,rcTakeoffWhy,rcView,rcPlayer,CYC,onPaved,gearPaved,rwS,LINKS,rb:()=>rbMasts13,bat:buildingAt,setHour,solarState,SUN_DIR,MOON_DIR,ENV,AI,CFG,ST,COACH,LESSON,keys,coachUpdate,coachResync,coachGo,rwL,get PATH(){return PATH},LND,setRunway,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,{rwy:'13',conc:false,tour:false},o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.tour?'tour':CFG.conc&&CFG.game==='watch'?'watchC':CFG.rwy==='31'&&CFG.game!=='learn'?CFG.game+'31':CFG.game}]`).checked=true;hourIn.value=o.hour!==undefined?o.hour:CFG.night?22:15;showHour();startFlight()},
   run:(sec)=>{if(CFG.game==='watch'){ST.t+=sec;return {t:ST.t}}const h=1/120;for(let i=0;i<sec*120&&!ST.ended;i++){physStep(h);if(i%60===0)recordHistory();if(i%12===0)aiTick()}return {ended:ST.ended,td:ST.td,t:ST.t,x:ST.x,y:ST.y,z:ST.z,V:ST.V/KT,d:PATH.pts[ST.pi].d}},
   get mode(){return mode},updateAI,AIC,footOf,GSE,GSE_KINDS,AIRBOX,rwS,BGRID,updateGSE,gseLamps:()=>gseLamps,fpAt,fpDist,hitOn,damageModel,aiHit,DEBRIS,EMIT,aiTick,ctl(){return aiControl},get CFG(){return CFG},frame:(now)=>frame(now,true),get FOCUS(){return FOCUS},step:()=>physStep(1/120),rwS,setZoom:z=>{CFG.zoom=z},get AI(){return AI},get GSE(){return GSE},get BRIDGE(){return BRIDGE},STAND_S,STAND_TY,lineupT,lineupT31,arrivalPts,tugAt,standL,PB,get parked(){return parked},gseAt:(t)=>{ST.t=t;updateGSE();return GSE.map(e=>({k:e.kind,x:e.p.x,z:e.p.z,psi:e.p.psi,lift:e.lift}))},get shipLights(){return shipLights},get PORT(){return PORT},get SHIPS(){return SHIPS},get DISP(){return DISP},get deck(){return deckGroup},get streetCam(){return STREET_CAM},get BB(){return BB},get water(){return water},get camera(){return camera},get nStreets(){return STREETS.length},drawDisplays,look,setView,terrainAt,buildingAt,groundInfo};
 })();
