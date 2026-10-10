@@ -6,7 +6,7 @@
     watch: 'Plane Spotter, runway 13', watch31: 'Plane Spotter, runway 31', lesson: 'Take-off lesson', lesson_land: 'Landing lesson', tour: 'Helicopter tour' };
   var ACS = { b744: '747-400', b772: '777-200', a333: 'A330-300', conc: 'Concorde', a343: 'A340-300', b744f: '747-400F', a306f: 'A300-600F' };
   var WXN = { clear: 'Clear', rain: 'Rain', typhoon: 'Typhoon', storm: 'Storm', lowcloud: 'Low cloud', fog: 'Fog' };
-  var GRADES = ['A', 'B', 'C', 'D', 'F'];
+  var GRADES = ['A', 'B', 'C', 'D', 'E'];
   var C = { land: '#2fa36d', miss: '#ffb94a', crash: '#ff5b4f' };
 
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -31,7 +31,7 @@
       aircraft: aircraft, weather: weather, daily: daily,
       tod: [{ tod: 'day', k: 'game_start', n: 1300 }, { tod: 'night', k: 'game_start', n: 540 }, { tod: 'day', k: 'landing', n: 520 }, { tod: 'night', k: 'landing', n: 170 }, { tod: 'day', k: 'crash', n: 300 }, { tod: 'night', k: 'crash', n: 155 }],
       causes: [{ cause: 'Crashed short of the runway', n: 140 }, { cause: 'Hit the buildings', n: 110 }, { cause: 'Landed in the harbour', n: 90 }, { cause: 'Runway overrun', n: 70 }, { cause: 'Tail strike', n: 45 }],
-      grades: [{ grade: 'A', n: 80 }, { grade: 'B', n: 190 }, { grade: 'C', n: 230 }, { grade: 'D', n: 130 }, { grade: 'F', n: 60 }],
+      grades: [{ grade: 'A', n: 80 }, { grade: 'B', n: 190 }, { grade: 'C', n: 230 }, { grade: 'D', n: 130 }, { grade: 'E', n: 60 }],
       landings: { n: 690, avg_score: 63.4, best_score: 98, avg_fpm: 312, avg_secs: 281, ap: 210 } };
   }
 

@@ -1,5 +1,41 @@
 [
   {
+    "slug": "public-stats-dashboard",
+    "title": "Live stats: how many pilots make it into Kai Tak",
+    "dek": "A public page that counts every flight on the site: landings, crashes, go-arounds, modes, aircraft, weather and crash causes.",
+    "description": "Fly Kai Tak's public stats page counts every flight: landing attempts, landings, crashes, modes, aircraft, weather and crash causes. Anonymous.",
+    "date": "2026-10-10",
+    "tag": "New",
+    "category": "site",
+    "keywords": [
+      "Fly Kai Tak stats",
+      "flight simulator statistics",
+      "Kai Tak landings",
+      "crashes",
+      "landing success rate",
+      "crash causes",
+      "landing grades",
+      "aircraft",
+      "game modes",
+      "Kai Tak"
+    ],
+    "hero": "stats-top",
+    "hero_alt": "The Fly Kai Tak stats page with five headline tiles: flights started, landing attempts, successful landings, crashes and missed approaches.",
+    "hero_caption": "The new stats page at flykaitak.com/stats.",
+    "card_kicker": "SITE · NEW",
+    "card_title": "How Kai Tak is going",
+    "card_sub": "Live landings and crashes",
+    "card_image": "stats-top",
+    "card_focus": 30,
+    "zh": {
+      "title": "即時數據：有幾多機師成功降落啟德",
+      "dek": "一個公開頁面，統計網站上每一次飛行：降落、墜毀、復飛、模式、機種、天氣同墜毀原因。",
+      "description": "Fly Kai Tak 公開數據頁統計每次飛行：降落嘗試、成功降落、墜毀、模式、機種、天氣同墜毀原因，全部匿名。",
+      "hero_alt": "Fly Kai Tak 數據頁，有五格主要數字：開始飛行、降落嘗試、成功降落、墜毀同復飛。",
+      "hero_caption": "新數據頁：flykaitak.com/stats。"
+    }
+  },
+  {
     "slug": "flight-605-wreck-at-the-runway-end",
     "title": "Flight 605: the 747 wreck at the runway end",
     "dek": "An optional 1993 scene: a 747-400 with a crushed nose against the seawall, its tail under the water and its fin cut off.",
