@@ -1,5 +1,39 @@
 [
   {
+    "slug": "flight-replay",
+    "title": "Watch your flight again: flight replay",
+    "dek": "Every flight is recorded. Watch it back from the report card, with a Director that cuts to the checkerboard, the turn and the touchdown.",
+    "description": "Fly Kai Tak now records every flight. Watch it back with a Director camera that cuts to the checkerboard, the Kowloon City turn and touchdown.",
+    "date": "2026-10-10",
+    "tag": "Feature",
+    "category": "scores",
+    "keywords": [
+      "flight replay",
+      "replay",
+      "Director camera",
+      "checkerboard",
+      "IGS 13",
+      "touchdown",
+      "flight simulator",
+      "Kai Tak"
+    ],
+    "hero": "replay-touchdown",
+    "hero_alt": "A 747 a second from touchdown on Runway 13, seen from runway level, with the replay bar along the bottom.",
+    "hero_caption": "The Director's touchdown shot.",
+    "card_kicker": "SCORES · FEATURE",
+    "card_title": "Watch your flight again",
+    "card_sub": "Flight replay with a Director camera",
+    "card_image": "replay-touchdown",
+    "card_focus": 50,
+    "zh": {
+      "title": "再睇一次你嘅飛行：飛行重播",
+      "dek": "每次飛行都會錄低。喺成績表重溫，導演鏡頭會切去格仔山、轉彎同著陸。",
+      "description": "Fly Kai Tak 而家會錄低每次飛行。用導演鏡頭重溫，切去格仔山、九龍城轉彎同著陸。",
+      "hero_alt": "由跑道高度睇一架 747，一秒之後就喺 13 號跑道著陸，底部係重播控制列。",
+      "hero_caption": "導演鏡頭嘅著陸畫面。"
+    }
+  },
+  {
     "slug": "the-peninsula-hotel-and-rooftop-helipads",
     "title": "The Peninsula Hotel and its rooftop helipads",
     "dek": "The 1928 building round its forecourt, the 1994 tower and its two green rooftop pads, rebuilt from period photos.",

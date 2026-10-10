@@ -309,6 +309,37 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
 .res-actions .go{flex:1;justify-content:center}
 .res-actions .btn{padding:13px 14px}
 .res-share{border-top:1px solid var(--line);padding-top:14px;display:grid;gap:10px}
+/* ---------- flight replay: transport bar along the bottom, REPLAY tag top left ---------- */
+.rp-open{display:inline-flex;align-items:center;gap:7px;padding:13px 14px}
+.rp-open svg{width:13px;height:13px;fill:currentColor}
+.rp-open[hidden]{display:none}
+#replay{position:fixed;inset:0;pointer-events:none;z-index:4}
+#replay[hidden]{display:none!important}
+.rp-top{position:absolute;top:calc(env(safe-area-inset-top,0px) + 14px);left:calc(env(safe-area-inset-left,0px) + 16px);display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-family:var(--f-num);font-size:12px;letter-spacing:.22em;text-transform:uppercase;text-shadow:0 1px 4px rgba(0,0,0,.8)}
+.rp-top b{font-weight:700;color:var(--paper)}
+.rp-rec{width:9px;height:9px;border-radius:50%;background:var(--alarm);box-shadow:0 0 8px var(--alarm);animation:rprec 1.4s steps(1) infinite}
+@keyframes rprec{50%{opacity:.25}}
+.rp-cap{background:var(--panel);border:1px solid var(--line-2);border-left:3px solid var(--checker);padding:6px 10px;border-radius:3px;color:var(--text);letter-spacing:.14em}
+.rp-cap[hidden]{display:none}
+.rp-read{position:absolute;top:calc(env(safe-area-inset-top,0px) + 14px);right:calc(env(safe-area-inset-right,0px) + 16px);font-family:var(--f-num);font-size:13px;color:var(--phosphor);font-variant-numeric:tabular-nums;text-shadow:0 1px 4px rgba(0,0,0,.85)}
+.rp-bar{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 14px);width:min(860px,calc(100% - 24px));box-sizing:border-box;display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--panel);border:1px solid var(--line-2);border-radius:4px;pointer-events:auto;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.rp-bar .btn,.rp-bar select{height:36px;flex:none}
+.rp-bar select{appearance:none;background:var(--panel-2);color:var(--text);border:1px solid var(--line-2);border-radius:3px;font-size:12px;padding:0 10px;letter-spacing:.04em;cursor:pointer}
+.rp-play{width:40px;display:grid;place-items:center;padding:0}
+.rp-play svg{width:16px;height:16px;fill:var(--paper)}
+.rp-play .i-play,.rp-play.paused .i-pause{display:none}.rp-play.paused .i-play{display:block}
+.rp-time{font-family:var(--f-num);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;flex:none}
+.rp-track{position:relative;flex:1;min-width:120px;height:36px;display:flex;align-items:center}
+.rp-track input{width:100%;margin:0;accent-color:var(--checker);cursor:pointer}
+.rp-marks{position:absolute;left:8px;right:8px;top:0;height:9px}
+.rp-mark{position:absolute;top:0;width:12px;height:9px;margin-left:-6px;padding:0;border:0;cursor:pointer;background:none}
+.rp-mark::after{content:"";position:absolute;left:3px;top:0;width:6px;height:6px;transform:rotate(45deg);background:var(--amber)}
+.rp-mark.bad::after{background:var(--alarm)}
+.rp-mark:hover::after,.rp-mark:focus-visible::after{background:var(--paper)}
+.rp-bar :focus-visible{outline:2px solid var(--checker);outline-offset:2px}
+.rp-done{border-color:var(--jade-bright)}
+@media (max-width:640px){.rp-bar{flex-wrap:wrap;gap:8px}.rp-track{order:-1;flex:1 1 100%}.rp-time{margin-right:auto}}
+@media (prefers-reduced-motion:reduce){.rp-rec{animation:none}}
 .res-share h3{margin:0;font-family:var(--f-num);font-weight:400;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
 .res-share ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
 .res-share li[hidden]{display:none}
@@ -614,6 +645,7 @@ body.bigmap #radio{top:calc(env(safe-area-inset-top,0px) + 396px)}
       </div>
       <div class="res-actions">
         <button class="go" id="btnAgain" type="button"><span>Fly it again</span></button>
+        <button class="btn rp-open" id="btnReplay" type="button" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg><span>Watch replay</span></button>
         <button class="btn" id="btnSetup" type="button">Main Menu</button>
       </div>
       <section class="res-share" id="resShare" aria-label="Share your result">
@@ -631,6 +663,19 @@ body.bigmap #radio{top:calc(env(safe-area-inset-top,0px) + 396px)}
         </ul>
       </section>
     </div>
+  </div>
+</div>
+
+<div id="replay" hidden>
+  <div class="rp-top"><span class="rp-rec" aria-hidden="true"></span><b id="rpTag">Replay</b><span class="rp-cap" id="rpCap" hidden></span></div>
+  <div class="rp-read" id="rpRead" aria-live="off"></div>
+  <div class="rp-bar">
+    <button class="btn rp-play" id="rpPlay" type="button" aria-label="Pause"><svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3v14H7zM14 5h3v14h-3z"/></svg><svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></button>
+    <span class="rp-time" id="rpTime">0:00 / 0:00</span>
+    <div class="rp-track"><div class="rp-marks" id="rpMarks"></div><input type="range" id="rpSeek" min="0" max="1000" value="0" aria-label="Replay position"></div>
+    <button class="btn rp-spd" id="rpSpd" type="button" aria-label="Replay speed">1×</button>
+    <select id="rpCam" aria-label="Replay camera"><option value="dir">Director</option><option value="chase">Chase</option><option value="cockpit">Cockpit</option><option value="tower">Tower</option></select>
+    <button class="btn rp-done" id="rpExit" type="button">Done</button>
   </div>
 </div>
 
@@ -4181,7 +4226,7 @@ function aero(a,s){
   return {CL,CDF,al,aStall};
 }
 function physStep(dt){
-  const s=ST,a=s.ac;if(s.ended)return;
+  const s=ST,a=s.ac;if(s.ended)return;if(mode==='fly')recTick(s);
   if(s.ap&&!s.onGround)(CFG.game==='free'?apHold(dt):apUpdate(dt));else if(!s.ap){s.cmdPitchRate=s.inPitch*4*D2R;s.cmdRollRate=s.inRoll*a.roll*D2R}
   s.flapPos+=clamp(s.flapIdx-s.flapPos,-.28*dt,.28*dt);
   s.gearPos+=clamp((s.gearDown?1:0)-s.gearPos,-dt/8,dt/8);
@@ -4327,13 +4372,155 @@ const HIST=[];const HKEYS=['x','y','z','V','gamma','psi','theta','phi','flapIdx'
 function recordHistory(){const s=ST;if(s.ended)return;const last=HIST[HIST.length-1];if(last&&s.t-last.t<.5)return;const o={};for(const k of HKEYS)o[k]=s[k];o.td=s.td?{...s.td}:null;o.callouts={...s.callouts};HIST.push(o);if(HIST.length>2400)HIST.shift()}
 function timeJump(sec){
   if(mode!=='fly'&&mode!=='ended')return;const s=ST;track(sec<0?'rewind':'fast_forward',{seconds:Math.abs(sec)});
-  if(sec<0){s.rewound=true;const target=s.t+sec;let i=HIST.length-1;while(i>0&&HIST[i].t>target)i--;const o=HIST[i];if(!o)return;HIST.length=i+1;
+  if(sec<0){s.rewound=true;const target=s.t+sec;let i=HIST.length-1;while(i>0&&HIST[i].t>target)i--;const o=HIST[i];if(!o)return;HIST.length=i+1;recCut(o.t);
     for(const k of HKEYS)s[k]=o[k];s.td=o.td?{...o.td}:null;s.callouts={...o.callouts};s.attempted=!!s.td;
     if(s.ended){if(FLT)FLT.done=false;s.ended=null;clearFX();acModel.visible=true;document.getElementById('result').hidden=true;mode='fly';document.getElementById('ctl').hidden=CFG.view==='cabin'}
     s.warn='';toast('Back to '+fmtT(s.t));coachResync()}
   else{if(s.ended)return;const h=1/120;for(let i=0;i<sec*120&&!s.ended;i++){physStep(h);if(i%60===0)recordHistory()}toast('Forward to '+fmtT(s.t))}
 }
 function fmtT(t){return Math.floor(t/60)+':'+String(Math.floor(t%60)).padStart(2,'0')}
+
+/* ---------------- flight recorder & replay ----------------
+   Every flight is recorded at 10 Hz: the player's aircraft only, since the AI traffic, helicopters and ships are pure functions
+   of sim time. A rewind cuts the recording back, so it always holds the flight as it was finally flown.
+   At the end the pilot can watch it back: the Director cuts between cinematic shots and the highlights (lift-off, the checkerboard,
+   the turn over Kowloon City, touchdown, the crash), or pick a camera and drag to look around. */
+const REC={f:[]};   // [t,x,y,z,theta,psi,phi,gearPos,flapPos,thrust/thr,V,onGround,pi,throttle]
+function recTick(s){const f=REC.f,l=f[f.length-1];if(l&&s.t-l[0]<.1)return;if(f.length>=36000)return;
+  f.push([s.t,s.x,s.y,s.z,s.theta,s.psi,s.phi,s.gearPos,s.flapPos,s.thrust/s.ac.thr,s.V,s.onGround?1:0,s.pi,s.throttle])}
+function recCut(t){const f=REC.f;while(f.length&&f[f.length-1][0]>t)f.pop()}
+function recAt(t){const f=REC.f,n=f.length;if(!n)return null;if(t<=f[0][0])return f[0];if(t>=f[n-1][0])return f[n-1];
+  let lo=0,hi=n-1;while(hi-lo>1){const m=(lo+hi)>>1;if(f[m][0]<=t)lo=m;else hi=m}
+  const a=f[lo],b=f[hi],u=(t-a[0])/Math.max(1e-6,b[0]-a[0]),o=a.slice();
+  for(let i=0;i<11;i++)o[i]=a[i]+(b[i]-a[i])*u;o[5]=a[5]+angDiff(b[5],a[5])*u;o[6]=a[6]+angDiff(b[6],a[6])*u;return o}
+function recOK(){return REC.f.length>=30}
+
+const RP={t:0,t0:0,t1:0,play:true,spd:1,cam:'dir',shots:[],marks:[],cur:null,end:null,td:null,tTD:null,boom:false,view:'chase',lastT:0};
+const RP_TXT={en:{watch:'Watch replay',tag:'Replay',done:'Done',dir:'Director',chase:'Chase',cockpit:'Cockpit',tower:'Tower',
+    lo:'Lift-off',chk:'Checkerboard',turn:'Turn over Kowloon City',td:'Touchdown',crash:'Crash',missed:'Go-around',stop:'Stopped',play:'Play',pause:'Pause'},
+  zh:{watch:'重溫飛行',tag:'重播',done:'完成',dir:'導演鏡頭',chase:'追蹤',cockpit:'駕駛艙',tower:'塔台',
+    lo:'離地',chk:'格仔山',turn:'九龍城上空轉彎',td:'著陸',crash:'墜毀',missed:'復飛',stop:'停定',play:'播放',pause:'暫停'}};
+const rpT=k=>(RP_TXT[LANG]||RP_TXT.en)[k];
+
+// highlights, found from the recording itself
+function rpMarks(){
+  const f=REC.f,M=[];let tLO=null,tTD=null,tChk=null;
+  for(let i=1;i<f.length;i++){
+    if(tLO===null&&f[i-1][11]&&!f[i][11]&&f[i][10]>40)tLO=f[i][0];
+    if(tTD===null&&!f[i-1][11]&&f[i][11])tTD=f[i][0];
+    if(tChk===null&&LND.id==='13'&&(CFG.game==='approach'||CFG.lland)&&PATH.iA>0&&f[i][12]>=PATH.iA&&f[i][2]<700&&!f[i][11]&&(tLO===null||f[i][0]>tLO+20))tChk=f[i][0]}
+  if(tLO!==null)M.push({t:tLO,k:'lo'});
+  if(tChk!==null){M.push({t:tChk-4,k:'chk'});M.push({t:tChk+2,k:'turn'})}
+  const td=ST.td;if(tTD!==null&&td)M.push({t:tTD,k:'td',sub:Math.round(-td.vs*196.85)+' fpm'});
+  const e=RP.end;if(e&&e.crash)M.push({t:f[f.length-1][0],k:'crash'});else if(e&&e.missed)M.push({t:f[f.length-1][0],k:'missed'});
+  RP.tTD=tTD;RP.tLO=tLO;RP.tChk=tChk;return M.filter(m=>m.t>=f[0][0]-1).sort((a,b)=>a.t-b.t)}
+
+// the Director's shot list: highlight shots first, the gaps filled with a cycle of chase, fly-by and cockpit shots
+function rpPlan(){
+  const t0=RP.t0,t1=RP.t1,H=[];let sd=REC.f.length*7919+13;const rn=()=>{sd=(sd*16807)%2147483647;return sd/2147483647};
+  if(RP.tLO!==null)H.push({a:RP.tLO-7,b:RP.tLO+4,k:'fly',at:RP.tLO+1,side:1,near:1,low:1});
+  if(RP.tChk!==null){H.push({a:RP.tChk-10,b:RP.tChk+2,k:'fly',at:RP.tChk-1,side:1,near:1});H.push({a:RP.tChk+2,b:RP.tChk+11,k:'chase',yaw:1.05,pitch:.06,dist:1.05});H.push({a:RP.tChk+11,b:RP.tChk+19,k:'fly',at:RP.tChk+16,side:-1,near:1})}
+  if(RP.tTD!==null){H.push({a:RP.tTD-9,b:RP.tTD+3,k:'fly',at:RP.tTD,side:-1,near:1,low:1});H.push({a:RP.tTD+3,b:RP.tTD+12,k:'chase',yaw:.55,pitch:.1,dist:1.1})}
+  if(RP.end&&RP.end.crash)H.push({a:t1-7,b:t1+1e4,k:'fly',at:t1,side:1,wide:1});
+  H.sort((x,y)=>x.a-y.a);const S=[];let t=t0,ci=Math.floor(rn()*3);
+  const CYC=[{k:'chase',yaw:.35,pitch:.16,dist:1},{k:'fly'},{k:'cockpit'},{k:'chase',yaw:2.75,pitch:.06,dist:.9},{k:'fly',side:-1},{k:'chase',yaw:-.5,pitch:.32,dist:1.25}];
+  const fill=(a,b)=>{let u=a;while(b-u>.05){let len=5+rn()*2;if(b-(u+len)<3)len=b-u;
+      let c=Object.assign({},CYC[ci++%CYC.length]);const o=recAt(u+len/2);
+      if(c.k==='cockpit'&&o[11])c={k:'chase',yaw:.35,pitch:.16,dist:1};
+      if(c.k==='chase'&&ST.tower&&Math.hypot(o[1]-ST.tower[0],o[3]-ST.tower[2])<2500&&rn()<.5)c={k:'tower'};
+      S.push(Object.assign(c,{a:u,b:u+len}));u+=len}};
+  for(const h of H){const a=Math.max(h.a,t0),b=Math.min(h.b,t1+1e4);if(b<=t||a>t1)continue;if(a>t)fill(t,a);const st=Math.max(a,t);S.push(Object.assign({},h,{a:st,b}));t=b}
+  if(t<t1)fill(t,t1);
+  if(S.length)S[S.length-1].b=Math.max(S[S.length-1].b,t1+1e4);
+  for(const s of S)if(s.k==='fly')rpFlyCam(s,rn);
+  return S}
+function rpFlyCam(s,rn){
+  // a fixed camera beside the flight path that the aircraft flies past; it pans to follow
+  const A=ST.ac,at=s.at!==undefined?s.at:s.a+(s.b-s.a)*.6,o=recAt(Math.min(at,RP.t1)),ps=o[5],fx=Math.sin(ps),fz=-Math.cos(ps),rx=Math.cos(ps),rz=Math.sin(ps);
+  const side=s.side||(rn()<.5?-1:1),d=s.wide?320:s.near?A.span*.9+55:A.span*1.8+60+rn()*60,ahead=s.wide?-60:s.near?25:15;
+  const x=o[1]+rx*side*d+fx*ahead,z=o[3]+rz*side*d+fz*ahead,g=groundInfo(x,z).h,b=buildingAt(x,z,2),floor=Math.max(g,b?b.top:-99);
+  const y=s.low?Math.max(floor,o[11]?RWY.elev:floor)+2.2:s.wide?Math.max(floor+40,o[2]+60):Math.max(floor+3,o[2]+(rn()-.35)*30);
+  s.cp=[x,y,z]}
+function rpShot(t){const S=RP.shots;for(let i=0;i<S.length;i++)if(t<S[i].b)return S[i];return S[S.length-1]}
+
+function rpApply(t){
+  const o=recAt(t),s=ST;if(!o)return;
+  s.t=t;s.x=o[1];s.y=o[2];s.z=o[3];s.theta=o[4];s.psi=o[5];s.phi=o[6];s.gearPos=o[7];s.gearDown=o[7]>.5;s.flapPos=o[8];s.flapIdx=Math.round(o[8]);
+  s.thrust=o[9]*s.ac.thr;s.V=o[10];s.onGround=o[11]>.5;s.pi=Math.round(o[12]);s.throttle=o[13];s.Gs=s.onGround?s.V:0;
+  s.inRoll=s.inPitch=0;s.cmdRollRate=s.cmdPitchRate=0;s.ap=false;s.td=RP.tTD!==null&&t>=RP.tTD?RP.td:null;
+  const E=RP.end;
+  if(E&&E.crash){const at=t>=RP.t1-.02;
+    if(at&&!RP.boom){RP.boom=true;s.ended=E;spawnExplosion(s.x,Math.max(s.y,0)+3,s.z,groundInfo(s.x,s.z).kind==='water'&&!buildingAt(s.x,s.z,2));if(RP.play)sfx.crash()}
+    else if(!at&&RP.boom){RP.boom=false;s.ended=null;clearFX();acModel.visible=true}}
+}
+function rpUse(sh){
+  if(!sh)return;const v=sh.k==='fly'?'chase':sh.k==='checker'||sh.k==='street'?(SPOTS[sh.k]?sh.k:'chase'):sh.k==='tower'&&!ST.tower?'chase':sh.k;
+  CFG.view=v;look.yaw=look.pitch=0;look.dist=sh.dist||1;look.orbitYaw=sh.yaw||0;look.orbitPitch=sh.pitch!==undefined?sh.pitch:.18;camera.userData.snap=true}
+function replayCamera(dt){
+  if(RP.cam!=='dir'){updateCamera(dt);return}
+  const sh=rpShot(RP.t);if(sh!==RP.cur){RP.cur=sh;rpUse(sh)}
+  if(sh&&sh.k==='fly'&&sh.cp){const s=ST,A=s.ac;camera.position.set(sh.cp[0],sh.cp[1],sh.cp[2]);camera.lookAt(s.x,s.y+A.cy,s.z);
+    const d=camera.position.distanceTo(_v.set(s.x,s.y,s.z));camera.fov=clamp(2*Math.atan(A.span*1.25/Math.max(d,1))*R2D,5,64);camera.near=1;camera.updateProjectionMatrix()}
+  else updateCamera(dt)}
+
+function replayTick(dt){
+  if(RP.play){const pt=RP.t;RP.t=Math.min(RP.t1,RP.t+dt*RP.spd);
+    if(RP.tTD!==null&&pt<RP.tTD&&RP.t>=RP.tTD&&RP.td)sfx.thump(clamp(-RP.td.vs/3,.3,1));
+    if(RP.t>=RP.t1){RP.play=false;rpSync()}}
+  rpApply(RP.t);rpHud()}
+function rpSound(){const s=ST,on=s.onGround&&!s.ended,rev=on&&s.throttle<.12&&s.V>30*KT,live=RP.play&&!s.ended;
+  sfx.update(live?s.thrust/s.ac.thr+(rev?.35:0):0,live?s.V:0,WX[CFG.wx].rain,CFG.view==='cockpit',{rev:live&&rev,brake:live&&on&&s.V>6?clamp(s.V/70,.05,.4)*.22:0,gearDrag:live?s.gearPos*clamp(s.V/90,0,1):0})}
+
+const rpEl=id=>document.getElementById(id);
+function rpHud(){
+  const s=ST,dur=RP.t1-RP.t0,el=RP.t-RP.t0;
+  if(Math.abs(el-RP.lastT)>.05||!RP.play){RP.lastT=el;rpEl('rpTime').textContent=fmtT(el)+' / '+fmtT(dur);if(document.activeElement!==rpEl('rpSeek'))rpEl('rpSeek').value=Math.round(1000*el/Math.max(.1,dur))}
+  rpEl('rpRead').textContent=Math.round(Math.max(0,s.y-RWY.elev)/FT).toLocaleString('en')+' ft · '+Math.round(s.V/KT)+' kt';
+  let cap='';for(const m of RP.marks)if(RP.t>=m.t-1.5&&RP.t<m.t+3.5)cap=rpT(m.k)+(m.sub?' · '+m.sub:'');
+  if(RP.end&&RP.t>=RP.t1-.05&&!RP.end.crash&&RP.end.landed)cap=(LANG!=='zh'&&RES&&RES.title)||rpT('stop');
+  const c=rpEl('rpCap');if(c.textContent!==cap){c.textContent=cap;c.hidden=!cap}}
+function rpSync(){
+  const b=rpEl('rpPlay');b.setAttribute('aria-label',RP.play?rpT('pause'):rpT('play'));b.classList.toggle('paused',!RP.play);
+  rpEl('rpSpd').textContent=RP.spd+'×';rpEl('rpCam').value=RP.cam}
+function rpBuildUI(){
+  rpEl('rpTag').textContent=rpT('tag');rpEl('rpExit').textContent=rpT('done');
+  const sel=rpEl('rpCam');for(const o of sel.options)o.textContent=rpT(o.value);
+  const mk=rpEl('rpMarks'),dur=Math.max(.1,RP.t1-RP.t0);mk.innerHTML='';
+  for(const m of RP.marks){const b=document.createElement('button');b.type='button';b.className='rp-mark'+(m.k==='crash'?' bad':'');b.style.left=(100*clamp((m.t-RP.t0)/dur,0,1))+'%';
+    b.title=b.ariaLabel=rpT(m.k)+(m.sub?' · '+m.sub:'');b.addEventListener('click',()=>rpSeek(m.t-(m.k==='crash'?6:4)));mk.appendChild(b)}
+  rpSync()}
+function rpSeek(t){RP.t=clamp(t,RP.t0,RP.t1);if(RP.t<RP.t1&&RP.end&&RP.end.crash&&RP.boom)rpApply(RP.t);RP.cur=null;rpHud()}
+
+function replayStart(){
+  if(mode!=='ended'||!recOK())return;
+  const f=REC.f;RP.end=ST.ended;RP.td=ST.td?{...ST.td}:null;RP.view=CFG.view;RP.t0=f[0][0];RP.t1=f[f.length-1][0];
+  RP.marks=rpMarks();RP.shots=rpPlan();RP.cur=null;RP.boom=false;RP.play=true;RP.spd=1;RP.cam='dir';RP.lastT=-1;
+  RP.t=RP.t0;
+  mode='replay';ST.ended=null;clearFX();rpEl('toast').classList.remove('on');toastT=0;if(acModel)acModel.visible=true;sfx.start();sfx.mute(CFG.sound);
+  RP.hid={bar:rpEl('bar').hidden,map:rpEl('map').hidden};rpEl('result').hidden=true;for(const id of['bar','ctl','map'])rpEl(id).hidden=true;rpEl('replay').hidden=false;
+  rpBuildUI();rpApply(RP.t);rpHud();
+  track('replay_start',{game_mode:modeId(),runway:LND.id,result:RP.end?RP.end.landed?'landed':RP.end.crash?'crash':'missed':'',replay_seconds:Math.round(RP.t1-RP.t0)});
+  rpEl('rpPlay').focus()}
+function replayStop(){
+  if(mode!=='replay')return;const watched=Math.round(RP.t-RP.t0);
+  RP.play=false;RP.t=RP.t1;rpApply(RP.t1);ST.ended=RP.end;ST.td=RP.td;
+  sfx.update(0,0,0,false,{});setView(RP.view);mode='ended';rpEl('replay').hidden=true;for(const id of['bar','map'])rpEl(id).hidden=RP.hid[id];
+  rpEl('result').hidden=false;rpEl('btnReplay').focus();track('replay_end',{replay_seconds:watched})}
+function replayHide(){rpEl('replay').hidden=true}
+function replayButton(){const b=rpEl('btnReplay');b.hidden=!recOK();b.querySelector('span').textContent=rpT('watch')}
+window.__rp={REC,RP,start:replayStart,stop:replayStop,apply:rpApply};   // test hooks
+rpEl('btnReplay').addEventListener('click',replayStart);
+rpEl('rpExit').addEventListener('click',replayStop);
+rpEl('rpPlay').addEventListener('click',()=>{if(!RP.play&&RP.t>=RP.t1-.01)rpSeek(RP.t0);RP.play=!RP.play;rpSync()});
+rpEl('rpSpd').addEventListener('click',()=>{RP.spd=RP.spd>=4?.5:RP.spd*2;rpSync()});
+rpEl('rpCam').addEventListener('change',e=>{RP.cam=e.target.value;RP.cur=null;if(RP.cam!=='dir'){CFG.view=RP.cam==='tower'&&!ST.tower?'chase':RP.cam;look.yaw=look.pitch=0;look.dist=1;look.orbitYaw=0;look.orbitPitch=.18;camera.userData.snap=true}e.target.blur()});
+rpEl('rpSeek').addEventListener('input',e=>rpSeek(RP.t0+(RP.t1-RP.t0)*e.target.value/1000));
+rpEl('rpSeek').addEventListener('change',e=>e.target.blur());
+window.addEventListener('keydown',e=>{if(mode!=='replay')return;const tg=e.target&&e.target.tagName;if((tg==='INPUT'||tg==='SELECT')&&e.code!=='Escape')return;if(tg==='BUTTON'&&(e.code==='Space'||e.code==='Enter'))return;
+  if(e.code==='Space'||e.code==='KeyK'){e.preventDefault();rpEl('rpPlay').click()}
+  else if(e.code==='ArrowLeft'){e.preventDefault();rpSeek(RP.t-5)}else if(e.code==='ArrowRight'){e.preventDefault();rpSeek(RP.t+5)}
+  else if(e.code==='Escape'){replayStop()}
+  else if(e.code==='KeyC'){const o=['dir','chase','cockpit','tower'],s=rpEl('rpCam');s.value=o[(o.indexOf(RP.cam)+1)%o.length];s.dispatchEvent(new Event('change'))}},true);
 
 /* ---------------- end states ---------------- */
 function crash(title,why){
@@ -6490,12 +6677,12 @@ const reducedMotion=()=>!!(window.matchMedia&&matchMedia('(prefers-reduced-motio
 if(reducedMotion())reel.removeAttribute('autoplay');
 function reelShow(on){if(!reelOK)return;if(on&&!reducedMotion())reel.play().catch(()=>{});else reel.pause()}
 function tourCapOff(){tourHush();const e=document.getElementById('tourCap');if(e){e.classList.remove('on');e.dataset.k='';e.textContent=''}}
-function showSetup(){tourCapOff();hsRenderHome();setMore(false);try{if(screen.orientation&&screen.orientation.unlock)screen.orientation.unlock()}catch(e){}reelShow(true);flightEnd('quit');mode='attract';paused=false;for(const id of['bar','ctl','map','result','cabin'])document.getElementById(id).hidden=true;document.getElementById('setup').hidden=false;applyMap();sfx.stopAll();if(synth)synth.cancel();radioClear();coachHide();syncMode();
+function showSetup(){tourCapOff();replayHide();hsRenderHome();setMore(false);try{if(screen.orientation&&screen.orientation.unlock)screen.orientation.unlock()}catch(e){}reelShow(true);flightEnd('quit');mode='attract';paused=false;for(const id of['bar','ctl','map','result','cabin'])document.getElementById(id).hidden=true;document.getElementById('setup').hidden=false;applyMap();sfx.stopAll();if(synth)synth.cancel();radioClear();coachHide();syncMode();
   clearFX();CFG.ap=true;setRunway('13');resetFlight();ST.ap=true;spawnAircraftModel();buildAI();CFG.view='chase';applyHomeEnv();setWalled(document.getElementById('optWalled').checked);setWreck(document.getElementById('optWreck').checked)}
 function startFlight(){
   setMore(false);reelShow(false);readSetup();setRunway(CFG.lesson?'13':CFG.rwy==='31'?'31':'13');flightEnd('restart');clearFX();mode='fly';paused=false;SEED=window.__capture?1998:1998+Math.floor(Math.random()*1000);
   for(const id of['setup','result'])document.getElementById(id).hidden=true;for(const id of['bar','ctl','map'])document.getElementById(id).hidden=false;
-  resetFlight();ST.attempted=false;flightBegin();radioReset();HIST.length=0;spawnAircraftModel();FOCUS=null;
+  resetFlight();ST.attempted=false;flightBegin();radioReset();HIST.length=0;REC.f.length=0;replayHide();spawnAircraftModel();FOCUS=null;
   if(CFG.game==='watch')buildAISchedule(CFG.phase??0,true,{n:CFG.concN??(CFG.conc?-1:2)});else if(CFG.game==='free')buildAISchedule(-100,false);else buildAI();
   if(CFG.tour){ST.t=penTour().t0}   // the tour starts a few seconds before the rotors turn
   tourCapOff();applyEnvironment();setWalled(CFG.walled);setWreck(CFG.wreck);hoops.visible=CFG.guide&&CFG.game==='approach';wxSel.value=CFG.wx;
@@ -6523,7 +6710,7 @@ function showResult(){
   RES={kind:e.landed?'landed':e.crash?'crash':'missed',grade:document.getElementById('resGrade').textContent,pts:e.landed?Math.max(0,gradeLanding(s.td).pts):null,
     eyebrow:document.getElementById('resEyebrow').textContent,title:document.getElementById('resTitle').textContent,rows,ac:s.ac.short,fpm:e.landed?Math.round(gradeLanding(s.td).fpm):null,
     ctx:document.getElementById('flightid').textContent};
-  updateShare();
+  updateShare();replayButton();
   document.getElementById('result').hidden=false;document.getElementById('btnAgain').focus();
 }
 
@@ -6638,13 +6825,14 @@ function frame(now,manual){
   if(mode==='fly'&&!paused&&CFG.game!=='watch')gpws(dt);
   if(COACH.on)coachUpdate(now);
   atcUpdate(dt);
+  if(mode==='replay')replayTick(dt);
   const t=now/1000;LIGHT_U.uTime.value=t;WATER_U.uTime.value=t;
   const sdt=dt*(mode==='fly'?CFG.ts:1);
   if(!paused){updateTraffic(sdt,CFG.night);updateShips(sdt,t);updatePort(sdt);updateFX(dt);updateDamageFX(dt)}
   fidsTick(now);updateAI();rcHud();if(mode==='fly'&&!paused&&CFG.game!=='watch')playerHit();for(const b of BRIDGE)bridgeSet(b,b.e,b.R);if(gseLamps)updateGSE();
-  updateAircraftVisual();if(hoops)hoops.visible=CFG.guide&&!SPOTS[CFG.view]&&!TVIEWS[CFG.view]&&CFG.view!=='tower';
+  updateAircraftVisual();if(hoops)hoops.visible=CFG.guide&&mode!=='replay'&&!SPOTS[CFG.view]&&!TVIEWS[CFG.view]&&CFG.view!=='tower';
   if(deckGroup&&deckGroup.visible){drawDisplays(dt);animateDeck()}
-  if(mode==='attract'){attractCamera(dt)}else updateCamera(dt);
+  if(mode==='attract'){attractCamera(dt)}else if(mode==='replay')replayCamera(dt);else updateCamera(dt);
   if(window.__camFn)window.__camFn(camera,ST,acModel,THREE);
   if(window.__kt&&window.__kt.freeCam){const f=window.__kt.freeCam;camera.position.set(f[0],f[1],f[2]);camera.lookAt(f[3],f[4],f[5]);camera.fov=60;camera.updateProjectionMatrix()}
   sky.position.copy(camera.position);stars.position.copy(camera.position);
@@ -6670,6 +6858,7 @@ function frame(now,manual){
     const gm=s.gearPos>.01&&s.gearPos<.99;if(s._gp!==undefined&&((s._gp<.99&&s.gearPos>=.99)||(s._gp>.01&&s.gearPos<=.01)))sfx.clunk();s._gp=s.gearPos;
     sfx.update(s.ended?0:(s.thrust/s.ac.thr+(rev?.35:0)),s.V,w.rain,CFG.view==='cockpit'||CFG.view==='cabin',
       {rev,brake:on&&s.Gs>6?clamp(s.Gs/70,.05,.4)*.22:0,gearMove:gm&&!s.ended,flapMove:Math.abs(s.flapPos-s.flapIdx)>.01&&!s.ended,gearDrag:s.ended?0:s.gearPos*clamp(s.V/90,0,1)})}
+  else if(mode==='replay')rpSound();
   if(toastT&&now>toastT){document.getElementById('toast').classList.remove('on');toastT=0}
   LIGHT_U.uScale.value=HH*renderer.getPixelRatio()/(2*Math.tan(camera.fov*D2R/2));
   renderer.render(scene,camera);drawHUD();if(mode==='fly'||mode==='attract')drawMap();

@@ -54,6 +54,7 @@ Data: © Lands Department, HKSAR Government (CSDI). Roads: Transport Department 
 - Flight information board: an old split-flap board of every arrival and departure (made-up airlines and flight numbers, 1998 destinations, Hong Kong clock, status read from the aircraft). It is on the home screen and in Plane Spotter (B or the Flights button toggles it in both), clatters like the real thing when letters change (a button on the board switches the sound on or off), and follows the English / Cantonese button
 - Other airliners: a 747 landing two minutes ahead of you, an A340 following you in on the IGS, departures pushed back from the bridges, taxiing out and climbing over Kowloon Bay, two aircraft in the hold west of the harbour, and apron movements
 - Zoom 1×, 2×, 4×, 8×, 16× (I / O); time 1×, 2×, 4×, 8× (T); jump back or forward 10 seconds ([ / ]), including back from a crash
+- Flight replay: every flight (not Plane Spotter or the tour) is recorded at 10 Hz. Watch replay on the report card plays it back with a transport bar (play/pause, scrub, 0.5× to 4×, highlight markers) and a camera menu: Director (cuts between chase, fly-by and cockpit shots, with set-piece shots at lift-off, the checkerboard, the turn over Kowloon City, touchdown and the crash), Chase, Cockpit or Tower. Space plays/pauses, ← → jump 5 s, C changes camera, Esc goes back to the report card. A rewind cuts the recording back, so the replay is the flight as finally flown
 - GPWS callouts and warnings (gear and flap calls only while descending, so take-offs stay quiet), engine, wind, rain and thunder sound
 
 ## Demo reel
@@ -112,6 +113,7 @@ The on-screen yoke works with touch or a mouse and is inverted like a real contr
 Google Analytics 4 with game events. See docs/analytics.md.
 
 ## Roadmap
+- Flight replay, next: an automatic 30 to 60 s highlights reel at the end of each flight, exported as an MP4 (16:9 and 9:16) to download or share
 - Learn to fly, next: ground and taxi lessons, and a Runway 31 landing lesson
 - ATC radio, next: ground and taxi calls, more voices, crews that match the AI traffic
 - More aircraft: 747-200/300, 767-300, MD-11, A300-600, A320, 737-300, L-1011, DC-10

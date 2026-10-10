@@ -14,6 +14,7 @@ Every event also carries `aircraft`, `weather` and `time_of_day`. Events only se
 | `crash` / `missed_approach` | Flight ended badly | `cause`, `distance_nm`, `flight_seconds`, `sim_seconds` |
 | `control_toggle` | Gear, flaps, autopilot, HUD, deck, guide, sound, clouds, map, night, pause, seat side, flight board (`flight_board`, Plane Spotter), flight board flap sound (`flight_board_sound`, Plane Spotter) | `control`, `state`, `via` (`button`, `key`, `auto`), `flight_seconds` |
 | `view_change`, `zoom`, `time_speed`, `weather_change`, `rewind`, `fast_forward` | In-flight controls | per event |
+| `replay_start` / `replay_end` | Watch replay opened from the report card / closed with Done or Esc | `game_mode`, `runway`, `result` (`landed`, `crash`, `missed`), `replay_seconds` (start: length of the recording; end: seconds watched) |
 | `flight_end` | Result screen, back to menu, restart, or page close | `outcome`, `flight_seconds`, `sim_seconds`, `landing_attempts`, `successful_landings`, `controls_toggled`, `flight_number` |
 | `session_summary` | Tab hidden or page closed | `flights`, `landing_attempts`, `successful_landings`, `crashes`, `missed_approaches`, `landing_success_pct`, `total_flight_seconds`, `session_seconds` |
 | `share` | Blog share button clicked (blog pages only) | `method` (`x`, `facebook`, `reddit`, `linkedin`, `whatsapp`, `threads`, `email`, `copy_link`, `native`), `content_type` (`article`), `item_id` (post slug) |
