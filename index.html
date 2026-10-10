@@ -189,7 +189,10 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
 #toast.on{opacity:1}
 #tourCap{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 78px);transform:translateX(-50%);background:rgba(9,15,18,.82);border:1px solid var(--line-2);border-left:3px solid var(--jade-bright);padding:10px 16px;border-radius:3px;font-size:15px;line-height:1.45;letter-spacing:.02em;opacity:0;transition:opacity .4s;pointer-events:none;width:min(640px,calc(100vw - 28px));text-align:left;z-index:4}
 #tourCap.on{opacity:1}
-@media (prefers-reduced-motion:reduce){#tourCap{transition:none}}
+#tourCap.talk{padding-left:40px}
+#tourCap.talk::before{content:'';position:absolute;left:14px;top:50%;width:14px;height:12px;margin-top:-6px;background:linear-gradient(var(--jade-bright),var(--jade-bright)) 0 50%/3px 40% no-repeat,linear-gradient(var(--jade-bright),var(--jade-bright)) 50% 50%/3px 100% no-repeat,linear-gradient(var(--jade-bright),var(--jade-bright)) 100% 50%/3px 60% no-repeat;animation:tgtalk .9s ease-in-out infinite alternate}
+@keyframes tgtalk{to{opacity:.35}}
+@media (prefers-reduced-motion:reduce){#tourCap{transition:none}#tourCap.talk::before{animation:none}}
 
 /* ---------- take-off lesson coach ---------- */
 #coach{position:fixed;z-index:3;left:50%;top:calc(env(safe-area-inset-top,0px) + 58px);transform:translateX(-50%);width:min(500px,calc(100% - 400px));min-width:300px;box-sizing:border-box;background:var(--panel-2);border:1px solid var(--line-2);border-left:4px solid var(--checker);border-radius:4px;padding:12px 14px;display:grid;grid-template-columns:minmax(0,1fr);gap:8px;backdrop-filter:blur(6px);box-shadow:0 12px 34px rgba(0,0,0,.5)}
@@ -4287,7 +4290,7 @@ function hsCommitName(){if(!HS_ENTRY)return;const el=document.getElementById('hs
 const sfx=(()=>{
   let ctx,master,eng,engF,whine,whineG,wind,windF,rainG,revG,revF,sqG,sqLfo,hydG,hydO,flapG,flapO,rumG,rumF;
   function buf(brown){const b=ctx.createBuffer(1,ctx.sampleRate*2,ctx.sampleRate);const d=b.getChannelData(0);let l=0;for(let i=0;i<d.length;i++){const w=Math.random()*2-1;if(brown){l=(l+.02*w)/1.02;d[i]=l*3.5+w*.05}else d[i]=w}return b}
-  let BROWN,WHITE;
+  let BROWN,WHITE,duckK=1;
   function src(b){const s=ctx.createBufferSource();s.buffer=b;s.loop=true;s.start();return s}
   function chain(s,...nodes){let n=s;for(const x of nodes){n.connect(x);n=x}n.connect(master);return nodes[nodes.length-1]}
   const filt=(type,f,q)=>{const x=ctx.createBiquadFilter();x.type=type;x.frequency.value=f;if(q)x.Q.value=q;return x};
@@ -4319,7 +4322,9 @@ const sfx=(()=>{
       hydG.gain.setTargetAtTime(m.gearMove?.05:0,t,.25);hydG.hiss.gain.setTargetAtTime(m.gearMove?.02:0,t,.25);
       flapG.gain.setTargetAtTime(m.flapMove?.035:0,t,.2);
       rumG.gain.setTargetAtTime((m.gearDrag||0)*.35*k,t,.5);rumF.frequency.setTargetAtTime(120+(m.gearDrag||0)*160,t,.5)},
-    mute(on){if(master)master.gain.value=on?.9:0},
+    mute(on){if(master){master.gain.cancelScheduledValues(0);master.gain.value=on?.9*duckK:0}},
+    // duck: lower everything under the tour guide's voice (k = 1 back to full)
+    duck(k){if(duckK===k)return;duckK=k;if(master&&CFG.sound)master.gain.setTargetAtTime(.9*k,ctx.currentTime,.25)},
     stopAll(){if(!ctx)return;const t=ctx.currentTime;for(const g of[eng,whineG,wind,revG,sqG,hydG,flapG,rumG])g.gain.setTargetAtTime(0,t,.2);hydG.hiss.gain.setTargetAtTime(0,t,.2)},
     burst(len,freq,g0,delay=0,type='lowpass',q){if(!ctx)return;const s=ctx.createBufferSource();s.buffer=WHITE;const f=filt(type,freq,q);const g=gain();const t=ctx.currentTime+delay;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(g0,t+.012);g.gain.exponentialRampToValueAtTime(.001,t+len);s.connect(f);f.connect(g);g.connect(master);s.start(t);s.stop(t+len+.1)},
     squelch(){this.burst(.07,3400,.09,0,'bandpass',1.4);this.burst(.05,1900,.05,.02,'bandpass',2)},
@@ -4334,7 +4339,12 @@ const sfx=(()=>{
   };
 })();
 const synth=window.speechSynthesis;let voice=null;
-function pickVoice(){try{const v=synth.getVoices();voice=v.find(x=>/en-US/i.test(x.lang)&&/male|david|alex|daniel/i.test(x.name))||v.find(x=>/^en/i.test(x.lang))||null}catch(e){}}
+let guideV={en:null,zh:null};
+function pickVoice(){try{const v=synth.getVoices();voice=v.find(x=>/en-US/i.test(x.lang)&&/male|david|alex|daniel/i.test(x.name))||v.find(x=>/^en/i.test(x.lang))||null;
+  // the tour guide: a British English voice (a woman's where the browser has one, so she is not the pilot), and a Hong Kong Cantonese voice for 廣東話
+  const gb=v.filter(x=>/en[-_]GB/i.test(x.lang));
+  guideV.en=gb.find(x=>/female|serena|kate|susan|hazel|libby|sonia|martha|stephanie/i.test(x.name))||gb[0]||v.find(x=>/en[-_](AU|IE|HK)/i.test(x.lang))||v.find(x=>/^en/i.test(x.lang))||null;
+  guideV.zh=v.find(x=>/zh[-_]HK|yue/i.test(x.lang))||v.find(x=>/cantonese|粵|粤|sinji/i.test(x.name))||null}catch(e){}}
 if(synth){pickVoice();synth.onvoiceschanged=pickVoice}
 function speak(t,urgent){if(!synth||!CFG.sound||mode!=='fly')return;try{if(urgent)synth.cancel();if(!t)return;const u=new SpeechSynthesisUtterance(t);if(voice)u.voice=voice;u.rate=1.08;u.pitch=.75;u.volume=.9;synth.speak(u)}catch(e){}}
 function say(t){if(t)toast(t)}
@@ -5427,7 +5437,17 @@ function updateHeli(t){
     H.p=p}}
 // the tour captions: shown for as long as the sim clock is inside a caption's window, so rewind and fast-forward show the right one
 function tourTick(t){const el=document.getElementById('tourCap');if(!el)return;const T=penTour();let c=null;for(const q of T.caps)if(t>=q.t&&t<q.t+q.d)c=q;
-  const x=c?(LANG==='zh'?c.zh:c.en):'';if(el.dataset.k!==x){el.dataset.k=x;el.textContent=x}el.classList.toggle('on',!!c)}
+  const x=c?(LANG==='zh'?c.zh:c.en):'';if(el.dataset.k!==x){el.dataset.k=x;el.textContent=x;tourSay(c,t)}el.classList.toggle('on',!!c);
+  if(TG.u&&(CFG.ts>1||!CFG.sound))tourHush()}
+// the tour guide speaks each caption as it appears: at normal time only, and only if it is fresh (a rewind into the middle of one stays quiet).
+// The rotors duck under the voice. No Cantonese voice in the browser: the Cantonese captions stay silent.
+const TG={u:null};
+function tourTalk(on){const el=document.getElementById('tourCap');if(el)el.classList.toggle('talk',on)}
+function tourHush(){if(TG.u){TG.u=null;if(synth)synth.cancel()}sfx.duck(1);tourTalk(false)}
+function tourSay(c,t){tourHush();if(!c||!synth||!CFG.sound||CFG.ts>1||paused||mode!=='fly'||t-c.t>2.5)return;
+  const zh=LANG==='zh',vv=zh?guideV.zh:guideV.en;if(zh&&!vv)return;
+  try{const u=new SpeechSynthesisUtterance(zh?c.zh:c.en.replace(/\bS-76\b/g,'S 76').replace(/(\d+) m\b/g,'$1 metres'));if(vv){u.voice=vv;u.lang=vv.lang}else u.lang='en-GB';
+    u.rate=zh?.95:.98;u.pitch=1.05;u.volume=1;u.onend=u.onerror=()=>{if(TG.u===u){TG.u=null;sfx.duck(1);tourTalk(false)}};TG.u=u;sfx.duck(.4);tourTalk(true);synth.speak(u)}catch(e){TG.u=null;sfx.duck(1);tourTalk(false)}}
 /* =====================================================================
    AIRPORT GROUND VEHICLES — catering trucks, baggage trains, pushback tugs, cargo handling (main-deck loaders, ULD dolly trains, forklifts, container trucks), fire tenders.
    Like the AI aircraft they are pure functions of sim time, so rewind and fast-forward just work.
@@ -5945,7 +5965,7 @@ function setHour(h){CFG.hour=((h%24)+24)%24;applyEnvironment()}
 function toggleNight(){const next=TOD_PRESETS.find(p=>p>CFG.hour+.01);setHour(next===undefined?TOD_PRESETS[0]:next);tog('night',todLabel().toLowerCase())}
 function toggleAP(on){ST.ap=on===undefined?!ST.ap:on;if(ST.ap)ST.apUsed=true;ST.apT=null;if(ST.ap&&ST.onGround&&CFG.game!=='approach'){ST.ap=false;toast('Autopilot engages once you are airborne');syncButtons();return}tog('autopilot',ST.ap?'on':'off',on===undefined?VIA:'auto');if(ST.ap){ST.apI=0;toast('Autopilot and autothrottle engaged')}else toast('Autopilot off: you have control');syncButtons()}
 function setClouds_on(on){CFG.clouds=on;for(const c of cloudLayers)c.visible=on;tog('clouds',on?'on':'off');syncButtons();toast('Clouds '+(on?'on':'off'))}
-function togglePause(){paused=!paused;tog('pause',paused?'on':'off');syncButtons()}
+function togglePause(){paused=!paused;if(TG.u&&synth){try{paused?synth.pause():synth.resume()}catch(e){}}tog('pause',paused?'on':'off');syncButtons()}
 function syncViewMenus(v){const f=document.getElementById('viewSel'),s=document.getElementById('spotSel'),m=document.getElementById('termSel');
   f.value=['cockpit','chase','tower','cabin','heli','helix'].includes(v)?v:'';
   s.value=SPOTS[v]?v:'';m.value=TVIEWS[v]?v:''}
@@ -6354,7 +6374,7 @@ const STRIPE_LINK='https://buy.stripe.com/9B6cMX2TT3tPaFi0UcaAw00';
 const reducedMotion=()=>!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
 if(reducedMotion())reel.removeAttribute('autoplay');
 function reelShow(on){if(!reelOK)return;if(on&&!reducedMotion())reel.play().catch(()=>{});else reel.pause()}
-function tourCapOff(){const e=document.getElementById('tourCap');if(e){e.classList.remove('on');e.dataset.k='';e.textContent=''}}
+function tourCapOff(){tourHush();const e=document.getElementById('tourCap');if(e){e.classList.remove('on');e.dataset.k='';e.textContent=''}}
 function showSetup(){tourCapOff();hsRenderHome();setMore(false);try{if(screen.orientation&&screen.orientation.unlock)screen.orientation.unlock()}catch(e){}reelShow(true);flightEnd('quit');mode='attract';paused=false;for(const id of['bar','ctl','map','result','cabin'])document.getElementById(id).hidden=true;document.getElementById('setup').hidden=false;applyMap();sfx.stopAll();if(synth)synth.cancel();radioClear();coachHide();syncMode();
   clearFX();CFG.ap=true;setRunway('13');resetFlight();ST.ap=true;spawnAircraftModel();buildAI();CFG.view='chase';applyHomeEnv();setWalled(document.getElementById('optWalled').checked);setWreck(document.getElementById('optWreck').checked)}
 function startFlight(){

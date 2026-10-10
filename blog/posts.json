@@ -1,5 +1,40 @@
 [
   {
+    "slug": "helicopter-tour-guide-voice",
+    "title": "The helicopter tour guide now speaks",
+    "dek": "The harbour scenic tour reads its captions aloud, in English or Cantonese, with the rotors ducking under the voice.",
+    "description": "The Hong Kong harbour helicopter tour now has a spoken guide: each caption is read aloud in English or Cantonese, with the rotor noise lowered under it.",
+    "date": "2026-10-10",
+    "tag": "Feature",
+    "category": "flying",
+    "keywords": [
+      "helicopter tour",
+      "tour guide",
+      "audio commentary",
+      "Cantonese voice",
+      "Victoria Harbour",
+      "speech",
+      "Sikorsky S-76",
+      "flight simulator",
+      "Kai Tak"
+    ],
+    "hero": "tour-audio-harbour",
+    "hero_alt": "From the helicopter window seat: Central across Victoria Harbour, with the guide caption and a speaking indicator at the bottom.",
+    "hero_caption": "Over the harbour, with the guide speaking.",
+    "card_kicker": "FLYING · FEATURE",
+    "card_title": "The helicopter tour guide now speaks",
+    "card_sub": "Spoken commentary in English and Cantonese",
+    "card_image": "tour-audio-harbour",
+    "card_focus": 50,
+    "zh": {
+      "title": "直升機觀光導賞員識講嘢啦",
+      "dek": "維港觀光之旅會用英文或者廣東話讀出字幕，導賞員講嘢時旋翼聲會降低。",
+      "description": "香港維港直升機觀光之旅而家有語音導賞：每段字幕都會用英文或者廣東話讀出，旋翼聲會喺講嘢時降低。",
+      "hero_alt": "喺直升機窗口位望出去：維港對岸嘅中環，底部有導賞字幕同講話指示。",
+      "hero_caption": "飛越維港，導賞員講緊嘢。"
+    }
+  },
+  {
     "slug": "public-stats-dashboard",
     "title": "Live stats: how many pilots make it into Kai Tak",
     "dek": "A public page that counts every flight on the site: landings, crashes, go-arounds, modes, aircraft, weather and crash causes.",
