@@ -1,5 +1,40 @@
 [
   {
+    "slug": "the-peninsula-hotel-and-rooftop-helipads",
+    "title": "The Peninsula Hotel and its rooftop helipads",
+    "dek": "The 1928 building round its forecourt, the 1994 tower and its two green rooftop pads, rebuilt from period photos.",
+    "description": "The Peninsula Hotel in Tsim Sha Tsui, rebuilt: the 1928 wings and forecourt, green Silver Spurs, the 1994 tower and its two rooftop helipads.",
+    "date": "2026-10-10",
+    "tag": "Feature",
+    "category": "scenery",
+    "keywords": [
+      "The Peninsula",
+      "Peninsula Hotel",
+      "helipad",
+      "Tsim Sha Tsui",
+      "Salisbury Road",
+      "Rolls-Royce",
+      "S-76",
+      "flight simulator",
+      "Kai Tak"
+    ],
+    "hero": "peninsula-hotel-night",
+    "hero_alt": "The Peninsula floodlit gold at night, the tower behind the wings and cars lined up in the forecourt.",
+    "hero_caption": "The Peninsula, floodlit at night.",
+    "card_kicker": "SCENERY · FEATURE",
+    "card_title": "The Peninsula and its rooftop helipads",
+    "card_sub": "The 1928 wings, the 1994 tower, two green pads",
+    "card_image": "peninsula-hotel-night",
+    "card_focus": 50,
+    "zh": {
+      "title": "半島酒店同天台直升機坪",
+      "dek": "圍住前庭嘅 1928 年舊樓、1994 年大樓同天台兩個綠色停機坪，參考當年相片重建。",
+      "description": "重建尖沙咀半島酒店：1928 年兩翼同前庭、綠色 Silver Spur、1994 年大樓同天台兩個直升機坪。",
+      "hero_alt": "夜晚半島酒店打上金色泛光燈，大樓喺兩翼後面，前庭排滿車。",
+      "hero_caption": "夜晚打燈嘅半島酒店。"
+    }
+  },
+  {
     "slug": "helicopter-tour-radio-muted",
     "title": "Helicopter tour: only the guide speaks",
     "dek": "Radio traffic is silent on the harbour tour. The calls still show as text, and the guide is the only voice.",

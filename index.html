@@ -1340,6 +1340,8 @@ const DISTRICTS=[
 function districtAt(x,z){for(const d of DISTRICTS)if(x>d.x0&&x<d.x1&&z>d.z0&&z<d.z1)return d;return {n:'Kowloon',h:[20,60]}}
 const WALLED={x:-229,z:-721,w:210,d:125};
 const LANDMARK_CLEAR=[];
+// The Peninsula Hotel, Tsim Sha Tsui: its block between Nathan Road (east) and Salisbury Road (south), the 1994 tower and its two rooftop pads
+const PEN={x0:-2195,x1:-2095,z0:3288,z1:3398,tx:-2145,tz:3312,tw:42,td:28,top:101,pad:106,R:11,pads:[[-11,8,1],[11,-8,2]]};
 function clearanceCap(x,z){const i=pathNearestGlobal(x,z);const p=PATH.pts[i];if(p.d<-60)return 999;const lat=Math.abs(pathLateral(i,x,z));return (p.alt-24)+Math.max(0,lat-200)*.55}
 function skipFootprint(x,z){
   const s=rwS(x,z),l=rwL(x,z);if(s>-170&&s<RWY.len+200&&l>-1240&&l<200||inEast(s,l,-20)||inMaint(s,l))return true;        // Kai Tak airport (modern development there)
@@ -1348,6 +1350,7 @@ function skipFootprint(x,z){
   if(x>-4400&&x<-2750&&z>500&&z<3150)return true;                                        // West Kowloon: 1998 reclamation, not yet built on
   for(const w of WATER1998)if(x>w[0]&&x<w[1]&&z>w[2]&&z<w[3])return true;
   if(Math.abs(x-WALLED.x)<WALLED.w/2+25&&Math.abs(z-WALLED.z)<WALLED.d/2+25)return true;
+  if(x>PEN.x0-6&&x<PEN.x1+6&&z>PEN.z0-6&&z<PEN.z1+6)return true;                       // the Peninsula Hotel's block (see buildPeninsula)
   for(const c of LANDMARK_CLEAR)if(Math.hypot(x-c[0],z-c[1])<c[2])return true;
   if(Math.hypot(x-(-2380),z-(-170))<120)return false;
   return false;
@@ -1499,7 +1502,7 @@ let walledGroup,parkGroup,landmarkLights=[];
 function box(w,h,d,mat,x,y,z,ry){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d).translate(0,h/2,0),mat);m.position.set(x,y,z);if(ry)m.rotation.y=ry;scene.add(m);return m}
 function towerCollider(x,z,w,d,top,name){addCollider(x-w/2,x+w/2,z-d/2,z+d/2,top,name)}
 const LM={boc:[-3206,5120],hsbc:[-3433,4999],lippo:[-2938,5109],jardine:[-3392,4688],exch:[-3546,4578],ifc1:[-3484,4379],center:[-3917,4500],
-  plaza:[-1960,5010],hopewell:[-2125,5629],fefc:[-2845,5043],hkcec:[-2050,4610],clock:[-2372,3556],culture:[-2300,3440],peninsula:[-2119,3368],
+  plaza:[-1960,5010],hopewell:[-2125,5629],fefc:[-2845,5043],hkcec:[-2050,4610],clock:[-2372,3556],culture:[-2300,3440],peninsula:[-2145,3344],
   coliseum:[-1109,2593],peak:[-4420,6005],cenPier:[-3150,4660],tstPier:[-2425,3565],wcPier:[-1862,4592]};
 LANDMARK_CLEAR.push([-4454,6031,26]); // the Peak Lookout replaces any footprint there
 for(const [k,p] of Object.entries(LM))LANDMARK_CLEAR.push([p[0],p[1],k==='hkcec'?170:k==='exch'?90:k==='culture'?110:k==='cenPier'?80:k==='tstPier'?70:60]);
@@ -1507,6 +1510,119 @@ const gAt=(p)=>Math.max(terrainAt(p[0],p[1]),3.5);
 /* Happy Valley Racecourse and Ocean Park: stylised, placed at their real sites. Animated parts run from parkAnim. */
 let parkAnim=null;
 const bAt=(x,z)=>{const b=buildingAt(x,z,0);return Math.max(terrainAt(x,z),b?b.top:0,3.5)};
+/* THE PENINSULA HOTEL (1928, tower 1994), Salisbury Road at the foot of Nathan Road. From period photos and the hotel's own pictures:
+   the 1928 Italianate block is a cream H: two seven-storey wings run forward to Salisbury Road either side of the forecourt, joined by the
+   central block with the entrance canopy and THE PENINSULA lettering. Blue-and-white striped awnings run round the forecourt and street fronts
+   over the ground-floor arcade, and the hotel's fleet of green Rolls-Royce Silver Spurs (the Phantoms came in 2006) waits in the forecourt
+   round the fountain. The 1994 extension added a podium behind and the 30-storey tower, in the same cream style with a dark glazed bay up the
+   middle of its long faces and two big arches in the crown. On the roof, two round green pads (No. 1 south-west, No. 2 north-east) overhang
+   the tower on white drums, each with a yellow touchdown ring, the weight limit, THE PENINSULA round the edge and a green-and-white safety net.
+   At night the whole building is floodlit gold. Sizes are estimated from photos: frontage about 100 m, wings 33 m, tower roof about 101 m. */
+function penTile(bays,floors,bw,fh,draw){   // a facade tile: day map and night (floodlit) map drawn together, repeat in metres
+  const W=bays*128,H=floors*128,mk=n=>canvasTex(W,H,(g)=>{for(let j=0;j<floors;j++)for(let i=0;i<bays;i++){g.save();g.translate(i*128,(floors-1-j)*128);draw(g,n,i,j);g.restore()}},true);
+  const m=new THREE.MeshLambertMaterial({map:mk(false),emissiveMap:mk(true),emissive:0});m.userData.bu=bays*bw;m.userData.bv=floors*fh;landmarkLights.push({material:m,userData:{neon:0xffffff}});return m}
+function penBox(w,h,d,side,top,x,y,z,ry,par){   // a box whose side faces repeat the facade tile by the metre
+  const geo=new THREE.BoxGeometry(w,h,d).translate(0,h/2,0),uv=geo.attributes.uv,bu=side.userData.bu||w,bv=side.userData.bv||h;
+  for(let f=0;f<6;f++){const fw=f<2?d:w,fh=f===2||f===3?d:h;for(let k=0;k<4;k++){const i=f*4+k;uv.setXY(i,uv.getX(i)*fw/bu,uv.getY(i)*fh/bv)}}
+  const m=new THREE.Mesh(geo,[side,side,top,top,side,side]);m.position.set(x,y,z);if(ry)m.rotation.y=ry;(par||scene).add(m);return m}
+function penPadTex(no){return canvasTex(1024,1024,(g)=>{const c=512;
+  g.fillStyle='#2c8a55';g.beginPath();g.arc(c,c,510,0,7);g.fill();
+  g.strokeStyle='rgba(255,255,255,.07)';g.lineWidth=2;for(let r=60;r<510;r+=46){g.beginPath();g.arc(c,c,r,0,7);g.stroke()}   // weathering rings
+  g.strokeStyle='#e9a73a';g.lineWidth=40;g.beginPath();g.arc(c,c,250,0,7);g.stroke();   // the touchdown ring
+  g.fillStyle='#f0d23a';for(let k=0;k<5;k++)g.fillRect(c-38,c+282+k*44,76,24);   // the yellow approach dashes
+  g.fillStyle='#f2f0e8';g.textAlign='center';g.textBaseline='middle';
+  if(no===2){g.font='bold 300px Arial, Helvetica, sans-serif';g.fillText('H',c,c+12)}
+  g.font='bold 92px Arial, Helvetica, sans-serif';g.fillText(String(no),c-370,c);g.fillText(String(no),c+370,c);   // the pad number either side of the ring
+  g.fillStyle='#f0d23a';g.font='bold 70px Arial, Helvetica, sans-serif';g.save();g.translate(c-150,c+380);g.fillText('07t',0,0);g.restore();   // weight limit
+  g.fillStyle='#f2f0e8';g.font='bold 74px Arial, Helvetica, sans-serif';const txt='THE PENINSULA',a0=-Math.PI/2-.95,a1=-Math.PI/2+.95;   // round the top edge
+  for(let i=0;i<txt.length;i++){const a=a0+(a1-a0)*i/(txt.length-1);g.save();g.translate(c+Math.cos(a)*400,c+Math.sin(a)*400);g.rotate(a+Math.PI/2);g.fillText(txt[i],0,0);g.restore()}})}
+function buildPeninsula(L){
+  const b=gAt(LM.peninsula),P=PEN,roof=new THREE.MeshLambertMaterial({color:0xa9a69d}),stoneC='#f1e7d0',
+    trim=new THREE.MeshLambertMaterial({color:0xefe6d2}),trimN={material:trim,userData:{neon:0x5a4426}};landmarkLights.push(trimN);
+  // facade tiles. Heritage: 4.4 m bays, 3.7 m floors, a cream stone wall with tall sash windows, curtains and pediments
+  const win=penTile(4,3,4.4,3.7,(g,n,i,j)=>{const lit=((i*7+j*5+i*j)%5)<3;
+    g.fillStyle=n?'#4a3720':stoneC;g.fillRect(0,0,128,128);if(!n){g.fillStyle='#d9ccb0';g.fillRect(0,124,128,4);g.fillRect(0,0,6,128);g.fillRect(122,0,6,128)}
+    g.fillStyle=n?'#5d462a':'#f4eddc';g.fillRect(34,20,60,90);g.fillRect(28,12,72,10);   // surround and pediment
+    g.fillStyle=n?(lit?'#ffcf7e':'#2a1d10'):'#47443e';g.fillRect(40,26,48,78);
+    if(!n){g.fillStyle='#c8a064';g.fillRect(40,26,12,78);g.fillRect(76,26,12,78);g.fillStyle='#5a5650';g.fillRect(40,62,48,3)}else if(lit){g.fillStyle='#e7a94e';g.fillRect(40,26,10,78);g.fillRect(78,26,10,78)}
+    g.fillStyle=n?'#5d462a':'#cfc2a6';g.fillRect(32,106,64,6)});   // sill
+  // the ground-floor arcade: rusticated stone with arched shopfronts, 5.6 m high
+  const arc=penTile(4,1,4.4,5.6,(g,n,i)=>{g.fillStyle=n?'#4a3720':'#ddd0b4';g.fillRect(0,0,128,128);
+    if(!n){g.fillStyle='#c9bb9c';for(let y=12;y<128;y+=16)g.fillRect(0,y,128,2)}
+    g.fillStyle=n?'#ffd890':'#2e2a25';g.beginPath();g.moveTo(26,128);g.lineTo(26,48);g.arc(64,48,38,Math.PI,0);g.lineTo(102,128);g.fill();
+    if(!n){g.fillStyle='#8a7350';g.fillRect(30,74,68,4);g.fillStyle='#f0e3c4';g.fillRect(28,10,72,4)}else{g.fillStyle='#b08440';g.fillRect(30,74,68,3)}});
+  // the 1994 tower: 3.6 m bays, 3.4 m floors, paired windows between pilasters
+  const twr=penTile(4,4,3.6,3.4,(g,n,i,j)=>{const lit=((i*3+j*7+i*j*2)%7)<4;g.fillStyle=n?'#4a3720':'#f2e9d4';g.fillRect(0,0,128,128);
+    if(!n){g.fillStyle='#e0d4b8';g.fillRect(0,0,9,128);g.fillRect(119,0,9,128);g.fillRect(0,120,128,8)}
+    g.fillStyle=n?(lit?'#ffd38a':'#2a1d10'):'#4c4a44';g.fillRect(34,22,60,80);if(!n){g.fillStyle='#f2e9d4';g.fillRect(61,22,6,80);g.fillStyle='#d4b47c';g.fillRect(34,22,9,80);g.fillRect(85,22,9,80);g.fillStyle='#ddd0b2';g.fillRect(30,102,68,5)}});
+  const bay=penTile(2,4,3.5,3.4,(g,n,i,j)=>{const lit=((i+j*3)%4)<3;g.fillStyle=n?'#20160c':'#2d3338';g.fillRect(0,0,128,128);
+    g.fillStyle=n?(lit?'#ffe0a0':'#2a1d10'):'#4a545b';g.fillRect(8,10,112,96);g.fillStyle=n?'#20160c':'#bfb6a2';g.fillRect(0,108,128,20);g.fillRect(60,10,8,96)});
+  const crown=penTile(1,1,21,9,(g,n)=>{g.fillStyle=n?'#5a4428':'#ece3cd';g.fillRect(0,0,128,128);   // the two arches in the crown, one per tile
+    g.fillStyle=n?'#ffcc78':'#3b3934';g.beginPath();g.moveTo(22,122);g.lineTo(22,58);g.arc(64,58,42,Math.PI,0);g.lineTo(106,122);g.fill();
+    g.strokeStyle=n?'#6d5230':'#f6efdf';g.lineWidth=8;g.beginPath();g.arc(64,58,48,Math.PI,0);g.stroke();
+    if(!n){g.fillStyle='#ece3cd';g.fillRect(61,30,6,92);g.fillRect(22,84,84,5)}});
+  const quoin=new THREE.MeshLambertMaterial({color:0xd8cbb0});landmarkLights.push({material:quoin,userData:{neon:0x4a3720}});
+  // a block of the 1928 building: arcade, six floors, cornice, attic and balustrade
+  const block=(x0,x1,z0,z1,att)=>{const w=x1-x0,d=z1-z0,cx=(x0+x1)/2,cz=(z0+z1)/2;
+    penBox(w,5.6,d,arc,roof,cx,b,cz);penBox(w,22.2,d,win,roof,cx,b+5.6,cz);
+    penBox(w+.8,.8,d+.8,trim,roof,cx,b+5.4,cz);penBox(w+2.4,1.1,d+2.4,trim,roof,cx,b+27.8,cz);   // string course over the arcade, the main cornice
+    if(att){penBox(w-1,3.4,d-1,win,roof,cx,b+28.9,cz);penBox(w-.4,.7,d-.4,trim,roof,cx,b+32.3,cz)}
+    for(const [qx,qz] of[[x0,z0],[x1,z0],[x0,z1],[x1,z1]])penBox(1.6,27.8,1.6,quoin,roof,qx,b,qz)};   // corner quoins
+  const fz=3355;   // the back of the forecourt (the central block's front)
+  block(P.x0,P.x0+30,3330,P.z1,true);block(P.x1-30,P.x1,3330,P.z1,true);   // west and east wings
+  block(P.x0+30,P.x1-30,3330,fz,true);   // the central block
+  block(P.x0,P.x1,P.z0,3330,false);   // the 1994 podium behind, same style
+  // THE PENINSULA over the entrance, the entrance canopy, and the striped awnings round the forecourt and the street fronts
+  {const t=canvasTex(1024,96,(g)=>{g.fillStyle='#3a2c1c';g.font='bold 70px Georgia, "Times New Roman", serif';g.textAlign='center';g.textBaseline='middle';g.fillText('T H E    P E N I N S U L A',512,52)});
+   const m=new THREE.Mesh(new THREE.PlaneGeometry(26,2.4),new THREE.MeshLambertMaterial({map:t,transparent:true,polygonOffset:true,polygonOffsetFactor:-2}));m.position.set(P.tx,b+16.3,fz+.05);scene.add(m)}
+  const awnT=canvasTex(64,16,(g)=>{for(let i=0;i<8;i++){g.fillStyle=i%2?'#f3f1ea':'#3f6fae';g.fillRect(i*8,0,8,16)}},true),
+    awnM=new THREE.MeshLambertMaterial({map:awnT,side:THREE.DoubleSide});
+  const awn=(x,z,len,ry,deep)=>{const geo=new THREE.PlaneGeometry(len,deep||2.6),uv=geo.attributes.uv;for(let i=0;i<uv.count;i++)uv.setX(i,uv.getX(i)*len/2.4);
+    const g=new THREE.Group();g.position.set(x,b+5.3,z);g.rotation.y=ry;const m=new THREE.Mesh(geo,awnM);m.rotation.x=-Math.PI/2+.42;m.position.set(0,-.55*(deep||2.6)/2.6,(deep||2.6)/2*.9);g.add(m);
+    const v=new THREE.Mesh(new THREE.PlaneGeometry(len,.5),awnM);v.position.set(0,-1.35*(deep||2.6)/2.6,(deep||2.6)*.92);g.add(v);scene.add(g)};
+  for(const wx of[P.x0+15,P.x1-15])awn(wx,P.z1,28,0);   // the wings' Salisbury Road fronts
+  awn(P.x0+30,(fz+P.z1)/2,P.z1-fz-2,Math.PI/2);awn(P.x1-30,(fz+P.z1)/2,P.z1-fz-2,-Math.PI/2);   // round the forecourt
+  awn(P.x0,(3330+P.z1)/2,P.z1-3332,-Math.PI/2);awn(P.x1,(3330+P.z1)/2,P.z1-3332,Math.PI/2);   // the side streets
+  {const c=new THREE.Mesh(new THREE.BoxGeometry(24,.7,7),new THREE.MeshLambertMaterial({color:0x2c3a33}));c.position.set(P.tx,b+5.2,fz+3.5);scene.add(c);   // the entrance canopy
+   for(const sx of[-11,11]){const p=new THREE.Mesh(new THREE.CylinderGeometry(.25,.25,5,8).translate(0,2.5,0),trim);p.position.set(P.tx+sx,b,fz+6.6);scene.add(p)}
+   for(let i=0;i<8;i++)L.push(P.tx-10.5+i*3,b+4.7,fz+6.9,1,.86,.6,2.6,-1)}
+  // the forecourt: paving, the fountain, the green Rolls-Royces
+  {const pav=new THREE.Mesh(new THREE.PlaneGeometry(40,P.z1-fz).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({color:0xb7aea0,polygonOffset:true,polygonOffsetFactor:-2}));pav.position.set(P.tx,b+.05,(fz+P.z1)/2);scene.add(pav);
+   const fx=P.tx,fz2=fz+17,stone=new THREE.MeshLambertMaterial({color:0xd8d0c0}),water=new THREE.MeshLambertMaterial({color:0x6f9fb0,emissive:0});
+   const cy=(r1,r2,h,y,m)=>{const q=new THREE.Mesh(new THREE.CylinderGeometry(r1,r2,h,24).translate(0,h/2,0),m);q.position.set(fx,b+y,fz2);scene.add(q);return q};
+   cy(5.2,5.4,.7,0,stone);cy(4.8,4.8,.08,.6,water);cy(.5,.7,2.2,.6,stone);cy(1.8,1.2,.4,2.6,stone);cy(1.6,1.6,.06,2.9,water);cy(.25,.35,1.2,3,stone);
+   const spray=new THREE.Mesh(new THREE.ConeGeometry(.9,1.6,12,1,true).translate(0,.8,0),new THREE.MeshBasicMaterial({color:0xe8f4f8,transparent:true,opacity:.5,depthWrite:false}));spray.position.set(fx,b+4,fz2);spray.rotation.x=Math.PI;spray.position.y=b+5.6;scene.add(spray);
+   const green=new THREE.MeshLambertMaterial({color:0x123b2b}),chrome=new THREE.MeshLambertMaterial({color:0xd8dadb}),glass=new THREE.MeshLambertMaterial({color:0x1b2227}),tyre=new THREE.MeshLambertMaterial({color:0x151515});
+   const car=(x,z,ry)=>{const g=new THREE.Group();g.position.set(x,b,z);g.rotation.y=ry;const q=(w,h,l,y,zz,m)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,l),m);o.position.set(0,y,zz);g.add(o)};
+     q(1.88,.62,5.3,.62,0,green);q(1.7,.5,2.6,1.18,.25,glass);q(1.74,.08,2.5,1.46,.25,green);q(.8,.5,.1,.66,-2.66,chrome);q(1.9,.1,.16,.36,-2.66,chrome);q(1.9,.1,.16,.36,2.66,chrome);   // body, glasshouse, roof, grille, bumpers
+     for(const sx of[-.86,.86])for(const sz of[-1.62,1.55]){const w=new THREE.Mesh(new THREE.CylinderGeometry(.36,.36,.26,12).rotateZ(Math.PI/2),tyre);w.position.set(sx,.36,sz);g.add(w)}
+     scene.add(g);for(const sx of[-.62,.62])L.push(x+Math.sin(ry)*-2.7+Math.cos(ry)*sx,b+.7,z+Math.cos(ry)*-2.7-Math.sin(ry)*sx,1,.97,.88,1.4,-1)};
+   for(let i=0;i<4;i++){car(P.tx-16.5+i*0,fz+9+i*6.2,Math.PI*.5);car(P.tx+16.5,fz+9+i*6.2,-Math.PI*.5)}   // nose-out along both sides of the drive
+   for(let i=0;i<5;i++)car(P.tx-11+i*5.5,P.z1-4,Math.PI)}   // a line across the front, facing Salisbury Road
+  // the 1994 tower: cream, a dark glazed bay up the middle of the long faces, a band at the podium roof, the crown with two arches, cornice
+  {const x=P.tx,z=P.tz,w=P.tw,d=P.td;
+   penBox(w,92,d,twr,roof,x,b,z);
+   for(const s of[-1,1])penBox(7,59,.8,bay,roof,x,b+33,z+s*(d/2+.2));   // the glazed bays, south and north
+   penBox(w+1,1,d+1,trim,roof,x,b+33,z);penBox(w+.6,.8,d+.6,trim,roof,x,b+91.4,z);
+   penBox(w,8.6,d,trim,roof,x,b+92,z);for(const s of[-1,1])for(const k of[-1,1]){const m=new THREE.Mesh(new THREE.PlaneGeometry(w/2-1,8.4),crown);m.position.set(x+k*w/4,b+96.2,z+s*(d/2+.03));if(s<0)m.rotation.y=Math.PI;scene.add(m)}
+   penBox(w+3,1.2,d+3,trim,roof,x,b+100,z);
+   L.push(x-w/2,b+101.6,z-d/2,1,.12,.1,4,.5,x+w/2,b+101.6,z+d/2,1,.12,.1,4,.5);   // red obstruction lights
+   // the two pads: green decks on white drums, a safety net round the edge, green perimeter lights
+   const drumM=new THREE.MeshLambertMaterial({color:0xe9e5da}),netT=canvasTex(64,16,(g)=>{for(let i=0;i<4;i++)for(let j=0;j<2;j++){g.fillStyle=(i+j)%2?'#2d8a58':'#e6eee6';g.fillRect(i*16,j*8,16,8)}},true);netT.repeat.set(26,1);
+   const netM=new THREE.MeshLambertMaterial({map:netT,side:THREE.DoubleSide}),R=P.R,Y=b+P.pad;
+   for(const [dx,dz,no] of P.pads){const px=x+dx,pz=z+dz;
+     const dr=new THREE.Mesh(new THREE.CylinderGeometry(R-1.5,R-5,Y-1-(b+101.2),32).translate(0,(Y-1-(b+101.2))/2,0),drumM);dr.position.set(px,b+101.2,pz);scene.add(dr);
+     const sl=new THREE.Mesh(new THREE.CylinderGeometry(R,R-.4,1,48).translate(0,-.5,0),drumM);sl.position.set(px,Y,pz);scene.add(sl);
+     const top=new THREE.Mesh(new THREE.CircleGeometry(R,64).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({map:penPadTex(no),polygonOffset:true,polygonOffsetFactor:-2}));top.position.set(px,Y+.02,pz);top.rotation.y=no===1?Math.PI/2:Math.PI*.15;scene.add(top);
+     const net=new THREE.Mesh(new THREE.CylinderGeometry(R,R+1.9,.7,64,1,true).translate(0,-.35,0),netM);net.position.set(px,Y,pz);scene.add(net);
+     const rail=new THREE.Mesh(new THREE.TorusGeometry(R+1.9,.08,4,64).rotateX(Math.PI/2),drumM);rail.position.set(px,Y-.7,pz);scene.add(rail);
+     for(let i=0;i<16;i++){const a=i/16*Math.PI*2;L.push(px+Math.cos(a)*(R-.3),Y+.25,pz+Math.sin(a)*(R-.3),.3,1,.4,3,-1)}
+     addCollider(px-R-1.9,px+R+1.9,pz-R-1.9,pz+R+1.9,Y,'the Peninsula helipad')}
+   L.push(x,b+101.6,z,1,.12,.1,4,.5);
+   towerCollider(x,z,w+3,d+3,b+101.2,'the Peninsula tower')}
+  // floodlights along the cornices
+  for(let k=0;k<=10;k++){L.push(P.x0+k*10,b+28.6,P.z1+1.4,1,.82,.5,3.2,-1)}
+  addCollider(P.x0,P.x0+30,3330,P.z1,b+33,'The Peninsula');addCollider(P.x1-30,P.x1,3330,P.z1,b+33,'The Peninsula');addCollider(P.x0+30,P.x1-30,3330,fz,b+33,'The Peninsula');addCollider(P.x0,P.x1,P.z0,3330,b+33,'The Peninsula')}
 function buildHappyValley(){
   const L=[];
   // Floodlit since 1973: a ring of floodlight masts round the oval, a canopy on the main stand, the infield screen
@@ -1810,7 +1926,7 @@ function buildLandmarks(){
   {buildKowloonClockTower(L);
    const cc=new THREE.Mesh(new THREE.CylinderGeometry(25,90,40,4,1).translate(0,20,0),new THREE.MeshLambertMaterial({color:0xd6b9a6}));cc.position.set(LM.culture[0],gAt(LM.culture),LM.culture[1]);cc.rotation.y=Math.PI/4+.3;cc.scale.set(1.6,1,.8);scene.add(cc);
    const dome=new THREE.Mesh(new THREE.SphereGeometry(22,20,10,0,Math.PI*2,0,Math.PI/2),new THREE.MeshLambertMaterial({color:0xe9e6dc}));dome.position.set(LM.culture[0]+70,gAt(LM.culture),LM.culture[1]-10);scene.add(dome);
-   const pb=gAt(LM.peninsula);box(70,30,60,glassMat(0xe7dfcd),LM.peninsula[0],pb,LM.peninsula[1]);box(26,95,26,glassMat(0xe7dfcd),LM.peninsula[0],pb,LM.peninsula[1]+20);towerCollider(LM.peninsula[0],LM.peninsula[1],70,70,pb+95,'The Peninsula')}
+   buildPeninsula(L)}
   // Hung Hom Coliseum (inverted pyramid)
   {const [x,z]=LM.coliseum,b=gAt(LM.coliseum);const c=new THREE.Mesh(new THREE.CylinderGeometry(70,32,30,4,1).translate(0,24,0),new THREE.MeshLambertMaterial({color:0x8b8f93}));c.position.set(x,b,z);c.rotation.y=Math.PI/4;scene.add(c);towerCollider(x,z,100,100,b+40,'the Hung Hom Coliseum')}
   // Peak Tower (1997): the bowl on the ridge
@@ -5336,8 +5452,8 @@ function heliPads(){
   const lat0=22.32558,lon0=114.19262,xz=(la,lo)=>[(lo-lon0)*103022,-(la-lat0)*110735];
   const st=[-4185,4120];   // Shun Tak Heliport: the roof of the ferry terminal at the foot of Shun Tak Centre (about 30 m above the water)
   HPAD.shun={x:st[0],y:30,z:st[1],h:80,name:'Shun Tak Heliport'};
-  const pn=xz(22.2952,114.1720),b=buildingAt(pn[0],pn[1],10);   // the Peninsula's 1994 tower
-  HPAD.pen={x:pn[0],y:(b?b.top:110)+.15,z:pn[1],h:60,name:'Peninsula Hotel'}}
+  const pb=gAt(LM.peninsula);   // the Peninsula's 1994 tower: pad 1, the south-west of the two rooftop pads (buildPeninsula)
+  HPAD.pen={x:PEN.tx+PEN.pads[0][0],y:pb+PEN.pad+.02,z:PEN.tz+PEN.pads[0][1],h:60,name:'Peninsula Hotel'}}
 function heliPadScenery(){
   const conc=new THREE.MeshLambertMaterial({color:0x9d9b93}),pier=new THREE.MeshLambertMaterial({color:0x86847d}),L=[];
   const pad=(P,r)=>{   // a round pad with a white H in a yellow ring and green edge lights
@@ -5350,8 +5466,7 @@ function heliPadScenery(){
   {const S=HPAD.shun,deck=new THREE.Mesh(new THREE.BoxGeometry(46,2.4,34),conc);deck.position.set(S.x,S.y-1.2,S.z);scene.add(deck);
    for(const dx of[-19,0,19])for(const dz of[-12,12]){const c=new THREE.Mesh(new THREE.BoxGeometry(3,S.y+10,3),pier);c.position.set(S.x+dx,(S.y-10)/2-1.2,S.z+dz);scene.add(c)}
    pad(S,13)}
-  // the Peninsula: a pad on the roof
-  {const P=HPAD.pen,pl=new THREE.Mesh(new THREE.CylinderGeometry(13,13,.3,32),conc);pl.position.set(P.x,P.y-.15,P.z);scene.add(pl);pad(P,11.5)}
+  // the Peninsula's two pads are part of the hotel model (buildPeninsula)
   for(const k of['gfs1','gfs2']){const P=HPAD[k];for(let i=0;i<16;i++){const a=i/16*Math.PI*2;L.push(P.x+Math.cos(a)*16,RWY.elev+.3,P.z+Math.sin(a)*16,.3,1,.4,3,-1)}}
   const pts=makeLights(L);pts.userData.isLights=true;scene.add(pts)}
 // A flight plan: start [x,y,z,heading deg], legs [x,y,z,speed m/s,(heading deg)]. Cruise legs (y over 100 m) are lifted to clear the ground by 90 m.
