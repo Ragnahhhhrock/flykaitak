@@ -1,7 +1,7 @@
 /* Fly Kai Tak blog: English / Cantonese toggle. The choice is stored under the same key as the home screen. */
 (function(){
 var ZH={
-'Skip to content':'跳到內容','Blog':'網誌','Shop':'商店','Play':'開始玩',
+'Skip to content':'跳到內容','Blog':'網誌','Shop':'商店','Stats':'統計','Play':'開始玩',
 '© Fly Kai Tak.':'© Fly Kai Tak。','Another Mal Gordon project':'Mal Gordon 嘅另一個作品',
 'Map data © Lands Department, HKSAR Government. Elevation: SRTM via AWS Terrain Tiles. Aircraft and liveries are not real airlines.':'地圖數據 © 香港特別行政區政府地政總署。高度數據：SRTM，經 AWS Terrain Tiles 提供。飛機同塗裝並非真實航空公司。',
 'Feature':'新功能','Update':'更新','Behind the scenes':'幕後花絮',

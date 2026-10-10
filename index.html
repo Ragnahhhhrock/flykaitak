@@ -474,7 +474,7 @@ body.bigmap #radio{top:calc(env(safe-area-inset-top,0px) + 396px)}
 <div id="radio" aria-live="off" hidden></div>
 
 <section id="setup" hidden>
-  <nav class="topnav" aria-label="Site"><a class="navitem" href="/blog/">Blog</a><a class="navitem" id="navShop" href="/shop/">Shop</a><button class="navitem" id="btnHs" type="button" aria-expanded="false" aria-controls="hsPanel">High scores</button><button class="navitem" id="btnFidsHome" type="button" aria-pressed="true" aria-controls="fidsHome" title="Flight board on/off ( B )">Flights</button><button class="navitem langtog" id="btnLang" type="button" aria-pressed="false" aria-label="Language: English / 廣東話" title="English / 廣東話"><span data-l="en" class="on">EN</span><span data-l="zh" lang="zh-HK">粵</span></button></nav>
+  <nav class="topnav" aria-label="Site"><a class="navitem" href="/blog/">Blog</a><a class="navitem" id="navShop" href="/shop/">Shop</a><a class="navitem" id="navStats" href="/stats/">Stats</a><button class="navitem" id="btnHs" type="button" aria-expanded="false" aria-controls="hsPanel">High scores</button><button class="navitem" id="btnFidsHome" type="button" aria-pressed="true" aria-controls="fidsHome" title="Flight board on/off ( B )">Flights</button><button class="navitem langtog" id="btnLang" type="button" aria-pressed="false" aria-label="Language: English / 廣東話" title="English / 廣東話"><span data-l="en" class="on">EN</span><span data-l="zh" lang="zh-HK">粵</span></button></nav>
   <div class="hspanel" id="hsPanel" hidden role="region" aria-label="High scores"><div id="hsHomeTable"></div></div>
   <div class="brand">
     <h2 class="han" lang="zh-Hant" aria-label="啟德機場 Kai Tak Airport"><span>啟</span><span>德</span><span>機</span><span>場</span></h2>
@@ -6178,7 +6178,7 @@ function syncMode(){const m=document.querySelector('input[name=game]:checked').v
 for(const r of document.querySelectorAll('input[name=game]'))r.addEventListener('change',syncMode);
 /* LANGUAGE: English / Cantonese toggle for the home screen */
 const ZH={
-'Blog':'網誌','Shop':'商店','Kai Tak merch':'啟德精品','Tees, caps, patches & prints':'T 恤、帽、布章同海報',
+'Blog':'網誌','Shop':'商店','Stats':'統計','Kai Tak merch':'啟德精品','Tees, caps, patches & prints':'T 恤、帽、布章同海報',
 'Another Mal Gordon project':'Mal Gordon 嘅另一個作品',
 '☕ Buy me a coffee · $5 AUD':'☕ 請我飲杯咖啡 · 5 澳元',
 'Follow Fly Kai Tak':'追蹤 Fly Kai Tak','Share Fly Kai Tak':'分享 Fly Kai Tak','Copy link':'複製連結','Share…':'分享…','Email':'電郵',

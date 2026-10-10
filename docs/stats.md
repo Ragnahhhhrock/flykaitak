@@ -17,3 +17,8 @@ npx wrangler deploy
 ```
 Then set `window.FKT_API='https://flykaitak-scores.<account>.workers.dev'` in `assets/api.js` (it also drives the shared high score table), commit and push.
 Counts start from deploy; earlier flights are only in Google Analytics. Events are posted by browsers, so a determined person could inflate them.
+
+## Live setup
+- D1 database `flykaitak-scores` (id `c89ea623-d09e-4285-8a4f-884c7ded2cd2`) and Worker `flykaitak-scores`, created in the Cloudflare dashboard.
+- Worker URL: https://flykaitak-scores.malgordonperth.workers.dev (set in `assets/api.js`).
+- The deployed Worker was pasted into the dashboard editor as a single line (same logic as `server/worker.js`). Redeploy from `server/` with `npx wrangler deploy` if you change the Worker; set the `database_id` in `server/wrangler.toml` first.
