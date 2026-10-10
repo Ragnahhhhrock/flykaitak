@@ -38,7 +38,15 @@
   function sumKind(rows, key, val, kind) { var t = 0; rows.forEach(function (r) { if (r[key] === val && r.k === kind) t += r.n; }); return t; }
   function kindN(d, k) { var t = 0; d.kinds.forEach(function (r) { if (r.k === k) t = r.n; }); return t; }
 
-  function kpi(cls, l, v, s) { return '<div class="kpi ' + cls + '"><p class="l">' + esc(l) + '</p><p class="v">' + esc(v) + '</p>' + (s ? '<p class="s">' + esc(s) + '</p>' : '') + '</div>'; }
+  var IC = {
+    start: '<path d="M3 19h18"/><path d="M4.5 14.5l3.2.9 4.1-3.6-5.6-3 1.3-1 7.9 1.9 4.2-3.6a1.9 1.9 0 0 1 2.7 2.7l-3.8 4.4-1.2 7.7-1.3.3-1.9-5.3-4.3 2.8z"/>',
+    attempt: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>',
+    land: '<circle cx="12" cy="12" r="9"/><path d="M7.5 12.5l3 3 6-7"/>',
+    crash: '<path d="M12 2l2.4 4.9 5.4-.8-2.5 4.8 4.2 3.6-5.3 1.2.1 5.4L12 18.4l-4.3 2.7.1-5.4-5.3-1.2 4.2-3.6-2.5-4.8 5.4.8z"/>',
+    miss: '<path d="M4 20c5 0 8-2.5 8-8V4"/><path d="M7.5 7.5L12 3l4.5 4.5"/><path d="M3 20h5"/>'
+  };
+  function icon(k) { return '<svg class="ic" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + IC[k] + '</svg>'; }
+  function kpi(cls, l, v, s, ic) { return '<div class="kpi ' + cls + '">' + icon(ic) + '<p class="l">' + esc(l) + '</p><p class="v">' + esc(v) + '</p>' + (s ? '<p class="s">' + esc(s) + '</p>' : '') + '</div>'; }
 
   function bars(items, opts) {
     opts = opts || {}; var max = 0; items.forEach(function (i) { if (i.v > max) max = i.v; });
@@ -87,11 +95,11 @@
     var h = '';
     if (d.demo) h += '<p class="banner"><b>Sample data.</b> This is a layout preview, not real flights.</p>';
     h += '<p class="meta">UPDATED ' + new Date(d.updated).toLocaleString('en-AU', { dateStyle: 'medium', timeStyle: 'short' }).toUpperCase() + (d.since ? ' · COUNTING SINCE ' + new Date(d.since).toLocaleDateString('en-AU', { dateStyle: 'medium' }).toUpperCase() : '') + '</p>';
-    h += '<div class="kpis">' + kpi('', 'Flights started', fmt(starts), 'All modes, including lessons and Plane Spotter') +
-      kpi('', 'Landing attempts', fmt(att), 'Wheels touched, or an accident or go-around with the gear down') +
-      kpi('ok', 'Successful landings', fmt(land), pcts(land, att) + ' of attempts') +
-      kpi('bad', 'Crashes', fmt(crash), pcts(crash, att) + ' of attempts') +
-      kpi('warn', 'Missed approaches', fmt(miss), 'Go-arounds and overflights') + '</div>';
+    h += '<div class="kpis">' + kpi('', 'Flights started', fmt(starts), 'All modes, including lessons and Plane Spotter', 'start') +
+      kpi('', 'Landing attempts', fmt(att), 'Wheels touched, or an accident or go-around with the gear down', 'attempt') +
+      kpi('ok', 'Successful landings', fmt(land), pcts(land, att) + ' of attempts', 'land') +
+      kpi('bad', 'Crashes', fmt(crash), pcts(crash, att) + ' of attempts', 'crash') +
+      kpi('warn', 'Missed approaches', fmt(miss), 'Go-arounds and overflights', 'miss') + '</div>';
 
     var dc = dailyChart(d);
     h += '<div class="grid">';
