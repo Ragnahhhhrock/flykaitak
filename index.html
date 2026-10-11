@@ -308,6 +308,14 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
 .hs-me{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px}
 .hs-me label{color:var(--muted);font-size:11px;letter-spacing:.14em;text-transform:uppercase}
 .hs-me input{background:var(--ink);color:var(--paper);border:1px solid var(--line-2);border-radius:3px;padding:7px 9px;font:inherit;font-family:var(--f-num);text-transform:uppercase;width:11.5em}
+.hs-ask{padding:10px 12px;border:1px solid var(--line-2);border-radius:4px;background:rgba(255,255,255,.04)}
+.hs-ask label{color:var(--text);font-size:12px;font-weight:700;letter-spacing:.1em}
+.hs-hint{margin:0;font-size:13px;color:var(--text)}
+.hs.need .hs-ask{border-color:var(--checker);background:rgba(232,87,31,.14);animation:hsNeed 1.4s ease-in-out 3}
+.hs.need .hs-me input{border-color:var(--checker)}
+.hs.need .hs-hint{color:var(--checker);font-weight:700}
+@keyframes hsNeed{50%{box-shadow:0 0 0 4px rgba(232,87,31,.38)}}
+@media (prefers-reduced-motion:reduce){.hs.need .hs-ask{animation:none}}
 .hs-rank{font-family:var(--f-num);font-size:13px;color:var(--phosphor)}
 .hs-note{color:var(--muted);font-size:12px;margin:0}
 .hst{width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums}
@@ -585,7 +593,7 @@ body.bigmap #radio{top:calc(env(safe-area-inset-top,0px) + 396px)}
       <section class="homeblog" id="homeBlog" aria-labelledby="homeBlogH">
         <h3 id="homeBlogH"><span class="l-en">Latest update</span><span class="l-zh" lang="zh-HK">最新消息</span></h3>
         <ul>
-          <li><a href="/blog/ocean-park-rebuilt/" class="hb-top"><span class="hb-thumb"><img src="/assets/blog/og/ocean-park-rebuilt.jpg" width="1200" height="630" loading="lazy" alt=""></span><span class="hb-txt"><span class="hb-meta"><time datetime="2026-10-11"><span class="l-en">11 Oct</span><span class="l-zh" lang="zh-HK">10月11日</span></time> &middot; <span class="l-en">Scenery &amp; Weather</span><span class="l-zh" lang="zh-HK">風景同天氣</span></span><b><span class="l-en">Ocean Park, rebuilt from the maps</span><span class="l-zh" lang="zh-HK">重建海洋公園</span></b></span></a></li>
+          <li><a href="/blog/first-perfect-score-100/" class="hb-top"><span class="hb-thumb"><img src="/assets/blog/og/first-perfect-score-100.jpg" width="1200" height="630" loading="lazy" alt=""></span><span class="hb-txt"><span class="hb-meta"><time datetime="2026-10-11"><span class="l-en">11 Oct</span><span class="l-zh" lang="zh-HK">10月11日</span></time> &middot; <span class="l-en">Scores &amp; Sharing</span><span class="l-zh" lang="zh-HK">分數同分享</span></span><b><span class="l-en">The first perfect 100, and a clearer name box</span><span class="l-zh" lang="zh-HK">第一個滿分 100，同更清楚嘅名字格子</span></b></span></a></li>
         </ul>
         <a class="hb-all" href="/blog/"><span class="l-en">All updates on the blog</span><span class="l-zh" lang="zh-HK">網誌睇晒所有更新</span> <span aria-hidden="true">&rarr;</span></a>
       </section>
@@ -714,7 +722,8 @@ body.bigmap #radio{top:calc(env(safe-area-inset-top,0px) + 396px)}
       <p class="why" id="resWhy"></p>
       <dl class="stats" id="resStats"></dl>
       <div class="hs" id="resHs" hidden>
-        <div class="hs-me"><label for="hsName">Callsign</label><input id="hsName" maxlength="12" autocomplete="off" autocapitalize="characters" spellcheck="false"><span class="hs-rank" id="hsRank"></span></div>
+        <p class="hs-hint" id="hsHint" hidden></p>
+        <div class="hs-me hs-ask"><label for="hsName" id="hsLbl">Enter your name</label><input id="hsName" maxlength="12" placeholder="YOUR NAME" autocomplete="off" autocapitalize="characters" spellcheck="false"><button class="btn" id="hsSave" type="button">Save</button><span class="hs-rank" id="hsRank"></span></div>
         <p class="hs-note" id="hsNote"></p>
         <div id="hsResTable"></div>
       </div>
@@ -5241,7 +5250,7 @@ function hsCallsign(){let n='';try{n=localStorage.getItem(HS_NAME)||''}catch(e){
 function hsAdd(g,s){
   const e={id:Date.now().toString(36)+Math.random().toString(36).slice(2,7),n:hsCallsign()||'PILOT',s:Math.max(0,Math.min(100,g.pts|0)),g:g.g,ac:s.ac.short,wx:CFG.wx,tod:CFG.night?'night':'day',d:Date.now()};
   const a=hsLocal();a.push(e);hsStore(a);hsPush(e);return e}
-function hsRename(e,name){name=hsClean(name);e.n=name;try{localStorage.setItem(HS_NAME,name)}catch(_){}const a=hsLocal(),m=a.find(x=>x.id===e.id);if(m)m.n=name;hsStore(a);hsPush(e);return name}
+function hsRename(e,name){const typed=/[A-Za-z0-9]/.test(String(name||''));name=hsClean(name);e.n=name;if(typed)try{localStorage.setItem(HS_NAME,name)}catch(_){}const a=hsLocal(),m=a.find(x=>x.id===e.id);if(m)m.n=name;hsStore(a);hsPush(e);return name}
 function hsTable(mineId,limit,cap){
   const a=hsSort(hsLocal().slice());if(!a.length)return '<p class="hs-note">No landings on the table yet. Hand-fly the IGS 13 approach to get on it.</p>';
   let rows='';a.slice(0,limit).forEach((e,i)=>{rows+=`<tr class="${e.id===mineId?'me ':''}${e.s>=90?'cap':''}"><td>${i+1}</td><td class="rk">${rankTitle(e.s)}</td><td class="nm">${hsEsc(e.n)}</td><td class="sc">${e.s}</td><td class="opt">${hsEsc(e.ac)}</td><td class="opt">${(WX[e.wx]||{label:e.wx}).label}</td></tr>`});
@@ -5251,13 +5260,23 @@ function hsShowResult(g,s){
   const box=document.getElementById('resHs');const ranked=!(CFG.ap||s.apUsed||s.rewound||CFG.game!=='approach'||CFG.lland);
   box.hidden=false;const nameEl=document.getElementById('hsName'),rankEl=document.getElementById('hsRank'),note=document.getElementById('hsNote'),tbl=document.getElementById('hsResTable');
   if(!ranked){nameEl.parentNode.hidden=true;rankEl.textContent='';note.textContent=CFG.ap||s.apUsed?'Landings with the autopilot are not ranked.':s.rewound?'Landings after a rewind are not ranked.':CFG.lland?'Lesson landings are not ranked.':'Only IGS 13 approach landings are ranked.';tbl.innerHTML=hsTable(null,5,true);HS_ENTRY=null;return}
-  nameEl.parentNode.hidden=false;nameEl.value=hsCallsign()||'';nameEl.placeholder='PILOT';
-  const e=hsAdd(g,s);HS_ENTRY=e;
+  nameEl.parentNode.hidden=false;nameEl.value=hsCallsign()||'';
+  const e=hsAdd(g,s);HS_ENTRY=e;hsAskName(!hsCallsign()||hsCallsign()==='PILOT');
   const pos=hsSort(hsLocal().slice()).findIndex(x=>x.id===e.id)+1;
   rankEl.textContent=rankTitle(e.s)+' · #'+pos;note.textContent=pos===1?'New number one on the table.':'Score '+e.s+'. Ranks: Captain 90+, First Officer 76+, Second Officer 60+, Flight Engineer 45+.';
   tbl.innerHTML=hsTable(e.id,5,true)}
 let HS_ENTRY=null;
-function hsCommitName(){if(!HS_ENTRY)return;const el=document.getElementById('hsName');const n=hsRename(HS_ENTRY,el.value);el.value=n;document.getElementById('hsResTable').innerHTML=hsTable(HS_ENTRY.id,5,true);hsRenderHome();updateShare()}
+// Ask for the pilot's name on the result screen. need=true when no name is saved yet: the box is highlighted and focused (not on touch screens, where it would pop the keyboard over the result).
+function hsAskName(need,saved){
+  const zh=LANG==='zh',box=document.getElementById('resHs'),h=document.getElementById('hsHint'),nameEl=document.getElementById('hsName');
+  document.getElementById('hsLbl').textContent=zh?'輸入你嘅名':'Enter your name';
+  nameEl.placeholder=zh?'你嘅名':'YOUR NAME';document.getElementById('hsSave').textContent=zh?'儲存':'Save';
+  box.classList.toggle('need',!!need);h.hidden=false;
+  h.textContent=saved?(zh?'已儲存。你嘅名會顯示喺最高分榜上：':'Saved. Your name is on the high score table: ')+saved
+    :need?(zh?'你嘅分數已經上榜，但未有名。輸入你嘅名，然後㩒 Enter 或者「儲存」。':'Your score is on the table, but with no name. Type your name, then press Enter or Save.')
+    :(zh?'以 '+hsCallsign()+' 上榜。想改名可以喺下面改。':'Flying as '+hsCallsign()+'. Change the name below any time.');
+  if(need&&!saved&&!(window.matchMedia&&matchMedia('(pointer:coarse)').matches))setTimeout(()=>{if(!document.getElementById('result').hidden)nameEl.focus()},0)}
+function hsCommitName(){if(!HS_ENTRY)return;const el=document.getElementById('hsName');const n=hsRename(HS_ENTRY,el.value);el.value=/[A-Za-z0-9]/.test(el.value)?n:'';document.getElementById('hsResTable').innerHTML=hsTable(HS_ENTRY.id,5,true);hsRenderHome();updateShare();const cs=hsCallsign();if(cs&&cs!=='PILOT')hsAskName(false,cs)}
 
 /* =====================================================================
    SOUND
@@ -7284,7 +7303,7 @@ for(const r of document.querySelectorAll('input[name=tod]'))r.addEventListener('
 document.getElementById('btnGo').addEventListener('click',startFlight);
 document.getElementById('btnAgain').addEventListener('click',startFlight);
 document.getElementById('btnSetup').addEventListener('click',showSetup);
-{const hn=document.getElementById('hsName');hn.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter'){e.preventDefault();hsCommitName();hn.blur()}});hn.addEventListener('keyup',e=>e.stopPropagation());hn.addEventListener('change',hsCommitName);hn.addEventListener('blur',hsCommitName)}
+{const hn=document.getElementById('hsName');hn.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter'){e.preventDefault();hsCommitName();hn.blur()}});hn.addEventListener('keyup',e=>e.stopPropagation());hn.addEventListener('change',hsCommitName);hn.addEventListener('blur',hsCommitName);document.getElementById('hsSave').addEventListener('click',()=>{hsCommitName();if(!hsCallsign()||hsCallsign()==='PILOT')hn.focus()})}
 hsRenderHome();hsSync().then(hsRenderHome);
 {const b=document.getElementById('btnHs'),pn=document.getElementById('hsPanel');
  const set=on=>{pn.hidden=!on;b.setAttribute('aria-expanded',on);if(on)hsRenderHome();placeHomeMap();try{localStorage.setItem('fkt-hs-open',on?'1':'0')}catch(_){}};
@@ -7547,7 +7566,7 @@ const fontsReady=document.fonts&&document.fonts.ready?Promise.race([document.fon
 fontsReady.then(()=>setTimeout(boot,30));
 
 /* test hooks */
-window.__kt={radioSay,radioPump,RAD,setWreck,WRECK,SF,SF_ROUTES,sfSeek,sfAdvance,penTour,HELI,HPAD,updateHeli,hPlan,hHerm,hGround,masts:()=>apronMasts,port:()=>PORT,geo:()=>GEO,inPortYard,PORT_QUAYS,PORT_BLD,SHIPS,FAIRWAYS,waterAt,laneOffset,rwP,STAND_C,CTY,stS,NCG,ESTATES,RC,rcEv,rcVac,rcRoll,rcStrip,rcClearBy,rcTakeoffWhy,rcView,rcPlayer,CYC,onPaved,gearPaved,rwS,LINKS,rb:()=>rbMasts13,bat:buildingAt,setHour,solarState,SUN_DIR,MOON_DIR,ENV,AI,CFG,ST,COACH,LESSON,keys,coachUpdate,coachResync,coachGo,rwL,get PATH(){return PATH},LND,setRunway,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,{rwy:'13',conc:false,tour:false},o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.tour?'tour':CFG.conc&&CFG.game==='watch'?'watchC':CFG.rwy==='31'&&CFG.game!=='learn'?CFG.game+'31':CFG.game}]`).checked=true;hourIn.value=o.hour!==undefined?o.hour:CFG.night?22:15;showHour();startFlight()},
+window.__kt={hsShowResult,radioSay,radioPump,RAD,setWreck,WRECK,SF,SF_ROUTES,sfSeek,sfAdvance,penTour,HELI,HPAD,updateHeli,hPlan,hHerm,hGround,masts:()=>apronMasts,port:()=>PORT,geo:()=>GEO,inPortYard,PORT_QUAYS,PORT_BLD,SHIPS,FAIRWAYS,waterAt,laneOffset,rwP,STAND_C,CTY,stS,NCG,ESTATES,RC,rcEv,rcVac,rcRoll,rcStrip,rcClearBy,rcTakeoffWhy,rcView,rcPlayer,CYC,onPaved,gearPaved,rwS,LINKS,rb:()=>rbMasts13,bat:buildingAt,setHour,solarState,SUN_DIR,MOON_DIR,ENV,AI,CFG,ST,COACH,LESSON,keys,coachUpdate,coachResync,coachGo,rwL,get PATH(){return PATH},LND,setRunway,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,{rwy:'13',conc:false,tour:false},o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.tour?'tour':CFG.conc&&CFG.game==='watch'?'watchC':CFG.rwy==='31'&&CFG.game!=='learn'?CFG.game+'31':CFG.game}]`).checked=true;hourIn.value=o.hour!==undefined?o.hour:CFG.night?22:15;showHour();startFlight()},
   run:(sec)=>{if(CFG.game==='watch'){ST.t+=sec;return {t:ST.t}}const h=1/120;for(let i=0;i<sec*120&&!ST.ended;i++){physStep(h);if(i%60===0)recordHistory();if(i%12===0)aiTick()}return {ended:ST.ended,td:ST.td,t:ST.t,x:ST.x,y:ST.y,z:ST.z,V:ST.V/KT,d:PATH.pts[ST.pi].d}},
   get mode(){return mode},updateAI,AIC,footOf,GSE,GSE_KINDS,AIRBOX,rwS,BGRID,updateGSE,gseLamps:()=>gseLamps,fpAt,fpDist,hitOn,damageModel,aiHit,DEBRIS,EMIT,aiTick,ctl(){return aiControl},get CFG(){return CFG},frame:(now)=>frame(now,true),get FOCUS(){return FOCUS},step:()=>physStep(1/120),rwS,setZoom:z=>{CFG.zoom=z},get AI(){return AI},get GSE(){return GSE},get BRIDGE(){return BRIDGE},STAND_S,STAND_TY,lineupT,lineupT31,arrivalPts,tugAt,standL,PB,get parked(){return parked},gseAt:(t)=>{ST.t=t;updateGSE();return GSE.map(e=>({k:e.kind,x:e.p.x,z:e.p.z,psi:e.p.psi,lift:e.lift}))},get shipLights(){return shipLights},get PORT(){return PORT},get SHIPS(){return SHIPS},get DISP(){return DISP},get deck(){return deckGroup},get streetCam(){return STREET_CAM},get BB(){return BB},get water(){return water},get camera(){return camera},get nStreets(){return STREETS.length},drawDisplays,look,setView,terrainAt,buildingAt,groundInfo};
 })();

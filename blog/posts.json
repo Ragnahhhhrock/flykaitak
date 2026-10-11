@@ -1,5 +1,39 @@
 [
   {
+    "slug": "first-perfect-score-100",
+    "title": "The first perfect 100, and a clearer name box",
+    "dek": "Someone has landed the IGS 13 approach for a full 100, but without a name. The result screen now asks for it clearly.",
+    "description": "Fly Kai Tak has its first perfect 100 on the high score table, left as PILOT. The result screen now asks for your name with a clear box and Save button.",
+    "date": "2026-10-11",
+    "tag": "Update",
+    "category": "scores",
+    "keywords": [
+      "perfect score",
+      "100 points",
+      "high score",
+      "callsign",
+      "Captain",
+      "IGS 13",
+      "Kai Tak",
+      "flight simulator"
+    ],
+    "hero": "perfect-100-name-prompt",
+    "hero_alt": "The result screen for a score of 100 with a highlighted Enter your name box and a Save button, above a high score table with PILOT at number one.",
+    "hero_caption": "The result screen now asks for your name.",
+    "card_kicker": "VHHH · HIGH SCORES · 1998",
+    "card_title": "The first perfect 100",
+    "card_sub": "And a clearer name box at flight end",
+    "card_image": "perfect-100-name-prompt",
+    "card_focus": 50,
+    "zh": {
+      "title": "第一個滿分 100，同更清楚嘅名字格子",
+      "dek": "有人以滿分 100 降落 IGS 13 進場，但冇留低名字。結果畫面而家會清楚問你個名。",
+      "description": "Fly Kai Tak 最高分榜有第一個滿分 100，但名字係 PILOT。結果畫面而家有清晰嘅名字格子同儲存掣。",
+      "hero_alt": "100 分嘅結果畫面，有突出嘅「輸入你嘅名」格子同儲存掣，下面係最高分榜，第一名顯示 PILOT。",
+      "hero_caption": "結果畫面而家會問你個名。"
+    }
+  },
+  {
     "slug": "ocean-park-rebuilt",
     "title": "Ocean Park, rebuilt from the maps",
     "dek": "Both sites laid out as in 1998: the Lowland with its entry plaza and gardens, and the Headland with the tower, wheel, Dragon and Ocean Theatre, joined by the pod cable car.",
