@@ -464,7 +464,7 @@ def sitemap(posts, extra):
 HOME_START, HOME_END = "<!-- BLOG:LATEST -->", "<!-- /BLOG:LATEST -->"
 
 
-def home_latest(posts, n=5):
+def home_latest(posts, n=1):
     """The latest-posts panel on the home screen (index.html), rebuilt between the BLOG:LATEST markers."""
     def both(en, zh):
         return f'<span class="l-en">{E(en)}</span><span class="l-zh" lang="zh-HK">{E(zh)}</span>'
@@ -480,7 +480,7 @@ def home_latest(posts, n=5):
             f' &middot; {both(c["name"], c["zh"])}</span>'
             f'<b>{both(p["title"], p["zh"]["title"])}</b></span></a></li>')
     return (f'{HOME_START}\n      <section class="homeblog" id="homeBlog" aria-labelledby="homeBlogH">\n'
-            f'        <h3 id="homeBlogH">{both("Latest updates", "最新消息")}</h3>\n'
+            f'        <h3 id="homeBlogH">{both("Latest update", "最新消息")}</h3>\n'
             f'        <ul>\n          ' + "\n          ".join(items) + '\n        </ul>\n'
             f'        <a class="hb-all" href="/blog/">{both("All updates on the blog", "網誌睇晒所有更新")} <span aria-hidden="true">&rarr;</span></a>\n'
             f'      </section>\n      {HOME_END}')

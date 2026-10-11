@@ -65,11 +65,7 @@ window.FKT_ANALYTICS={id:'G-7MNP3SBEF8',src:'/metrics/',fallback:'https://www.go
 }
 html,body{height:100%;margin:0;background:var(--ink);color:var(--text);font-family:var(--f-ui);overflow:hidden;-webkit-tap-highlight-color:transparent}
 #gl{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
-/* Home screen: the live sim renders behind; the demo reel plays in a framed inset beside the title. */
-#reel{display:block;width:clamp(220px,26vw,440px);aspect-ratio:16/9;object-fit:cover;background:var(--ink);border:1px solid var(--line-2);border-radius:4px;box-shadow:0 18px 50px rgba(0,0,0,.55);pointer-events:none}
-#reel[hidden]{display:none!important}
-.reelbox{display:grid;gap:0;margin-bottom:10px}
-.reelbox .checkband{height:8px;background-size:8px 8px;width:clamp(220px,26vw,440px);border-radius:2px}
+/* Home screen: the live sim renders behind the menu. */
 #hud{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
 button,select,input{font-family:inherit}
 .btn{appearance:none;border:1px solid var(--line-2);background:var(--panel-2);color:var(--text);font-size:12px;letter-spacing:.06em;text-transform:uppercase;padding:8px 11px;border-radius:3px;cursor:pointer;line-height:1}
@@ -119,16 +115,19 @@ html:lang(zh) body{font-family:var(--f-ui),"PingFang HK","Microsoft JhengHei","N
 .homeblog .l-zh,html:lang(zh-HK) .homeblog .l-en{display:none}
 html:lang(zh-HK) .homeblog .l-zh{display:inline}
 @media (min-width:821px) and (max-width:1760px) and (min-height:521px){#setup:has(#fidsHome:not([hidden])) .homeblog{margin-top:64px}}
-.merch{justify-self:start;display:inline-flex;align-items:center;gap:12px;max-width:420px;padding:6px 14px 6px 6px;background:var(--panel);border:1px solid var(--line-2);border-radius:3px;color:var(--text);text-decoration:none;text-shadow:none;backdrop-filter:blur(6px)}
-.merch .mthumb{width:56px;height:56px;border-radius:2px;flex:none;overflow:hidden;border-bottom:2px solid var(--jade);background:#0a1115}
-.merch .mthumb img{width:100%;height:100%;display:block;transform:scale(1.45);transform-origin:50% 48%}
-.merch-txt{display:grid;gap:2px;line-height:1.25}
-.merch-txt b{font-size:13px;letter-spacing:.06em;text-transform:uppercase}
-.merch-txt span{font-family:var(--f-num);font-size:11px;color:var(--muted);letter-spacing:.04em}
-.merch-go{margin-left:6px;color:var(--checker);font-size:18px}
-.merch:hover{border-color:var(--checker)}
-.merch:focus-visible{outline:2px solid var(--checker);outline-offset:2px}
 .coffee:hover{filter:brightness(1.08)}
+.homefoot{display:flex;flex-wrap:wrap;align-items:flex-start;gap:8px;border-top:1px solid var(--line);padding-top:16px}
+.homefoot .res-share{display:contents}
+.homefoot .coffee{height:40px;box-sizing:border-box}
+.hf-share{flex:1 1 100%;order:3}
+.hf-share>summary{display:inline-flex;align-items:center;gap:7px;height:40px;box-sizing:border-box;padding:0 12px;border:1px solid var(--line-2);border-radius:3px;background:var(--panel-2);color:var(--text);font-family:var(--f-num);font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;list-style:none}
+.hf-share>summary::-webkit-details-marker{display:none}
+.hf-share>summary svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.hf-share>summary:hover,.hf-share[open]>summary{border-color:var(--paper)}
+.hf-share>summary:focus-visible{outline:2px solid var(--checker);outline-offset:2px}
+.hf-share[open]>summary{margin-bottom:8px}
+.hf-share .res-share{display:block}
+.homefoot:not(:has(.hf-share[open])) .hf-share{flex:0 0 auto;order:0}
 .coffee:focus-visible,.brand-meta .credit a:focus-visible,.foot a:focus-visible{outline:2px solid var(--checker);outline-offset:2px}
 .foot{font-family:var(--f-num);font-size:11.5px;color:var(--muted);line-height:1.7;margin:0}
 .checkband{height:14px;background:repeating-conic-gradient(var(--checker) 0 25%,var(--paper) 0 50%) 0 0/14px 14px}
@@ -366,9 +365,6 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
 .res-share a:focus-visible,.res-share button:focus-visible{outline:2px solid var(--checker);outline-offset:2px}
 .res-share svg{width:15px;height:15px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .res-share .done{border-color:var(--jade-bright);color:var(--phosphor)}
-.home-share{margin-top:14px;max-width:420px}
-.home-follow+.home-share{margin-top:10px}
-.home-share h3{color:var(--text);text-shadow:0 1px 3px rgba(0,0,0,.85)}
 
 #loading{position:fixed;inset:0;display:grid;place-items:center;background:var(--ink);font-family:var(--f-num);font-size:12px;letter-spacing:.2em;color:var(--muted)}
 #loading[hidden]{display:none!important}
@@ -380,7 +376,6 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
   .topnav{left:16px;right:16px;top:12px;gap:4px;overflow-x:auto;scrollbar-width:none}.topnav::-webkit-scrollbar{display:none}
   .navitem{flex:none;white-space:nowrap;padding:8px 7px;font-size:11px;letter-spacing:.03em}.langtog{padding:0}.langtog span{padding:0 8px}
   .brand{flex-wrap:wrap;gap:12px;padding-top:62px}.brand-meta{flex:1 1 100%}
-  #reel,.reelbox .checkband{width:100%}
   .sheet{border-left:0}
   .sheet-body{padding:18px 16px 24px}
   #map{width:112px;height:112px}
@@ -423,7 +418,7 @@ html,body{overscroll-behavior:none;touch-action:manipulation}
 .coffee{white-space:nowrap}
 @media (pointer:coarse){.go .k{display:none}}
 @media (max-width:820px),(max-height:520px){.go{position:sticky;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);z-index:2;box-shadow:0 8px 28px rgba(0,0,0,.65)}}
-@media (max-height:520px){.reelbox{display:none}.sheet-body{padding:16px 20px 20px;gap:16px}.sheet h1{font-size:22px}}
+@media (max-height:520px){.sheet-body{padding:16px 20px 20px;gap:16px}.sheet h1{font-size:22px}}
 @media (max-height:520px) and (min-width:821px){#setup{grid-template-columns:minmax(0,1fr) minmax(0,460px)}}
 /* landscape phones: short screens need smaller chrome */
 @media (max-height:520px){
@@ -526,53 +521,26 @@ body.bigmap #radio{top:calc(env(safe-area-inset-top,0px) + 396px)}
 <div id="radio" aria-live="off" hidden></div>
 
 <section id="setup" hidden>
-  <nav class="topnav" aria-label="Site"><a class="navitem" href="/blog/">Blog</a><a class="navitem" id="navShop" href="/shop/">Shop</a><a class="navitem" id="navStats" href="/stats/">Stats</a><button class="navitem" id="btnHs" type="button" aria-expanded="false" aria-controls="hsPanel">High scores</button><button class="navitem" id="btnFidsHome" type="button" aria-pressed="true" aria-controls="fidsHome" title="Flight board on/off ( B )">Flights</button><button class="navitem langtog" id="btnLang" type="button" aria-pressed="false" aria-label="Language: English / 廣東話" title="English / 廣東話"><span data-l="en" class="on">EN</span><span data-l="zh" lang="zh-HK">粵</span></button></nav>
+  <nav class="topnav" aria-label="Site"><a class="navitem" href="/blog/">Blog</a><a class="navitem" id="navShop" href="/shop/">Shop</a><a class="navitem" id="navStats" href="/stats/">Stats</a><button class="navitem" id="btnHs" type="button" aria-expanded="false" aria-controls="hsPanel">High scores</button><button class="navitem" id="btnFidsHome" type="button" aria-pressed="false" aria-controls="fidsHome" title="Flight board on/off ( B )">Flights</button><button class="navitem langtog" id="btnLang" type="button" aria-pressed="false" aria-label="Language: English / 廣東話" title="English / 廣東話"><span data-l="en" class="on">EN</span><span data-l="zh" lang="zh-HK">粵</span></button></nav>
   <div class="hspanel" id="hsPanel" hidden role="region" aria-label="High scores"><div id="hsHomeTable"></div></div>
   <div class="brand">
     <h2 class="han" lang="zh-Hant" aria-label="啟德機場 Kai Tak Airport"><span>啟</span><span>德</span><span>機</span><span>場</span></h2>
     <div class="brand-meta">
-      <div class="reelbox"><video id="reel" muted autoplay loop playsinline preload="auto" poster="assets/video/reel-poster.jpg" aria-label="Demo reel: approaches into Kai Tak"><source src="assets/video/reel.mp4" type="video/mp4"><source src="assets/video/reel.webm" type="video/webm"></video><div class="checkband" aria-hidden="true"></div></div>
       <div class="code">VHHH · KAI TAK</div>
       <div class="sub">Hong Kong · 1998</div>
       <div class="credit"><a href="https://malgordon.com" target="_blank" rel="noopener">Another Mal Gordon project</a></div>
       <!-- BLOG:LATEST -->
       <section class="homeblog" id="homeBlog" aria-labelledby="homeBlogH">
-        <h3 id="homeBlogH"><span class="l-en">Latest updates</span><span class="l-zh" lang="zh-HK">最新消息</span></h3>
+        <h3 id="homeBlogH"><span class="l-en">Latest update</span><span class="l-zh" lang="zh-HK">最新消息</span></h3>
         <ul>
-          <li><a href="/blog/latest-updates-on-the-home-screen/" class="hb-top"><span class="hb-thumb"><img src="/assets/blog/og/latest-updates-on-the-home-screen.jpg" width="1200" height="630" loading="lazy" alt=""></span><span class="hb-txt"><span class="hb-meta"><time datetime="2026-10-11"><span class="l-en">11 Oct</span><span class="l-zh" lang="zh-HK">10月11日</span></time> &middot; <span class="l-en">Site &amp; Language</span><span class="l-zh" lang="zh-HK">網站同語言</span></span><b><span class="l-en">Update: the latest blog posts on the home screen</span><span class="l-zh" lang="zh-HK">更新：主畫面顯示最新網誌</span></b></span></a></li>
-          <li><a href="/blog/flight-replay/"><span class="hb-txt"><span class="hb-meta"><time datetime="2026-10-10"><span class="l-en">10 Oct</span><span class="l-zh" lang="zh-HK">10月10日</span></time> &middot; <span class="l-en">Scores &amp; Sharing</span><span class="l-zh" lang="zh-HK">分數同分享</span></span><b><span class="l-en">Watch your flight again: flight replay</span><span class="l-zh" lang="zh-HK">再睇一次你嘅飛行：飛行重播</span></b></span></a></li>
-          <li><a href="/blog/the-peninsula-hotel-and-rooftop-helipads/"><span class="hb-txt"><span class="hb-meta"><time datetime="2026-10-10"><span class="l-en">10 Oct</span><span class="l-zh" lang="zh-HK">10月10日</span></time> &middot; <span class="l-en">Scenery &amp; Weather</span><span class="l-zh" lang="zh-HK">風景同天氣</span></span><b><span class="l-en">The Peninsula Hotel and its rooftop helipads</span><span class="l-zh" lang="zh-HK">半島酒店同天台直升機坪</span></b></span></a></li>
-          <li><a href="/blog/helicopter-tour-radio-muted/"><span class="hb-txt"><span class="hb-meta"><time datetime="2026-10-10"><span class="l-en">10 Oct</span><span class="l-zh" lang="zh-HK">10月10日</span></time> &middot; <span class="l-en">Flying &amp; Procedures</span><span class="l-zh" lang="zh-HK">飛行同程序</span></span><b><span class="l-en">Helicopter tour: only the guide speaks</span><span class="l-zh" lang="zh-HK">直升機觀光：只有導賞員講嘢</span></b></span></a></li>
-          <li><a href="/blog/helicopter-tour-guide-voice/"><span class="hb-txt"><span class="hb-meta"><time datetime="2026-10-10"><span class="l-en">10 Oct</span><span class="l-zh" lang="zh-HK">10月10日</span></time> &middot; <span class="l-en">Flying &amp; Procedures</span><span class="l-zh" lang="zh-HK">飛行同程序</span></span><b><span class="l-en">The helicopter tour guide now speaks</span><span class="l-zh" lang="zh-HK">直升機觀光導賞員識講嘢啦</span></b></span></a></li>
+          <li><a href="/blog/a-tidier-home-screen/" class="hb-top"><span class="hb-thumb"><img src="/assets/blog/og/a-tidier-home-screen.jpg" width="1200" height="630" loading="lazy" alt=""></span><span class="hb-txt"><span class="hb-meta"><time datetime="2026-10-11"><span class="l-en">11 Oct</span><span class="l-zh" lang="zh-HK">10月11日</span></time> &middot; <span class="l-en">Site &amp; Language</span><span class="l-zh" lang="zh-HK">網站同語言</span></span><b><span class="l-en">A tidier home screen</span><span class="l-zh" lang="zh-HK">主畫面執靚咗</span></b></span></a></li>
         </ul>
         <a class="hb-all" href="/blog/"><span class="l-en">All updates on the blog</span><span class="l-zh" lang="zh-HK">網誌睇晒所有更新</span> <span aria-hidden="true">&rarr;</span></a>
       </section>
       <!-- /BLOG:LATEST -->
-      <a class="coffee" id="btnCoffee" href="#" target="_blank" rel="noopener" hidden>☕ Buy me a coffee · $5 AUD</a>
-      <a class="merch" id="btnMerch" href="/shop/"><span class="mthumb"><img src="assets/shop/tee-checkerboard.jpg" width="56" height="56" alt="" loading="lazy"></span><span class="merch-txt"><b>Kai Tak merch</b><span>Tees, caps, patches &amp; prints</span></span><span class="merch-go" aria-hidden="true">→</span></a>
-      <section class="res-share home-share home-follow" id="homeFollow" aria-label="Follow Fly Kai Tak">
-        <h3>Follow Fly Kai Tak</h3>
-        <ul>
-          <li><a data-f="facebook" href="https://www.facebook.com/flykaitak" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>Facebook</a></li>
-          <li><a data-f="instagram" href="https://www.instagram.com/flykaitak" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.5 6.5h.01"/></svg>Instagram</a></li>
-        </ul>
-      </section>
-      <section class="res-share home-share" id="homeShare" aria-label="Share Fly Kai Tak">
-        <h3>Share Fly Kai Tak</h3>
-        <ul>
-          <li><a data-m="x" id="hsX" target="_blank" rel="noopener noreferrer">X</a></li>
-          <li><a data-m="facebook" id="hsFb" target="_blank" rel="noopener noreferrer">Facebook</a></li>
-          <li><a data-m="reddit" id="hsRd" target="_blank" rel="noopener noreferrer">Reddit</a></li>
-          <li><a data-m="whatsapp" id="hsWa" target="_blank" rel="noopener noreferrer">WhatsApp</a></li>
-          <li><a data-m="threads" id="hsTh" target="_blank" rel="noopener noreferrer">Threads</a></li>
-          <li><a data-m="email" id="hsMail"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="m22 6-10 7L2 6"/></svg>Email</a></li>
-          <li><button type="button" id="hsCopy"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><span>Copy link</span></button></li>
-          <li hidden id="hsNatLi"><button type="button" id="hsNat"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg><span>Share&hellip;</span></button></li>
-        </ul>
-      </section>
     </div>
   </div>
-  <div class="fids" id="fidsHome" role="region" aria-label="Flight information"></div>
+  <div class="fids" id="fidsHome" role="region" aria-label="Flight information" hidden></div>
   <div class="sheet">
     <div class="checkband" aria-hidden="true"></div>
     <div class="sheet-body">
@@ -650,6 +618,30 @@ body.bigmap #radio{top:calc(env(safe-area-inset-top,0px) + 396px)}
         </div>
         <p style="margin-top:12px">Brakes and reversers work automatically after touchdown. Pull thrust to idle in the flare.</p>
       </details>
+      <div class="homefoot">
+        <section class="res-share" id="homeFollow" aria-label="Follow Fly Kai Tak">
+          <ul>
+            <li><a data-f="facebook" href="https://www.facebook.com/flykaitak" target="_blank" rel="noopener noreferrer" aria-label="Fly Kai Tak on Facebook"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>Facebook</a></li>
+            <li><a data-f="instagram" href="https://www.instagram.com/flykaitak" target="_blank" rel="noopener noreferrer" aria-label="Fly Kai Tak on Instagram"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.5 6.5h.01"/></svg>Instagram</a></li>
+          </ul>
+        </section>
+        <details class="hf-share">
+          <summary><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>Share</summary>
+          <section class="res-share" id="homeShare" aria-label="Share Fly Kai Tak">
+            <ul>
+              <li><a data-m="x" id="hsX" target="_blank" rel="noopener noreferrer">X</a></li>
+              <li><a data-m="facebook" id="hsFb" target="_blank" rel="noopener noreferrer">Facebook</a></li>
+              <li><a data-m="reddit" id="hsRd" target="_blank" rel="noopener noreferrer">Reddit</a></li>
+              <li><a data-m="whatsapp" id="hsWa" target="_blank" rel="noopener noreferrer">WhatsApp</a></li>
+              <li><a data-m="threads" id="hsTh" target="_blank" rel="noopener noreferrer">Threads</a></li>
+              <li><a data-m="email" id="hsMail"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="m22 6-10 7L2 6"/></svg>Email</a></li>
+              <li><button type="button" id="hsCopy"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><span>Copy link</span></button></li>
+              <li hidden id="hsNatLi"><button type="button" id="hsNat"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg><span>Share&hellip;</span></button></li>
+            </ul>
+          </section>
+        </details>
+        <a class="coffee" id="btnCoffee" href="#" target="_blank" rel="noopener" hidden>☕ Buy me a coffee · $5 AUD</a>
+      </div>
       <p class="later">Aerial imagery and map data © Lands Department, HKSAR Government (CSDI open data). Elevation: SRTM via AWS Terrain Tiles. Modern imagery is corrected to 1998 around Kai Tak, West Kowloon and the Central waterfront.</p>
       <p class="foot">Contact: <a href="mailto:contact@flykaitak.com">contact@flykaitak.com</a></p>
     </div>
@@ -5280,7 +5272,7 @@ function fidsTick(now){
 function fidsShow(){const W=mode==='fly'&&CFG.game==='watch',b=document.getElementById('btnFids');document.getElementById('fidsPlay').hidden=!(W&&fidsOn);b.hidden=!W;b.setAttribute('aria-pressed',String(fidsOn));fidsLast=-1e9}
 function toggleFidsSound(){fidsSnd=!fidsSnd;try{localStorage.setItem('fkt-fids-snd',fidsSnd?'1':'0')}catch(e){}if(fidsSnd&&CFG.sound){sfx.start();sfx.mute(true);sfx.clack(8)}tog('flight_board_sound',fidsSnd?'on':'off','button');fidsLast=-1e9}
 for(const id of['fidsHome','fidsPlay'])document.getElementById(id).addEventListener('click',e=>{if(e.target.closest('.fids-snd')){toggleFidsSound();e.stopPropagation()}});
-let fidsHomeOn=true;try{if(localStorage.getItem('fkt-fids-home')==='0')fidsHomeOn=false}catch(e){}
+let fidsHomeOn=false;try{if(localStorage.getItem('fkt-fids-home')==='1')fidsHomeOn=true}catch(e){}   // off by default; B or the Flights button shows it
 function toggleFidsHome(){fidsHomeOn=!fidsHomeOn;try{localStorage.setItem('fkt-fids-home',fidsHomeOn?'1':'0')}catch(e){}fidsLast=-1e9;fidsHomeSync()}
 function fidsHomeSync(){document.getElementById('fidsHome').hidden=!fidsHomeOn;const b=document.getElementById('btnFidsHome');b.setAttribute('aria-pressed',String(fidsHomeOn))}
 document.getElementById('btnFidsHome').addEventListener('click',e=>{toggleFidsHome();e.currentTarget.blur()});
@@ -6283,7 +6275,7 @@ function placeHomeMap(){const m=document.getElementById('map');if(mode!=='attrac
   if(!pn.hidden){const rc=e=>{const r=e&&e.getBoundingClientRect();return r&&r.width?r:null},p=rc(pn),
       hit=(r,l,t,g)=>r&&l<r.right+g&&l+w>r.left-g&&t<r.bottom+g&&t+h>r.top-g,
       sh=rc(document.querySelector('#setup .sheet')),sr=sh&&sh.left>0?sh.left:vw,
-      soft=[rc(document.querySelector('#setup .reelbox')),rc(document.getElementById('fidsHome'))],
+      soft=[rc(document.querySelector('#setup .homeblog')),rc(document.getElementById('fidsHome'))],
       fits=(l,t)=>l>=0&&t>=0&&l+w<=sr&&t+h<=vh&&!hit(p,l,t,3),
       c=[[10,66],[sr-w-16,vh-h-16],[10,p.bottom+12],[10,vh-h-6],[p.right+12,66]];
     const ok=c.find(([l,t])=>fits(l,t)&&!soft.some(r=>hit(r,l,t,8)))||c.find(([l,t])=>fits(l,t));
@@ -6698,20 +6690,14 @@ document.addEventListener('fullscreenchange',fsLabel);fsLabel();
 document.getElementById('btnGo').addEventListener('click',()=>{if(TOUCH&&compactMQ.matches)goFullscreen()});
 window.addEventListener('orientationchange',()=>setTimeout(resize,300));
 
-const reel=document.getElementById('reel');let reelOK=true;
-{const off=()=>{reelOK=false;reel.hidden=true};reel.addEventListener('error',off);const srcs=reel.querySelectorAll('source');srcs[srcs.length-1].addEventListener('error',off)}
 // Stripe Payment Link for the $5 AUD "Buy me a coffee" button. The button stays hidden if this is empty.
 const STRIPE_LINK='https://buy.stripe.com/9B6cMX2TT3tPaFi0UcaAw00';
 {const c=document.getElementById('btnCoffee');if(/^https:\/\/(buy|donate)\.stripe\.com\//.test(STRIPE_LINK)){c.href=STRIPE_LINK;c.hidden=false}}
-// Home demo reel: loops in an inset while the live sim renders behind. Reduced motion: poster only.
-const reducedMotion=()=>!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
-if(reducedMotion())reel.removeAttribute('autoplay');
-function reelShow(on){if(!reelOK)return;if(on&&!reducedMotion())reel.play().catch(()=>{});else reel.pause()}
 function tourCapOff(){tourHush();const e=document.getElementById('tourCap');if(e){e.classList.remove('on');e.dataset.k='';e.textContent=''}}
-function showSetup(){tourCapOff();replayHide();hsRenderHome();setMore(false);try{if(screen.orientation&&screen.orientation.unlock)screen.orientation.unlock()}catch(e){}reelShow(true);flightEnd('quit');mode='attract';paused=false;for(const id of['bar','ctl','map','result','cabin'])document.getElementById(id).hidden=true;document.getElementById('setup').hidden=false;applyMap();sfx.stopAll();if(synth)synth.cancel();radioClear();coachHide();syncMode();
+function showSetup(){tourCapOff();replayHide();hsRenderHome();setMore(false);try{if(screen.orientation&&screen.orientation.unlock)screen.orientation.unlock()}catch(e){}flightEnd('quit');mode='attract';paused=false;for(const id of['bar','ctl','map','result','cabin'])document.getElementById(id).hidden=true;document.getElementById('setup').hidden=false;applyMap();sfx.stopAll();if(synth)synth.cancel();radioClear();coachHide();syncMode();
   clearFX();CFG.ap=true;setRunway('13');resetFlight();ST.ap=true;spawnAircraftModel();buildAI();CFG.view='chase';applyHomeEnv();setWalled(document.getElementById('optWalled').checked);setWreck(document.getElementById('optWreck').checked)}
 function startFlight(){
-  setMore(false);reelShow(false);readSetup();setRunway(CFG.lesson?'13':CFG.rwy==='31'?'31':'13');flightEnd('restart');clearFX();mode='fly';paused=false;SEED=window.__capture?1998:1998+Math.floor(Math.random()*1000);
+  setMore(false);readSetup();setRunway(CFG.lesson?'13':CFG.rwy==='31'?'31':'13');flightEnd('restart');clearFX();mode='fly';paused=false;SEED=window.__capture?1998:1998+Math.floor(Math.random()*1000);
   for(const id of['setup','result'])document.getElementById(id).hidden=true;for(const id of['bar','ctl','map'])document.getElementById(id).hidden=false;
   resetFlight();ST.attempted=false;flightBegin();radioReset();HIST.length=0;REC.f.length=0;replayHide();spawnAircraftModel();FOCUS=null;
   if(CFG.game==='watch')buildAISchedule(CFG.phase??0,true,{n:CFG.concN??(CFG.conc?-1:2)});else if(CFG.game==='free')buildAISchedule(-100,false);else buildAI();
@@ -6829,7 +6815,7 @@ function updateHomeShare(){
   document.getElementById('hsNatLi').hidden=!navigator.share}
 updateHomeShare();
 document.getElementById('btnLang').addEventListener('click',updateHomeShare);
-for(const id of ['navShop','btnMerch'])document.getElementById(id).addEventListener('click',()=>{try{track('shop_click',{method:id==='navShop'?'nav':'teaser',content_type:'home'})}catch(_){}});
+document.getElementById('navShop').addEventListener('click',()=>{try{track('shop_click',{method:'nav',content_type:'home'})}catch(_){}});
 document.getElementById('homeFollow').addEventListener('click',e=>{const a=e.target.closest('a[data-f]');if(a)try{track('follow',{method:a.dataset.f,content_type:'home'})}catch(_){}});
 document.getElementById('homeShare').addEventListener('click',async e=>{
   const a=e.target.closest('a[data-m]');if(a){homeTrack(a.dataset.m);return}

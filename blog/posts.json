@@ -1,5 +1,37 @@
 [
   {
+    "slug": "a-tidier-home-screen",
+    "title": "A tidier home screen",
+    "dek": "Fewer panels over the scenery: the flight board starts off, one latest update, and follow, share and coffee move to the foot of the menu.",
+    "description": "Fly Kai Tak's home screen is decluttered: flight board off by default, one latest update, no demo reel, and follow and share links moved to the menu footer.",
+    "date": "2026-10-11",
+    "tag": "Update",
+    "category": "site",
+    "keywords": [
+      "Kai Tak",
+      "home screen",
+      "redesign",
+      "flight board",
+      "menu",
+      "flight simulator"
+    ],
+    "hero": "home-tidy",
+    "hero_alt": "The tidied Fly Kai Tak home screen: the live view of Kai Tak on the left with the 啟德機場 name and one Latest update card, and the flight menu on the right.",
+    "hero_caption": "The new home screen: the live sim gets the room.",
+    "card_kicker": "HOME SCREEN · UPDATE",
+    "card_title": "A tidier home screen",
+    "card_sub": "Less clutter, more Kai Tak",
+    "card_image": "home-tidy",
+    "card_focus": 40,
+    "zh": {
+      "title": "主畫面執靚咗",
+      "dek": "風景上面少咗好多面板：航班資料板預設關閉、只顯示最新一篇，追蹤、分享同咖啡搬咗去選單底。",
+      "description": "Fly Kai Tak 主畫面精簡咗：航班資料板預設關閉、只顯示最新一篇、冇咗示範片，追蹤同分享連結搬咗去選單底。",
+      "hero_alt": "執靚咗嘅 Fly Kai Tak 主畫面：左邊係啟德即時畫面、啟德機場個名同一張最新消息卡，右邊係飛行選單。",
+      "hero_caption": "新主畫面：位留返俾模擬器。"
+    }
+  },
+  {
     "slug": "latest-updates-on-the-home-screen",
     "title": "Update: the latest blog posts on the home screen",
     "dek": "The five newest posts now sit on the home screen, one click from the full story.",
