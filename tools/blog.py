@@ -9,7 +9,7 @@
 
 Each post needs a Cantonese body (blog/src/<slug>.zh.html) and a "zh" block in posts.json; the build fails without them.
 Writes blog/index.html (+ blog/page/N/), blog/category/<slug>/ (+ page/N/), blog/sort/category/ (+ page/N/),
-blog/<slug>/index.html, blog/search.json (read by assets/blog/search.js), blog/feed.xml and sitemap.xml. 20 posts per page.
+blog/<slug>/index.html, the home screen's latest-posts panel (index.html), blog/search.json (read by assets/blog/search.js), blog/feed.xml and sitemap.xml. 20 posts per page.
 See docs/blog.md.
 Usage: python3 tools/blog.py
 """
@@ -461,6 +461,39 @@ def sitemap(posts, extra):
     return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n{body}</urlset>\n'
 
 
+HOME_START, HOME_END = "<!-- BLOG:LATEST -->", "<!-- /BLOG:LATEST -->"
+
+
+def home_latest(posts, n=5):
+    """The latest-posts panel on the home screen (index.html), rebuilt between the BLOG:LATEST markers."""
+    def both(en, zh):
+        return f'<span class="l-en">{E(en)}</span><span class="l-zh" lang="zh-HK">{E(zh)}</span>'
+    items = []
+    for i, p in enumerate(posts[:n]):
+        d = dt.date.fromisoformat(p["date"])
+        c = CATS[p["category"]]
+        thumb = (f'<span class="hb-thumb"><img src="/assets/blog/og/{p["slug"]}.jpg" width="1200" height="630" '
+                 f'loading="lazy" alt=""></span>') if i == 0 else ""
+        items.append(
+            f'<li><a href="/blog/{p["slug"]}/"{" class=\"hb-top\"" if i == 0 else ""}>{thumb}<span class="hb-txt">'
+            f'<span class="hb-meta"><time datetime="{p["date"]}">{both(d.strftime("%d %b").lstrip("0"), f"{d.month}月{d.day}日")}</time>'
+            f' &middot; {both(c["name"], c["zh"])}</span>'
+            f'<b>{both(p["title"], p["zh"]["title"])}</b></span></a></li>')
+    return (f'{HOME_START}\n      <section class="homeblog" id="homeBlog" aria-labelledby="homeBlogH">\n'
+            f'        <h3 id="homeBlogH">{both("Latest updates", "最新消息")}</h3>\n'
+            f'        <ul>\n          ' + "\n          ".join(items) + '\n        </ul>\n'
+            f'        <a class="hb-all" href="/blog/">{both("All updates on the blog", "網誌睇晒所有更新")} <span aria-hidden="true">&rarr;</span></a>\n'
+            f'      </section>\n      {HOME_END}')
+
+
+def write_home(posts):
+    f = ROOT / "index.html"
+    s = f.read_text(encoding="utf-8")
+    a, b = s.find(HOME_START), s.find(HOME_END)
+    assert a >= 0 and b > a, "index.html is missing the BLOG:LATEST markers"
+    f.write_text(s[:a] + home_latest(posts) + s[b + len(HOME_END):], encoding="utf-8")
+
+
 def main():
     posts = load_posts()
     slugs = [p["slug"] for p in posts]
@@ -490,6 +523,7 @@ def main():
         (d / "index.html").write_text(post_page(p, rel[:2]), encoding="utf-8")
     (BLOG / "feed.xml").write_text(feed(posts), encoding="utf-8")
     (ROOT / "sitemap.xml").write_text(sitemap(posts, extra), encoding="utf-8")
+    write_home(posts)
     print(f"built {len(posts)} posts in {len(CATS)} categories, {pages} blog page(s): " + ", ".join(slugs))
 
 

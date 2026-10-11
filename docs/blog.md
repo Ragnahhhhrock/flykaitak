@@ -24,3 +24,6 @@ Only state facts that are in the README or the code. Do not use real airline nam
 - `tools/blog.py` builds `/blog/` (20 posts per page, `/blog/page/N/`), `/blog/category/<slug>/` (+ pages), `/blog/sort/category/` (sorted by category, `noindex`) and `blog/search.json`. Listing pages are regenerated from scratch each build.
 - `assets/blog/search.js` searches `blog/search.json` in the browser (title, description, keywords, category, body text, English and Cantonese), 20 results per page, and supports `/blog/?q=term`. It sends a GA4 `search` event.
 - Category pages and extra pages are in `sitemap.xml`; each post's breadcrumb and JSON-LD include its category, and "More from the blog" lists same-category posts first.
+
+## Home screen
+`tools/blog.py` also rewrites the "Latest updates" panel on the home screen (`index.html`, between the `<!-- BLOG:LATEST -->` markers): the five newest posts, newest with its card image, in English and Cantonese. Never edit inside the markers by hand.

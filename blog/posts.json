@@ -1,5 +1,37 @@
 [
   {
+    "slug": "latest-updates-on-the-home-screen",
+    "title": "Update: the latest blog posts on the home screen",
+    "dek": "The five newest posts now sit on the home screen, one click from the full story.",
+    "description": "Fly Kai Tak update: the home screen now lists the titles of the five newest blog posts, with dates and categories, linking to each post.",
+    "date": "2026-10-11",
+    "tag": "Update",
+    "category": "site",
+    "keywords": [
+      "Kai Tak",
+      "home screen",
+      "latest updates",
+      "blog",
+      "news",
+      "flight simulator"
+    ],
+    "hero": "home-latest-updates",
+    "hero_alt": "The Fly Kai Tak home screen with the Latest updates panel listing the five newest blog posts under the demo reel.",
+    "hero_caption": "The five newest posts, on the home screen.",
+    "card_kicker": "HOME SCREEN · UPDATE",
+    "card_title": "Latest updates",
+    "card_sub": "The five newest posts on the home screen",
+    "card_image": "home-latest-updates",
+    "card_focus": 20,
+    "zh": {
+      "title": "更新：主畫面顯示最新網誌",
+      "dek": "最新五篇文而家放咗喺主畫面，㩒一下就睇到全文。",
+      "description": "Fly Kai Tak 更新：主畫面而家列出最新五篇網誌嘅標題、日期同類別，㩒落去就開嗰篇文。",
+      "hero_alt": "Fly Kai Tak 主畫面，示範片下面嘅最新消息面板列出最新五篇網誌。",
+      "hero_caption": "最新五篇文，就喺主畫面。"
+    }
+  },
+  {
     "slug": "flight-replay",
     "title": "Watch your flight again: flight replay",
     "dek": "Every flight is recorded. Watch it back from the report card, with a Director that cuts to the checkerboard, the turn and the touchdown.",
