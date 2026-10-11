@@ -1,5 +1,39 @@
 [
   {
+    "slug": "share-button-aligned",
+    "title": "The Share button now lines up",
+    "dek": "On the home screen, Share sat a little lower than Facebook and Instagram. All three now sit on one row.",
+    "description": "A small home screen fix in Fly Kai Tak: the Share button now lines up with the Facebook and Instagram buttons instead of sitting lower.",
+    "date": "2026-10-11",
+    "tag": "Fix",
+    "category": "site",
+    "keywords": [
+      "Share button",
+      "home screen",
+      "Facebook",
+      "Instagram",
+      "alignment",
+      "layout",
+      "Kai Tak",
+      "flight simulator"
+    ],
+    "hero": "share-button-aligned",
+    "hero_alt": "The home screen footer with Facebook, Instagram and Share buttons side by side on one row, and the Buy me a coffee button below.",
+    "hero_caption": "Facebook, Instagram and Share on one row.",
+    "card_kicker": "VHHH · HOME SCREEN · 1998",
+    "card_title": "Share lines up",
+    "card_sub": "Facebook, Instagram and Share on one row",
+    "card_image": "share-button-aligned",
+    "card_focus": 50,
+    "zh": {
+      "title": "分享掣對齊咗",
+      "dek": "主畫面嘅分享掣本來比 Facebook 同 Instagram 低少少。而家三個掣喺同一行。",
+      "description": "Fly Kai Tak 主畫面小修正：分享掣而家同 Facebook、Instagram 掣對齊，唔再低咗一截。",
+      "hero_alt": "主畫面底部，Facebook、Instagram 同分享掣喺同一行，下面係「請我飲咖啡」掣。",
+      "hero_caption": "Facebook、Instagram 同分享掣喺同一行。"
+    }
+  },
+  {
     "slug": "first-perfect-score-100",
     "title": "The first perfect 100, and a clearer name box",
     "dek": "Someone has landed the IGS 13 approach for a full 100, but without a name. The result screen now asks for it clearly.",
