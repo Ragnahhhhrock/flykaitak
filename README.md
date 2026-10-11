@@ -55,7 +55,7 @@ Data: © Lands Department, HKSAR Government (CSDI). Roads: Transport Department 
 - Other airliners: a 747 landing two minutes ahead of you, an A340 following you in on the IGS, departures pushed back from the bridges, taxiing out and climbing over Kowloon Bay, two aircraft in the hold west of the harbour, and apron movements
 - Zoom 1×, 2×, 4×, 8×, 16× (I / O); time 1×, 2×, 4×, 8× (T); jump back or forward 10 seconds ([ / ]), including back from a crash
 - Flight replay: every flight (not Plane Spotter or the tour) is recorded at 10 Hz, and when it ends the highlights play by themselves: the opening seconds or lift-off, the checkerboard and the turn over Kowloon City, touchdown, the crash or go-around, about 45 s, then the report card. Highlights / Full flight switches to the whole flight. The Director cuts between chase, fly-by and cockpit shots, with set-piece shots at the big moments; the camera menu also has Chase, Cockpit and Tower. Transport bar: play/pause, scrub, 0.5× to 4×, highlight markers. Keys: Space, ← → (5 s), H (highlights / full), C (camera), S (save video), Esc (report card). A rewind cuts the recording back, so the replay is the flight as finally flown
-- Replay video: Save video (in the replay bar, or Video on the report card) renders the highlights to an MP4 in the browser (WebCodecs + `assets/vendor/mp4-muxer.js`, offline at 30 fps): 1280×720 for YouTube, X and Facebook, or 720×1280 for Reels, Shorts and TikTok, with an opening title, REPLAY tag, captions, altitude and speed, flykaitak.com and the report card at the end. Then Download, Share… (the phone's share sheet, with the file) or Copy caption, with links to post it on YouTube, TikTok, Instagram, Facebook and X. H.264 where the browser has it (Chrome, Edge, Safari), VP9 otherwise. No sound track yet
+- Replay video: Save video (in the replay bar, or Video on the report card) renders the highlights to an MP4 in the browser (WebCodecs + `assets/vendor/mp4-muxer.js`, offline at 30 fps): 1280×720 for YouTube, X and Facebook, or 720×1280 for Reels, Shorts and TikTok, with an opening title, REPLAY tag, captions, radio calls, altitude and speed, flykaitak.com and the report card at the end, and a sound track (engine, wind, rain, touchdown, crash, radio squelch, an airport chime on the report card). Then Download, Share… (the phone's share sheet, with the file) or Copy caption, with links to post it on YouTube, TikTok, Instagram, Facebook and X. H.264 and AAC where the browser has them (Chrome, Edge, Safari), VP9 and Opus otherwise. Get share link uploads it to the worker for a share page with a video preview (switched on per `docs/replays.md`)
 - GPWS callouts and warnings (gear and flap calls only while descending, so take-offs stay quiet), engine, wind, rain and thunder sound
 
 ## Demo reel
@@ -115,7 +115,7 @@ The on-screen yoke works with touch or a mouse and is inverted like a real contr
 Google Analytics 4 with game events. See docs/analytics.md.
 
 ## Roadmap
-- Replay video, next: engine and radio sound in the video, and a share page per replay (flykaitak.com/replay/…) so a link shows the video
+- Replay video, next: switch on share links (deploy the worker, `docs/replays.md`) and a gallery of the best shared landings
 - Learn to fly, next: ground and taxi lessons, and a Runway 31 landing lesson
 - ATC radio, next: ground and taxi calls, more voices, crews that match the AI traffic
 - More aircraft: 747-200/300, 767-300, MD-11, A300-600, A320, 737-300, L-1011, DC-10

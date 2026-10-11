@@ -1,5 +1,40 @@
 [
   {
+    "slug": "replay-video-sound-and-share-links",
+    "title": "Replay videos with sound, radio calls and share links",
+    "dek": "Replay videos now have engine, wind and touchdown sound, the radio calls on screen, and a page of their own to share.",
+    "description": "Fly Kai Tak replay videos now have a sound track and radio captions, and Get share link gives each replay a page that previews on X, Facebook and WhatsApp.",
+    "date": "2026-10-11",
+    "tag": "Feature",
+    "category": "scores",
+    "keywords": [
+      "flight replay",
+      "replay video",
+      "sound",
+      "ATC radio",
+      "share link",
+      "Open Graph",
+      "video preview",
+      "flight simulator",
+      "Kai Tak"
+    ],
+    "hero": "replay-share-page",
+    "hero_alt": "A replay share page: Welcome to Hong Kong, Grade A, the video, a Fly it yourself button and share buttons.",
+    "hero_caption": "A replay's own page.",
+    "card_kicker": "SCORES · FEATURE",
+    "card_title": "Replay videos with sound and share links",
+    "card_sub": "Engine, touchdown, radio calls, and a page per replay",
+    "card_image": "replay-radio-caption",
+    "card_focus": 50,
+    "zh": {
+      "title": "重播影片有聲、有無線電通話，仲有分享連結",
+      "dek": "重播影片而家有引擎、風聲同著陸聲，無線電通話喺畫面出現，仲有自己嘅網頁可以分享。",
+      "description": "Fly Kai Tak 重播影片而家有聲帶同無線電字幕，「攞分享連結」會為每段重播整一個網頁，喺 X、Facebook 同 WhatsApp 都有預覽。",
+      "hero_alt": "重播分享網頁：Welcome to Hong Kong、Grade A、影片、Fly it yourself 掣同分享掣。",
+      "hero_caption": "每段重播都有自己嘅網頁。"
+    }
+  },
+  {
     "slug": "replay-highlights-video",
     "title": "Highlights after every flight, and a video to share",
     "dek": "Every flight now ends with its highlights. Save them as an MP4, wide for YouTube or upright for Reels, Shorts and TikTok.",

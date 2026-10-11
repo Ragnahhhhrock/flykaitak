@@ -395,6 +395,20 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
 .rpx-up a{display:inline-flex;align-items:center;height:36px;padding:0 12px;border:1px solid var(--line-2);border-radius:3px;color:var(--text);text-decoration:none;font-size:12px;letter-spacing:.06em;text-transform:uppercase}
 .rpx-up a:hover{border-color:var(--paper)}.rpx-up a:focus-visible,.rpx :focus-visible{outline:2px solid var(--checker);outline-offset:2px}
 @media (max-width:480px){.rpx-fmt{grid-template-columns:1fr}.rpx-body{padding:16px}}
+#rpRadio{position:absolute;left:calc(env(safe-area-inset-left,0px) + 16px);bottom:calc(env(safe-area-inset-bottom,0px) + 86px);width:min(380px,calc(100% - 32px));display:flex;flex-direction:column;gap:3px;font-size:12px;line-height:1.35;letter-spacing:.02em}
+#rpRadio[hidden]{display:none}
+#rpRadio .rl{background:var(--panel);border-left:3px solid var(--line-2);padding:4px 8px;border-radius:2px}
+#rpRadio .rl b{font-weight:600;margin-right:6px;font-size:10px;letter-spacing:.1em;color:var(--amber)}
+#rpRadio .rl.TWR{border-left-color:var(--phosphor)}#rpRadio .rl.APP{border-left-color:var(--amber)}#rpRadio .rl.YOU{border-left-color:var(--magenta)}
+#rpRadio .rl.YOU b{color:var(--magenta)}#rpRadio .rl.TWR b{color:var(--phosphor)}#rpRadio .rl.OTH{opacity:.78}#rpRadio .rl.OTH b{color:var(--line-2)}
+@media (max-width:640px){#rpRadio{bottom:calc(env(safe-area-inset-bottom,0px) + 136px);font-size:11px}}
+.rpx-link{border-top:1px solid var(--line);padding-top:12px;display:grid;gap:8px}.rpx-link[hidden],.rpx-url[hidden],.rpx-sl[hidden]{display:none}
+.rpx-link p{margin:0;font-size:12.5px;color:var(--muted)}.rpx-link p b{color:var(--text);font-weight:400;letter-spacing:.04em}
+.rpx-url{display:flex;gap:8px}.rpx-url input{flex:1;min-width:0;background:var(--ink);color:var(--paper);border:1px solid var(--line-2);border-radius:3px;padding:9px 10px;font-family:var(--f-num);font-size:13px}
+.rpx-url .btn{padding:0 14px}
+.rpx-sl{display:flex;flex-wrap:wrap;gap:8px}
+.rpx-sl a,.rpx-sl button{display:inline-flex;align-items:center;height:36px;padding:0 12px;border:1px solid var(--line-2);border-radius:3px;color:var(--text);background:none;text-decoration:none;font:inherit;font-size:12px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+.rpx-sl a:hover,.rpx-sl button:hover{border-color:var(--paper)}
 .res-share h3{margin:0;font-family:var(--f-num);font-weight:400;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
 .res-share ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
 .res-share li[hidden]{display:none}
@@ -571,7 +585,7 @@ body.bigmap #radio{top:calc(env(safe-area-inset-top,0px) + 396px)}
       <section class="homeblog" id="homeBlog" aria-labelledby="homeBlogH">
         <h3 id="homeBlogH"><span class="l-en">Latest update</span><span class="l-zh" lang="zh-HK">最新消息</span></h3>
         <ul>
-          <li><a href="/blog/replay-highlights-video/" class="hb-top"><span class="hb-thumb"><img src="/assets/blog/og/replay-highlights-video.jpg" width="1200" height="630" loading="lazy" alt=""></span><span class="hb-txt"><span class="hb-meta"><time datetime="2026-10-11"><span class="l-en">11 Oct</span><span class="l-zh" lang="zh-HK">10月11日</span></time> &middot; <span class="l-en">Scores &amp; Sharing</span><span class="l-zh" lang="zh-HK">分數同分享</span></span><b><span class="l-en">Highlights after every flight, and a video to share</span><span class="l-zh" lang="zh-HK">每次飛完都有精華片段，仲可以存做影片分享</span></b></span></a></li>
+          <li><a href="/blog/replay-video-sound-and-share-links/" class="hb-top"><span class="hb-thumb"><img src="/assets/blog/og/replay-video-sound-and-share-links.jpg" width="1200" height="630" loading="lazy" alt=""></span><span class="hb-txt"><span class="hb-meta"><time datetime="2026-10-11"><span class="l-en">11 Oct</span><span class="l-zh" lang="zh-HK">10月11日</span></time> &middot; <span class="l-en">Scores &amp; Sharing</span><span class="l-zh" lang="zh-HK">分數同分享</span></span><b><span class="l-en">Replay videos with sound, radio calls and share links</span><span class="l-zh" lang="zh-HK">重播影片有聲、有無線電通話，仲有分享連結</span></b></span></a></li>
         </ul>
         <a class="hb-all" href="/blog/"><span class="l-en">All updates on the blog</span><span class="l-zh" lang="zh-HK">網誌睇晒所有更新</span> <span aria-hidden="true">&rarr;</span></a>
       </section>
@@ -731,6 +745,7 @@ body.bigmap #radio{top:calc(env(safe-area-inset-top,0px) + 396px)}
 <div id="replay" hidden>
   <div class="rp-top"><span class="rp-rec" aria-hidden="true"></span><b id="rpTag">Replay</b><span class="rp-cap" id="rpCap" hidden></span></div>
   <div class="rp-read" id="rpRead" aria-live="off"></div>
+  <div class="rp-radio" id="rpRadio" hidden></div>
   <div class="rp-bar">
     <button class="btn rp-play" id="rpPlay" type="button" aria-label="Pause"><svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3v14H7zM14 5h3v14h-3z"/></svg><svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></button>
     <span class="rp-time" id="rpTime">0:00 / 0:00</span>
@@ -761,6 +776,13 @@ body.bigmap #radio{top:calc(env(safe-area-inset-top,0px) + 396px)}
         <button class="go" id="rpxDl" type="button"><span id="rpxDlL">Download MP4</span></button>
         <button class="btn" id="rpxShare" type="button" hidden>Share…</button>
         <button class="btn" id="rpxCopy" type="button">Copy caption</button>
+      </div>
+      <div class="rpx-link" id="rpxLink" hidden>
+        <p><b id="rpxLinkH">Share a link.</b> <span id="rpxLinkNote">Uploads the video so anyone with the link can watch it, with a preview on X, Facebook, WhatsApp and more.</span></p>
+        <div class="rpx-actions" id="rpxLinkGo"><button class="btn" id="rpxLinkBtn" type="button">Get share link</button></div>
+        <div class="rpx-prog" id="rpxLinkProg" hidden><div class="rpx-bar"><i id="rpxLinkBar"></i></div><span id="rpxLinkPct">0%</span></div>
+        <div class="rpx-url" id="rpxUrlBox" hidden><input id="rpxUrl" readonly aria-label="Share link"><button class="btn" id="rpxUrlCopy" type="button">Copy</button></div>
+        <div class="rpx-sl" id="rpxSl" hidden></div>
       </div>
       <div class="rpx-up" id="rpxUp" hidden><p><b id="rpxUpH">Post it.</b> <span id="rpxUpNote"></span></p><div><a data-m="youtube" href="https://www.youtube.com/upload" target="_blank" rel="noopener noreferrer">YouTube</a><a data-m="tiktok" href="https://www.tiktok.com/upload" target="_blank" rel="noopener noreferrer">TikTok</a><a data-m="instagram" href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer">Instagram</a><a data-m="facebook" href="https://www.facebook.com/" target="_blank" rel="noopener noreferrer">Facebook</a><a data-m="x" href="https://x.com/compose/post" target="_blank" rel="noopener noreferrer">X</a></div></div>
     </div>
@@ -4473,10 +4495,10 @@ function fmtT(t){return Math.floor(t/60)+':'+String(Math.floor(t%60)).padStart(2
    of sim time. A rewind cuts the recording back, so it always holds the flight as it was finally flown.
    At the end the pilot can watch it back: the Director cuts between cinematic shots and the highlights (lift-off, the checkerboard,
    the turn over Kowloon City, touchdown, the crash), or pick a camera and drag to look around. */
-const REC={f:[]};   // [t,x,y,z,theta,psi,phi,gearPos,flapPos,thrust/thr,V,onGround,pi,throttle]
+const REC={f:[],r:[]};   // r: radio calls {t,who,text,d}   // [t,x,y,z,theta,psi,phi,gearPos,flapPos,thrust/thr,V,onGround,pi,throttle]
 function recTick(s){const f=REC.f,l=f[f.length-1];if(l&&s.t-l[0]<.1)return;if(f.length>=36000)return;
   f.push([s.t,s.x,s.y,s.z,s.theta,s.psi,s.phi,s.gearPos,s.flapPos,s.thrust/s.ac.thr,s.V,s.onGround?1:0,s.pi,s.throttle])}
-function recCut(t){const f=REC.f;while(f.length&&f[f.length-1][0]>t)f.pop()}
+function recCut(t){const f=REC.f;while(f.length&&f[f.length-1][0]>t)f.pop();REC.r=REC.r.filter(x=>x.t<=t)}
 function recAt(t){const f=REC.f,n=f.length;if(!n)return null;if(t<=f[0][0])return f[0];if(t>=f[n-1][0])return f[n-1];
   let lo=0,hi=n-1;while(hi-lo>1){const m=(lo+hi)>>1;if(f[m][0]<=t)lo=m;else hi=m}
   const a=f[lo],b=f[hi],u=(t-a[0])/Math.max(1e-6,b[0]-a[0]),o=a.slice();
@@ -4591,7 +4613,8 @@ function rpHud(){
   const s=ST,dur=rpDur(),el=rpToReel(RP.t);
   if(Math.abs(el-RP.lastT)>.05||!RP.play){RP.lastT=el;rpEl('rpTime').textContent=fmtT(el)+' / '+fmtT(dur);if(document.activeElement!==rpEl('rpSeek'))rpEl('rpSeek').value=Math.round(1000*el/Math.max(.1,dur))}
   rpEl('rpRead').textContent=Math.round(Math.max(0,s.y-RWY.elev)/FT).toLocaleString('en')+' ft · '+Math.round(s.V/KT)+' kt';
-  const cap=rpCapText(),c=rpEl('rpCap');if(c.textContent!==cap){c.textContent=cap;c.hidden=!cap}}
+  const cap=rpCapText(),c=rpEl('rpCap');if(c.textContent!==cap){c.textContent=cap;c.hidden=!cap}
+  const L=rpRadioAt(RP.t),key=L.map(x=>x.t).join();const rb=rpEl('rpRadio');if(rb.dataset.k!==key){rb.dataset.k=key;rb.innerHTML='';for(const x of L){const d=document.createElement('div');d.className='rl '+x.who;const b=document.createElement('b');b.textContent=RV[x.who].l;d.append(b,document.createTextNode(x.text));rb.appendChild(d)}rb.hidden=!L.length}}
 function rpSync(){
   const b=rpEl('rpPlay');b.setAttribute('aria-label',RP.play?rpT('pause'):rpT('play'));b.classList.toggle('paused',!RP.play);
   rpEl('rpSpd').textContent=RP.spd+'×';rpEl('rpCam').value=RP.cam;
@@ -4635,17 +4658,19 @@ const RPX={busy:false,cancel:false,fmt:'land',cache:{}};
 const RPX_TXT={en:{h:'Save your replay',sub:s=>`A ${s}-second highlights video of this flight, with your report card at the end.`,land:'Landscape 16:9',landI:'YouTube, X, Facebook',port:'Portrait 9:16',portI:'Reels, Shorts, TikTok',
     make:'Make video',dl:'Download MP4',share:'Share…',copy:'Copy caption',copied:'Copied',saved:'Saved',cancel:'Cancel',rendering:'Rendering',up:'Post it.',
     upNote:'Download the video, then attach it to a new post on:',nosup:'This browser can’t make videos. Try Chrome, Edge or Safari.',fail:'Something went wrong making the video. Please try again.',
-    intro:'HONG KONG · KAI TAK · 1998',tryit:'Can you land it?'},
+    intro:'HONG KONG · KAI TAK · 1998',tryit:'Can you land it?',
+    linkH:'Share a link.',linkNote:'Uploads the video so anyone with the link can watch it, with a preview on X, Facebook, WhatsApp and more.',getLink:'Get share link',uploading:'Uploading',linkFail:'Couldn’t make a link just now. You can still download the video.',linkBusy:'Too many uploads. Try again in an hour.'},
   zh:{h:'儲存你嘅重播',sub:s=>`呢次飛行嘅 ${s} 秒精華片段，最尾有你嘅成績表。`,land:'橫向 16:9',landI:'YouTube、X、Facebook',port:'直向 9:16',portI:'Reels、Shorts、TikTok',
     make:'製作影片',dl:'下載 MP4',share:'分享…',copy:'複製文字',copied:'已複製',saved:'已儲存',cancel:'取消',rendering:'製作中',up:'發佈。',
     upNote:'下載影片，然後喺以下平台嘅新帖文度加入：',nosup:'呢個瀏覽器做唔到影片，請試吓 Chrome、Edge 或者 Safari。',fail:'製作影片時出錯，請再試一次。',
-    intro:'香港 · 啟德 · 1998',tryit:'你又降唔降落到？'}};
+    intro:'香港 · 啟德 · 1998',tryit:'你又降唔降落到？',
+    linkH:'分享連結。',linkNote:'上載影片，任何人有連結都睇得到，喺 X、Facebook、WhatsApp 等都有預覽。',getLink:'攞分享連結',uploading:'上載中',linkFail:'暫時整唔到連結，你仍然可以下載影片。',linkBusy:'上載太多次，請一個鐘頭後再試。'}};
 const rxT=k=>(RPX_TXT[LANG]||RPX_TXT.en)[k];
 function rpxLoad(){if(window.Mp4Muxer)return Promise.resolve(true);
   return new Promise(res=>{const s=document.createElement('script');s.src='assets/vendor/mp4-muxer.js';s.onload=()=>res(!!window.Mp4Muxer);s.onerror=()=>res(false);document.head.appendChild(s)})}
 async function rpxCodec(W,H){if(!window.VideoEncoder||!window.VideoFrame)return null;
   for(const [c,m] of [['avc1.640028','avc'],['avc1.4d0028','avc'],['avc1.42001f','avc'],['vp09.00.31.08','vp9']]){
-    try{const cfg={codec:c,width:W,height:H,bitrate:W*H>8e5?7e6:5e6,framerate:30};if(m==='avc')cfg.avc={format:'avc'};const r=await VideoEncoder.isConfigSupported(cfg);if(r&&r.supported)return {cfg,m}}catch(e){}}
+    try{const cfg={codec:c,width:W,height:H,bitrate:4.5e6,framerate:30};if(m==='avc')cfg.avc={format:'avc'};const r=await VideoEncoder.isConfigSupported(cfg);if(r&&r.supported)return {cfg,m}}catch(e){}}
   return null}
 function rpxName(fmt){const r=RES,d=new Date(),p=n=>String(n).padStart(2,'0');
   return 'fly-kai-tak-replay-'+(r&&r.kind==='landed'?'grade-'+String(r.grade).toLowerCase():r?r.kind:'flight')+'-'+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+'-'+p(d.getHours())+p(d.getMinutes())+(fmt==='port'?'-vertical':'')+'.mp4'}
@@ -4665,6 +4690,7 @@ function rpxDraw(x,W,H,phase){
   const cap=rpCapText();if(cap){x.shadowBlur=0;x.font=`400 ${Math.round(17*u)}px ${MONO}`;if('letterSpacing' in x)x.letterSpacing=2*u+'px';const cw=x.measureText(cap.toUpperCase()).width;if('letterSpacing' in x)x.letterSpacing='0px';
     const cy=top+20*u;x.fillStyle='rgba(9,16,20,.86)';x.fillRect(m,cy,cw+30*u,36*u);x.fillStyle='#e8571f';x.fillRect(m,cy,4*u,36*u);T(cap.toUpperCase(),m+17*u,cy+24*u,17*u,'#e9eee8',400,MONO,'left',2*u);x.shadowBlur=6*u}
   const by=H-(port?118:30)*u;
+  x.save();x.shadowBlur=0;rpxRadio(x,W,H,u,port,by-26*u);x.restore();
   T(rpxCtx(),m,by,15*u,'#c9d3cf',400,MONO,'left',1*u);
   T('flykaitak.com',W-m,by+2*u,(port?30:26)*u,'#e8571f',700,SANS,'right');
   x.shadowBlur=0;const cs=10*u;for(let i=0;i<Math.ceil(W/cs);i++){x.fillStyle=i%2?'#f5efe3':'#e8571f';x.fillRect(i*cs,H-cs,cs,cs);x.fillStyle=i%2?'#e8571f':'#f5efe3';x.fillRect(i*cs,H-2*cs,cs,cs)}
@@ -4680,47 +4706,125 @@ function rpxEnd(x,W,H,snap,card,a){
   x.drawImage(card,cx,cy,cw,ch);x.font=`700 ${Math.round((port?34:30)*u)}px "B612",sans-serif`;x.textAlign='center';x.fillStyle='#e9eee8';
   x.fillText(rxT('tryit'),W/2,cy+ch+(port?90:56)*u);x.fillStyle='#e8571f';x.fillText('flykaitak.com',W/2,cy+ch+(port?140:96)*u);x.globalAlpha=1}
 
+async function rpxACodec(){if(!window.AudioEncoder||!window.AudioData||!window.OfflineAudioContext)return null;
+  for(const [c,m] of [['mp4a.40.2','aac'],['opus','opus']]){try{const cfg={codec:c,sampleRate:48000,numberOfChannels:2,bitrate:128000};const r=await AudioEncoder.isConfigSupported(cfg);if(r&&r.supported)return {cfg,m}}catch(e){}}
+  return null}
+// what the sound track needs to know about each video frame
+function rpxSample(ph){const s=ST,A=s.ac;return {ph,t:RP.t,thr:s.thrust/A.thr,V:s.V,on:s.onGround,rev:s.onGround&&s.throttle<.12&&s.V>30*KT,gear:s.gearPos,
+  d:camera.position.distanceTo(_v.set(s.x,s.y+A.cy,s.z)),inside:CFG.view==='cockpit',boom:RP.boom}}
+// The sound track, rendered offline so it lines up with the frames: the sim's own engine, wind, rain, reverser, tyre and gear
+// sounds, quieter when the camera is far from the aircraft, plus the touchdown thump, the crash, radio squelch and static under
+// each (captioned) call, and an airport chime over the report card.
+async function rpxAudio(F,FPS){
+  const SR=48000,len=Math.ceil(F.length/FPS*SR),oc=new OfflineAudioContext(2,len,SR);
+  const noise=brown=>{const b=oc.createBuffer(1,SR*2,SR),d=b.getChannelData(0);let l=0;for(let i=0;i<d.length;i++){const w=Math.random()*2-1;if(brown){l=(l+.02*w)/1.02;d[i]=l*3.5+w*.05}else d[i]=w}return b};
+  const BROWN=noise(true),WHITE=noise(false);
+  const comp=oc.createDynamicsCompressor();comp.threshold.value=-16;comp.ratio.value=4;comp.connect(oc.destination);
+  const master=oc.createGain();master.gain.value=1.1;master.connect(comp);
+  const src=b=>{const s=oc.createBufferSource();s.buffer=b;s.loop=true;s.start(0);return s};
+  const filt=(type,f,q)=>{const x=oc.createBiquadFilter();x.type=type;x.frequency.value=f;if(q)x.Q.value=q;return x};
+  const gain=(v=0)=>{const g=oc.createGain();g.gain.value=v;return g};
+  const chain=(s,...n)=>{let a=s;for(const x of n){a.connect(x);a=x}a.connect(master);return n[n.length-1]};
+  const engF=filt('lowpass',300),eng=chain(src(BROWN),engF,gain());
+  const wo=oc.createOscillator();wo.type='sawtooth';wo.frequency.value=500;wo.start(0);const whG=chain(wo,filt('lowpass',1800),gain());
+  const windF=filt('bandpass',600,.5),wind=chain(src(WHITE),windF,gain());
+  const rain=chain(src(WHITE),filt('highpass',2500),gain());
+  const revF=filt('lowpass',900),rev=chain(src(BROWN),revF,gain());
+  const sq=chain(src(WHITE),filt('bandpass',1250,6),gain());
+  const rumF=filt('lowpass',180),rum=chain(src(BROWN),rumF,gain());
+  const stat=chain(src(WHITE),filt('bandpass',1900,.9),gain());
+  const burst=(t,l,f,g0,type='lowpass',q)=>{const s=oc.createBufferSource();s.buffer=WHITE;const fl=filt(type,f,q),g=gain();g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(g0,t+.012);g.gain.exponentialRampToValueAtTime(.001,t+l);s.connect(fl);fl.connect(g);g.connect(master);s.start(t,Math.random());s.stop(t+l+.05)};
+  const tone=(t,f,l,g0)=>{const o=oc.createOscillator();o.type='sine';o.frequency.value=f;const g=gain();g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(g0,t+.02);g.gain.exponentialRampToValueAtTime(.001,t+l);o.connect(g);g.connect(master);o.start(t);o.stop(t+l+.05)};
+  const set=(p,v,t,tc)=>p.setTargetAtTime(v,t,tc);
+  rain.gain.setValueAtTime((WX[CFG.wx].rain||0)*.05,0);
+  let prev=null,ended=false,statOff=0;
+  for(let i=0;i<F.length;i++){const f=F[i],t=i/FPS;
+    if(f.ph==='end'){if(!ended){ended=true;for(const g of[eng,whG,wind,rev,sq,rum,stat])set(g.gain,0,t,.25);set(rain.gain,0,t,.5);tone(t+.35,659.3,1.8,.16);tone(t+.95,523.3,2.4,.16)}continue}
+    const jump=!!prev&&Math.abs(f.t-prev.t)>.5,tc=jump?.02:.12,dead=f.boom;
+    const k=dead?0:f.inside?.55:clamp(170/Math.max(f.d,1),.1,1),thr=f.thr,V=f.V;
+    set(eng.gain,(.08+.4*thr)*k,t,tc);set(engF.frequency,220+700*thr,t,.3);
+    set(wo.frequency,420+900*thr,t,.4);set(whG.gain,(.006+.018*thr)*k,t,tc);
+    set(wind.gain,clamp(V/90,0,1)*.08*k,t,tc);set(windF.frequency,300+V*6,t,.3);
+    set(rev.gain,f.rev?.55*k:0,t,f.rev?.4:.6);set(revF.frequency,f.rev?1300:500,t,.6);
+    set(sq.gain,f.on&&V>6?clamp(V/70,.05,.4)*.22*k:0,t,.12);
+    set(rum.gain,f.gear*clamp(V/90,0,1)*.35*k,t,tc);
+    if(prev&&!jump){
+      if(RP.tTD!==null&&RP.td&&prev.t<RP.tTD&&f.t>=RP.tTD){const g=clamp(-RP.td.vs/3,.3,1)*Math.max(k,.35);burst(t,.6,140,.9*g);burst(t,.25,420,.35*g);burst(t+.02,.55,1500,.3*g,'bandpass',4);burst(t+.06,.4,2300,.16*g,'bandpass',5)}
+      if(f.boom&&!prev.boom){burst(t,3.5,500,1);burst(t+.1,2.5,120,1)}
+      for(const r of REC.r)if(prev.t<r.t&&f.t>=r.t){burst(t,.07,3400,.09,'bandpass',1.4);burst(t+.02,.05,1900,.05,'bandpass',2);
+        stat.gain.setValueAtTime(.014,t+.05);statOff=t+r.d;stat.gain.setValueAtTime(0,statOff);burst(statOff,.07,3400,.07,'bandpass',1.4)}}
+    if(jump&&t<statOff){stat.gain.cancelScheduledValues(t);stat.gain.setValueAtTime(0,t);statOff=0}
+    prev=f}
+  return oc.startRendering()}
+async function rpxEncodeAudio(buf,ac,muxer){
+  let err=null;const enc=new AudioEncoder({output:(c,m)=>muxer.addAudioChunk(c,m),error:e=>{err=e}});enc.configure(ac.cfg);
+  const SR=buf.sampleRate,n=buf.length,L=buf.getChannelData(0),R=buf.getChannelData(1),step=4800;
+  for(let o=0;o<n&&!err;o+=step){const m=Math.min(step,n-o),d=new Float32Array(m*2);d.set(L.subarray(o,o+m),0);d.set(R.subarray(o,o+m),m);
+    const a=new AudioData({format:'f32-planar',sampleRate:SR,numberOfFrames:m,numberOfChannels:2,timestamp:Math.round(o/SR*1e6),data:d});enc.encode(a);a.close();
+    if(enc.encodeQueueSize>20)await new Promise(r=>setTimeout(r,0))}
+  await enc.flush();enc.close();if(err)throw err}
+// radio calls on screen at sim time t (in the highlights, only calls that began inside the current segment)
+function rpRadioAt(t){const s0=RP.hl?(RP.seg.find(s=>t>=s[0]-1e-6&&t<=s[1]+1e-6)||[t])[0]:-1e9;
+  return REC.r.filter(r=>r.t>=s0-1e-6&&r.t<=t&&t<=r.t+r.d+1.5).slice(-2)}
+function rpxRadio(x,W,H,u,port,bottom){
+  const L=rpRadioAt(RP.t);if(!L.length)return;const m=26*u,maxW=port?W-2*m:Math.min(W*.6,640*u),fs=15*u,lh=21*u,col={TWR:'#8ff5a8',APP:'#ffb94a',YOU:'#ff5ad9',OTH:'#93a6a2'};
+  const blocks=L.map(r=>{x.font=`600 ${Math.round(11*u)}px "B612 Mono",monospace`;const lab=RV[r.who].l,lw=x.measureText(lab).width+10*u;
+    x.font=`400 ${Math.round(fs)}px "B612",sans-serif`;const words=r.text.split(' '),lines=[''];
+    for(const w of words){const tt=(lines[lines.length-1]+' '+w).trim();if(x.measureText(tt).width>maxW-24*u-(lines.length===1?lw:0)&&lines[lines.length-1])lines.push(w);else lines[lines.length-1]=tt}
+    return {r,lab,lw,lines,h:lines.length*lh+12*u}});
+  let y=bottom;for(let i=blocks.length-1;i>=0;i--){const b=blocks[i];y-=b.h+6*u;
+    x.fillStyle='rgba(9,16,20,.84)';x.fillRect(m,y,maxW,b.h);x.fillStyle=col[b.r.who]||'#3a5058';x.fillRect(m,y,3*u,b.h);
+    x.font=`600 ${Math.round(11*u)}px "B612 Mono",monospace`;x.textAlign='left';x.fillStyle=col[b.r.who];x.fillText(b.lab,m+12*u,y+6*u+lh*.72);
+    x.font=`400 ${Math.round(fs)}px "B612",sans-serif`;x.fillStyle=b.r.who==='OTH'?'#c9d3cf':'#e9eee8';b.lines.forEach((l,j)=>x.fillText(l,m+12*u+(j===0?b.lw:0),y+6*u+lh*.72+j*lh))}}
+
 async function rpxRender(fmt,cv,onProg){
   if(!(await rpxLoad()))return {err:'nosup'};
-  const port=fmt==='port',W=port?720:1280,H=port?1280:720,FPS=30;const co=await rpxCodec(W,H);if(!co)return {err:'nosup'};
-  let card=null;try{const b=await reportCard();if(b)card=await createImageBitmap(b)}catch(e){}
+  const port=fmt==='port',W=port?720:1280,H=port?1280:720,FPS=30;const co=await rpxCodec(W,H);if(!co)return {err:'nosup'};const ac=await rpxACodec();
+  let card=null,cardBlob=null;try{cardBlob=await reportCard();if(cardBlob)card=await createImageBitmap(cardBlob)}catch(e){}
   cv.width=W;cv.height=H;const x=cv.getContext('2d');const snap=document.createElement('canvas');snap.width=W;snap.height=H;
-  const muxer=new Mp4Muxer.Muxer({target:new Mp4Muxer.ArrayBufferTarget(),video:{codec:co.m,width:W,height:H,frameRate:FPS},fastStart:'in-memory',firstTimestampBehavior:'offset'});
+  const muxer=new Mp4Muxer.Muxer({target:new Mp4Muxer.ArrayBufferTarget(),video:{codec:co.m,width:W,height:H,frameRate:FPS},...(ac?{audio:{codec:ac.m,numberOfChannels:2,sampleRate:48000}}:{}),fastStart:'in-memory',firstTimestampBehavior:'offset'});
   let encErr=null;const enc=new VideoEncoder({output:(c,meta)=>muxer.addVideoChunk(c,meta),error:e=>{encErr=e}});enc.configure(co.cfg);
   const keep={t:RP.t,play:RP.play,spd:RP.spd,cam:RP.cam,hl:RP.hl,view:CFG.view,pr:renderer.getPixelRatio(),zoom:CFG.zoom};
   RP.exp={W,H,port};RP.hl=true;RP.cam='dir';RP.spd=1;RP.t=rpStartT();RP.play=true;RP.finT=0;CFG.zoom=1;rpCut();
   if(RP.boom){RP.boom=false;ST.ended=null;clearFX();acModel.visible=true}
   renderer.setPixelRatio(1);renderer.setSize(W,H,false);camera.aspect=W/H;camera.updateProjectionMatrix();HW=W;HH=H;
-  const reel=rpDur(),hold=RP.end&&RP.end.crash?2.6:1.2,endS=3.6,total=Math.ceil((reel+hold+endS)*FPS);
-  let now=performance.now();last=now;let i=0,held=0,ok=true;
+  const reel=rpDur(),hold=RP.end&&RP.end.crash?2.6:1.2,endS=3.8,total=Math.ceil((reel+hold+endS)*FPS)+(ac?FPS*2:0);
+  // the frame for the video's poster: just before touchdown, the crash, or half way
+  const pT=RP.tTD!==null&&RP.seg.some(s=>RP.tTD-1>=s[0]&&RP.tTD-1<=s[1])?RP.tTD-1:RP.end&&RP.end.crash?RP.t1-1.5:rpFromReel(reel*.5);let poster=null;
+  let now=performance.now();last=now;let i=0,held=0,ok=true;const F=[];
   const put=async()=>{const vf=new VideoFrame(cv,{timestamp:Math.round(i*1e6/FPS),duration:Math.round(1e6/FPS)});enc.encode(vf,{keyFrame:i%(FPS*2)===0});vf.close();i++;
     if(i%3===0){onProg(i/total);await new Promise(r=>setTimeout(r,0))}while(enc.encodeQueueSize>6)await new Promise(r=>setTimeout(r,4))};
   try{
     while(!RPX.cancel&&!encErr){
-      now+=1000/FPS;frame(now,true);
+      now+=1000/FPS;const pt=RP.t;frame(now,true);F.push(rpxSample(RP.play?'reel':'hold'));
       x.drawImage(renderer.domElement,0,0,W,H);const el=i/FPS;rpxDraw(x,W,H,{intro:el<2.6?clamp((2.6-el)/.5,0,1):0});
+      if(!poster&&pt<pT&&RP.t>=pT)poster=await new Promise(r=>cv.toBlob(r,'image/jpeg',.86));
       await put();if(!RP.play){held++;if(held>=hold*FPS)break}}
     snap.getContext('2d').drawImage(renderer.domElement,0,0,W,H);
-    for(let k=0;k<endS*FPS&&!RPX.cancel&&!encErr;k++){rpxEnd(x,W,H,snap,card,clamp(k/(.45*FPS),0,1));await put()}
-    if(RPX.cancel||encErr){ok=false}else{await enc.flush();muxer.finalize()}
+    if(!poster)poster=await new Promise(r=>cv.toBlob(r,'image/jpeg',.86));
+    for(let k=0;k<endS*FPS&&!RPX.cancel&&!encErr;k++){rpxEnd(x,W,H,snap,card,clamp(k/(.45*FPS),0,1));F.push({ph:'end'});await put()}
+    if(RPX.cancel||encErr){ok=false}else{await enc.flush();
+      if(ac){onProg((i+FPS)/total);const buf=await rpxAudio(F,FPS);await rpxEncodeAudio(buf,ac,muxer)}
+      muxer.finalize()}
   }catch(e){console.error(e);encErr=e;ok=false}
   finally{try{enc.close()}catch(e){}
     RP.exp=null;renderer.setPixelRatio(keep.pr);resize();last=performance.now();CFG.zoom=keep.zoom;
     RP.hl=keep.hl;RP.cam=keep.cam;RP.spd=keep.spd;CFG.view=keep.view;RP.play=false;RP.boom=false;ST.ended=null;clearFX();acModel.visible=true;rpSeek(keep.t);rpBuildMarks();rpSync()}
   if(!ok)return RPX.cancel?{err:'cancel'}:{err:'fail'};
-  return {blob:new Blob([muxer.target.buffer],{type:'video/mp4'}),secs:Math.round(i/FPS)}}
+  return {blob:new Blob([muxer.target.buffer],{type:'video/mp4'}),secs:Math.round(i/FPS),poster,card:cardBlob,W,H,sound:!!ac}}
 
 function rpxText(){
   rpEl('rpxH').textContent=rxT('h');rpEl('rpxSub').textContent=rxT('sub')(Math.round(rpDur()+5));
   for(const k of['land','port']){rpEl('rpxF_'+k).textContent=rxT(k);rpEl('rpxI_'+k).textContent=rxT(k+'I')}
   rpEl('rpxMakeL').textContent=rxT('make');rpEl('rpxDlL').textContent=rxT('dl');rpEl('rpxShare').textContent=rxT('share');rpEl('rpxCopy').textContent=rxT('copy');
-  rpEl('rpxCancel').textContent=rxT('cancel');rpEl('rpxUpH').textContent=rxT('up');rpEl('rpxUpNote').textContent=rxT('upNote')}
+  rpEl('rpxCancel').textContent=rxT('cancel');rpEl('rpxUpH').textContent=rxT('up');rpEl('rpxUpNote').textContent=rxT('upNote');
+  rpEl('rpxLinkH').textContent=rxT('linkH');rpEl('rpxLinkNote').textContent=rxT('linkNote');rpEl('rpxLinkBtn').textContent=rxT('getLink');rpEl('rpxUrlCopy').textContent=rxT('copy').split(' ')[0]}
 function rpxShow(){const c=RPX.cache[RPX.fmt],v=rpEl('rpxVid'),busy=RPX.busy;
   rpEl('rpxCv').hidden=!busy;v.hidden=!c||busy;rpEl('rpxGo').hidden=!!c||busy;rpEl('rpxDone').hidden=!c||busy;rpEl('rpxUp').hidden=!c||busy;rpEl('rpxProg').hidden=!busy;
   rpEl('rpxStage').classList.toggle('port',RPX.fmt==='port');rpEl('rpxStage').hidden=!c&&!busy;
   for(const r of document.querySelectorAll('input[name=rpxf]'))r.disabled=busy;
   if(c&&v.dataset.u!==c.url){v.src=c.url;v.dataset.u=c.url;v.play().catch(()=>{})}else if(!c){v.pause();v.removeAttribute('src');v.dataset.u='';v.load()}
-  rpEl('rpxShare').hidden=!(c&&navigator.canShare&&navigator.canShare({files:[c.file]}))}
+  rpEl('rpxShare').hidden=!(c&&navigator.canShare&&navigator.canShare({files:[c.file]}));rpxLinkShow()}
 function rpxOpen(){if(mode!=='replay')return;rpTouch();RP.play=false;rpSync();rpxText();rpEl('rpxMsg').hidden=true;rpEl('rpx').hidden=false;
   for(const r of document.querySelectorAll('input[name=rpxf]'))r.checked=r.value===RPX.fmt;rpxShow();(rpEl(RPX.cache[RPX.fmt]?'rpxDl':'rpxMake')).focus()}
 function rpxClose(force){if(RPX.busy&&!force)return;if(RPX.busy)RPX.cancel=true;const v=rpEl('rpxVid');v.pause();rpEl('rpx').hidden=true}
@@ -4729,10 +4833,35 @@ async function rpxMake(){
   const bar=rpEl('rpxBar'),pct=rpEl('rpxPct');const prog=p=>{bar.style.width=(100*clamp(p,0,1)).toFixed(1)+'%';pct.textContent=rxT('rendering')+' '+Math.round(100*clamp(p,0,1))+'%'};prog(0);
   let r;try{r=await rpxRender(fmt,rpEl('rpxCv'),prog)}catch(e){console.error(e);r={err:'fail'}}
   RPX.busy=false;
-  if(r.blob){const name=rpxName(fmt);RPX.cache[fmt]={blob:r.blob,url:URL.createObjectURL(r.blob),name,file:new File([r.blob],name,{type:'video/mp4'})};
-    track('video_export',{format:fmt==='port'?'portrait':'landscape',video_seconds:r.secs,render_seconds:Math.round((performance.now()-t0)/1000)})}
+  if(r.blob){const name=rpxName(fmt);RPX.cache[fmt]={blob:r.blob,url:URL.createObjectURL(r.blob),name,file:new File([r.blob],name,{type:'video/mp4'}),poster:r.poster,card:r.card,W:r.W,H:r.H,secs:r.secs,link:null};
+    track('video_export',{format:fmt==='port'?'portrait':'landscape',video_seconds:r.secs,sound:r.sound,render_seconds:Math.round((performance.now()-t0)/1000)})}
   else if(r.err!=='cancel'){const m=rpEl('rpxMsg');m.textContent=rxT(r.err==='nosup'?'nosup':'fail');m.hidden=false;track('video_export_fail',{reason:r.err})}
   rpxShow();if(r.blob)rpEl('rpxDl').focus()}
+
+/* share links: upload the finished video to the Fly Kai Tak worker (R2), which serves flykaitak's /r/<id> page with Open Graph video tags.
+   Only offered when the worker says replays are switched on (GET /replays). */
+const RPXL={ok:null,busy:false};
+async function rpxLinkCheck(){if(RPXL.ok!==null)return RPXL.ok;const api=window.FKT_API;if(!api){RPXL.ok=false;return false}
+  try{const r=await fetch(api+'/replays');const j=await r.json();RPXL.ok=!!(j&&j.ok)}catch(e){RPXL.ok=false}return RPXL.ok}
+function rpxLinkShow(){const c=RPX.cache[RPX.fmt];const box=rpEl('rpxLink');
+  if(!c||RPX.busy){box.hidden=true;return}
+  if(RPXL.ok===null){box.hidden=true;rpxLinkCheck().then(()=>rpxLinkShow());return}
+  box.hidden=!RPXL.ok;if(!RPXL.ok)return;
+  const has=!!c.link;rpEl('rpxLinkGo').hidden=has||RPXL.busy;rpEl('rpxLinkProg').hidden=!RPXL.busy;rpEl('rpxUrlBox').hidden=!has;rpEl('rpxSl').hidden=!has;
+  if(has&&rpEl('rpxUrl').value!==c.link){rpEl('rpxUrl').value=c.link;const T=shareText(),q=encodeURIComponent,u=c.link,sl=rpEl('rpxSl');sl.innerHTML='';
+    for(const [m,n,h] of [['x','X','https://twitter.com/intent/tweet?text='+q(T)+'&url='+q(u)],['facebook','Facebook','https://www.facebook.com/sharer/sharer.php?u='+q(u)],
+      ['whatsapp','WhatsApp','https://wa.me/?text='+q(T+' '+u)],['reddit','Reddit','https://www.reddit.com/submit?url='+q(u)+'&title='+q(T)],['threads','Threads','https://www.threads.net/intent/post?text='+q(T+' '+u)]]){
+      const a=document.createElement('a');a.href=h;a.target='_blank';a.rel='noopener noreferrer';a.textContent=n;a.dataset.m=m;sl.appendChild(a)}
+    if(navigator.share){const b=document.createElement('button');b.type='button';b.textContent=rxT('share');b.dataset.m='native';sl.appendChild(b)}}}
+function rpxLinkUp(){const c=RPX.cache[RPX.fmt],api=window.FKT_API;if(!c||c.link||RPXL.busy||!api)return;
+  RPXL.busy=true;rpEl('rpxMsg').hidden=true;rpxLinkShow();const bar=rpEl('rpxLinkBar'),pct=rpEl('rpxLinkPct');
+  const r=RES||{},fd=new FormData();fd.append('video',c.blob,'replay.mp4');if(c.poster)fd.append('poster',c.poster,'poster.jpg');if(c.card)fd.append('card',c.card,'card.png');
+  fd.append('meta',JSON.stringify({kind:r.kind,grade:r.grade,score:r.pts,title:r.title,eyebrow:r.eyebrow,ac:ST.ac.short,route:rpxCtx().split(' · ').slice(1).join(' · '),w:c.W,h:c.H,secs:c.secs,lang:LANG}));
+  const x=new XMLHttpRequest();x.open('POST',api+'/replays');
+  x.upload.onprogress=e=>{if(e.lengthComputable){const p=e.loaded/e.total;bar.style.width=(100*p).toFixed(1)+'%';pct.textContent=rxT('uploading')+' '+Math.round(100*p)+'%'}};
+  const done=(ok,err)=>{RPXL.busy=false;if(!ok){const m=rpEl('rpxMsg');m.textContent=rxT(err===429?'linkBusy':'linkFail');m.hidden=false;track('replay_link_fail',{status:err||0})}rpxLinkShow();if(ok)rpEl('rpxUrlCopy').focus()};
+  x.onload=()=>{let j=null;try{j=JSON.parse(x.responseText)}catch(e){}if(x.status===200&&j&&j.url){c.link=j.url;track('replay_link',{format:c.H>c.W?'portrait':'landscape',video_seconds:c.secs});done(true)}else done(false,x.status)};
+  x.onerror=()=>done(false,0);bar.style.width='0%';pct.textContent=rxT('uploading')+' 0%';x.send(fd)}
 function rpxFlash(b,t){const o=b.textContent;b.textContent=t;b.classList.add('done');setTimeout(()=>{b.textContent=o;b.classList.remove('done')},2000)}
 const rpxTrack=m=>{try{track('share',{method:m,content_type:'replay_video',result:RES?RES.kind:'',grade:RES?RES.grade:''})}catch(e){}};
 
@@ -4756,6 +4885,9 @@ rpEl('rpxFmt').addEventListener('change',e=>{if(e.target.name==='rpxf'&&!RPX.bus
 rpEl('rpxDl').addEventListener('click',()=>{const c=RPX.cache[RPX.fmt];if(!c)return;const a=document.createElement('a');a.href=c.url;a.download=c.name;document.body.appendChild(a);a.click();a.remove();rpxTrack('video_download');rpxFlash(rpEl('rpxDlL'),rxT('saved'))});
 rpEl('rpxShare').addEventListener('click',async()=>{const c=RPX.cache[RPX.fmt];if(!c)return;try{await navigator.share({files:[c.file],title:'Fly Kai Tak',text:rpxCaption()});rpxTrack('video_native')}catch(e){}});
 rpEl('rpxCopy').addEventListener('click',async e=>{const b=e.currentTarget,t=rpxCaption();try{await navigator.clipboard.writeText(t);rpxTrack('video_copy');rpxFlash(b,rxT('copied'))}catch(_){window.prompt(rxT('copy'),t)}});
+rpEl('rpxLinkBtn').addEventListener('click',rpxLinkUp);
+rpEl('rpxUrlCopy').addEventListener('click',async e=>{const b=e.currentTarget,u=rpEl('rpxUrl').value;try{await navigator.clipboard.writeText(u);rpxTrack('link_copy');rpxFlash(b,rxT('copied'))}catch(_){rpEl('rpxUrl').select()}});
+rpEl('rpxSl').addEventListener('click',async e=>{const a=e.target.closest('[data-m]');if(!a)return;const c=RPX.cache[RPX.fmt];if(a.dataset.m==='native'){try{await navigator.share({title:'Fly Kai Tak',text:shareText(),url:c.link});rpxTrack('link_native')}catch(_){}}else rpxTrack('link_'+a.dataset.m)});
 rpEl('rpxUp').addEventListener('click',e=>{const a=e.target.closest('a[data-m]');if(a)rpxTrack('video_upload_'+a.dataset.m)});
 window.addEventListener('keydown',e=>{if(mode!=='replay')return;
   if(!rpEl('rpx').hidden){if(e.code==='Escape'){e.preventDefault();if(RPX.busy)RPX.cancel=true;else rpxClose()}return}
@@ -4919,6 +5051,7 @@ function radioSay(who,text){
 }
 function radioShow(m){
   const el=document.getElementById('radio');el.hidden=false;
+  if(mode==='fly')REC.r.push({t:ST.t,who:m.who,text:m.text,d:m.t});
   const d=document.createElement('div');d.className='rl '+m.who;const b=document.createElement('b');b.textContent=RV[m.who].l;d.append(b,document.createTextNode(m.text));el.appendChild(d);
   RAD.lines.push({el:d,t:14});while(RAD.lines.length>4)RAD.lines.shift().el.remove();
   if(synth&&CFG.sound&&!CFG.tour){try{const u=new SpeechSynthesisUtterance(spokenize(m.text));const v=RV[m.who];if(voice)u.voice=voice;u.rate=v.r;u.pitch=v.p;u.volume=v.v;synth.speak(u)}catch(e){}}
@@ -6921,7 +7054,7 @@ function showSetup(){tourCapOff();replayHide();hsRenderHome();setMore(false);try
 function startFlight(){
   setMore(false);readSetup();setRunway(CFG.lesson?'13':CFG.rwy==='31'?'31':'13');flightEnd('restart');clearFX();mode='fly';paused=false;SEED=window.__capture?1998:1998+Math.floor(Math.random()*1000);
   for(const id of['setup','result'])document.getElementById(id).hidden=true;for(const id of['bar','ctl','map'])document.getElementById(id).hidden=false;
-  resetFlight();ST.attempted=false;flightBegin();radioReset();HIST.length=0;REC.f.length=0;replayHide();spawnAircraftModel();FOCUS=null;
+  resetFlight();ST.attempted=false;flightBegin();radioReset();HIST.length=0;REC.f.length=0;REC.r.length=0;replayHide();spawnAircraftModel();FOCUS=null;
   if(CFG.game==='watch')buildAISchedule(CFG.phase??0,true,{n:CFG.concN??(CFG.conc?-1:2)});else if(CFG.game==='free')buildAISchedule(-100,false);else buildAI();
   if(CFG.tour){ST.t=penTour().t0}   // the tour starts a few seconds before the rotors turn
   tourCapOff();applyEnvironment();setWalled(CFG.walled);setWreck(CFG.wreck);hoops.visible=CFG.guide&&CFG.game==='approach';wxSel.value=CFG.wx;
