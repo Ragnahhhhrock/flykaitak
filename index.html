@@ -357,6 +357,44 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
 .rp-done{border-color:var(--jade-bright)}
 @media (max-width:640px){.rp-bar{flex-wrap:wrap;gap:8px}.rp-track{order:-1;flex:1 1 100%}.rp-time{margin-right:auto}}
 @media (prefers-reduced-motion:reduce){.rp-rec{animation:none}}
+.rp-mode[aria-pressed=true]{border-color:var(--checker);color:var(--paper)}
+.rp-vid{display:inline-flex;align-items:center;gap:7px}
+.rp-vid svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+/* replay video sheet */
+.rpx{position:fixed;inset:0;z-index:6;display:flex;background:rgba(6,10,12,.9);padding:16px;overflow:auto}
+.rpx[hidden]{display:none!important}
+.rpx-card{margin:auto;width:min(560px,100%);background:var(--panel-2);border:1px solid var(--line-2);border-radius:4px;overflow:hidden}
+.rpx-body{padding:18px 22px 22px;display:grid;gap:14px}
+.rpx-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.rpx-head h2{margin:0;font-size:24px;line-height:1.15}
+.rpx-x{width:38px;height:38px;padding:0;font-size:14px}
+.rpx-sub{margin:0;color:var(--muted);font-size:14px;line-height:1.5}
+.rpx-fmt{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.rpx-fmt label{display:flex;gap:10px;align-items:center;border:1px solid var(--line-2);border-radius:3px;padding:10px 12px;cursor:pointer;background:var(--ink)}
+.rpx-fmt label:has(input:checked){border-color:var(--checker);box-shadow:inset 3px 0 0 var(--checker)}
+.rpx-fmt label:has(input:focus-visible){outline:2px solid var(--checker);outline-offset:2px}
+.rpx-fmt input{position:absolute;opacity:0;pointer-events:none}
+.rpx-fmt b{display:block;font-size:13px;letter-spacing:.04em}
+.rpx-fmt i{display:block;font-style:normal;color:var(--muted);font-size:11.5px;margin-top:3px}
+.rpx-ico{flex:none;border:2px solid var(--paper);border-radius:2px}.rpx-ico.land{width:26px;height:15px}.rpx-ico.port{width:15px;height:26px}
+.rpx-stage{display:grid;place-items:center;background:#000;border:1px solid var(--line);border-radius:3px;overflow:hidden}
+.rpx-stage[hidden]{display:none}
+.rpx-stage canvas,.rpx-stage video{display:block;width:100%;aspect-ratio:16/9;max-height:52vh;object-fit:contain;background:#000}
+.rpx-stage.port canvas,.rpx-stage.port video{aspect-ratio:9/16;width:auto;height:min(52vh,560px)}
+.rpx-stage [hidden]{display:none}
+.rpx-prog{display:flex;align-items:center;gap:10px;font-family:var(--f-num);font-size:12px;color:var(--muted)}
+.rpx-prog[hidden]{display:none}
+.rpx-bar{flex:1;height:6px;background:var(--line);border-radius:3px;overflow:hidden}.rpx-bar i{display:block;height:100%;width:0;background:var(--checker)}
+.rpx-msg{margin:0;color:var(--amber);font-size:13px}
+.rpx-actions{display:flex;gap:8px;flex-wrap:wrap}.rpx-actions[hidden]{display:none}
+.rpx-actions .go{flex:1;justify-content:center}.rpx-actions .btn{padding:13px 14px}
+.rpx-actions .done{border-color:var(--jade-bright);color:var(--phosphor)}
+.rpx-up{border-top:1px solid var(--line);padding-top:12px;display:grid;gap:8px}.rpx-up[hidden]{display:none}
+.rpx-up p{margin:0;font-size:12.5px;color:var(--muted)}.rpx-up p b{color:var(--text);font-weight:400;letter-spacing:.04em}
+.rpx-up div{display:flex;flex-wrap:wrap;gap:8px}
+.rpx-up a{display:inline-flex;align-items:center;height:36px;padding:0 12px;border:1px solid var(--line-2);border-radius:3px;color:var(--text);text-decoration:none;font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+.rpx-up a:hover{border-color:var(--paper)}.rpx-up a:focus-visible,.rpx :focus-visible{outline:2px solid var(--checker);outline-offset:2px}
+@media (max-width:480px){.rpx-fmt{grid-template-columns:1fr}.rpx-body{padding:16px}}
 .res-share h3{margin:0;font-family:var(--f-num);font-weight:400;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
 .res-share ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
 .res-share li[hidden]{display:none}
@@ -533,7 +571,7 @@ body.bigmap #radio{top:calc(env(safe-area-inset-top,0px) + 396px)}
       <section class="homeblog" id="homeBlog" aria-labelledby="homeBlogH">
         <h3 id="homeBlogH"><span class="l-en">Latest update</span><span class="l-zh" lang="zh-HK">最新消息</span></h3>
         <ul>
-          <li><a href="/blog/a-tidier-home-screen/" class="hb-top"><span class="hb-thumb"><img src="/assets/blog/og/a-tidier-home-screen.jpg" width="1200" height="630" loading="lazy" alt=""></span><span class="hb-txt"><span class="hb-meta"><time datetime="2026-10-11"><span class="l-en">11 Oct</span><span class="l-zh" lang="zh-HK">10月11日</span></time> &middot; <span class="l-en">Site &amp; Language</span><span class="l-zh" lang="zh-HK">網站同語言</span></span><b><span class="l-en">A tidier home screen</span><span class="l-zh" lang="zh-HK">主畫面執靚咗</span></b></span></a></li>
+          <li><a href="/blog/replay-highlights-video/" class="hb-top"><span class="hb-thumb"><img src="/assets/blog/og/replay-highlights-video.jpg" width="1200" height="630" loading="lazy" alt=""></span><span class="hb-txt"><span class="hb-meta"><time datetime="2026-10-11"><span class="l-en">11 Oct</span><span class="l-zh" lang="zh-HK">10月11日</span></time> &middot; <span class="l-en">Scores &amp; Sharing</span><span class="l-zh" lang="zh-HK">分數同分享</span></span><b><span class="l-en">Highlights after every flight, and a video to share</span><span class="l-zh" lang="zh-HK">每次飛完都有精華片段，仲可以存做影片分享</span></b></span></a></li>
         </ul>
         <a class="hb-all" href="/blog/"><span class="l-en">All updates on the blog</span><span class="l-zh" lang="zh-HK">網誌睇晒所有更新</span> <span aria-hidden="true">&rarr;</span></a>
       </section>
@@ -680,6 +718,7 @@ body.bigmap #radio{top:calc(env(safe-area-inset-top,0px) + 396px)}
           <li><a data-m="whatsapp" id="shWa" target="_blank" rel="noopener noreferrer">WhatsApp</a></li>
           <li><a data-m="threads" id="shTh" target="_blank" rel="noopener noreferrer">Threads</a></li>
           <li><a data-m="email" id="shMail"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="m22 6-10 7L2 6"/></svg>Email</a></li>
+          <li hidden id="shVidLi"><button type="button" id="shVid"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="13" height="12" rx="1.5"/><path d="m16 10 5-3v10l-5-3"/></svg><span>Video</span></button></li>
           <li><button type="button" id="shImg"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v3h16v-3"/></svg><span>Save image</span></button></li>
           <li><button type="button" id="shCopy"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><span>Copy</span></button></li>
           <li hidden id="shNatLi"><button type="button" id="shNat"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg><span>Share&hellip;</span></button></li>
@@ -696,9 +735,35 @@ body.bigmap #radio{top:calc(env(safe-area-inset-top,0px) + 396px)}
     <button class="btn rp-play" id="rpPlay" type="button" aria-label="Pause"><svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3v14H7zM14 5h3v14h-3z"/></svg><svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></button>
     <span class="rp-time" id="rpTime">0:00 / 0:00</span>
     <div class="rp-track"><div class="rp-marks" id="rpMarks"></div><input type="range" id="rpSeek" min="0" max="1000" value="0" aria-label="Replay position"></div>
+    <button class="btn rp-mode" id="rpMode" type="button" aria-pressed="true">Highlights</button>
     <button class="btn rp-spd" id="rpSpd" type="button" aria-label="Replay speed">1×</button>
     <select id="rpCam" aria-label="Replay camera"><option value="dir">Director</option><option value="chase">Chase</option><option value="cockpit">Cockpit</option><option value="tower">Tower</option></select>
-    <button class="btn rp-done" id="rpExit" type="button">Done</button>
+    <button class="btn rp-vid" id="rpVid" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v3h16v-3"/></svg><span id="rpVidL">Save video</span></button>
+    <button class="btn rp-done" id="rpExit" type="button">Report card</button>
+  </div>
+</div>
+
+<div id="rpx" class="rpx" hidden role="dialog" aria-modal="true" aria-labelledby="rpxH">
+  <div class="rpx-card">
+    <div class="checkband" aria-hidden="true"></div>
+    <div class="rpx-body">
+      <div class="rpx-head"><h2 id="rpxH">Save your replay</h2><button class="btn rpx-x" id="rpxClose" type="button" aria-label="Close">✕</button></div>
+      <p class="rpx-sub" id="rpxSub"></p>
+      <div class="rpx-fmt" id="rpxFmt" role="radiogroup" aria-label="Video format">
+        <label><input type="radio" name="rpxf" value="land" checked><span class="rpx-ico land" aria-hidden="true"></span><span><b id="rpxF_land">Landscape 16:9</b><i id="rpxI_land">YouTube, X, Facebook</i></span></label>
+        <label><input type="radio" name="rpxf" value="port"><span class="rpx-ico port" aria-hidden="true"></span><span><b id="rpxF_port">Portrait 9:16</b><i id="rpxI_port">Reels, Shorts, TikTok</i></span></label>
+      </div>
+      <div class="rpx-stage" id="rpxStage" hidden><canvas id="rpxCv"></canvas><video id="rpxVid" playsinline muted loop controls hidden></video></div>
+      <div class="rpx-prog" id="rpxProg" hidden><div class="rpx-bar"><i id="rpxBar"></i></div><span id="rpxPct">0%</span><button class="btn" id="rpxCancel" type="button">Cancel</button></div>
+      <p class="rpx-msg" id="rpxMsg" hidden></p>
+      <div class="rpx-actions" id="rpxGo"><button class="go" id="rpxMake" type="button"><span id="rpxMakeL">Make video</span></button></div>
+      <div class="rpx-actions" id="rpxDone" hidden>
+        <button class="go" id="rpxDl" type="button"><span id="rpxDlL">Download MP4</span></button>
+        <button class="btn" id="rpxShare" type="button" hidden>Share…</button>
+        <button class="btn" id="rpxCopy" type="button">Copy caption</button>
+      </div>
+      <div class="rpx-up" id="rpxUp" hidden><p><b id="rpxUpH">Post it.</b> <span id="rpxUpNote"></span></p><div><a data-m="youtube" href="https://www.youtube.com/upload" target="_blank" rel="noopener noreferrer">YouTube</a><a data-m="tiktok" href="https://www.tiktok.com/upload" target="_blank" rel="noopener noreferrer">TikTok</a><a data-m="instagram" href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer">Instagram</a><a data-m="facebook" href="https://www.facebook.com/" target="_blank" rel="noopener noreferrer">Facebook</a><a data-m="x" href="https://x.com/compose/post" target="_blank" rel="noopener noreferrer">X</a></div></div>
+    </div>
   </div>
 </div>
 
@@ -4418,10 +4483,10 @@ function recAt(t){const f=REC.f,n=f.length;if(!n)return null;if(t<=f[0][0])retur
   for(let i=0;i<11;i++)o[i]=a[i]+(b[i]-a[i])*u;o[5]=a[5]+angDiff(b[5],a[5])*u;o[6]=a[6]+angDiff(b[6],a[6])*u;return o}
 function recOK(){return REC.f.length>=30}
 
-const RP={t:0,t0:0,t1:0,play:true,spd:1,cam:'dir',shots:[],marks:[],cur:null,end:null,td:null,tTD:null,boom:false,view:'chase',lastT:0};
-const RP_TXT={en:{watch:'Watch replay',tag:'Replay',done:'Done',dir:'Director',chase:'Chase',cockpit:'Cockpit',tower:'Tower',
+const RP={t:0,t0:0,t1:0,play:true,spd:1,cam:'dir',shots:[],marks:[],seg:[],hl:true,auto:false,touched:false,finT:0,exp:null,cur:null,end:null,td:null,tTD:null,boom:false,view:'chase',lastT:0};
+const RP_TXT={en:{watch:'Watch replay',tag:'Replay',done:'Report card',hl:'Highlights',full:'Full flight',video:'Save video',dir:'Director',chase:'Chase',cockpit:'Cockpit',tower:'Tower',
     lo:'Lift-off',chk:'Checkerboard',turn:'Turn over Kowloon City',td:'Touchdown',crash:'Crash',missed:'Go-around',stop:'Stopped',play:'Play',pause:'Pause'},
-  zh:{watch:'重溫飛行',tag:'重播',done:'完成',dir:'導演鏡頭',chase:'追蹤',cockpit:'駕駛艙',tower:'塔台',
+  zh:{watch:'重溫飛行',tag:'重播',done:'成績表',hl:'精華',full:'全程',video:'儲存影片',dir:'導演鏡頭',chase:'追蹤',cockpit:'駕駛艙',tower:'塔台',
     lo:'離地',chk:'格仔山',turn:'九龍城上空轉彎',td:'著陸',crash:'墜毀',missed:'復飛',stop:'停定',play:'播放',pause:'暫停'}};
 const rpT=k=>(RP_TXT[LANG]||RP_TXT.en)[k];
 
@@ -4480,69 +4545,226 @@ function rpUse(sh){
   if(!sh)return;const v=sh.k==='fly'?'chase':sh.k==='checker'||sh.k==='street'?(SPOTS[sh.k]?sh.k:'chase'):sh.k==='tower'&&!ST.tower?'chase':sh.k;
   CFG.view=v;look.yaw=look.pitch=0;look.dist=sh.dist||1;look.orbitYaw=sh.yaw||0;look.orbitPitch=sh.pitch!==undefined?sh.pitch:.18;camera.userData.snap=true}
 function replayCamera(dt){
-  if(RP.cam!=='dir'){updateCamera(dt);return}
-  const sh=rpShot(RP.t);if(sh!==RP.cur){RP.cur=sh;rpUse(sh)}
-  if(sh&&sh.k==='fly'&&sh.cp){const s=ST,A=s.ac;camera.position.set(sh.cp[0],sh.cp[1],sh.cp[2]);camera.lookAt(s.x,s.y+A.cy,s.z);
-    const d=camera.position.distanceTo(_v.set(s.x,s.y,s.z));camera.fov=clamp(2*Math.atan(A.span*1.25/Math.max(d,1))*R2D,5,64);camera.near=1;camera.updateProjectionMatrix()}
-  else updateCamera(dt)}
+  if(RP.cam!=='dir')updateCamera(dt);
+  else{const sh=rpShot(RP.t);if(sh!==RP.cur){RP.cur=sh;rpUse(sh)}
+    if(sh&&sh.k==='fly'&&sh.cp){const s=ST,A=s.ac;camera.position.set(sh.cp[0],sh.cp[1],sh.cp[2]);camera.lookAt(s.x,s.y+A.cy,s.z);
+      const d=camera.position.distanceTo(_v.set(s.x,s.y,s.z));camera.fov=clamp(2*Math.atan(A.span*1.25/Math.max(d,1))*R2D,5,64);camera.near=1;camera.updateProjectionMatrix()}
+    else updateCamera(dt)}
+  // a portrait video: widen the vertical field of view so the wings still fit across the narrow frame
+  if(RP.exp&&RP.exp.port){camera.fov=Math.min(100,2*Math.atan(Math.tan(camera.fov*D2R/2)*1.75)*R2D);camera.updateProjectionMatrix()}}
+
+/* Highlights: the replay opens on a cut of the best moments (the opening seconds, lift-off, the checkerboard and turn,
+   touchdown, the crash). Playback jumps from one segment to the next; Full flight plays all of it. */
+function rpSegs(){
+  const t0=RP.t0,t1=RP.t1,S=[];const add=(a,b)=>{a=Math.max(t0,a);b=Math.min(t1,b);if(b-a>.5)S.push([a,b])};
+  if(RP.tLO!==null)add(RP.tLO-7,RP.tLO+6);else add(t0,t0+5);
+  if(RP.tChk!==null)add(RP.tChk-9,RP.tChk+14);
+  if(RP.tTD!==null)add(RP.tTD-9,RP.tTD+9);
+  const e=RP.end;if(e&&(e.crash||e.missed))add(t1-9,t1);
+  if(S.length<2||S.reduce((a,s)=>a+s[1]-s[0],0)<14)add(t1-20,t1);   // nothing much found: the last 20 seconds as well
+  S.sort((a,b)=>a[0]-b[0]);const M=[];for(const s of S){const l=M[M.length-1];if(l&&s[0]<=l[1]+1.5)l[1]=Math.max(l[1],s[1]);else M.push(s.slice())}
+  return M}
+function rpDur(){return RP.hl?RP.seg.reduce((a,s)=>a+s[1]-s[0],0):RP.t1-RP.t0}
+function rpToReel(t){if(!RP.hl)return t-RP.t0;let r=0;for(const s of RP.seg){if(t<s[0])return r;if(t<=s[1])return r+t-s[0];r+=s[1]-s[0]}return r}
+function rpFromReel(r){if(!RP.hl)return RP.t0+clamp(r,0,RP.t1-RP.t0);r=Math.max(0,r);for(const s of RP.seg){const d=s[1]-s[0];if(r<=d)return s[0]+r;r-=d}return RP.seg[RP.seg.length-1][1]}
+function rpStartT(){return RP.hl?RP.seg[0][0]:RP.t0}
+function rpEndT(){return RP.hl?RP.seg[RP.seg.length-1][1]:RP.t1}
+function rpCut(){RP.cur=null;camera.userData.snap=true}
 
 function replayTick(dt){
-  if(RP.play){const pt=RP.t;RP.t=Math.min(RP.t1,RP.t+dt*RP.spd);
-    if(RP.tTD!==null&&pt<RP.tTD&&RP.t>=RP.tTD&&RP.td)sfx.thump(clamp(-RP.td.vs/3,.3,1));
-    if(RP.t>=RP.t1){RP.play=false;rpSync()}}
-  rpApply(RP.t);rpHud()}
-function rpSound(){const s=ST,on=s.onGround&&!s.ended,rev=on&&s.throttle<.12&&s.V>30*KT,live=RP.play&&!s.ended;
+  if(RP.play){const pt=RP.t,E=rpEndT();let t=pt+dt*RP.spd,jump=false;
+    if(RP.hl){const k=RP.seg.findIndex(s=>pt<s[1]-1e-6);
+      if(k<0)t=E;else{const s=RP.seg[k];if(pt<s[0]-1e-6){t=s[0];jump=true}else if(t>=s[1]&&k+1<RP.seg.length){t=RP.seg[k+1][0];jump=true}}}
+    RP.t=Math.min(E,t);if(jump)rpCut();
+    if(!jump&&RP.tTD!==null&&pt<RP.tTD&&RP.t>=RP.tTD&&RP.td&&!RP.exp)sfx.thump(clamp(-RP.td.vs/3,.3,1));
+    if(RP.t>=E-1e-6){RP.play=false;RP.finT=performance.now();rpSync()}}
+  rpApply(RP.t);if(!RP.exp)rpHud();
+  // auto-played highlights: back to the report card a moment after they finish, unless the pilot took over the controls
+  if(RP.auto&&!RP.touched&&!RP.play&&RP.finT&&!RP.exp&&rpEl('rpx').hidden&&performance.now()-RP.finT>2500)replayStop()}
+function rpSound(){if(RP.exp){sfx.update(0,0,0,false,{});return}const s=ST,on=s.onGround&&!s.ended,rev=on&&s.throttle<.12&&s.V>30*KT,live=RP.play&&!s.ended;
   sfx.update(live?s.thrust/s.ac.thr+(rev?.35:0):0,live?s.V:0,WX[CFG.wx].rain,CFG.view==='cockpit',{rev:live&&rev,brake:live&&on&&s.V>6?clamp(s.V/70,.05,.4)*.22:0,gearDrag:live?s.gearPos*clamp(s.V/90,0,1):0})}
 
 const rpEl=id=>document.getElementById(id);
+function rpCapText(){let cap='';for(const m of RP.marks)if(RP.t>=m.t-1.5&&RP.t<m.t+3.5)cap=rpT(m.k)+(m.sub?' · '+m.sub:'');
+  if(RP.end&&RP.t>=rpEndT()-.05&&RP.end.landed)cap=(LANG!=='zh'&&RES&&RES.title)||rpT('stop');return cap}
 function rpHud(){
-  const s=ST,dur=RP.t1-RP.t0,el=RP.t-RP.t0;
+  const s=ST,dur=rpDur(),el=rpToReel(RP.t);
   if(Math.abs(el-RP.lastT)>.05||!RP.play){RP.lastT=el;rpEl('rpTime').textContent=fmtT(el)+' / '+fmtT(dur);if(document.activeElement!==rpEl('rpSeek'))rpEl('rpSeek').value=Math.round(1000*el/Math.max(.1,dur))}
   rpEl('rpRead').textContent=Math.round(Math.max(0,s.y-RWY.elev)/FT).toLocaleString('en')+' ft · '+Math.round(s.V/KT)+' kt';
-  let cap='';for(const m of RP.marks)if(RP.t>=m.t-1.5&&RP.t<m.t+3.5)cap=rpT(m.k)+(m.sub?' · '+m.sub:'');
-  if(RP.end&&RP.t>=RP.t1-.05&&!RP.end.crash&&RP.end.landed)cap=(LANG!=='zh'&&RES&&RES.title)||rpT('stop');
-  const c=rpEl('rpCap');if(c.textContent!==cap){c.textContent=cap;c.hidden=!cap}}
+  const cap=rpCapText(),c=rpEl('rpCap');if(c.textContent!==cap){c.textContent=cap;c.hidden=!cap}}
 function rpSync(){
   const b=rpEl('rpPlay');b.setAttribute('aria-label',RP.play?rpT('pause'):rpT('play'));b.classList.toggle('paused',!RP.play);
-  rpEl('rpSpd').textContent=RP.spd+'×';rpEl('rpCam').value=RP.cam}
+  rpEl('rpSpd').textContent=RP.spd+'×';rpEl('rpCam').value=RP.cam;
+  const m=rpEl('rpMode');m.textContent=RP.hl?rpT('hl'):rpT('full');m.setAttribute('aria-pressed',RP.hl?'true':'false')}
+function rpBuildMarks(){
+  const mk=rpEl('rpMarks'),dur=Math.max(.1,rpDur());mk.innerHTML='';
+  for(const m of RP.marks){if(RP.hl&&!RP.seg.some(s=>m.t>=s[0]-.01&&m.t<=s[1]+.01))continue;
+    const b=document.createElement('button');b.type='button';b.className='rp-mark'+(m.k==='crash'?' bad':'');b.style.left=(100*clamp(rpToReel(m.t)/dur,0,1))+'%';
+    b.title=b.ariaLabel=rpT(m.k)+(m.sub?' · '+m.sub:'');b.addEventListener('click',()=>{RP.touched=true;rpSeek(rpFromReel(rpToReel(m.t)-(m.k==='crash'?6:4)))});mk.appendChild(b)}}
 function rpBuildUI(){
-  rpEl('rpTag').textContent=rpT('tag');rpEl('rpExit').textContent=rpT('done');
+  rpEl('rpTag').textContent=rpT('tag');rpEl('rpExit').textContent=rpT('done');rpEl('rpVidL').textContent=rpT('video');
   const sel=rpEl('rpCam');for(const o of sel.options)o.textContent=rpT(o.value);
-  const mk=rpEl('rpMarks'),dur=Math.max(.1,RP.t1-RP.t0);mk.innerHTML='';
-  for(const m of RP.marks){const b=document.createElement('button');b.type='button';b.className='rp-mark'+(m.k==='crash'?' bad':'');b.style.left=(100*clamp((m.t-RP.t0)/dur,0,1))+'%';
-    b.title=b.ariaLabel=rpT(m.k)+(m.sub?' · '+m.sub:'');b.addEventListener('click',()=>rpSeek(m.t-(m.k==='crash'?6:4)));mk.appendChild(b)}
-  rpSync()}
-function rpSeek(t){RP.t=clamp(t,RP.t0,RP.t1);if(RP.t<RP.t1&&RP.end&&RP.end.crash&&RP.boom)rpApply(RP.t);RP.cur=null;rpHud()}
+  rpBuildMarks();rpSync()}
+function rpSeek(t){RP.t=clamp(t,RP.t0,RP.t1);if(RP.hl&&!RP.seg.some(s=>RP.t>=s[0]-1e-6&&RP.t<=s[1]+1e-6))RP.t=rpFromReel(rpToReel(RP.t));
+  if(RP.end&&RP.end.crash&&RP.boom&&RP.t<RP.t1-.02)rpApply(RP.t);RP.finT=0;rpCut();rpHud()}
 
-function replayStart(){
+function replayStart(auto){
   if(mode!=='ended'||!recOK())return;
   const f=REC.f;RP.end=ST.ended;RP.td=ST.td?{...ST.td}:null;RP.view=CFG.view;RP.t0=f[0][0];RP.t1=f[f.length-1][0];
-  RP.marks=rpMarks();RP.shots=rpPlan();RP.cur=null;RP.boom=false;RP.play=true;RP.spd=1;RP.cam='dir';RP.lastT=-1;
-  RP.t=RP.t0;
+  RP.marks=rpMarks();RP.shots=rpPlan();RP.seg=rpSegs();RP.hl=true;RP.cur=null;RP.boom=false;RP.play=true;RP.spd=1;RP.cam='dir';RP.lastT=-1;
+  RP.auto=auto===true;RP.touched=false;RP.finT=0;RP.t=rpStartT();
   mode='replay';ST.ended=null;clearFX();rpEl('toast').classList.remove('on');toastT=0;if(acModel)acModel.visible=true;sfx.start();sfx.mute(CFG.sound);
   RP.hid={bar:rpEl('bar').hidden,map:rpEl('map').hidden};rpEl('result').hidden=true;for(const id of['bar','ctl','map'])rpEl(id).hidden=true;rpEl('replay').hidden=false;
   rpBuildUI();rpApply(RP.t);rpHud();
-  track('replay_start',{game_mode:modeId(),runway:LND.id,result:RP.end?RP.end.landed?'landed':RP.end.crash?'crash':'missed':'',replay_seconds:Math.round(RP.t1-RP.t0)});
-  rpEl('rpPlay').focus()}
+  track('replay_start',{game_mode:modeId(),runway:LND.id,auto:RP.auto,result:RP.end?RP.end.landed?'landed':RP.end.crash?'crash':'missed':'',replay_seconds:Math.round(rpDur())});
+  if(!RP.auto)rpEl('rpPlay').focus()}
 function replayStop(){
-  if(mode!=='replay')return;const watched=Math.round(RP.t-RP.t0);
-  RP.play=false;RP.t=RP.t1;rpApply(RP.t1);ST.ended=RP.end;ST.td=RP.td;
+  if(mode!=='replay'||RPX.busy)return;const watched=Math.round(rpToReel(RP.t));rpxClose();
+  RP.play=false;RP.hl=false;RP.t=RP.t1;rpApply(RP.t1);ST.ended=RP.end;ST.td=RP.td;
   sfx.update(0,0,0,false,{});setView(RP.view);mode='ended';rpEl('replay').hidden=true;for(const id of['bar','map'])rpEl(id).hidden=RP.hid[id];
-  rpEl('result').hidden=false;rpEl('btnReplay').focus();track('replay_end',{replay_seconds:watched})}
-function replayHide(){rpEl('replay').hidden=true}
-function replayButton(){const b=rpEl('btnReplay');b.hidden=!recOK();b.querySelector('span').textContent=rpT('watch')}
-window.__rp={REC,RP,start:replayStart,stop:replayStop,apply:rpApply};   // test hooks
-rpEl('btnReplay').addEventListener('click',replayStart);
+  rpEl('result').hidden=false;rpEl(RP.auto&&!RP.touched?'btnAgain':'btnReplay').focus();track('replay_end',{replay_seconds:watched,auto:RP.auto})}
+function replayHide(){rpEl('replay').hidden=true;rpxClose(true);for(const k in RPX.cache)URL.revokeObjectURL(RPX.cache[k].url);RPX.cache={}}
+function replayButton(){const b=rpEl('btnReplay');b.hidden=!recOK();b.querySelector('span').textContent=rpT('watch');rpEl('shVidLi').hidden=!recOK()}
+const rpTouch=()=>{RP.touched=true;RP.finT=0};
+
+/* ---------------- replay video: render the highlights to an MP4 in the browser (WebCodecs + mp4-muxer), to download or share ----------------
+   The reel is rendered offline, frame by frame at 30 fps, so it is smooth however fast the device is. Overlays are drawn on top:
+   REPLAY tag, highlight captions, altitude and speed, the flight, flykaitak.com and a checkerboard band, an opening title and,
+   at the end, the report card. 1280x720 (YouTube, X, Facebook) or 720x1280 (Reels, Shorts, TikTok). No sound track yet. */
+const RPX={busy:false,cancel:false,fmt:'land',cache:{}};
+const RPX_TXT={en:{h:'Save your replay',sub:s=>`A ${s}-second highlights video of this flight, with your report card at the end.`,land:'Landscape 16:9',landI:'YouTube, X, Facebook',port:'Portrait 9:16',portI:'Reels, Shorts, TikTok',
+    make:'Make video',dl:'Download MP4',share:'Share…',copy:'Copy caption',copied:'Copied',saved:'Saved',cancel:'Cancel',rendering:'Rendering',up:'Post it.',
+    upNote:'Download the video, then attach it to a new post on:',nosup:'This browser can’t make videos. Try Chrome, Edge or Safari.',fail:'Something went wrong making the video. Please try again.',
+    intro:'HONG KONG · KAI TAK · 1998',tryit:'Can you land it?'},
+  zh:{h:'儲存你嘅重播',sub:s=>`呢次飛行嘅 ${s} 秒精華片段，最尾有你嘅成績表。`,land:'橫向 16:9',landI:'YouTube、X、Facebook',port:'直向 9:16',portI:'Reels、Shorts、TikTok',
+    make:'製作影片',dl:'下載 MP4',share:'分享…',copy:'複製文字',copied:'已複製',saved:'已儲存',cancel:'取消',rendering:'製作中',up:'發佈。',
+    upNote:'下載影片，然後喺以下平台嘅新帖文度加入：',nosup:'呢個瀏覽器做唔到影片，請試吓 Chrome、Edge 或者 Safari。',fail:'製作影片時出錯，請再試一次。',
+    intro:'香港 · 啟德 · 1998',tryit:'你又降唔降落到？'}};
+const rxT=k=>(RPX_TXT[LANG]||RPX_TXT.en)[k];
+function rpxLoad(){if(window.Mp4Muxer)return Promise.resolve(true);
+  return new Promise(res=>{const s=document.createElement('script');s.src='assets/vendor/mp4-muxer.js';s.onload=()=>res(!!window.Mp4Muxer);s.onerror=()=>res(false);document.head.appendChild(s)})}
+async function rpxCodec(W,H){if(!window.VideoEncoder||!window.VideoFrame)return null;
+  for(const [c,m] of [['avc1.640028','avc'],['avc1.4d0028','avc'],['avc1.42001f','avc'],['vp09.00.31.08','vp9']]){
+    try{const cfg={codec:c,width:W,height:H,bitrate:W*H>8e5?7e6:5e6,framerate:30};if(m==='avc')cfg.avc={format:'avc'};const r=await VideoEncoder.isConfigSupported(cfg);if(r&&r.supported)return {cfg,m}}catch(e){}}
+  return null}
+function rpxName(fmt){const r=RES,d=new Date(),p=n=>String(n).padStart(2,'0');
+  return 'fly-kai-tak-replay-'+(r&&r.kind==='landed'?'grade-'+String(r.grade).toLowerCase():r?r.kind:'flight')+'-'+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+'-'+p(d.getHours())+p(d.getMinutes())+(fmt==='port'?'-vertical':'')+'.mp4'}
+function rpxCaption(){return shareText()+' '+shareLink('video')}
+
+// overlays drawn onto each video frame
+function rpxDraw(x,W,H,phase){
+  const u=Math.min(W,H)/720,SANS='"B612",ui-sans-serif,system-ui,sans-serif',MONO='"B612 Mono",ui-monospace,Menlo,Consolas,monospace',port=H>W;
+  const T=(t,px,py,sz,col,w,font,al,ls)=>{x.font=`${w} ${Math.round(sz)}px ${font}`;x.fillStyle=col;x.textAlign=al||'left';if('letterSpacing' in x)x.letterSpacing=(ls||0)+'px';x.fillText(t,px,py);if('letterSpacing' in x)x.letterSpacing='0px'};
+  x.save();x.shadowColor='rgba(0,0,0,.75)';x.shadowBlur=6*u;
+  let g=x.createLinearGradient(0,0,0,H*.17);g.addColorStop(0,'rgba(0,0,0,.45)');g.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g;x.fillRect(0,0,W,H*.17);
+  g=x.createLinearGradient(0,H,0,H*.82);g.addColorStop(0,'rgba(0,0,0,.5)');g.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g;x.fillRect(0,H*.82,W,H*.18);
+  const m=26*u,top=port?62*u:42*u;
+  x.fillStyle='#ff5b4f';x.beginPath();x.arc(m+6*u,top-7*u,6*u,0,7);x.fill();
+  T(rpT('tag').toUpperCase(),m+20*u,top,18*u,'#f5efe3',700,MONO,'left',4*u);
+  T(Math.round(Math.max(0,ST.y-RWY.elev)/FT).toLocaleString('en')+' ft · '+Math.round(ST.V/KT)+' kt',W-m,top,17*u,'#8ff5a8',400,MONO,'right');
+  const cap=rpCapText();if(cap){x.shadowBlur=0;x.font=`400 ${Math.round(17*u)}px ${MONO}`;if('letterSpacing' in x)x.letterSpacing=2*u+'px';const cw=x.measureText(cap.toUpperCase()).width;if('letterSpacing' in x)x.letterSpacing='0px';
+    const cy=top+20*u;x.fillStyle='rgba(9,16,20,.86)';x.fillRect(m,cy,cw+30*u,36*u);x.fillStyle='#e8571f';x.fillRect(m,cy,4*u,36*u);T(cap.toUpperCase(),m+17*u,cy+24*u,17*u,'#e9eee8',400,MONO,'left',2*u);x.shadowBlur=6*u}
+  const by=H-(port?118:30)*u;
+  T(rpxCtx(),m,by,15*u,'#c9d3cf',400,MONO,'left',1*u);
+  T('flykaitak.com',W-m,by+2*u,(port?30:26)*u,'#e8571f',700,SANS,'right');
+  x.shadowBlur=0;const cs=10*u;for(let i=0;i<Math.ceil(W/cs);i++){x.fillStyle=i%2?'#f5efe3':'#e8571f';x.fillRect(i*cs,H-cs,cs,cs);x.fillStyle=i%2?'#e8571f':'#f5efe3';x.fillRect(i*cs,H-2*cs,cs,cs)}
+  // opening title, fading out
+  if(phase.intro>0){x.globalAlpha=phase.intro;x.fillStyle='rgba(6,10,12,.62)';const bh=150*u,bt=H*(port?.64:.6);x.fillRect(0,bt,W,bh);x.fillStyle='#e8571f';x.fillRect(0,bt,W,4*u);x.fillRect(0,bt+bh-4*u,W,4*u);
+    T(rxT('intro'),W/2,bt+50*u,17*u,'#93a6a2',400,MONO,'center',5*u);T(rpxTitle(),W/2,bt+104*u,(port?40:46)*u,'#e9eee8',700,SANS,'center');x.globalAlpha=1}
+  x.restore()}
+function rpxCtx(){const zh=LANG==='zh';return (ST.ac.short+' · '+(LND.id==='31'?(zh?'31 號跑道':'RWY 31'):CFG.game==='free'?(zh?'自由飛行':'FREE FLIGHT'):'IGS 13')+' · '+(WX[CFG.wx]&&WX[CFG.wx].label||'')).toUpperCase()}
+function rpxTitle(){const zh=LANG==='zh';return CFG.game==='free'?(zh?'由啟德起飛':'Take-off from Kai Tak'):LND.id==='31'?(zh?'啟德 31 號跑道':'Runway 31, Kai Tak'):(zh?'啟德 13 號跑道 IGS 進場':'The IGS 13 approach')}
+function rpxEnd(x,W,H,snap,card,a){
+  const u=Math.min(W,H)/720,port=H>W;x.drawImage(snap,0,0,W,H);x.fillStyle=`rgba(6,10,12,${.72*a})`;x.fillRect(0,0,W,H);if(!card)return;
+  x.globalAlpha=a;const cw=port?W*.92:W*.74,ch=cw*card.height/card.width,cx=(W-cw)/2,cy=port?H*.28:(H-ch)/2-26*u;
+  x.drawImage(card,cx,cy,cw,ch);x.font=`700 ${Math.round((port?34:30)*u)}px "B612",sans-serif`;x.textAlign='center';x.fillStyle='#e9eee8';
+  x.fillText(rxT('tryit'),W/2,cy+ch+(port?90:56)*u);x.fillStyle='#e8571f';x.fillText('flykaitak.com',W/2,cy+ch+(port?140:96)*u);x.globalAlpha=1}
+
+async function rpxRender(fmt,cv,onProg){
+  if(!(await rpxLoad()))return {err:'nosup'};
+  const port=fmt==='port',W=port?720:1280,H=port?1280:720,FPS=30;const co=await rpxCodec(W,H);if(!co)return {err:'nosup'};
+  let card=null;try{const b=await reportCard();if(b)card=await createImageBitmap(b)}catch(e){}
+  cv.width=W;cv.height=H;const x=cv.getContext('2d');const snap=document.createElement('canvas');snap.width=W;snap.height=H;
+  const muxer=new Mp4Muxer.Muxer({target:new Mp4Muxer.ArrayBufferTarget(),video:{codec:co.m,width:W,height:H,frameRate:FPS},fastStart:'in-memory',firstTimestampBehavior:'offset'});
+  let encErr=null;const enc=new VideoEncoder({output:(c,meta)=>muxer.addVideoChunk(c,meta),error:e=>{encErr=e}});enc.configure(co.cfg);
+  const keep={t:RP.t,play:RP.play,spd:RP.spd,cam:RP.cam,hl:RP.hl,view:CFG.view,pr:renderer.getPixelRatio(),zoom:CFG.zoom};
+  RP.exp={W,H,port};RP.hl=true;RP.cam='dir';RP.spd=1;RP.t=rpStartT();RP.play=true;RP.finT=0;CFG.zoom=1;rpCut();
+  if(RP.boom){RP.boom=false;ST.ended=null;clearFX();acModel.visible=true}
+  renderer.setPixelRatio(1);renderer.setSize(W,H,false);camera.aspect=W/H;camera.updateProjectionMatrix();HW=W;HH=H;
+  const reel=rpDur(),hold=RP.end&&RP.end.crash?2.6:1.2,endS=3.6,total=Math.ceil((reel+hold+endS)*FPS);
+  let now=performance.now();last=now;let i=0,held=0,ok=true;
+  const put=async()=>{const vf=new VideoFrame(cv,{timestamp:Math.round(i*1e6/FPS),duration:Math.round(1e6/FPS)});enc.encode(vf,{keyFrame:i%(FPS*2)===0});vf.close();i++;
+    if(i%3===0){onProg(i/total);await new Promise(r=>setTimeout(r,0))}while(enc.encodeQueueSize>6)await new Promise(r=>setTimeout(r,4))};
+  try{
+    while(!RPX.cancel&&!encErr){
+      now+=1000/FPS;frame(now,true);
+      x.drawImage(renderer.domElement,0,0,W,H);const el=i/FPS;rpxDraw(x,W,H,{intro:el<2.6?clamp((2.6-el)/.5,0,1):0});
+      await put();if(!RP.play){held++;if(held>=hold*FPS)break}}
+    snap.getContext('2d').drawImage(renderer.domElement,0,0,W,H);
+    for(let k=0;k<endS*FPS&&!RPX.cancel&&!encErr;k++){rpxEnd(x,W,H,snap,card,clamp(k/(.45*FPS),0,1));await put()}
+    if(RPX.cancel||encErr){ok=false}else{await enc.flush();muxer.finalize()}
+  }catch(e){console.error(e);encErr=e;ok=false}
+  finally{try{enc.close()}catch(e){}
+    RP.exp=null;renderer.setPixelRatio(keep.pr);resize();last=performance.now();CFG.zoom=keep.zoom;
+    RP.hl=keep.hl;RP.cam=keep.cam;RP.spd=keep.spd;CFG.view=keep.view;RP.play=false;RP.boom=false;ST.ended=null;clearFX();acModel.visible=true;rpSeek(keep.t);rpBuildMarks();rpSync()}
+  if(!ok)return RPX.cancel?{err:'cancel'}:{err:'fail'};
+  return {blob:new Blob([muxer.target.buffer],{type:'video/mp4'}),secs:Math.round(i/FPS)}}
+
+function rpxText(){
+  rpEl('rpxH').textContent=rxT('h');rpEl('rpxSub').textContent=rxT('sub')(Math.round(rpDur()+5));
+  for(const k of['land','port']){rpEl('rpxF_'+k).textContent=rxT(k);rpEl('rpxI_'+k).textContent=rxT(k+'I')}
+  rpEl('rpxMakeL').textContent=rxT('make');rpEl('rpxDlL').textContent=rxT('dl');rpEl('rpxShare').textContent=rxT('share');rpEl('rpxCopy').textContent=rxT('copy');
+  rpEl('rpxCancel').textContent=rxT('cancel');rpEl('rpxUpH').textContent=rxT('up');rpEl('rpxUpNote').textContent=rxT('upNote')}
+function rpxShow(){const c=RPX.cache[RPX.fmt],v=rpEl('rpxVid'),busy=RPX.busy;
+  rpEl('rpxCv').hidden=!busy;v.hidden=!c||busy;rpEl('rpxGo').hidden=!!c||busy;rpEl('rpxDone').hidden=!c||busy;rpEl('rpxUp').hidden=!c||busy;rpEl('rpxProg').hidden=!busy;
+  rpEl('rpxStage').classList.toggle('port',RPX.fmt==='port');rpEl('rpxStage').hidden=!c&&!busy;
+  for(const r of document.querySelectorAll('input[name=rpxf]'))r.disabled=busy;
+  if(c&&v.dataset.u!==c.url){v.src=c.url;v.dataset.u=c.url;v.play().catch(()=>{})}else if(!c){v.pause();v.removeAttribute('src');v.dataset.u='';v.load()}
+  rpEl('rpxShare').hidden=!(c&&navigator.canShare&&navigator.canShare({files:[c.file]}))}
+function rpxOpen(){if(mode!=='replay')return;rpTouch();RP.play=false;rpSync();rpxText();rpEl('rpxMsg').hidden=true;rpEl('rpx').hidden=false;
+  for(const r of document.querySelectorAll('input[name=rpxf]'))r.checked=r.value===RPX.fmt;rpxShow();(rpEl(RPX.cache[RPX.fmt]?'rpxDl':'rpxMake')).focus()}
+function rpxClose(force){if(RPX.busy&&!force)return;if(RPX.busy)RPX.cancel=true;const v=rpEl('rpxVid');v.pause();rpEl('rpx').hidden=true}
+async function rpxMake(){
+  if(RPX.busy)return;RPX.busy=true;RPX.cancel=false;const fmt=RPX.fmt,t0=performance.now();rpEl('rpxMsg').hidden=true;rpxShow();rpEl('rpxCancel').focus();
+  const bar=rpEl('rpxBar'),pct=rpEl('rpxPct');const prog=p=>{bar.style.width=(100*clamp(p,0,1)).toFixed(1)+'%';pct.textContent=rxT('rendering')+' '+Math.round(100*clamp(p,0,1))+'%'};prog(0);
+  let r;try{r=await rpxRender(fmt,rpEl('rpxCv'),prog)}catch(e){console.error(e);r={err:'fail'}}
+  RPX.busy=false;
+  if(r.blob){const name=rpxName(fmt);RPX.cache[fmt]={blob:r.blob,url:URL.createObjectURL(r.blob),name,file:new File([r.blob],name,{type:'video/mp4'})};
+    track('video_export',{format:fmt==='port'?'portrait':'landscape',video_seconds:r.secs,render_seconds:Math.round((performance.now()-t0)/1000)})}
+  else if(r.err!=='cancel'){const m=rpEl('rpxMsg');m.textContent=rxT(r.err==='nosup'?'nosup':'fail');m.hidden=false;track('video_export_fail',{reason:r.err})}
+  rpxShow();if(r.blob)rpEl('rpxDl').focus()}
+function rpxFlash(b,t){const o=b.textContent;b.textContent=t;b.classList.add('done');setTimeout(()=>{b.textContent=o;b.classList.remove('done')},2000)}
+const rpxTrack=m=>{try{track('share',{method:m,content_type:'replay_video',result:RES?RES.kind:'',grade:RES?RES.grade:''})}catch(e){}};
+
+window.__rp={REC,RP,RPX,start:replayStart,stop:replayStop,apply:rpApply,render:rpxRender,make:rpxMake,open:rpxOpen};   // test hooks
+rpEl('btnReplay').addEventListener('click',()=>replayStart(false));
+rpEl('shVid').addEventListener('click',()=>{replayStart(false);rpxOpen()});
 rpEl('rpExit').addEventListener('click',replayStop);
-rpEl('rpPlay').addEventListener('click',()=>{if(!RP.play&&RP.t>=RP.t1-.01)rpSeek(RP.t0);RP.play=!RP.play;rpSync()});
-rpEl('rpSpd').addEventListener('click',()=>{RP.spd=RP.spd>=4?.5:RP.spd*2;rpSync()});
-rpEl('rpCam').addEventListener('change',e=>{RP.cam=e.target.value;RP.cur=null;if(RP.cam!=='dir'){CFG.view=RP.cam==='tower'&&!ST.tower?'chase':RP.cam;look.yaw=look.pitch=0;look.dist=1;look.orbitYaw=0;look.orbitPitch=.18;camera.userData.snap=true}e.target.blur()});
-rpEl('rpSeek').addEventListener('input',e=>rpSeek(RP.t0+(RP.t1-RP.t0)*e.target.value/1000));
+rpEl('rpPlay').addEventListener('click',()=>{rpTouch();if(!RP.play&&RP.t>=rpEndT()-.01)rpSeek(rpStartT());RP.play=!RP.play;rpSync()});
+rpEl('rpSpd').addEventListener('click',()=>{rpTouch();RP.spd=RP.spd>=4?.5:RP.spd*2;rpSync()});
+rpEl('rpMode').addEventListener('click',()=>{rpTouch();const t=RP.t;RP.hl=!RP.hl;rpSeek(t);rpBuildMarks();rpSync()});
+rpEl('rpVid').addEventListener('click',rpxOpen);
+rpEl('rpCam').addEventListener('change',e=>{rpTouch();RP.cam=e.target.value;RP.cur=null;if(RP.cam!=='dir'){CFG.view=RP.cam==='tower'&&!ST.tower?'chase':RP.cam;look.yaw=look.pitch=0;look.dist=1;look.orbitYaw=0;look.orbitPitch=.18;camera.userData.snap=true}e.target.blur()});
+rpEl('rpSeek').addEventListener('input',e=>{rpTouch();rpSeek(rpFromReel(rpDur()*e.target.value/1000))});
 rpEl('rpSeek').addEventListener('change',e=>e.target.blur());
-window.addEventListener('keydown',e=>{if(mode!=='replay')return;const tg=e.target&&e.target.tagName;if((tg==='INPUT'||tg==='SELECT')&&e.code!=='Escape')return;if(tg==='BUTTON'&&(e.code==='Space'||e.code==='Enter'))return;
+canvas.addEventListener('pointerdown',()=>{if(mode==='replay')rpTouch()});
+rpEl('rpxClose').addEventListener('click',()=>rpxClose());
+rpEl('rpx').addEventListener('click',e=>{if(e.target.id==='rpx')rpxClose()});
+rpEl('rpxMake').addEventListener('click',rpxMake);
+rpEl('rpxCancel').addEventListener('click',()=>{RPX.cancel=true});
+rpEl('rpxFmt').addEventListener('change',e=>{if(e.target.name==='rpxf'&&!RPX.busy){RPX.fmt=e.target.value;rpEl('rpxMsg').hidden=true;rpxShow()}});
+rpEl('rpxDl').addEventListener('click',()=>{const c=RPX.cache[RPX.fmt];if(!c)return;const a=document.createElement('a');a.href=c.url;a.download=c.name;document.body.appendChild(a);a.click();a.remove();rpxTrack('video_download');rpxFlash(rpEl('rpxDlL'),rxT('saved'))});
+rpEl('rpxShare').addEventListener('click',async()=>{const c=RPX.cache[RPX.fmt];if(!c)return;try{await navigator.share({files:[c.file],title:'Fly Kai Tak',text:rpxCaption()});rpxTrack('video_native')}catch(e){}});
+rpEl('rpxCopy').addEventListener('click',async e=>{const b=e.currentTarget,t=rpxCaption();try{await navigator.clipboard.writeText(t);rpxTrack('video_copy');rpxFlash(b,rxT('copied'))}catch(_){window.prompt(rxT('copy'),t)}});
+rpEl('rpxUp').addEventListener('click',e=>{const a=e.target.closest('a[data-m]');if(a)rpxTrack('video_upload_'+a.dataset.m)});
+window.addEventListener('keydown',e=>{if(mode!=='replay')return;
+  if(!rpEl('rpx').hidden){if(e.code==='Escape'){e.preventDefault();if(RPX.busy)RPX.cancel=true;else rpxClose()}return}
+  const tg=e.target&&e.target.tagName;if((tg==='INPUT'||tg==='SELECT')&&e.code!=='Escape')return;if(tg==='BUTTON'&&(e.code==='Space'||e.code==='Enter'))return;
   if(e.code==='Space'||e.code==='KeyK'){e.preventDefault();rpEl('rpPlay').click()}
-  else if(e.code==='ArrowLeft'){e.preventDefault();rpSeek(RP.t-5)}else if(e.code==='ArrowRight'){e.preventDefault();rpSeek(RP.t+5)}
+  else if(e.code==='ArrowLeft'){e.preventDefault();rpTouch();rpSeek(rpFromReel(rpToReel(RP.t)-5))}else if(e.code==='ArrowRight'){e.preventDefault();rpTouch();rpSeek(rpFromReel(rpToReel(RP.t)+5))}
   else if(e.code==='Escape'){replayStop()}
+  else if(e.code==='KeyH'){rpEl('rpMode').click()}
+  else if(e.code==='KeyS'&&!e.ctrlKey&&!e.metaKey){rpxOpen()}
   else if(e.code==='KeyC'){const o=['dir','chase','cockpit','tower'],s=rpEl('rpCam');s.value=o[(o.indexOf(RP.cam)+1)%o.length];s.dispatchEvent(new Event('change'))}},true);
 
 /* ---------------- end states ---------------- */
@@ -6729,6 +6951,7 @@ function showResult(){
     ctx:document.getElementById('flightid').textContent};
   updateShare();replayButton();
   document.getElementById('result').hidden=false;document.getElementById('btnAgain').focus();
+  if(recOK())replayStart(true);   // every flight ends with its highlights; the report card follows
 }
 
 /* ---------- share the result: score text, links and a 1200x630 report-card image ---------- */
@@ -6831,7 +7054,7 @@ document.getElementById('homeShare').addEventListener('click',async e=>{
    ===================================================================== */
 let last=performance.now(),acc=0;
 function frame(now,manual){
-  if(manual!==true)requestAnimationFrame(frame);if(window.__capture&&manual!==true)return;
+  if(manual!==true)requestAnimationFrame(frame);if((window.__capture||RP.exp)&&manual!==true)return;
   let dt=Math.min(.05,(now-last)/1000);last=now;if(mode==='loading')return;
   const running=(mode==='fly'||mode==='attract')&&!paused;
   if(mode==='fly'&&!paused&&FLT&&!FLT.done)FLT.active+=dt;

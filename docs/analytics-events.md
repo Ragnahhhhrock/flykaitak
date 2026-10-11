@@ -14,9 +14,11 @@ Every event also carries `aircraft`, `weather` and `time_of_day`. Events only se
 | `crash` / `missed_approach` | Flight ended badly | `cause`, `distance_nm`, `flight_seconds`, `sim_seconds` |
 | `control_toggle` | Gear, flaps, autopilot, HUD, deck, guide, sound, clouds, map, night, pause, seat side, flight board (`flight_board`, Plane Spotter), flight board flap sound (`flight_board_sound`, Plane Spotter) | `control`, `state`, `via` (`button`, `key`, `auto`), `flight_seconds` |
 | `view_change`, `zoom`, `time_speed`, `weather_change`, `rewind`, `fast_forward` | In-flight controls | per event |
-| `replay_start` / `replay_end` | Watch replay opened from the report card / closed with Done or Esc | `game_mode`, `runway`, `result` (`landed`, `crash`, `missed`), `replay_seconds` (start: length of the recording; end: seconds watched) |
+| `replay_start` / `replay_end` | Replay opened (automatically at the end of a flight, or Watch replay / Video on the report card) / closed (Report card, Esc, or automatically after the highlights) | `auto` (true when it opened by itself), `game_mode`, `runway`, `result` (`landed`, `crash`, `missed`), `replay_seconds` (start: length of the highlights; end: seconds watched) |
+| `video_export` / `video_export_fail` | Replay video made / failed | `format` (`landscape`, `portrait`), `video_seconds`, `render_seconds` / `reason` (`nosup`, `fail`) |
 | `flight_end` | Result screen, back to menu, restart, or page close | `outcome`, `flight_seconds`, `sim_seconds`, `landing_attempts`, `successful_landings`, `controls_toggled`, `flight_number` |
 | `session_summary` | Tab hidden or page closed | `flights`, `landing_attempts`, `successful_landings`, `crashes`, `missed_approaches`, `landing_success_pct`, `total_flight_seconds`, `session_seconds` |
+| `share` (replay video) | Replay video sheet | `method` (`video_download`, `video_native`, `video_copy`, `video_upload_youtube`, `_tiktok`, `_instagram`, `_facebook`, `_x`), `content_type` (`replay_video`), `result`, `grade` |
 | `share` | Blog share button clicked (blog pages only) | `method` (`x`, `facebook`, `reddit`, `linkedin`, `whatsapp`, `threads`, `email`, `copy_link`, `native`), `content_type` (`article`), `item_id` (post slug) |
 | `follow` | Facebook or Instagram link clicked on the home screen | `method` (`facebook`, `instagram`), `content_type` (`home`) |
 | `shop_click` | Shop link on the home screen, or a product button on /shop/ | `method` (`nav`, `teaser`, `notify`, `checkout`), `content_type` (`home`, `shop`), `item_id` (product slug, shop page only) |

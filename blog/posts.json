@@ -1,5 +1,42 @@
 [
   {
+    "slug": "replay-highlights-video",
+    "title": "Highlights after every flight, and a video to share",
+    "dek": "Every flight now ends with its highlights. Save them as an MP4, wide for YouTube or upright for Reels, Shorts and TikTok.",
+    "description": "Every Fly Kai Tak flight now ends with an automatic highlights replay. Save it as an MP4 in 16:9 or 9:16 to download or share on social media.",
+    "date": "2026-10-11",
+    "tag": "Feature",
+    "category": "scores",
+    "keywords": [
+      "flight replay",
+      "highlights",
+      "video",
+      "MP4",
+      "share",
+      "YouTube",
+      "Instagram Reels",
+      "TikTok",
+      "YouTube Shorts",
+      "flight simulator",
+      "Kai Tak"
+    ],
+    "hero": "replay-video-frame",
+    "hero_alt": "A frame from a replay video: a 747 rolling out on Runway 13 with the caption Welcome to Hong Kong, and flykaitak.com in the corner.",
+    "hero_caption": "A frame from a replay video.",
+    "card_kicker": "SCORES · FEATURE",
+    "card_title": "Share your flight as a video",
+    "card_sub": "Highlights after every flight, MP4 in 16:9 or 9:16",
+    "card_image": "replay-video-frame",
+    "card_focus": 50,
+    "zh": {
+      "title": "每次飛完都有精華片段，仲可以存做影片分享",
+      "dek": "而家每次飛行都以精華片段結尾。存做 MP4：橫向畀 YouTube，直向畀 Reels、Shorts 同 TikTok。",
+      "description": "Fly Kai Tak 而家每次飛完都會自動播精華重播，可以存做 16:9 或者 9:16 嘅 MP4，下載或者喺社交媒體分享。",
+      "hero_alt": "重播影片嘅一格：一架 747 喺 13 號跑道滑行減速，字幕寫住 Welcome to Hong Kong，角落有 flykaitak.com。",
+      "hero_caption": "重播影片嘅一格。"
+    }
+  },
+  {
     "slug": "a-tidier-home-screen",
     "title": "A tidier home screen",
     "dek": "Fewer panels over the scenery: the flight board starts off, one latest update, and follow, share and coffee move to the foot of the menu.",

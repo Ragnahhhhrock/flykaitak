@@ -54,7 +54,8 @@ Data: © Lands Department, HKSAR Government (CSDI). Roads: Transport Department 
 - Flight information board: an old split-flap board of every arrival and departure (made-up airlines and flight numbers, 1998 destinations, Hong Kong clock, status read from the aircraft). It is on the home screen and in Plane Spotter (B or the Flights button toggles it in both), clatters like the real thing when letters change (a button on the board switches the sound on or off), and follows the English / Cantonese button
 - Other airliners: a 747 landing two minutes ahead of you, an A340 following you in on the IGS, departures pushed back from the bridges, taxiing out and climbing over Kowloon Bay, two aircraft in the hold west of the harbour, and apron movements
 - Zoom 1×, 2×, 4×, 8×, 16× (I / O); time 1×, 2×, 4×, 8× (T); jump back or forward 10 seconds ([ / ]), including back from a crash
-- Flight replay: every flight (not Plane Spotter or the tour) is recorded at 10 Hz. Watch replay on the report card plays it back with a transport bar (play/pause, scrub, 0.5× to 4×, highlight markers) and a camera menu: Director (cuts between chase, fly-by and cockpit shots, with set-piece shots at lift-off, the checkerboard, the turn over Kowloon City, touchdown and the crash), Chase, Cockpit or Tower. Space plays/pauses, ← → jump 5 s, C changes camera, Esc goes back to the report card. A rewind cuts the recording back, so the replay is the flight as finally flown
+- Flight replay: every flight (not Plane Spotter or the tour) is recorded at 10 Hz, and when it ends the highlights play by themselves: the opening seconds or lift-off, the checkerboard and the turn over Kowloon City, touchdown, the crash or go-around, about 45 s, then the report card. Highlights / Full flight switches to the whole flight. The Director cuts between chase, fly-by and cockpit shots, with set-piece shots at the big moments; the camera menu also has Chase, Cockpit and Tower. Transport bar: play/pause, scrub, 0.5× to 4×, highlight markers. Keys: Space, ← → (5 s), H (highlights / full), C (camera), S (save video), Esc (report card). A rewind cuts the recording back, so the replay is the flight as finally flown
+- Replay video: Save video (in the replay bar, or Video on the report card) renders the highlights to an MP4 in the browser (WebCodecs + `assets/vendor/mp4-muxer.js`, offline at 30 fps): 1280×720 for YouTube, X and Facebook, or 720×1280 for Reels, Shorts and TikTok, with an opening title, REPLAY tag, captions, altitude and speed, flykaitak.com and the report card at the end. Then Download, Share… (the phone's share sheet, with the file) or Copy caption, with links to post it on YouTube, TikTok, Instagram, Facebook and X. H.264 where the browser has it (Chrome, Edge, Safari), VP9 otherwise. No sound track yet
 - GPWS callouts and warnings (gear and flap calls only while descending, so take-offs stay quiet), engine, wind, rain and thunder sound
 
 ## Demo reel
@@ -100,6 +101,7 @@ The home screen shows the live sim of the airport in the background, with the na
 | T | Time speed |
 | [ / ] | Back / forward 10 s |
 | K | Cockpit panel on/off |
+| Space, ← →, H, C, S, Esc | Replay: play/pause, 5 s back/forward, highlights/full flight, camera, save video, report card |
 
 The on-screen yoke works with touch or a mouse and is inverted like a real control column: drag down to pull the nose up, drag up to push it down. On touch screens, use the on-screen yoke, thrust lever and gear/flap buttons. Landscape is recommended: on phones Begin descent goes full screen and asks for landscape where the browser allows it. The toolbar is one row with a More drawer for the rest.
 
@@ -113,7 +115,7 @@ The on-screen yoke works with touch or a mouse and is inverted like a real contr
 Google Analytics 4 with game events. See docs/analytics.md.
 
 ## Roadmap
-- Flight replay, next: an automatic 30 to 60 s highlights reel at the end of each flight, exported as an MP4 (16:9 and 9:16) to download or share
+- Replay video, next: engine and radio sound in the video, and a share page per replay (flykaitak.com/replay/…) so a link shows the video
 - Learn to fly, next: ground and taxi lessons, and a Runway 31 landing lesson
 - ATC radio, next: ground and taxi calls, more voices, crews that match the AI traffic
 - More aircraft: 747-200/300, 767-300, MD-11, A300-600, A320, 737-300, L-1011, DC-10
