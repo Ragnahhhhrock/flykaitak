@@ -585,7 +585,7 @@ body.bigmap #radio{top:calc(env(safe-area-inset-top,0px) + 396px)}
       <section class="homeblog" id="homeBlog" aria-labelledby="homeBlogH">
         <h3 id="homeBlogH"><span class="l-en">Latest update</span><span class="l-zh" lang="zh-HK">最新消息</span></h3>
         <ul>
-          <li><a href="/blog/replay-video-sound-and-share-links/" class="hb-top"><span class="hb-thumb"><img src="/assets/blog/og/replay-video-sound-and-share-links.jpg" width="1200" height="630" loading="lazy" alt=""></span><span class="hb-txt"><span class="hb-meta"><time datetime="2026-10-11"><span class="l-en">11 Oct</span><span class="l-zh" lang="zh-HK">10月11日</span></time> &middot; <span class="l-en">Scores &amp; Sharing</span><span class="l-zh" lang="zh-HK">分數同分享</span></span><b><span class="l-en">Replay videos with sound, radio calls and share links</span><span class="l-zh" lang="zh-HK">重播影片有聲、有無線電通話，仲有分享連結</span></b></span></a></li>
+          <li><a href="/blog/ocean-park-rebuilt/" class="hb-top"><span class="hb-thumb"><img src="/assets/blog/og/ocean-park-rebuilt.jpg" width="1200" height="630" loading="lazy" alt=""></span><span class="hb-txt"><span class="hb-meta"><time datetime="2026-10-11"><span class="l-en">11 Oct</span><span class="l-zh" lang="zh-HK">10月11日</span></time> &middot; <span class="l-en">Scenery &amp; Weather</span><span class="l-zh" lang="zh-HK">風景同天氣</span></span><b><span class="l-en">Ocean Park, rebuilt from the maps</span><span class="l-zh" lang="zh-HK">重建海洋公園</span></b></span></a></li>
         </ul>
         <a class="hb-all" href="/blog/"><span class="l-en">All updates on the blog</span><span class="l-zh" lang="zh-HK">網誌睇晒所有更新</span> <span aria-hidden="true">&rarr;</span></a>
       </section>
@@ -1660,6 +1660,7 @@ const LM={boc:[-3206,5120],hsbc:[-3433,4999],lippo:[-2938,5109],jardine:[-3392,4
   plaza:[-1960,5010],hopewell:[-2125,5629],fefc:[-2845,5043],hkcec:[-2050,4610],clock:[-2372,3556],culture:[-2300,3440],peninsula:[-2145,3344],
   coliseum:[-1109,2593],peak:[-4420,6005],cenPier:[-3150,4660],tstPier:[-2425,3565],wcPier:[-1862,4592]};
 LANDMARK_CLEAR.push([-4454,6031,26]); // the Peak Lookout replaces any footprint there
+LANDMARK_CLEAR.push([-1815,8690,190],[-1775,8862,70],[-2170,10160,215],[-2150,9910,110]); // Ocean Park: the 1998 park replaces today's footprints
 for(const [k,p] of Object.entries(LM))LANDMARK_CLEAR.push([p[0],p[1],k==='hkcec'?170:k==='exch'?90:k==='culture'?110:k==='cenPier'?80:k==='tstPier'?70:60]);
 const gAt=(p)=>Math.max(terrainAt(p[0],p[1]),3.5);
 /* Happy Valley Racecourse and Ocean Park: stylised, placed at their real sites. Animated parts run from parkAnim. */
@@ -1796,60 +1797,354 @@ function buildHappyValley(){
   const face=box(.6,11,25,new THREE.MeshLambertMaterial({color:0x2a3d44}),sc[0]-1,sg+7,sc[1]);face.userData.neon=0x7fe9ff;landmarkLights.push(face);
   scene.add(makeLights(L));
 }
+/* OCEAN PARK (1977), as it stood in 1998. Two sites joined by the 1977 cable car: the LOWLAND (the Waterfront side: Entry Plaza, Kids' World,
+   Lowland Gardens, Middle Kingdom, Bird Paradise) and the HEADLAND / Summit on the ridge (Ocean Park Tower, the Dragon, Space Wheel, Ferris wheel,
+   Abyss Turbo Drop, Ocean Theatre, Pacific Pier lighthouse, Shark Aquarium, Atoll Reef). Laid out from park maps and photos; sizes estimated.
+   Animated parts (cabins, wheels, coaster trains, the Abyss ring, the carousel) run from parkAnim. */
 function buildOceanPark(){
-  const L=[];
-  // Waterfront (the lowland, a wheel and the cable car station) and the Summit on the headland (tower, Dragon, Space Wheel), linked by the 1977 cable car
-  const WF=[-1770,8880],SU=[-2290,10010];
-  const white=new THREE.MeshLambertMaterial({color:0xe9e7de}),steel=new THREE.MeshLambertMaterial({color:0x8d959a}),red=new THREE.MeshLambertMaterial({color:0xd6262b});
-  const cyl=(rt,rb,h,mat,x,y,z,seg)=>{const m=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg||10).translate(0,h/2,0),mat);m.position.set(x,y,z);scene.add(m);return m};
-  // Summit: Ocean Park Tower
-  {const [x,z]=[-2262,10092],b=bAt(x,z);cyl(2.6,3.6,62,white,x,b,z);
-   const cap=cyl(9,9,5,new THREE.MeshLambertMaterial({color:0xc9c4b2}),x,b+50,z,16);cap.userData.neon=0xffd36b;landmarkLights.push(cap);
-   cyl(.35,.5,16,red,x,b+62,z,6);L.push(x,b+79,z,1,.1,.1,4,.45);towerCollider(x,z,12,12,b+80,'the Ocean Park Tower')}
-  // Summit: the Dragon, a looping coaster
-  {const [x,z]=[-2345,9925],b=bAt(x,z),g=new THREE.Group();g.position.set(x,b,z);g.rotation.y=.45;
-   const pts=[[0,6,0],[34,30,2],[62,34,0],[92,5,0]];
-   for(let k=1;k<=12;k++){const t=k/12*Math.PI*2;pts.push([104+14*Math.sin(t)+k*1.6,16-14*Math.cos(t),4+k*.9])}
-   pts.push([134,10,22],[142,12,48],[112,9,62],[72,14,58],[34,9,44],[8,6,24]);
-   const curve=new THREE.CatmullRomCurve3(pts.map(q=>new THREE.Vector3(q[0],q[1],q[2])),true,'catmullrom',.4);
-   g.add(new THREE.Mesh(new THREE.TubeGeometry(curve,220,.55,5,true),new THREE.MeshLambertMaterial({color:0xe8571f})));
-   const sp=curve.getSpacedPoints(70);for(let i=0;i<sp.length;i+=2){const q=sp[i];if(q.y<4)continue;const h=q.y+8;const m=new THREE.Mesh(new THREE.BoxGeometry(.5,h,.5).translate(0,-h/2,0),steel);m.position.set(q.x,q.y,q.z);g.add(m)}
-   scene.add(g);addCollider(x-30,x+150,z-20,z+95,b+38,'the Dragon roller coaster')}
-  // Summit: Space Wheel (a spinning arm ride)
+  const L=[],anim=[];
+  const rs=(()=>{let s=20250611;return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296}})();   // own random stream: keeps the city's rnd() sequence unchanged
+  const M=(c,o)=>new THREE.MeshLambertMaterial(Object.assign({color:c},o||{}));
+  const K={white:M(0xeeece4),cream:M(0xe6dfca),steel:M(0x8d959a),dark:M(0x3a3f44),red:M(0xd6262b),blue:M(0x2c6fc2),navy:M(0x1d3f7a),teal:M(0x1fa5b8),yellow:M(0xf3c431),orange:M(0xe8571f),
+    conc:M(0xc9c5b8),stone:M(0x9b9486),paving:M(0xcdbf9f),lawn:M(0x5d9c45),glass:M(0x8fd6e6,{transparent:true,opacity:.55,side:THREE.DoubleSide}),water:M(0x30b8cc,{emissive:0x03161b}),
+    pond:M(0x3b9fb0),roofRed:M(0xb3382e),roofGreen:M(0x2f7a5a),pillar:M(0xa8281f),gold:M(0xe2b13c),pink:M(0xe8739a),road:M(0x55595c,{polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}),
+    path:M(0xd8cfb9,{polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-3}),bay:M(0xe9e9e2)};
+  const G=(x,z)=>Math.max(terrainAt(x,z),3.5);
+  const keep=[];   // [x,z,r] circles trees stay out of
+  const foot=(x,z,w,d,ry)=>{let hi=-1e9,lo=1e9;const c=Math.cos(ry||0),s=Math.sin(ry||0);
+    for(const [a,b] of [[0,0],[1,1],[1,-1],[-1,1],[-1,-1],[1,0],[-1,0],[0,1],[0,-1]]){const lx=a*w/2,lz=b*d/2,h=G(x+lx*c+lz*s,z-lx*s+lz*c);hi=Math.max(hi,h);lo=Math.min(lo,h)}return{hi,lo}};
+  // a building on a concrete terrace: the terrace is cut down to the lowest ground under it
+  const bld=(w,h,d,mat,x,z,ry,o)=>{o=o||{};const f=foot(x,z,w,d,ry),y0=o.y!==undefined?o.y:f.hi+(o.up||0),sk=Math.max(0,y0-f.lo)+2;
+    const g=new THREE.Group();g.position.set(x,y0,z);g.rotation.y=ry||0;
+    if(!o.nobase)g.add(new THREE.Mesh(new THREE.BoxGeometry(w+(o.bp===undefined?1:o.bp),sk,d+(o.bp===undefined?1:o.bp)).translate(0,-sk/2,0),o.bmat||K.conc));
+    const body=new THREE.Mesh(new THREE.BoxGeometry(w,h,d).translate(0,h/2,0),mat);g.add(body);scene.add(g);
+    if(o.col!==false){const c=Math.abs(Math.cos(ry||0)),s=Math.abs(Math.sin(ry||0)),ex=(c*w+s*d)/2,ez=(s*w+c*d)/2;addCollider(x-ex,x+ex,z-ez,z+ez,y0+h+(o.ctop||2),o.name||'an Ocean Park building')}
+    keep.push([x,z,Math.max(w,d)*.6+4]);g.userData.y0=y0;g.userData.body=body;return g};
+  // a flat paved or planted area (a thin slab with a skirt to the ground)
+  const slab=(w,d,mat,x,z,ry,thick,o)=>{o=o||{};const f=foot(x,z,w,d,ry),y0=o.y!==undefined?o.y:f.hi,sk=Math.max(0,y0-f.lo)+1.5;
+    const m=new THREE.Mesh(new THREE.BoxGeometry(w,sk+(thick||.4),d).translate(0,(thick||.4)-(sk+(thick||.4))/2,0),mat);m.position.set(x,y0,z);m.rotation.y=ry||0;scene.add(m);m.userData.y0=y0;return m};
+  const disc=(r,mat,x,z,thick,o)=>{o=o||{};let hi=-1e9,lo=1e9;for(let a=0;a<8;a++){const h=G(x+Math.cos(a*.785)*r,z+Math.sin(a*.785)*r);hi=Math.max(hi,h);lo=Math.min(lo,h)}hi=Math.max(hi,G(x,z));
+    const y0=o.y!==undefined?o.y:hi,sk=Math.max(0,y0-lo)+1.5,t=thick||.4;const m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,sk+t,28).translate(0,t-(sk+t)/2,0),mat);m.position.set(x,y0,z);if(o.sy)m.scale.z=o.sy;if(o.ry)m.rotation.y=o.ry;scene.add(m);m.userData.y0=y0;return m};
+  // roofs and arches
+  const hip=(w,d,h,mat,x,y,z,ry,par)=>{const m=new THREE.Mesh(new THREE.ConeGeometry(.7071,1,4).rotateY(Math.PI/4).translate(0,.5,0),mat);m.scale.set(w,h,d);m.position.set(x,y,z);if(ry)m.rotation.y=ry;(par||scene).add(m);return m};
+  const prism=(w,h,d,mat,x,y,z,ry,par)=>{const sh=new THREE.Shape();sh.moveTo(-w/2,0);sh.lineTo(w/2,0);sh.lineTo(0,h);sh.closePath();const geo=new THREE.ExtrudeGeometry(sh,{depth:d,bevelEnabled:false}).translate(0,0,-d/2);
+    const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);if(ry)m.rotation.y=ry;(par||scene).add(m);return m};
+  const arch=(r,t,len,mat,x,y,z,ry,par)=>{const sh=new THREE.Shape(),n=14;sh.moveTo(r,0);for(let i=0;i<=n;i++){const a=i/n*Math.PI;sh.lineTo(r*Math.cos(a),r*Math.sin(a))}sh.lineTo(-(r-t),0);for(let i=n;i>=0;i--){const a=i/n*Math.PI;sh.lineTo((r-t)*Math.cos(a),(r-t)*Math.sin(a))}sh.closePath();
+    const m=new THREE.Mesh(new THREE.ExtrudeGeometry(sh,{depth:len,bevelEnabled:false}).translate(0,0,-len/2),mat);m.position.set(x,y,z);if(ry)m.rotation.y=ry;(par||scene).add(m);return m};
+  // an annular sector (stadium rows, roofs), built from y=0 up by h
+  const sector=(r0,r1,a0,a1,h,mat,x,y,z,par,slope)=>{const sh=new THREE.Shape(),n=Math.max(4,Math.ceil((a1-a0)/.08));for(let i=0;i<=n;i++){const a=a0+(a1-a0)*i/n;sh[i?'lineTo':'moveTo'](r1*Math.cos(a),r1*Math.sin(a))}
+    for(let i=n;i>=0;i--){const a=a0+(a1-a0)*i/n;sh.lineTo(r0*Math.cos(a),r0*Math.sin(a))}sh.closePath();
+    const geo=new THREE.ExtrudeGeometry(sh,{depth:h,bevelEnabled:false}).rotateX(-Math.PI/2);
+    if(slope){const P=geo.attributes.position;for(let i=0;i<P.count;i++)P.setY(i,P.getY(i)+slope*(Math.hypot(P.getX(i),P.getZ(i))-r0));geo.computeVertexNormals()}
+    const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);(par||scene).add(m);return m};
+  // blobby lagoon outline
+  const blob=(rx,rz,seed,n)=>{const sh=new THREE.Shape(),ph=[];for(let i=0;i<4;i++)ph.push(rs()*6.28);for(let i=0;i<=n;i++){const a=i/n*Math.PI*2,k=1+.16*Math.sin(a*2+ph[0])+.1*Math.sin(a*3+ph[1])+.06*Math.sin(a*5+ph[2]);sh[i?'lineTo':'moveTo'](rx*k*Math.cos(a),rz*k*Math.sin(a))}return sh};
+  // square-section struts merged into one mesh (lattice towers, wheel spokes, coaster supports)
+  class Struts{constructor(mat){this.p=[];this.mat=mat}
+    add(a,b,w){const dx=b[0]-a[0],dy=b[1]-a[1],dz=b[2]-a[2],l=Math.hypot(dx,dy,dz);if(l<1e-4)return;const d=[dx/l,dy/l,dz/l];let r=Math.abs(d[1])>.9?[1,0,0]:[0,1,0];
+      let u=[d[1]*r[2]-d[2]*r[1],d[2]*r[0]-d[0]*r[2],d[0]*r[1]-d[1]*r[0]];const ul=Math.hypot(...u);u=u.map(v=>v/ul*w/2);
+      const v=[(d[1]*u[2]-d[2]*u[1]),(d[2]*u[0]-d[0]*u[2]),(d[0]*u[1]-d[1]*u[0])];
+      const cs=[[1,1],[-1,1],[-1,-1],[1,-1]].map(([s,t])=>[u[0]*s+v[0]*t,u[1]*s+v[1]*t,u[2]*s+v[2]*t]);
+      for(let k=0;k<4;k++){const c0=cs[k],c1=cs[(k+1)%4];
+        const A0=[a[0]+c0[0],a[1]+c0[1],a[2]+c0[2]],A1=[a[0]+c1[0],a[1]+c1[1],a[2]+c1[2]],B0=[b[0]+c0[0],b[1]+c0[1],b[2]+c0[2]],B1=[b[0]+c1[0],b[1]+c1[1],b[2]+c1[2]];
+        this.p.push(...A0,...B0,...A1,...A1,...B0,...B1)}}
+    mesh(){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(this.p,3));g.computeVertexNormals();const mat=this.mat.clone();mat.side=THREE.DoubleSide;return new THREE.Mesh(g,mat)}}
+  // a square lattice tower: four legs, rings and zig-zag bracing
+  const lattice=(sb,cx,cz,y0,H,w0,w1,n,lw,bw,yaw)=>{const c=Math.cos(yaw||0),s=Math.sin(yaw||0),pt=(i,k)=>{const w=(w0+(w1-w0)*i/n)/2,sx=k===0||k===3?1:-1,sz=k<2?1:-1,lx=sx*w,lz=sz*w;return[cx+lx*c+lz*s,y0+H*i/n,cz-lx*s+lz*c]};
+    for(let i=0;i<=n;i++)for(let k=0;k<4;k++){if(i<n)sb.add(pt(i,k),pt(i+1,k),lw);if(i>0||w0>0)sb.add(pt(i,k),pt(i,(k+1)%4),bw);if(i<n)sb.add(pt(i,k),pt(i+1,(k+1+(i&1?0:3))%4),bw)}};
+  // ribbons draped over the ground (paths, roads)
+  const ribbon=(pts,w,mat,lift)=>{const P=[];for(let i=0;i<pts.length-1;i++){const a=pts[i],b=pts[i+1],n=Math.max(1,Math.ceil(Math.hypot(b[0]-a[0],b[1]-a[1])/8));for(let k=0;k<n;k++)P.push([a[0]+(b[0]-a[0])*k/n,a[1]+(b[1]-a[1])*k/n])}P.push(pts[pts.length-1]);
+    const pos=[],idx=[];for(let i=0;i<P.length;i++){const a=P[Math.max(0,i-1)],b=P[Math.min(P.length-1,i+1)],dx=b[0]-a[0],dz=b[1]-a[1],l=Math.hypot(dx,dz)||1,nx=-dz/l*w/2,nz=dx/l*w/2;
+      for(const sd of[1,-1]){const x=P[i][0]+nx*sd,z=P[i][1]+nz*sd;pos.push(x,G(x,z)+(lift||.5),z)}}
+    for(let i=0;i<P.length-1;i++){const a=i*2;idx.push(a,a+1,a+2,a+1,a+3,a+2)}
+    const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setIndex(idx);g.computeVertexNormals();const m=new THREE.Mesh(g,mat);m.material.side=THREE.DoubleSide;scene.add(m);
+    for(let i=0;i<pts.length-1;i++)pathSeg.push([pts[i][0],pts[i][1],pts[i+1][0],pts[i+1][1],w/2+1.5]);return m};
+  // flat coverings laid over the ground (lawns, car parks, paving) so they follow the slope instead of standing on a plinth
+  const dm=(c)=>M(c,{polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2,side:THREE.DoubleSide});
+  const drape=(cx,cz,w,d,ry,mat,lift)=>{const sx=Math.max(1,Math.ceil(w/9)),sz=Math.max(1,Math.ceil(d/9)),c=Math.cos(ry||0),s=Math.sin(ry||0),pos=[],idx=[];
+    for(let j=0;j<=sz;j++)for(let i=0;i<=sx;i++){const lx=(i/sx-.5)*w,lz=(j/sz-.5)*d,x=cx+lx*c+lz*s,z=cz-lx*s+lz*c;pos.push(x,G(x,z)+(lift||.4),z)}
+    for(let j=0;j<sz;j++)for(let i=0;i<sx;i++){const a=j*(sx+1)+i;idx.push(a,a+sx+1,a+1,a+1,a+sx+1,a+sx+2)}
+    const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setIndex(idx);g.computeVertexNormals();const m=new THREE.Mesh(g,mat);scene.add(m);return m};
+  const drapeDisc=(cx,cz,rx,rz,mat,lift)=>{const R=5,S=32,pos=[G(cx,cz)+(lift||.4)],idx=[];pos.splice(0,1,cx,G(cx,cz)+(lift||.4),cz);
+    for(let r=1;r<=R;r++)for(let k=0;k<S;k++){const a=k/S*Math.PI*2,x=cx+Math.cos(a)*rx*r/R,z=cz+Math.sin(a)*rz*r/R;pos.push(x,G(x,z)+(lift||.4),z)}
+    for(let k=0;k<S;k++){idx.push(0,1+k,1+(k+1)%S)}
+    for(let r=1;r<R;r++)for(let k=0;k<S;k++){const a=1+(r-1)*S+k,b=1+(r-1)*S+(k+1)%S,c=a+S,d=b+S;idx.push(a,c,b,b,c,d)}
+    const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setIndex(idx);g.computeVertexNormals();const m=new THREE.Mesh(g,mat);scene.add(m);return m};
+  const pathSeg=[];
+  const nearPath=(x,z)=>{for(const s of pathSeg){const dx=s[2]-s[0],dz=s[3]-s[1],l2=dx*dx+dz*dz||1;let t=((x-s[0])*dx+(z-s[1])*dz)/l2;t=Math.max(0,Math.min(1,t));if(Math.hypot(x-s[0]-dx*t,z-s[1]-dz*t)<s[4])return true}return false};
+  const light=(x,y,z,r,g,b,sz,ph)=>L.push(x,y,z,r,g,b,sz,ph===undefined?-1:ph);
+  const neon=(mesh,c)=>{mesh.userData.neon=c;landmarkLights.push(mesh);return mesh};
+  /* ---- the 1977 cable car: lattice pylons, two ropes, coloured egg pods on a continuous loop ---- */
+  const WF=[-1770,8880],SU=[-2228,10010];
+  const dirx=SU[0]-WF[0],dirz=SU[1]-WF[1],dl=Math.hypot(dirx,dirz),ux=dirx/dl,uz=dirz/dl,nx=-uz,nz=ux;   // along the line, and sideways
+  const ST=[];   // station roof levels
+  const stationLo=(()=>{ // Waterfront station: a long hall with a glazed pitched roof, green steelwork
+    const b=bld(22,10,36,K.cream,WF[0],WF[1],Math.atan2(ux,uz),{name:'the Ocean Park cable car station',ctop:16});const y0=b.userData.y0;
+    prism(24,6,36,M(0x2f7a5a),0,10,0,0,b);const gl=new THREE.Mesh(new THREE.BoxGeometry(18,3,30).translate(0,0,0),K.glass);gl.position.set(0,6,0);b.add(gl);
+    light(WF[0],y0+16,WF[1],1,.9,.7,5);return y0})();
+  const stationHi=(()=>{
+    const b=bld(20,9,34,K.cream,SU[0],SU[1],Math.atan2(ux,uz),{name:'the Ocean Park summit cable car station',ctop:15});const y0=b.userData.y0;
+    prism(22,6,34,M(0x2f7a5a),0,9,0,0,b);const gl=new THREE.Mesh(new THREE.BoxGeometry(16,3,28),K.glass);gl.position.set(0,5.4,0);b.add(gl);light(SU[0],y0+15,SU[1],1,.9,.7,5);return y0})();
+  const N=18,tops=[],pyl=new Struts(M(0x6f9a7a));
+  for(let i=0;i<=N;i++){const t=i/N,x=WF[0]+dirx*t,z=WF[1]+dirz*t;let h=0;for(let dx=-50;dx<=50;dx+=17)for(let dz=-50;dz<=50;dz+=17)h=Math.max(h,terrainAt(x+dx,z+dz));
+    const base=(i===0||i===N)?(i?stationHi:stationLo):Math.max(terrainAt(x,z),3.5);
+    const top=(i===0||i===N)?base+15:Math.max(base+17,h+23);tops.push([x,top,z]);
+    if(i>0&&i<N){lattice(pyl,x,z,base-2,top-base+2,5.4,1.6,Math.max(3,Math.round((top-base)/6)),.32,.16,Math.atan2(ux,uz));
+      for(const sd of[-1,1]){pyl.add([x,top-.3,z],[x+nx*sd*3.6,top-.3,z+nz*sd*3.6],.5);pyl.add([x+nx*sd*3.6,top-.3,z+nz*sd*3.6],[x+nx*sd*3.6,top+.5,z+nz*sd*3.6],.9)}
+      addCollider(x-3,x+3,z-3,z+3,top+2,'a cable car pylon');light(x,top+1.2,z,1,.12,.08,2.2,i%3*.31)}}
+  scene.add(pyl.mesh());
+  // ropes with a little sag, as polylines; cabins ride the centre line +/- the rope offset
+  const SEP=1.7,Pc=[],cum=[0];
+  for(let i=0;i<N;i++){const a=tops[i],b=tops[i+1],span=Math.hypot(b[0]-a[0],b[2]-a[2]);for(let k=0;k<(i===N-1?9:8);k++){const f=k/8;Pc.push([a[0]+(b[0]-a[0])*f,a[1]+(b[1]-a[1])*f-4*f*(1-f)*span*.012,a[2]+(b[2]-a[2])*f])}}
+  for(let i=1;i<Pc.length;i++)cum.push(cum[i-1]+Math.hypot(Pc[i][0]-Pc[i-1][0],Pc[i][1]-Pc[i-1][1],Pc[i][2]-Pc[i-1][2]));
+  const TOT=cum[cum.length-1];
+  {const pos=[];for(const sd of[-1,1])for(let i=0;i<Pc.length-1;i++)pos.push(Pc[i][0]+nx*SEP*sd,Pc[i][1],Pc[i][2]+nz*SEP*sd,Pc[i+1][0]+nx*SEP*sd,Pc[i+1][1],Pc[i+1][2]+nz*SEP*sd);
+   const cg=new THREE.BufferGeometry();cg.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));scene.add(new THREE.LineSegments(cg,new THREE.LineBasicMaterial({color:0x23282b})))}
+  const onRope=(s,o)=>{s=Math.min(TOT,Math.max(0,s));let lo=0,hi=Pc.length-1;while(hi-lo>1){const m=(lo+hi)>>1;if(cum[m]<=s)lo=m;else hi=m}const f=(s-cum[lo])/Math.max(1e-6,cum[lo+1]-cum[lo]),a=Pc[lo],b=Pc[lo+1];
+    o[0]=a[0]+(b[0]-a[0])*f;o[1]=a[1]+(b[1]-a[1])*f;o[2]=a[2]+(b[2]-a[2])*f;return o};
+  // the cabin: coloured dome, glass body, yellow base, grey hanger (one InstancedMesh per part)
+  const NC=30,podCols=[0xd6262b,0x7b3fa0,0x1f9a5b,0xf3c431,0x2c6fc2,0xe8571f];
+  const mkI=(geo,mat,col)=>{const im=new THREE.InstancedMesh(geo,mat,NC);im.frustumCulled=false;im.instanceMatrix.setUsage(THREE.DynamicDrawUsage);if(col)for(let i=0;i<NC;i++)im.setColorAt(i,new THREE.Color(podCols[(i*5+((i/6)|0))%podCols.length]));scene.add(im);return im};
+  const podDome=mkI(new THREE.SphereGeometry(1.25,14,7,0,Math.PI*2,0,Math.PI/2).scale(1,.75,1).translate(0,-2.55,0),M(0xffffff),true),
+    podBody=mkI(new THREE.CylinderGeometry(1.25,1.05,2.1,14,1,true).translate(0,-3.6,0),K.glass,false),
+    podBase=mkI(new THREE.CylinderGeometry(1.1,1.1,.35,14).translate(0,-4.8,0),K.yellow,false),
+    podArm=mkI(new THREE.BoxGeometry(.22,2.5,.22).translate(0,-1.25,0),M(0x4a5156),false);
+  const Lp=2*TOT+2*Math.PI*SEP,_o=[0,0,0],_m=new THREE.Matrix4(),pods=[];
+  for(let i=0;i<NC;i++)pods.push({p:Lp*i/NC});
+  const podPos=(p,o)=>{p=((p%Lp)+Lp)%Lp;const c=Math.PI*SEP;let s,lat,ex=0;
+    if(p<TOT){s=p;lat=SEP}else if(p<TOT+c){const f=(p-TOT)/SEP;s=TOT;lat=SEP*Math.cos(f);ex=SEP*Math.sin(f)}
+    else if(p<2*TOT+c){s=TOT-(p-TOT-c);lat=-SEP}else{const f=(p-2*TOT-c)/SEP;s=0;lat=-SEP*Math.cos(f);ex=-SEP*Math.sin(f)}
+    onRope(s,_o);o[0]=_o[0]+nx*lat+ux*ex;o[1]=_o[1];o[2]=_o[2]+nz*lat+uz*ex;return o};
+  const pp=[0,0,0];
+  const cabinsStep=(dt)=>{for(let i=0;i<NC;i++){const q=pods[i];q.p+=6.5*Math.min(dt,.2);podPos(q.p,pp);_m.makeTranslation(pp[0],pp[1],pp[2]);podDome.setMatrixAt(i,_m);podBody.setMatrixAt(i,_m);podBase.setMatrixAt(i,_m);podArm.setMatrixAt(i,_m)}
+    for(const im of[podDome,podBody,podBase,podArm])im.instanceMatrix.needsUpdate=true};
+  cabinsStep(0);anim.push(cabinsStep);
+  /* ---- the Headland (Summit): on the ridge, ~95 m up ---- */
+  // Ocean Park Tower (1983): tapered white shaft, revolving observation cabin, red and white mast
+  {const [x,z]=[-2262,10092],p=disc(9,K.conc,x,z,1),b=p.userData.y0;
+   const sh=new THREE.Mesh(new THREE.CylinderGeometry(2.4,3.6,52,18).translate(0,26,0),K.white);sh.position.set(x,b,z);scene.add(sh);
+   for(const y of[14,28,40]){const r=new THREE.Mesh(new THREE.CylinderGeometry(3.4-y*.02,3.4-y*.02,.8,18),K.cream);r.position.set(x,b+y,z);scene.add(r)}
+   const cab=new THREE.Group();cab.position.set(x,b+52,z);scene.add(cab);
+   const low=new THREE.Mesh(new THREE.CylinderGeometry(8.5,4.4,3,20).translate(0,1.5,0),M(0xc9c4b2));cab.add(low);
+   const win=new THREE.Mesh(new THREE.CylinderGeometry(9.6,9.6,3.2,20).translate(0,4.6,0),M(0x39505a));neon(win,0xffd36b);cab.add(win);
+   const top=new THREE.Mesh(new THREE.CylinderGeometry(10.4,9.6,1.2,20).translate(0,6.8,0),K.white);cab.add(top);
+   const dome=new THREE.Mesh(new THREE.ConeGeometry(6,3,20).translate(0,8.9,0),K.white);cab.add(dome);
+   const mast=new THREE.Mesh(new THREE.CylinderGeometry(.25,.5,16,6).translate(0,18,0),K.red);cab.add(mast);
+   anim.push((dt,t)=>{cab.rotation.y=t*.05});
+   light(x,b+52+27,z,1,.1,.1,4,.45);light(x,b+57,z,1,.85,.5,4);keep.push([x,z,14]);towerCollider(x,z,12,12,b+80,'the Ocean Park Tower')}
+  // Ferris wheel (white spoked wheel, teal and white gondolas) beside the Abyss
+  let wheelG=null;const wpods=[];
+  {const [x,z]=[-2176,10092],R=21,H=25,p=disc(13,K.conc,x,z,.8),y0=p.userData.y0,g=new THREE.Group();g.position.set(x,y0,z);g.rotation.y=Math.PI/2;scene.add(g);
+   const fr=new Struts(M(0xf1efe8));
+   for(const sd of[-1,1]){fr.add([0,H,sd*3.2],[11,0,sd*6],.9);fr.add([0,H,sd*3.2],[-11,0,sd*6],.9);fr.add([-11,.3,sd*6],[11,.3,sd*6],.8);fr.add([-6,H*.46,sd*4.6],[6,H*.46,sd*4.6],.5)}
+   fr.add([0,H,-3.2],[0,H,3.2],1.3);g.add(fr.mesh());
+   wheelG=new THREE.Group();wheelG.position.set(0,H,0);g.add(wheelG);
+   const wr=new Struts(M(0xf4f2ec)),NS=48;
+   for(const zz of[-1.5,1.5])for(let i=0;i<NS;i++){const a=i/NS*Math.PI*2,b=(i+1)/NS*Math.PI*2;wr.add([R*Math.cos(a),R*Math.sin(a),zz],[R*Math.cos(b),R*Math.sin(b),zz],.5);}
+   for(let i=0;i<24;i++){const a=i/24*Math.PI*2;for(const zz of[-1.5,1.5])wr.add([0,0,zz*.8],[R*Math.cos(a),R*Math.sin(a),zz],.22);wr.add([R*Math.cos(a),R*Math.sin(a),-1.5],[R*Math.cos(a),R*Math.sin(a),1.5],.35)}
+   const wm=wr.mesh();neon(wm,0x2b6f80);wheelG.add(wm);
+   const hub=new THREE.Mesh(new THREE.CylinderGeometry(1.8,1.8,5,12).rotateX(Math.PI/2),K.steel);wheelG.add(hub);
+   for(let i=0;i<20;i++){const a=i/20*Math.PI*2,pod=new THREE.Group();pod.position.set(R*Math.cos(a),R*Math.sin(a),0);
+     pod.add(new THREE.Mesh(new THREE.BoxGeometry(2.6,2.2,2.4).translate(0,-1.5,0),M(i%2?0x1fa5b8:0xf1efe8)));pod.add(new THREE.Mesh(new THREE.BoxGeometry(3,.3,2.8).translate(0,-.2,0),K.dark));wheelG.add(pod);wpods.push(pod)}
+   anim.push((dt,t)=>{wheelG.rotation.z=-t*.1;for(const q of wpods)q.rotation.z=t*.1});
+   keep.push([x,z,26]);addCollider(x-25,x+25,z-25,z+25,y0+2*R+H-R+4,'the Ocean Park Ferris wheel');light(x,y0+H,z,.5,.9,1,5)}
+  // Abyss Turbo Drop: twin lattice masts, a ring of seats lifted to the top and dropped
+  let abyss=null;
+  {const [x,z]=[-2126,10100],p=disc(13,K.conc,x,z,.8),y0=p.userData.y0,sb=new Struts(M(0xf1efe8)),HH=64;
+   lattice(sb,x,z-4.6,y0,HH,3.6,2.4,11,.34,.16,0);lattice(sb,x,z+4.6,y0,HH,3.6,2.4,11,.34,.16,0);
+   sb.add([x,y0+HH,z-4.6],[x,y0+HH,z+4.6],1.1);sb.add([x,y0+HH+1,z-4.6],[x,y0+HH+1,z+4.6],.5);scene.add(sb.mesh());
+   abyss=new THREE.Group();scene.add(abyss);abyss.position.set(x,y0+3,z);
+   abyss.add(new THREE.Mesh(new THREE.TorusGeometry(8,.9,8,28).rotateX(Math.PI/2),M(0x5c6f8d)));
+   for(let i=0;i<14;i++){const a=i/14*Math.PI*2,s=new THREE.Mesh(new THREE.BoxGeometry(1.5,1.1,1.5).translate(0,-1.5,0),i%2?K.yellow:K.red);s.position.set(Math.cos(a)*8,0,Math.sin(a)*8);abyss.add(s)}
+   const lo=y0+3,hiY=y0+HH-5,ease=u=>u*u*(3-2*u);
+   anim.push((dt,t)=>{const c=t%46;let y;if(c<6)y=lo;else if(c<26)y=lo+(hiY-lo)*ease((c-6)/20);else if(c<31)y=hiY;else if(c<34.5){const u=(c-31)/3.5;y=hiY-(hiY-lo)*u*u}else y=lo;abyss.position.y=y});
+   keep.push([x,z,16]);addCollider(x-7,x+7,z-12,z+12,y0+HH+3,'the Abyss Turbo Drop');light(x,y0+HH+3,z,1,.15,.1,4,.2)}
+  // Space Wheel (spinning arms) on the northern plateau
   let spin=null;
-  {const [x,z]=[-2222,9960],b=bAt(x,z),g=new THREE.Group();g.position.set(x,b,z);
-   const post=new THREE.Mesh(new THREE.BoxGeometry(1.6,12,1.6).translate(0,6,0),steel);g.add(post);
-   spin=new THREE.Group();spin.position.y=13;spin.rotation.x=.7;g.add(spin);
-   for(let i=0;i<10;i++){const a=i/10*Math.PI*2;const arm=new THREE.Mesh(new THREE.BoxGeometry(9.5,.35,.35).translate(4.75,0,0),steel);arm.rotation.z=a;spin.add(arm);
-     const pod=new THREE.Mesh(new THREE.BoxGeometry(2.4,1.8,1.8),new THREE.MeshLambertMaterial({color:i%2?0x2f6fd6:0xe8571f}));pod.position.set(Math.cos(a)*9.8,Math.sin(a)*9.8,0);spin.add(pod)}
-   scene.add(g);addCollider(x-13,x+13,z-13,z+13,b+26,'the Space Wheel')}
-  // Waterfront: Ferris wheel (1994)
-  let wheel=null;const pods=[];
-  {const [x,z]=[-1690,8700],b=bAt(x,z),g=new THREE.Group();g.position.set(x,b,z);g.rotation.y=-.6;
-   const R=28,H=R+4;for(const sd of[-1,1]){const leg=new THREE.Mesh(new THREE.BoxGeometry(1.2,H+3,1.2).translate(0,(H+3)/2,0),steel);leg.position.set(sd*0+0,0,sd*3.2);g.add(leg)}
-   wheel=new THREE.Group();wheel.position.set(0,H,0);g.add(wheel);
-   const rim=new THREE.Mesh(new THREE.TorusGeometry(R,.6,5,48),new THREE.MeshLambertMaterial({color:0xdadada}));rim.userData.neon=0x7be0ff;landmarkLights.push(rim);wheel.add(rim);
-   for(let i=0;i<8;i++){const sk=new THREE.Mesh(new THREE.BoxGeometry(R*2,.25,.25),steel);sk.rotation.z=i/8*Math.PI;wheel.add(sk)}
-   for(let i=0;i<16;i++){const a=i/16*Math.PI*2;const pod=new THREE.Mesh(new THREE.BoxGeometry(2.2,2.4,2.2).translate(0,-1.2,0),new THREE.MeshLambertMaterial({color:[0xd6262b,0xf5efe3,0x1b7d52,0xffb94a][i%4]}));pod.position.set(Math.cos(a)*R,Math.sin(a)*R,0);wheel.add(pod);pods.push(pod)}
-   scene.add(g);addCollider(x-30,x+30,z-30,z+30,b+2*R+6,'the Ocean Park Ferris wheel')}
-  // The cable car: pylons from the Waterfront station over Brick Hill to the Summit station, with cabins running both ways
-  const N=14,tops=[];
-  for(let i=0;i<=N;i++){const t=i/N,x=WF[0]+(SU[0]-WF[0])*t,z=WF[1]+(SU[1]-WF[1])*t;let h=0;for(let dx=-45;dx<=45;dx+=15)for(let dz=-45;dz<=45;dz+=15)h=Math.max(h,terrainAt(x+dx,z+dz));
-    const base=(i===0||i===N)?bAt(x,z):Math.max(terrainAt(x,z),3.5);const top=(i===0||i===N)?base+14:Math.max(base+16,h+22);tops.push(new THREE.Vector3(x,top,z));
-    if(i>0&&i<N){box(1.4,top-base+2,1.4,steel,x,base-2,z);box(8,.7,.7,steel,x,top-.5,z,Math.atan2(SU[0]-WF[0],SU[1]-WF[1])+Math.PI/2)}
-    else{box(14,10,14,new THREE.MeshLambertMaterial({color:0xcfd4d6}),x,base,z);addCollider(x-9,x+9,z-9,z+9,base+16,'a cable car station')}}
-  const cab=new THREE.MeshLambertMaterial({color:0xd6262b});
-  const pos=[];for(let i=0;i<tops.length-1;i++)pos.push(tops[i].x,tops[i].y,tops[i].z,tops[i+1].x,tops[i+1].y,tops[i+1].z);
-  const cg=new THREE.BufferGeometry();cg.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));scene.add(new THREE.LineSegments(cg,new THREE.LineBasicMaterial({color:0x2a2f33})));
-  const seg=[];let tot=0;for(let i=0;i<tops.length-1;i++){const l=tops[i].distanceTo(tops[i+1]);seg.push([tot,l]);tot+=l}
-  const cabins=[];for(let i=0;i<6;i++){const m=new THREE.Mesh(new THREE.BoxGeometry(4.6,3,3).translate(0,-4.5,0),cab);scene.add(m);cabins.push({m,s:tot*(i+.5)/6,d:i%2?-1:1})}
-  const at=(s,out)=>{for(let i=0;i<seg.length;i++)if(s<=seg[i][0]+seg[i][1]||i===seg.length-1){const f=Math.min(1,Math.max(0,(s-seg[i][0])/seg[i][1]));return out.lerpVectors(tops[i],tops[i+1],f)}};
-  const tmp=new THREE.Vector3();
-  parkAnim=(dt,t)=>{
-    if(spin)spin.rotation.z=t*.9;
-    if(wheel){wheel.rotation.z=t*.12;for(const p of pods)p.rotation.z=-wheel.rotation.z}
-    for(const c of cabins){c.s+=c.d*7*Math.min(dt,.2);if(c.s>tot){c.s=tot;c.d=-1}if(c.s<0){c.s=0;c.d=1}at(c.s,tmp);c.m.position.copy(tmp)}
-  };
+  {const [x,z]=[-2180,9940],p=disc(11,K.conc,x,z,.8),b=p.userData.y0,g=new THREE.Group();g.position.set(x,b,z);
+   const post=new THREE.Mesh(new THREE.BoxGeometry(1.8,13,1.8).translate(0,6.5,0),K.steel);g.add(post);
+   spin=new THREE.Group();spin.position.y=14;spin.rotation.x=.7;g.add(spin);
+   for(let i=0;i<10;i++){const a=i/10*Math.PI*2,arm=new THREE.Mesh(new THREE.BoxGeometry(9.5,.35,.35).translate(4.75,0,0),K.steel);arm.rotation.z=a;spin.add(arm);
+     const pod=new THREE.Mesh(new THREE.BoxGeometry(2.4,1.8,1.8),M(i%2?0x2f6fd6:0xe8571f));pod.position.set(Math.cos(a)*9.8,Math.sin(a)*9.8,0);spin.add(pod)}
+   scene.add(g);keep.push([x,z,14]);addCollider(x-13,x+13,z-13,z+13,b+27,'the Space Wheel');anim.push((dt,t)=>{spin.rotation.z=t*.9})}
+  // The Dragon: a looping steel coaster with a lift hill, a vertical loop, camelbacks and two turnarounds, with a moving train
+  {const O=[-2112,9830],yb=G(-2095,9900)+.8,pts=[],P=(a,b,y)=>pts.push(new THREE.Vector3(O[0]+b,yb+y,O[1]+a));
+   P(0,18,3);P(14,18,3);P(30,18,12);P(46,18,25);P(58,18,33);P(68,18,34);P(78,18,29);P(88,18,15);P(97,18,6);
+   for(let k=0;k<=12;k++){const th=k/12*Math.PI*2,R=12.5;P(110+R*Math.sin(th),20+5*th/(Math.PI*2),5+R*(1-Math.cos(th)))}
+   P(128,26,6);P(142,28,12);P(154,28,6);
+   for(let k=1;k<=7;k++){const ph=k/8*Math.PI;P(160+24*Math.sin(ph),28+(40)*(1-Math.cos(ph))/2,7)}
+   P(158,68,7);P(142,68,13);P(122,68,21);P(100,68,12);P(80,68,6);P(58,68,12);P(34,68,8);P(12,68,5);
+   for(let k=1;k<=7;k++){const ph=k/8*Math.PI;P(-25*Math.sin(ph),43+25*Math.cos(ph),4)}
+   const curve=new THREE.CatmullRomCurve3(pts,true,'centripetal');
+   scene.add(new THREE.Mesh(new THREE.TubeGeometry(curve,520,.55,6,true),new THREE.MeshLambertMaterial({color:0xe8571f})));
+   const sb=new Struts(M(0xe9e4d6)),len=curve.getLength(),ns=Math.floor(len/9);
+   for(let i=0;i<ns;i++){const q=curve.getPointAt(i/ns),gy=G(q.x,q.z);if(q.y-gy>3)sb.add([q.x,q.y-.6,q.z],[q.x,gy-1,q.z],.55)}
+   scene.add(sb.mesh());
+   // station and a small queue shed
+   bld(7,4,24,K.cream,O[0]+18,O[1]+8,0,{name:'the Dragon station',ctop:2});
+   const cars=[];for(let i=0;i<6;i++){const m=new THREE.Mesh(new THREE.BoxGeometry(2.3,1.1,3.3).translate(0,.9,0),M(i%3?0xf3c431:0xd6262b));scene.add(m);cars.push(m)}
+   const _p=new THREE.Vector3(),_t=new THREE.Vector3();let s0=60;
+   anim.push((dt)=>{s0=(s0+13*Math.min(dt,.2))%len;cars.forEach((m,i)=>{const u=(((s0-i*3.9)%len)+len)%len/len;curve.getPointAt(u,_p);curve.getTangentAt(u,_t);m.position.copy(_p);m.lookAt(_p.x+_t.x,_p.y+_t.y,_p.z+_t.z)})});
+   keep.push([O[0]+45,O[1]+85,100]);addCollider(O[0]+8,O[0]+78,O[1]-28,O[1]+190,yb+38,'the Dragon roller coaster')}
+  // Ocean Theatre (1977): a fan of terraced seats cut into the slope under a long sloping canopy, looking over the show pool to the sea
+  {const [cx,cz]=[-2042,10152],yP=G(cx+8,cz)-1;
+   const rows=18,a0=Math.PI-1.12,a1=Math.PI+1.12;
+   for(let i=0;i<rows;i++){const r0=22+2.2*i,top=yP+1+i*1.05,base=yP-5;sector(r0,r0+2.2,a0,a1,top-base,i%2?M(0xd8d4c6):M(0x9cc3d8),cx,base,cz)}
+   const topR=22+2.2*rows,topY=yP+1+rows*1.05;
+   sector(topR,topR+1.4,a0,a1,5,K.conc,cx,topY-4,cz);   // the back wall
+   sector(34,topR+3,a0+.06,a1-.06,.9,K.white,cx,yP+15,cz,null,.42);sector(topR+2,topR+3.4,a0+.06,a1-.06,2.4,K.blue,cx,yP+15+.42*(topR+2-34)-1,cz,null,.42);
+   const cs=new Struts(K.conc);for(let k=0;k<=10;k++){const a=a0+.06+(a1-a0-.12)*k/10,r=topR+1,px=cx+Math.cos(a)*r,pz=cz-Math.sin(a)*r;cs.add([px,topY-2,pz],[px,yP+15+.42*(r-34),pz],1.3)}scene.add(cs.mesh());
+   const sk=24;const base=new THREE.Mesh(new THREE.CylinderGeometry(22,22,sk,36).translate(0,-sk/2,0),K.conc);base.position.set(cx,yP,cz);scene.add(base);
+   const w=new THREE.Mesh(new THREE.CylinderGeometry(20.6,20.6,.5,36),K.water);w.position.set(cx,yP+.05,cz);scene.add(w);
+   const ext=new THREE.Mesh(new THREE.BoxGeometry(34,sk,46).translate(17,-sk/2,0),K.conc);ext.position.set(cx+8,yP-.6,cz);scene.add(ext);
+   const w2=new THREE.Mesh(new THREE.BoxGeometry(32,.5,43).translate(16,0,0),K.water);w2.position.set(cx+8,yP-.4,cz);scene.add(w2);
+   const isl=new THREE.Mesh(new THREE.CylinderGeometry(7,7,.9,22),K.white);isl.position.set(cx+19,yP-.1,cz);scene.add(isl);
+   const stage=new THREE.Mesh(new THREE.BoxGeometry(16,3,9).translate(0,1.5,0),K.cream);stage.position.set(cx+36,yP-.4,cz);scene.add(stage);
+   for(let k=0;k<4;k++){const lp=new THREE.Mesh(new THREE.CylinderGeometry(7.5,8.5,6,14).translate(0,-3,0),K.stone);lp.position.set(cx+10+k*13,yP-1.5,cz-42+k*2);scene.add(lp);const lw=new THREE.Mesh(new THREE.CylinderGeometry(6.6,6.6,.5,14),K.water);lw.position.set(cx+10+k*13,yP-1.1,cz-42+k*2);scene.add(lw)}
+   keep.push([cx-14,cz,66]);addCollider(cx-66,cx+46,cz-52,cz+52,yP+32,'the Ocean Theatre');light(cx-16,yP+22,cz,1,.9,.7,4)}
+  // Pacific Pier: sea lion lagoon ringed by rocks with a white lighthouse
+  {const [x,z]=[-2205,10268],f=foot(x,z,56,46,0),y0=f.hi,sk=y0-f.lo+2;
+   const plaza=disc(36,K.paving,x,z,.5,{y:y0});
+   const sh=blob(24,16,0,40);const lag=new THREE.Mesh(new THREE.ExtrudeGeometry(sh,{depth:.4,bevelEnabled:false}).rotateX(-Math.PI/2),K.water);lag.position.set(x+2,y0+.35,z);scene.add(lag);
+   const rim=new THREE.Mesh(new THREE.ExtrudeGeometry(blob(27,19,0,40),{depth:1.2,bevelEnabled:false}).rotateX(-Math.PI/2),K.stone);rim.position.set(x+2,y0,z);scene.add(rim);
+   const lagTop=new THREE.Mesh(new THREE.ExtrudeGeometry(sh,{depth:.5,bevelEnabled:false}).rotateX(-Math.PI/2),K.water);lagTop.position.set(x+2,y0+1.25,z);scene.add(lagTop);
+   for(let i=0;i<26;i++){const a=rs()*6.28,rr=rs()<.6?21+rs()*7:rs()*14,s=1.3+rs()*2.8,rk=new THREE.Mesh(new THREE.DodecahedronGeometry(s,0),K.stone);rk.scale.y=.7;rk.position.set(x+2+Math.cos(a)*rr*1.1,y0+1.6+s*.3,z+Math.sin(a)*rr*.75);rk.rotation.set(rs()*3,rs()*3,rs()*3);scene.add(rk)}
+   // lighthouse
+   const lx=x-26,lz=z-4;const tw=new THREE.Mesh(new THREE.CylinderGeometry(2.1,3,15,16).translate(0,7.5,0),K.white);tw.position.set(lx,y0,lz);scene.add(tw);
+   for(const y of[4,9]){const bnd=new THREE.Mesh(new THREE.CylinderGeometry(2.6-y*.05,2.6-y*.05,1.4,16),K.red);bnd.position.set(lx,y0+y,lz);scene.add(bnd)}
+   const gal=new THREE.Mesh(new THREE.CylinderGeometry(3.2,3.2,.5,16),K.dark);gal.position.set(lx,y0+15,lz);scene.add(gal);
+   const lan=new THREE.Mesh(new THREE.CylinderGeometry(1.6,1.6,2.6,12),K.glass);lan.position.set(lx,y0+16.5,lz);scene.add(lan);
+   const cap=new THREE.Mesh(new THREE.ConeGeometry(2.4,2.4,12),K.red);cap.position.set(lx,y0+19,lz);scene.add(cap);
+   light(lx,y0+16.8,lz,1,.95,.7,6,.1);
+   const pb=bld(34,7,12,K.white,x+8,z-34,0,{name:'the Pacific Pier building',ctop:3});prism(13,4.5,35,K.blue,0,7,0,0,pb).rotation.y=Math.PI/2;
+   addCollider(lx-4,lx+4,lz-4,lz+4,y0+22,'the Pacific Pier lighthouse');keep.push([x,z,40])}
+  // Shark Aquarium and Atoll Reef: round white halls under shallow domes
+  for(const d of[[-2266,10214,24,8,'the Shark Aquarium'],[-2212,10318,15,6,'Atoll Reef']]){const [x,z,r,h,nm]=d,f=foot(x,z,2*r,2*r,0),y0=f.hi,sk=y0-f.lo+2;
+   const wall=new THREE.Mesh(new THREE.CylinderGeometry(r,r+1,h+sk,32).translate(0,(h+sk)/2-sk,0),K.white);wall.position.set(x,y0,z);scene.add(wall);
+   const band=new THREE.Mesh(new THREE.CylinderGeometry(r+.15,r+.15,2.2,32),K.blue);band.position.set(x,y0+h-3,z);scene.add(band);
+   const Rs=(r*r+64)/16,thm=Math.asin(r/Rs);const dome=new THREE.Mesh(new THREE.SphereGeometry(Rs,32,10,0,Math.PI*2,0,thm),M(0xf4f2ec));dome.position.set(x,y0+h-Rs*Math.cos(thm),z);scene.add(dome);
+   const eye=new THREE.Mesh(new THREE.CircleGeometry(r*.28,20).rotateX(-Math.PI/2),K.glass);eye.position.set(x,y0+h+8*.86+.4,z);scene.add(eye);
+   addCollider(x-r,x+r,z-r,z+r,y0+h+10,nm);keep.push([x,z,r+6]);light(x,y0+h+9,z,.8,.9,1,3.5)}
+  // Marine World halls with blue roofs and a plaza between the attractions
+  {const ry=-.45;
+   const A=bld(46,10,17,K.white,-2188,10168,ry,{name:'a Marine World hall',ctop:6});prism(19,4.6,47,K.blue,0,10,0,0,A).rotation.y=Math.PI/2;
+   const B=bld(30,8,14,K.cream,-2160,10205,ry,{name:'a Marine World hall',ctop:6});prism(16,4,31,K.blue,0,8,0,0,B).rotation.y=Math.PI/2;
+   const C=bld(26,8,16,K.cream,-2236,10135,.4,{name:'the Summit restaurant',ctop:6});hip(30,20,6,K.roofRed,0,8,0,0,C);
+   const p=disc(30,K.paving,-2194,10128,.5);const fn=new THREE.Mesh(new THREE.CylinderGeometry(5,5,1.2,16),K.stone);fn.position.set(-2194,p.userData.y0+.5,10128);scene.add(fn);
+   const fw=new THREE.Mesh(new THREE.CylinderGeometry(4.2,4.2,.4,16),K.water);fw.position.set(-2194,p.userData.y0+1.2,10128);scene.add(fw);keep.push([-2194,10128,34])}
+  for(const k of[[-2150,10140,0],[-2220,10186,.5],[-2160,10244,.2],[-2110,10062,0],[-2216,10062,.3],[-2150,9985,.1],[-2236,10250,0]]){const m=bld(7,3.4,5,K.pink,k[0],k[1],k[2],{name:'a kiosk',ctop:1,nobase:false});hip(9,7,2,[K.roofRed,K.roofGreen,K.blue][Math.abs(k[0])%3],0,3.4,0,0,m)}
+  // Flying Swing: a tall mast with a tilted rotating crown of hanging chairs
+  {const [x,z]=[-2246,10046],p=disc(9,K.conc,x,z,.7),b=p.userData.y0,g=new THREE.Group();g.position.set(x,b,z);scene.add(g);
+   g.add(new THREE.Mesh(new THREE.CylinderGeometry(.9,1.4,22,10).translate(0,11,0),K.steel));
+   const crown=new THREE.Group();crown.position.y=22;g.add(crown);const top=new THREE.Group();top.rotation.x=.22;crown.add(top);top.add(new THREE.Mesh(new THREE.CylinderGeometry(5.2,5.2,.5,16),M(0xd6262b)));
+   const ch=[];for(let i=0;i<14;i++){const a=i/14*6.283,lw=new THREE.Group();lw.position.set(Math.cos(a)*6.4,0,Math.sin(a)*6.4);top.add(lw);
+     lw.add(new THREE.Mesh(new THREE.BoxGeometry(.08,9,.08).translate(0,-4.5,0),K.steel));const seat=new THREE.Mesh(new THREE.BoxGeometry(.9,.5,.9).translate(0,-9.2,0),M(i%2?0xf3c431:0x2c6fc2));lw.add(seat);ch.push(lw)}
+   anim.push((dt,t)=>{top.rotation.y=t*1.1;const sw=Math.min(1,t%60/8);for(let i=0;i<ch.length;i++){const a=i/ch.length*6.283+t*1.1;ch[i].rotation.set(-Math.sin(a)*.5*Math.min(1,sw),0,Math.cos(a)*.5*Math.min(1,sw))}});
+   keep.push([x,z,12]);addCollider(x-10,x+10,z-10,z+10,b+27,'the Flying Swing')}
+  // Mine Train: a low teal coaster winding down the western slope
+  {const pts=[],cx=-2318,cz=10150;for(let k=0;k<14;k++){const a=k/14*Math.PI*2,rx=34+9*Math.sin(a*3),rz=58+6*Math.cos(a*2),x=cx+Math.cos(a)*rx*.8,z=cz+Math.sin(a)*rz;pts.push(new THREE.Vector3(x,G(x,z)+3.5+2.5*Math.sin(a*4),z))}
+   const cv=new THREE.CatmullRomCurve3(pts,true,'centripetal');scene.add(new THREE.Mesh(new THREE.TubeGeometry(cv,200,.5,5,true),K.teal));
+   const sb=new Struts(M(0xe9e4d6)),n=Math.floor(cv.getLength()/10);for(let i=0;i<n;i++){const q=cv.getPointAt(i/n),gy=G(q.x,q.z);if(q.y-gy>1.5)sb.add([q.x,q.y-.5,q.z],[q.x,gy-1,q.z],.45)}scene.add(sb.mesh());
+   const tr=[];for(let i=0;i<4;i++){const m=new THREE.Mesh(new THREE.BoxGeometry(1.9,1,2.6).translate(0,.8,0),M(i%2?0xf3c431:0x1fa5b8));scene.add(m);tr.push(m)}
+   const len=cv.getLength(),_p=new THREE.Vector3(),_t=new THREE.Vector3();let s0=10;
+   anim.push((dt)=>{s0=(s0+9*Math.min(dt,.2))%len;tr.forEach((m,i)=>{const u=(((s0-i*3.2)%len)+len)%len/len;cv.getPointAt(u,_p);cv.getTangentAt(u,_t);m.position.copy(_p);m.lookAt(_p.x+_t.x,_p.y+_t.y,_p.z+_t.z)})});keep.push([cx,cz,62])}
+  // Raging River: a winding blue channel beside the cable car station
+  ribbon([[-2200,9990],[-2182,9996],[-2160,9982],[-2142,9996],[-2130,10020],[-2150,10036],[-2176,10030]],6,M(0x3aa6c4,{polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-4}),.7);keep.push([-2165,10010,34]);
+  // more halls and shops along the summit paths
+  for(const k of[[-2128,10166,.5,22,7,12,K.cream,K.blue],[-2250,10170,.3,16,6,10,K.white,K.roofRed],[-2150,10040,.1,14,6,9,K.cream,K.roofGreen],[-2196,10062,.4,12,5,8,K.white,K.blue],[-2120,10230,.6,20,7,11,K.cream,K.blue]]){
+   const b=bld(k[3],k[4],k[5],k[6],k[0],k[1],k[2],{name:'a summit building',ctop:5});prism(k[5]+2,3.4,k[3]+1,k[7],0,k[4],0,0,b).rotation.y=Math.PI/2}
+  // footpaths between the attractions
+  ribbon([[-2228,10036],[-2216,10090],[-2194,10112]],5,K.path);ribbon([[-2194,10128],[-2150,10116],[-2134,10100]],4,K.path);ribbon([[-2194,10112],[-2230,10108],[-2262,10102]],4,K.path);
+  ribbon([[-2194,10145],[-2192,10200],[-2205,10250]],5,K.path);ribbon([[-2190,10190],[-2150,10186],[-2105,10160]],4,K.path);ribbon([[-2200,10216],[-2243,10214]],4,K.path);
+  ribbon([[-2228,9998],[-2204,9960],[-2170,9925],[-2118,9858]],4,K.path);ribbon([[-2205,10250],[-2212,10300]],4,K.path);
+  /* ---- the Lowland (Waterfront side): entry plaza, Kids' World, Lowland Gardens, Middle Kingdom, Bird Paradise ---- */
+  const lagoon=(sh,x,z,mat,rx,rz)=>{const f=foot(x,z,2*rx,2*rz,0),y0=f.hi,sk=y0-f.lo+1.5;
+    const base=new THREE.Mesh(new THREE.ExtrudeGeometry(sh,{depth:sk,bevelEnabled:false}).rotateX(-Math.PI/2).translate(0,-sk,0),K.stone);base.position.set(x,y0,z);base.scale.set(1.04,1,1.04);scene.add(base);
+    const w=new THREE.Mesh(new THREE.ExtrudeGeometry(sh,{depth:.3,bevelEnabled:false}).rotateX(-Math.PI/2),mat);w.position.set(x,y0+.12,z);scene.add(w);return y0};
+  // car park on the road side, as in the 1970s guide: bays, cars and coaches
+  {const cx=-1832,cz=8508,W=150,D=52;drape(cx,cz,W,D,0,dm(0x55595c),.4);const y0=G(cx,cz)+.4;
+   const tx=canvasTex(1024,360,(g,w,h)=>{g.fillStyle='rgba(0,0,0,0)';g.clearRect(0,0,w,h);g.strokeStyle='#e9e9e2';g.lineWidth=3;for(let r=0;r<2;r++){const y0=r*h/2+8;for(let i=0;i<=w/ (w/30);i++){g.beginPath();g.moveTo(i*w/30,y0+h/2*.12);g.lineTo(i*w/30,y0+h/2*.84);g.stroke()}}});
+   const ln=new THREE.Mesh(new THREE.PlaneGeometry(W-6,D-6).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({map:tx,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-4}));ln.position.set(cx,y0+.15,cz);scene.add(ln);
+   const cars=[];for(let r=0;r<2;r++)for(let i=0;i<30;i++)if(rs()<.62)cars.push([cx-W/2+5+i*4.85,cz-D/2+7+r*D/2*.97-(r?3:0),rs()<.5?0:Math.PI]);
+   const ci=new THREE.InstancedMesh(new THREE.BoxGeometry(1.8,1.3,4.1).translate(0,.8,0),M(0xffffff),cars.length),tc=new THREE.Color(),mm=new THREE.Matrix4(),pc=[0xe9e9e2,0x2a2f35,0xb8271f,0x2c4f9a,0xc8ccd0,0x1f6a44,0xe3b22b];
+   cars.forEach((c,i)=>{mm.makeRotationY(Math.PI/2).setPosition(c[0],y0+.4,c[1]);ci.setMatrixAt(i,mm);ci.setColorAt(i,tc.setHex(pc[Math.floor(rs()*pc.length)]))});scene.add(ci);
+   for(let i=0;i<5;i++){const m=new THREE.Mesh(new THREE.BoxGeometry(2.6,3.2,11).translate(0,1.8,0),M(i%2?0xf2f2ee:0x2c6fc2));m.position.set(cx-W/2+14+i*26,y0+.4,cz+D/2-9);m.rotation.y=Math.PI/2;scene.add(m)}
+   keep.push([cx,cz,78])}
+  // Entry Plaza: a row of blue-and-white vaulted canopies over the ticket booths, with the park's sign
+  {const cx=-1800,cz=8580;drape(cx,cz+26,132,64,0,dm(0xcdbf9f),.4);const y0=foot(cx,cz,100,24,0).hi;slab(104,26,K.conc,cx,cz,0,.3,{y:y0});
+   for(let i=-3;i<=3;i++){const a=arch(7,.6,24,i%2?K.white:K.blue,cx+i*14.2,y0,cz,0);a.rotation.y=0;a.geometry.rotateX(0);a.position.z=cz;
+     const bt=new THREE.Mesh(new THREE.BoxGeometry(5,3.2,4).translate(0,1.6,0),i%2?K.blue:K.white);bt.position.set(cx+i*14.2,y0,cz-6);scene.add(bt)}
+   const bk=new THREE.Mesh(new THREE.BoxGeometry(100,.8,.8),K.navy);bk.position.set(cx,y0+7.6,cz+12);scene.add(bk);
+   const sg=canvasTex(1024,128,(g,w,h)=>{g.fillStyle='#14396f';g.fillRect(0,0,w,h);g.fillStyle='#fff';g.font='700 78px Arial, sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText('OCEAN PARK  海洋公園',w/2,h/2+4)});
+   const sp=new THREE.Mesh(new THREE.PlaneGeometry(42,5.2),new THREE.MeshLambertMaterial({map:sg,emissiveMap:sg,emissive:0x000000,side:THREE.DoubleSide}));sp.position.set(cx,y0+11,cz-12.6);sp.rotation.y=Math.PI;scene.add(sp);neon(sp,0xffffff);
+   addCollider(cx-52,cx+52,cz-14,cz+12,y0+9,'the Ocean Park entrance');keep.push([cx,cz+10,62]);light(cx,y0+9,cz,1,.95,.8,5)}
+  // fountain plaza, and the central flower circle
+  {const cx=-1800,cz=8672,p=disc(26,K.paving,cx,cz,.5),y0=p.userData.y0;
+   const r1=new THREE.Mesh(new THREE.CylinderGeometry(9.5,9.5,1.2,24),K.stone);r1.position.set(cx,y0,cz);scene.add(r1);const w=new THREE.Mesh(new THREE.CylinderGeometry(8.4,8.4,.4,24),K.water);w.position.set(cx,y0+1,cz);scene.add(w);
+   const jt=new THREE.Mesh(new THREE.CylinderGeometry(.4,1.2,9,8).translate(0,4.5,0),K.white);jt.position.set(cx,y0+1,cz);scene.add(jt);
+   for(let i=0;i<10;i++){const a=i/10*6.283,f=new THREE.Mesh(new THREE.CylinderGeometry(2.4,2.4,.7,10),M([0xd6262b,0xf3c431,0xe8739a,0xffffff,0xe8571f][i%5]));f.position.set(cx+Math.cos(a)*19,y0+.2,cz+Math.sin(a)*19);scene.add(f)}
+   keep.push([cx,cz,30]);light(cx,y0+9,cz,.6,.9,1,4)}
+  // Lowland Gardens: a lawn, two ponds, a pavilion and an arched bridge
+  {drapeDisc(-1895,8752,62,48,dm(0x5d9c45),.35);
+   const y1=lagoon(blob(24,13,0,36),-1902,8742,K.pond,26,15),y2=lagoon(blob(13,8,0,30),-1858,8782,K.pond,14,9);
+   const [px,pz]=[-1878,8716],f=foot(px,pz,12,12,0),pb=new THREE.Group();pb.position.set(px,f.hi,pz);scene.add(pb);
+   pb.add(new THREE.Mesh(new THREE.BoxGeometry(11,f.hi-f.lo+2,11).translate(0,-(f.hi-f.lo+2)/2+.8,0),K.paving));
+   for(const [a,b] of[[-4,-4],[4,-4],[4,4],[-4,4]]){const c=new THREE.Mesh(new THREE.CylinderGeometry(.4,.4,5).translate(0,3.3,0),K.pillar);c.position.set(a,0,b);pb.add(c)}
+   hip(13,13,3.6,K.roofGreen,0,5.8,0,0,pb);addCollider(px-6.5,px+6.5,pz-6.5,pz+6.5,f.hi+9.5,'a garden pavilion');keep.push([px,pz,9]);
+   const br=new THREE.Mesh(new THREE.TorusGeometry(5,.7,6,14,Math.PI).rotateY(0),K.stone);br.position.set(-1882,y1+.4,8758);br.rotation.y=.4;br.scale.set(1,.55,1);scene.add(br);
+   keep.push([-1902,8742,30],[-1858,8782,16])}
+  // Kids' World: bright low halls, a carousel and a small wheel
+  {for(const k of[[-1936,8600,0,0xe8571f,0xd6262b],[-1912,8592,.2,0x2c6fc2,0xf3c431],[-1946,8628,.1,0xf3c431,0x2c6fc2],[-1948,8660,-.1,0xe8739a,0x1f9a5b]]){const b=bld(14,5,11,M(k[3]),k[0],k[1],k[2],{name:"a Kids' World hall",ctop:3});hip(17,14,3.5,M(k[4]),0,5,0,0,b)}
+   const [cx,cz]=[-1912,8638],p=disc(10,K.paving,cx,cz,.5),y0=p.userData.y0;const car=new THREE.Group();car.position.set(cx,y0,cz);scene.add(car);
+   const fl=new THREE.Mesh(new THREE.CylinderGeometry(8.4,8.4,.7,20).translate(0,1.2,0),K.pink);car.add(fl);
+   const rf=new THREE.Mesh(new THREE.ConeGeometry(9.4,3.6,20).translate(0,8.6,0),K.red);car.add(rf);const pole=new THREE.Mesh(new THREE.CylinderGeometry(.8,.8,6.4).translate(0,4.4,0),K.gold);car.add(pole);
+   for(let i=0;i<12;i++){const a=i/12*6.283,pp=new THREE.Mesh(new THREE.BoxGeometry(.25,5,.25).translate(0,4,0),K.gold);pp.position.set(Math.cos(a)*6.6,0,Math.sin(a)*6.6);car.add(pp);
+     const h=new THREE.Mesh(new THREE.BoxGeometry(1.4,1.1,2.2).translate(0,2.6,0),M([0xffffff,0xf3c431,0x2c6fc2,0xd6262b][i%4]));h.position.set(Math.cos(a)*6.6,0,Math.sin(a)*6.6);h.rotation.y=-a+Math.PI/2;car.add(h)}
+   anim.push((dt,t)=>{car.rotation.y=t*.7});addCollider(cx-10,cx+10,cz-10,cz+10,y0+12,'the Kids\' World carousel');keep.push([cx,cz,14]);
+   const [wx,wz]=[-1893,8620],pw=disc(9,K.paving,wx,wz,.4),wy=pw.userData.y0,wg=new THREE.Group();wg.position.set(wx,wy,wz);scene.add(wg);
+   const ws=new Struts(M(0xe9e4d6));ws.add([0,9,0],[6,0,2],.4);ws.add([0,9,0],[-6,0,2],.4);ws.add([0,9,0],[6,0,-2],.4);ws.add([0,9,0],[-6,0,-2],.4);wg.add(ws.mesh());
+   const mw=new THREE.Group();mw.position.y=9;wg.add(mw);const mr=new Struts(M(0xf1f1e8));for(let i=0;i<16;i++){const a=i/16*6.283,b=(i+1)/16*6.283;mr.add([7*Math.cos(a),7*Math.sin(a),0],[7*Math.cos(b),7*Math.sin(b),0],.3);mr.add([0,0,0],[7*Math.cos(a),7*Math.sin(a),0],.15)}mw.add(mr.mesh());
+   const mp=[];for(let i=0;i<8;i++){const a=i/8*6.283,q=new THREE.Mesh(new THREE.BoxGeometry(1.4,1.2,1.4).translate(0,-.7,0),M([0xd6262b,0xf3c431,0x2c6fc2,0x1f9a5b][i%4]));q.position.set(7*Math.cos(a),7*Math.sin(a),0);mw.add(q);mp.push(q)}
+   anim.push((dt,t)=>{mw.rotation.z=t*.25;for(const q of mp)q.rotation.z=-t*.25});wg.rotation.y=.5;addCollider(wx-8,wx+8,wz-8,wz+8,wy+19,'the Kids\' World wheel');keep.push([wx,wz,12])}
+  // Middle Kingdom: a courtyard of red-pillared halls with glazed roofs and a pagoda
+  {const [cx,cz]=[-1736,8682];drape(cx,cz,70,56,0,dm(0xb9a98a),.4);
+   for(const k of[[cx-24,cz-18,20,10,0],[cx+24,cz-18,20,10,0],[cx-30,cz+10,10,24,Math.PI/2*0],[cx+30,cz+10,10,24,0]]){const b=bld(k[2],4.6,k[3],M(0xefe6cf),k[0],k[1],0,{name:'a Middle Kingdom hall',ctop:3});
+     b.add(Object.assign(new THREE.Mesh(new THREE.BoxGeometry(k[2]+1,.5,k[3]+1).translate(0,4.6,0),K.pillar)));hip(k[2]+4,k[3]+4,4.2,K.roofGreen,0,5.1,0,0,b);
+     const rr=hip(k[2]+4.2,k[3]+4.2,.7,K.gold,0,5.1,0,0,b);rr.visible=false}
+   const pg=bld(11,4,11,K.cream,cx,cz+14,0,{name:'the Middle Kingdom pagoda',ctop:16});let y=4,w=10;for(let i=0;i<4;i++){const tier=new THREE.Mesh(new THREE.BoxGeometry(w-2,3.6,w-2).translate(0,y+1.8-4,0),K.pillar);pg.add(tier);hip(w+3,w+3,2.8,i%2?K.roofGreen:M(0xc9962b),0,y+3.6-4,0,0,pg);y+=5.2;w-=1.6}
+   const fi=new THREE.Mesh(new THREE.ConeGeometry(.5,3.4,6).translate(0,y-4+1.7,0),K.gold);pg.add(fi);
+   keep.push([cx,cz,44]);light(cx,pg.userData.y0+22,cz+14,1,.8,.4,3.5)}
+  // Bird Paradise: a netted aviary dome over rock and a waterfall
+  {const [x,z]=[-1758,8772],r=19,p=disc(r+4,K.paving,x,z,.5),y0=p.userData.y0;
+   const dome=new THREE.Mesh(new THREE.SphereGeometry(r,20,10,0,Math.PI*2,0,Math.PI/2).scale(1,.62,1),new THREE.MeshLambertMaterial({color:0xdff3f0,transparent:true,opacity:.28,side:THREE.DoubleSide,depthWrite:false}));dome.position.set(x,y0,z);scene.add(dome);
+   const wf=new THREE.LineSegments(new THREE.WireframeGeometry(new THREE.SphereGeometry(r,14,7,0,Math.PI*2,0,Math.PI/2).scale(1,.62,1)),new THREE.LineBasicMaterial({color:0xcfd6d8}));wf.position.set(x,y0,z);scene.add(wf);
+   for(let i=0;i<8;i++){const a=rs()*6.28,d=rs()*9,s=2+rs()*3,rk=new THREE.Mesh(new THREE.DodecahedronGeometry(s,0),K.stone);rk.scale.y=1.2;rk.position.set(x+Math.cos(a)*d,y0+s*.6,z+Math.sin(a)*d);scene.add(rk)}
+   for(let i=0;i<7;i++){const a=rs()*6.28,d=3+rs()*12,tr=new THREE.Mesh(new THREE.IcosahedronGeometry(2.4,0),M(0x3f8a42));tr.position.set(x+Math.cos(a)*d,y0+3+rs()*3,z+Math.sin(a)*d);scene.add(tr)}
+   addCollider(x-r,x+r,z-r,z+r,y0+13,'the Bird Paradise aviary');keep.push([x,z,r+6])}
+  // seal and dolphin pools: a round concrete pool with a ring of tiered seating
+  {const [x,z]=[-1822,8770],f=foot(x,z,40,40,0),y0=f.hi,sk=y0-f.lo+2;
+   const bs=new THREE.Mesh(new THREE.CylinderGeometry(19,19.5,sk,28).translate(0,-sk/2,0),K.conc);bs.position.set(x,y0,z);scene.add(bs);
+   for(let i=0;i<3;i++)sector(12.5+i*2.3,14.8+i*2.3,-.2,Math.PI*1.2,1.1+i*1.1,i%2?M(0xd8d4c6):M(0x9cc3d8),x,y0,z);
+   const w=new THREE.Mesh(new THREE.CylinderGeometry(12,12,.4,28),K.water);w.position.set(x,y0+.5,z);scene.add(w);
+   const st=new THREE.Mesh(new THREE.BoxGeometry(10,1.4,5).translate(0,.7,0),K.cream);st.position.set(x+7,y0+.3,z+9);scene.add(st);keep.push([x,z,24])}
+  // restaurants, a souvenir hall and toilets round the plazas
+  for(const k of[[-1838,8652,.2,15,5.5,10,0xf1ead6,K.roofRed],[-1766,8640,0,16,5,9,0xf1ead6,K.roofGreen],[-1752,8722,-.3,10,4,7,0xe7e2d3,K.roofGreen],[-1850,8812,.2,16,5.5,10,0xf1ead6,K.roofRed],[-1792,8812,0,13,5,9,0xe7e2d3,K.blue],[-1930,8700,.4,12,5,9,0xf1ead6,K.roofRed]]){
+   const b=bld(k[3],k[4],k[5],M(k[6]),k[0],k[1],k[2],{name:'an Ocean Park building',ctop:3});hip(k[3]+3,k[5]+3,3.2,k[7],0,k[4],0,0,b)}
+  // park paths
+  ribbon([[-1800,8602],[-1800,8650]],7,K.path);ribbon([[-1822,8686],[-1850,8704],[-1878,8722]],4,K.path);ribbon([[-1824,8660],[-1870,8648],[-1906,8638]],4,K.path);ribbon([[-1778,8676],[-1760,8680]],5,K.path);
+  ribbon([[-1878,8726],[-1860,8760],[-1800,8776],[-1770,8774]],4,K.path);ribbon([[-1758,8792],[-1764,8830],[-1770,8862]],5,K.path);ribbon([[-1790,8696],[-1778,8740],[-1772,8770]],4,K.path);
+  for(const [x,z] of[[-1830,8620],[-1770,8620],[-1800,8640],[-1850,8704],[-1822,8686],[-1790,8740],[-1778,8800],[-1766,8840],[-1870,8648]])light(x,G(x,z)+4.2,z,1,.82,.5,2.6);
+  /* ---- planting: broadleaf and conifer clumps on the slopes and through the gardens ---- */
+  {const trees=[];
+   const zone=(cx,cz,r,n,minH,maxH,sc)=>{let tries=0,c=0;while(c<n&&tries<n*40){tries++;const a=rs()*6.283,d=Math.sqrt(rs())*r,x=cx+Math.cos(a)*d,z=cz+Math.sin(a)*d,h=terrainAt(x,z);if(h<minH||h>maxH)continue;
+     let bad=false;for(const k of keep)if((x-k[0])*(x-k[0])+(z-k[1])*(z-k[1])<k[2]*k[2]){bad=true;break}if(bad||nearPath(x,z))continue;trees.push([x,h,z,sc*(.75+rs()*.7),rs()]);c++}};
+   zone(-2170,10130,200,820,26,100,1);zone(-2190,9930,130,260,40,108,1);zone(-1830,8690,180,430,6,40,.9);
+   const nb=trees.filter(t=>t[4]>.35),nc=trees.filter(t=>t[4]<=.35);
+   const greens=[0x3a7435,0x468238,0x2f6030,0x548f40,0x285a30,0x6a9e4a];
+   const mk=(geo,list)=>{if(!list.length)return;const im=new THREE.InstancedMesh(geo,new THREE.MeshLambertMaterial({color:0xffffff}),list.length),m=new THREE.Matrix4(),q=new THREE.Quaternion(),c=new THREE.Color();
+     list.forEach((t,i)=>{m.compose(new THREE.Vector3(t[0],t[1]-.5,t[2]),q.setFromAxisAngle(new THREE.Vector3(0,1,0),t[4]*6.28),new THREE.Vector3(t[3],t[3]*(.85+t[4]*.4),t[3]));im.setMatrixAt(i,m);im.setColorAt(i,c.setHex(greens[Math.floor(t[4]*greens.length*3.7)%greens.length]))});im.frustumCulled=false;scene.add(im)};
+   mk(new THREE.IcosahedronGeometry(2.9,0).scale(1,.9,1).translate(0,3.6,0),nb);mk(new THREE.ConeGeometry(2.2,8.5,7).translate(0,4.75,0),nc)}
+  parkAnim=(dt,t)=>{for(const f of anim)f(dt,t)};
   scene.add(makeLights(L));
 }
 /* The Peak: the Peak Tram (1888 funicular, Garden Road to Victoria Gap) and the Peak Lookout (121 Peak Road). Cars run from peakAnim. */

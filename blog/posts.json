@@ -1,5 +1,40 @@
 [
   {
+    "slug": "ocean-park-rebuilt",
+    "title": "Ocean Park, rebuilt from the maps",
+    "dek": "Both sites laid out as in 1998: the Lowland with its entry plaza and gardens, and the Headland with the tower, wheel, Dragon and Ocean Theatre, joined by the pod cable car.",
+    "description": "Ocean Park is rebuilt in Fly Kai Tak from park maps and photos: the Lowland, the Headland rides and halls, and the 1977 cable car with its coloured pods.",
+    "date": "2026-10-11",
+    "tag": "Update",
+    "category": "scenery",
+    "keywords": [
+      "Ocean Park",
+      "Hong Kong Ocean Park",
+      "cable car",
+      "Ocean Theatre",
+      "Ocean Park Tower",
+      "Dragon roller coaster",
+      "Ferris wheel",
+      "Kai Tak",
+      "flight simulator"
+    ],
+    "hero": "ocean-park-summit",
+    "hero_alt": "Aerial view of the Ocean Park headland from the sea: a tower, a Ferris wheel, a drop tower, blue-roofed halls, a fan-shaped theatre and a looping roller coaster.",
+    "hero_caption": "The Ocean Park headland from the sea side.",
+    "card_kicker": "SCENERY · UPDATE",
+    "card_title": "Ocean Park, rebuilt",
+    "card_sub": "Lowland, Headland and the pod cable car",
+    "card_image": "ocean-park-west",
+    "card_focus": 50,
+    "zh": {
+      "title": "重建海洋公園",
+      "dek": "兩個園區都按 1998 年嘅樣貌擺放：有入口廣場同花園嘅低地園區，同有塔、摩天輪、龍騰虎躍同海洋劇場嘅高峰樂園，由吊艙纜車連接。",
+      "description": "Fly Kai Tak 根據公園地圖同相片重建海洋公園：低地園區、高峰樂園嘅機動遊戲同展館，仲有 1977 年嘅彩色吊艙纜車。",
+      "hero_alt": "由海上望海洋公園高峰樂園嘅航拍景：一座塔、一個摩天輪、一座跳樓機塔、藍色屋頂嘅展館、扇形劇場同一條有迴環嘅過山車。",
+      "hero_caption": "由海面望海洋公園高峰樂園。"
+    }
+  },
+  {
     "slug": "replay-video-sound-and-share-links",
     "title": "Replay videos with sound, radio calls and share links",
     "dek": "Replay videos now have engine, wind and touchdown sound, the radio calls on screen, and a page of their own to share.",
