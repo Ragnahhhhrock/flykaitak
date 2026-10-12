@@ -593,7 +593,7 @@ body.bigmap #radio{top:calc(env(safe-area-inset-top,0px) + 396px)}
       <section class="homeblog" id="homeBlog" aria-labelledby="homeBlogH">
         <h3 id="homeBlogH"><span class="l-en">Latest update</span><span class="l-zh" lang="zh-HK">最新消息</span></h3>
         <ul>
-          <li><a href="/blog/share-button-aligned/" class="hb-top"><span class="hb-thumb"><img src="/assets/blog/og/share-button-aligned.jpg" width="1200" height="630" loading="lazy" alt=""></span><span class="hb-txt"><span class="hb-meta"><time datetime="2026-10-11"><span class="l-en">11 Oct</span><span class="l-zh" lang="zh-HK">10月11日</span></time> &middot; <span class="l-en">Site &amp; Language</span><span class="l-zh" lang="zh-HK">網站同語言</span></span><b><span class="l-en">The Share button now lines up</span><span class="l-zh" lang="zh-HK">分享掣對齊咗</span></b></span></a></li>
+          <li><a href="/blog/harder-scoring-fresh-high-score-table/" class="hb-top"><span class="hb-thumb"><img src="/assets/blog/og/harder-scoring-fresh-high-score-table.jpg" width="1200" height="630" loading="lazy" alt=""></span><span class="hb-txt"><span class="hb-meta"><time datetime="2026-10-12"><span class="l-en">12 Oct</span><span class="l-zh" lang="zh-HK">10月12日</span></time> &middot; <span class="l-en">Scores &amp; Sharing</span><span class="l-zh" lang="zh-HK">分數同分享</span></span><b><span class="l-en">Harder scoring and a fresh high score table</span><span class="l-zh" lang="zh-HK">評分更嚴格，最高分榜重新開始</span></b></span></a></li>
         </ul>
         <a class="hb-all" href="/blog/"><span class="l-en">All updates on the blog</span><span class="l-zh" lang="zh-HK">網誌睇晒所有更新</span> <span aria-hidden="true">&rarr;</span></a>
       </section>
@@ -4623,7 +4623,7 @@ function resetFlight(){
   const a=AC[CFG.ac];const P=PATH.pts;
   Object.assign(ST,{ac:a,t:0,pi:0,x:P[0].x,z:P[0].z,y:P[0].alt,V:175*KT,gamma:-GP,psi:P[0].h,phi:0,flapIdx:2,flapPos:2,gearDown:false,gearPos:0,
     throttle:.1,thrust:0,onGround:false,ended:null,stall:false,gdot:0,apI:0,inPitch:0,inRoll:0,td:null,Gs:0,psiG:0,vx:0,vy:0,vz:0,ra:900,
-    ph:[0,1,2,3,4,5].map(()=>rnd()*6.28),callouts:{},warnT:0,warn:'',ap:CFG.ap,crashT:0,lastGPWS:0,tailstrike:false,apUsed:false,rewound:false});
+    ph:[0,1,2,3,4,5].map(()=>rnd()*6.28),callouts:{},warnT:0,warn:'',ap:CFG.ap,crashT:0,lastGPWS:0,tailstrike:false,apUsed:false,rewound:false,trk:{t:0,v2:0,l2:0,s2:0,rl:0}});
   // trim for the glidepath
   const q=.5*RHO*ST.V*ST.V;const CL=a.mass*G*Math.cos(ST.gamma)/(q*a.S);const al=(CL-CL0S[2])/CLA;ST.theta=ST.gamma+al;
   const D=q*a.S*(CD0+CDFS[2]+KI*CL*CL);const T=D+a.mass*G*Math.sin(ST.gamma);ST.thrust=Math.max(T,.03*a.thr);ST.throttle=ST.thrust/a.thr;
@@ -4662,6 +4662,7 @@ function physStep(dt){
     s.vx=s.V*cg*Math.sin(s.psi)+w[0];s.vy=s.V*Math.sin(s.gamma)+w[1]*.6;s.vz=-s.V*cg*Math.cos(s.psi)+w[2];
     s.x+=s.vx*dt;s.y+=s.vy*dt;s.z+=s.vz*dt;
     s.pi=pathNearest(s.x,s.z,s.pi);
+    trkSample(dt);
     checkAirborne();
   } else groundRoll(dt);
   s.t+=dt;
@@ -4707,6 +4708,7 @@ function groundRoll(dt){
   const s=ST,a=s.ac;s.y=RWY.elev;s.vy=0;s.gamma=0;
   if(!s.td&&s.Gs>35&&s.inPitch>.2)s.theta=Math.min(12*D2R,s.theta+s.inPitch*3*D2R*dt);else s.theta=Math.max(0,s.theta-(s.Gs>40&&s.inPitch>.3&&!s.ap?0:2.2*D2R*dt));s.phi*=Math.max(0,1-4*dt);
   const lr=lL(s.x,s.z),sr=lS(s.x,s.z);const rh=LND.hdg*D2R;
+  if(s.td&&s.trk)s.trk.rl=Math.max(s.trk.rl,Math.abs(lr));
   let steer;if(s.ap)steer=clamp(-lr*.004-angDiff(s.psiG,rh)*1.2,-3*D2R,3*D2R);else steer=s.inRoll*3*D2R-angDiff(s.psiG,rh)*.25;
   s.psiG+=steer*dt;s.psi=s.psiG;
   const q=.5*RHO*s.Gs*s.Gs;const drag=q*a.S*(CD0+CDFS[4]+CDG+.08)/a.mass;
@@ -5213,17 +5215,40 @@ function crash(title,why){
 }
 function endMissed(title,why){const s=ST;if(s.ended)return;s.ended={missed:true,title,why,t:s.t};setTimeout(()=>{if(mode==='fly')showResult()},400)}
 function landed(){const s=ST;if(s.ended)return;s.ended={landed:true,t:s.t};setTimeout(()=>{if(mode==='fly')showResult()},900)}
+/* ---------------- scoring (v2, October 2026) ----------------
+   100 points. Every part is a smooth curve: full marks only inside a tight window, a straight-line fall to nothing outside it.
+   Touchdown (51): sink rate 16, touchdown point 14, centreline 8, speed 8, alignment 5 (decrab), wings level 4.
+   Approach (30): glidepath 14, track 8, speed control 8, measured from 3.5 nm out to just before the flare (trkSample).
+   Rollout (15): centreline 8, stopping with runway to spare 7.  Tail strike: minus 15.
+   A 100 needs every part inside its full-marks window on the same flight, so it takes practice. */
+const SC=(x,full,zero)=>x<=full?1:x>=zero?0:1-(x-full)/(zero-full);
+const SCB=(x,a,b,za,zb)=>x<a?Math.max(0,(x-za)/(a-za)):x>b?Math.max(0,(zb-x)/(zb-b)):1;
+const SC_NAMES={sink:'sink rate',zone:'touchdown point',cl:'centreline at touchdown',spd:'touchdown speed',crab:'alignment',bank:'wings level',gp:'glidepath',lat:'approach track',sp:'speed control',rl:'rollout centreline',stop:'stopping distance',tail:'tail strike'};
+function trkSample(dt){
+  const s=ST,T=s.trk,p=PATH.pts[s.pi];if(!T||!p||s.td||CFG.game!=='approach')return;
+  const d=p.d;if(d>6500||d<250)return;
+  const ev=s.y-p.alt,el=pathLateral(s.pi,s.x,s.z),es=s.V/KT-(s.ac.vref+5);
+  T.t+=dt;T.v2+=ev*ev*dt;T.l2+=el*el*dt;T.s2+=es*es*dt}
 function gradeLanding(td){
-  const fpm=-td.vs/FT*60;let pts=0;const notes=[];
-  pts+=fpm<=240?35:fpm<=420?28:fpm<=600?18:6;
-  pts+=td.s>=150&&td.s<=600?25:td.s>600&&td.s<=900?18:td.s<150?12:5;
-  const l=Math.abs(td.l);pts+=l<3?20:l<8?15:l<15?8:3;
-  pts+=td.bank<2?10:td.bank<4?7:3;
-  const dv=Math.abs(td.ias-(ST.ac.vref+5));pts+=dv<6?10:dv<12?6:2;
-  if(ST.tailstrike)pts-=20;
-  const g=pts>=90?'A':pts>=76?'B':pts>=60?'C':pts>=45?'D':'E';
+  const fpm=-td.vs/FT*60,T=ST.trk||{},a=ST.ac,n=T.t||0,notes=[];
+  const rms=k=>Math.sqrt((T[k]||0)/Math.max(n,1));
+  const P={sink:16*SC(fpm,120,480),zone:14*SCB(td.s,280,450,100,900),cl:8*SC(Math.abs(td.l),1.5,12),spd:8*SC(Math.abs(td.ias-(a.vref+5)),2,14),
+    crab:5*SC(Math.abs(td.crab||0),1.5,8),bank:4*SC(td.bank,1,5),rl:8*SC(T.rl||0,3,14),
+    stop:7*Math.max(0,Math.min(1,(RWY.len-lS(ST.x,ST.z)-150)/650))};
+  let max=16+14+8+8+5+4+8+7;
+  const tracked=n>=20;   // approach parts need a flown approach (not free flight or a lesson landing)
+  if(tracked){P.gp=14*SC(rms('v2'),6,40);P.lat=8*SC(rms('l2'),14,70);P.sp=8*SC(rms('s2'),2.5,12);max+=30}
+  const mx={sink:16,zone:14,cl:8,spd:8,crab:5,bank:4,rl:8,stop:7,gp:14,lat:8,sp:8};
+  let raw=0;for(const k in P)raw+=P[k];
+  if(ST.tailstrike){raw-=15*max/100;P.tail=-15*max/100}
+  const pts=Math.max(0,Math.floor(raw/max*100+1e-6));
+  const g=pts>=90?'A':pts>=78?'B':pts>=62?'C':pts>=45?'D':'E';
   const feel=fpm<=150?'Greased it.':fpm<=300?'Smooth.':fpm<=480?'Positive.':fpm<=600?'Firm.':'Hard, but it held together.';
-  return {g,pts,feel,fpm};
+  // the two parts that cost the most points, so the next attempt knows what to work on
+  const lost=Object.keys(mx).filter(k=>P[k]!==undefined).map(k=>[k,(mx[k]-P[k])*100/max]).filter(x=>x[1]>=1).sort((x,y)=>y[1]-x[1]).slice(0,2).map(x=>SC_NAMES[x[0]]+' −'+Math.round(x[1]));
+  if(ST.tailstrike)lost.unshift('tail strike −15');
+  const m=tracked?{gp:Math.round(rms('v2')/FT),lat:Math.round(rms('l2')),sp:+rms('s2').toFixed(1)}:null;
+  return {g,pts,feel,fpm,parts:P,lost,m,roll:T.rl||0};
 }
 
 /* =====================================================================
@@ -5234,16 +5259,18 @@ function gradeLanding(td){
    ===================================================================== */
 const HS_API=window.FKT_API||'';
 const HS_KEY='fkt-scores',HS_NAME='fkt-callsign',HS_MAX=100;
-const HS_RANKS=[[90,'Captain'],[76,'First Officer'],[60,'Second Officer'],[45,'Flight Engineer'],[0,'Cadet']];
+const HS_RANKS=[[90,'Captain'],[78,'First Officer'],[62,'Second Officer'],[45,'Flight Engineer'],[0,'Cadet']];
+// Scoring v2 (12 Oct 2026) is much stricter, so the table starts again: landings scored the old way are not shown. Keep in step with SINCE in server/worker.js.
+const HS_SINCE=1791784800000;
 const rankTitle=pts=>{for(const [m,t] of HS_RANKS)if(pts>=m)return t;return 'Cadet'};
 const hsEsc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const hsClean=n=>String(n||'').replace(/[^A-Za-z0-9 _.\-]/g,'').trim().slice(0,12).toUpperCase()||'PILOT';
 // Fictional starter scores so the table is never empty. They are easy to beat and fall off the table once enough real landings are on it.
-const HS_SEED=[['seed1','CAPT HO',58,'D','747-400','clear'],['seed2','LEE K',54,'D','A330-300','clear'],['seed3','MR CHAN',49,'D','777-200','rain'],['seed4','SKY PIG',44,'E','A340-300','lowcloud'],['seed5','WONG',39,'E','747-400','rain'],['seed6','TAI TAK',35,'E','Concorde','clear'],['seed7','FO FUNG',31,'E','777-200','fog'],['seed8','COOKIE',26,'E','747-400','storm'],['seed9','LOW AND SLOW',21,'E','A330-300','typhoon'],['seed10','NEWBIE',15,'E','747-400','typhoon']].map((r,i)=>({id:r[0],n:r[1],s:r[2],g:r[3],ac:r[4],wx:r[5],tod:'day',d:1+i}));
-function hsLocal(){let a=[];try{a=JSON.parse(localStorage.getItem(HS_KEY)||'[]');if(!Array.isArray(a))a=[]}catch(e){a=[]}a=a.filter(e=>e&&typeof e.id==='string'&&Number.isFinite(e.s));const ids=new Set(a.map(e=>e.id));for(const e of HS_SEED)if(!ids.has(e.id))a.push(Object.assign({},e));return a}
+const HS_SEED=[['seed1','CAPT HO',52,'D','747-400','clear'],['seed2','LEE K',47,'D','A330-300','clear'],['seed3','MR CHAN',43,'E','777-200','rain'],['seed4','SKY PIG',39,'E','A340-300','lowcloud'],['seed5','WONG',35,'E','747-400','rain'],['seed6','TAI TAK',31,'E','Concorde','clear'],['seed7','FO FUNG',27,'E','777-200','fog'],['seed8','COOKIE',22,'E','747-400','storm'],['seed9','LOW AND SLOW',17,'E','A330-300','typhoon'],['seed10','NEWBIE',12,'E','747-400','typhoon']].map((r,i)=>({id:r[0],n:r[1],s:r[2],g:r[3],ac:r[4],wx:r[5],tod:'day',d:1+i}));
+function hsLocal(){let a=[];try{a=JSON.parse(localStorage.getItem(HS_KEY)||'[]');if(!Array.isArray(a))a=[]}catch(e){a=[]}a=a.filter(e=>e&&typeof e.id==='string'&&Number.isFinite(e.s)&&(e.id.startsWith('seed')||e.d>=HS_SINCE));const ids=new Set(a.map(e=>e.id));for(const e of HS_SEED)if(!ids.has(e.id))a.push(Object.assign({},e));return a}
 function hsSort(a){return a.sort((x,y)=>y.s-x.s||x.d-y.d)}
 function hsStore(a){hsSort(a);a.length=Math.min(a.length,HS_MAX);try{localStorage.setItem(HS_KEY,JSON.stringify(a))}catch(e){}}
-function hsMerge(remote){if(!Array.isArray(remote))return;const a=hsLocal(),ids=new Set(a.map(e=>e.id));for(const r of remote)if(r&&r.id&&!ids.has(r.id)&&Number.isFinite(r.s))a.push({id:String(r.id),n:hsClean(r.n),s:r.s|0,g:String(r.g||'').slice(0,1),ac:String(r.ac||'').slice(0,20),wx:String(r.wx||'').slice(0,12),tod:r.tod==='night'?'night':'day',d:+r.d||0});hsStore(a)}
+function hsMerge(remote){if(!Array.isArray(remote))return;const a=hsLocal(),ids=new Set(a.map(e=>e.id));for(const r of remote)if(r&&r.id&&!ids.has(r.id)&&Number.isFinite(r.s)&&+r.d>=HS_SINCE)a.push({id:String(r.id),n:hsClean(r.n),s:r.s|0,g:String(r.g||'').slice(0,1),ac:String(r.ac||'').slice(0,20),wx:String(r.wx||'').slice(0,12),tod:r.tod==='night'?'night':'day',d:+r.d||0});hsStore(a)}
 function hsSync(){if(!HS_API)return Promise.resolve();return fetch(HS_API+'/scores').then(r=>r.json()).then(hsMerge).catch(()=>{})}
 function hsPush(e){if(!HS_API)return;try{fetch(HS_API+'/scores',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(e)}).catch(()=>{})}catch(_){}}
 function hsCallsign(){let n='';try{n=localStorage.getItem(HS_NAME)||''}catch(e){}return n?hsClean(n):''}
@@ -5263,7 +5290,7 @@ function hsShowResult(g,s){
   nameEl.parentNode.hidden=false;nameEl.value=hsCallsign()||'';
   const e=hsAdd(g,s);HS_ENTRY=e;hsAskName(!hsCallsign()||hsCallsign()==='PILOT');
   const pos=hsSort(hsLocal().slice()).findIndex(x=>x.id===e.id)+1;
-  rankEl.textContent=rankTitle(e.s)+' · #'+pos;note.textContent=pos===1?'New number one on the table.':'Score '+e.s+'. Ranks: Captain 90+, First Officer 76+, Second Officer 60+, Flight Engineer 45+.';
+  rankEl.textContent=rankTitle(e.s)+' · #'+pos;note.textContent=pos===1?'New number one on the table.':'Score '+e.s+'. Ranks: '+HS_RANKS.slice(0,4).map(r=>r[1]+' '+r[0]+'+').join(', ')+'.';
   tbl.innerHTML=hsTable(e.id,5,true)}
 let HS_ENTRY=null;
 // Ask for the pilot's name on the result screen. need=true when no name is saved yet: the box is highlighted and focused (not on touch screens, where it would pop the keyboard over the result).
@@ -7388,9 +7415,9 @@ function showResult(){
   document.getElementById('ctl').hidden=true;coachHide(true);
   const st=document.getElementById('resStats');st.innerHTML='';const rows=[];const row=(a,b)=>{rows.push([a,b]);st.insertAdjacentHTML('beforeend',`<dt>${a}</dt><dd>${b}</dd>`)};
   if(e.landed){const g=gradeLanding(s.td);trackLanding({grade:g.g,score:Math.max(0,g.pts),touchdown_fpm:Math.round(g.fpm),touchdown_m:Math.round(s.td.s),sim_seconds:Math.round(e.t),autopilot_used:!!s.ap,mode:modeId(),runway:LND.id});if(CFG.lland&&!COACH.skipped)track('lesson_complete',{lesson:'landing',flight_seconds:Math.round(FLT?FLT.active:0)});flightEnd('landed');document.getElementById('resEyebrow').textContent='Landed · Runway '+LND.id;document.getElementById('resTitle').textContent='Welcome to Hong Kong';document.getElementById('resGrade').textContent=g.g;
-    document.getElementById('resWhy').textContent=g.feel+(s.tailstrike?' Tail strike on touchdown: the aft fuselage touched the runway.':'')+' Score '+Math.max(0,g.pts)+'/100.'+(CFG.lland&&!COACH.skipped?' Landing lesson complete.':'');
+    document.getElementById('resWhy').textContent=g.feel+(s.tailstrike?' Tail strike on touchdown: the aft fuselage touched the runway.':'')+' Score '+Math.max(0,g.pts)+'/100.'+(g.lost.length&&g.pts<100?' Lost most: '+g.lost.join(', ')+'.':'')+(CFG.lland&&!COACH.skipped?' Landing lesson complete.':'');
     row('Touchdown rate',Math.round(g.fpm)+' fpm');row('Touchdown past threshold',Math.round(s.td.s)+' m');row('Off centreline',Math.abs(s.td.l).toFixed(1)+' m '+(s.td.l>0?'right':'left'));
-    row('Bank at touchdown',s.td.bank.toFixed(1)+'°');row('Airspeed',Math.round(s.td.ias)+' kt (target '+(s.ac.vref+5)+')');row('Stopped with runway left',Math.round(RWY.len-lS(s.x,s.z))+' m');hsShowResult(g,s);}
+    row('Bank at touchdown',s.td.bank.toFixed(1)+'°');row('Airspeed',Math.round(s.td.ias)+' kt (target '+(s.ac.vref+5)+')');if(g.m){row('Glidepath error','±'+g.m.gp+' ft');row('Approach track','±'+g.m.lat+' m');row('Speed control','±'+g.m.sp+' kt')}row('Rollout off centreline','up to '+g.roll.toFixed(1)+' m');row('Stopped with runway left',Math.round(RWY.len-lS(s.x,s.z))+' m');hsShowResult(g,s);}
   else{document.getElementById('resHs').hidden=true;HS_ENTRY=null;if(CFG.game==='approach'||(s.gearDown&&!s.onGround))attemptStart(e.crash?'crash':'missed');trackFail(e.crash?'crash':'missed_approach',{cause:e.title,sim_seconds:Math.round(e.t),distance_nm:+(PATH.pts[s.pi].d/1852).toFixed(2)});flightEnd(e.crash?'crash':'missed_approach');document.getElementById('resEyebrow').textContent=e.crash?'Accident':'Approach abandoned';document.getElementById('resTitle').textContent=e.title;document.getElementById('resGrade').textContent=e.crash?'✕':'↺';
     document.getElementById('resWhy').textContent=e.why+(CFG.lesson&&!COACH.skipped?' '+lessonTip(e):CFG.lland&&!COACH.skipped?' '+(e.landed?'Lesson complete: you landed at Kai Tak.':landTip(e)):'');const p=PATH.pts[s.pi];row('Distance to threshold',p.d>0?(p.d/1852).toFixed(2)+' nm':'past threshold');row('Altitude',fmtFt(s.y));row('Airspeed',Math.round(s.V/KT)+' kt');row('Time flown',Math.floor(e.t/60)+':'+String(Math.floor(e.t%60)).padStart(2,'0'))}
   RES={kind:e.landed?'landed':e.crash?'crash':'missed',grade:document.getElementById('resGrade').textContent,pts:e.landed?Math.max(0,gradeLanding(s.td).pts):null,
@@ -7566,7 +7593,7 @@ const fontsReady=document.fonts&&document.fonts.ready?Promise.race([document.fon
 fontsReady.then(()=>setTimeout(boot,30));
 
 /* test hooks */
-window.__kt={hsShowResult,radioSay,radioPump,RAD,setWreck,WRECK,SF,SF_ROUTES,sfSeek,sfAdvance,penTour,HELI,HPAD,updateHeli,hPlan,hHerm,hGround,masts:()=>apronMasts,port:()=>PORT,geo:()=>GEO,inPortYard,PORT_QUAYS,PORT_BLD,SHIPS,FAIRWAYS,waterAt,laneOffset,rwP,STAND_C,CTY,stS,NCG,ESTATES,RC,rcEv,rcVac,rcRoll,rcStrip,rcClearBy,rcTakeoffWhy,rcView,rcPlayer,CYC,onPaved,gearPaved,rwS,LINKS,rb:()=>rbMasts13,bat:buildingAt,setHour,solarState,SUN_DIR,MOON_DIR,ENV,AI,CFG,ST,COACH,LESSON,keys,coachUpdate,coachResync,coachGo,rwL,get PATH(){return PATH},LND,setRunway,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,{rwy:'13',conc:false,tour:false},o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.tour?'tour':CFG.conc&&CFG.game==='watch'?'watchC':CFG.rwy==='31'&&CFG.game!=='learn'?CFG.game+'31':CFG.game}]`).checked=true;hourIn.value=o.hour!==undefined?o.hour:CFG.night?22:15;showHour();startFlight()},
+window.__kt={gradeLanding,hsShowResult,radioSay,radioPump,RAD,setWreck,WRECK,SF,SF_ROUTES,sfSeek,sfAdvance,penTour,HELI,HPAD,updateHeli,hPlan,hHerm,hGround,masts:()=>apronMasts,port:()=>PORT,geo:()=>GEO,inPortYard,PORT_QUAYS,PORT_BLD,SHIPS,FAIRWAYS,waterAt,laneOffset,rwP,STAND_C,CTY,stS,NCG,ESTATES,RC,rcEv,rcVac,rcRoll,rcStrip,rcClearBy,rcTakeoffWhy,rcView,rcPlayer,CYC,onPaved,gearPaved,rwS,LINKS,rb:()=>rbMasts13,bat:buildingAt,setHour,solarState,SUN_DIR,MOON_DIR,ENV,AI,CFG,ST,COACH,LESSON,keys,coachUpdate,coachResync,coachGo,rwL,get PATH(){return PATH},LND,setRunway,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,{rwy:'13',conc:false,tour:false},o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.tour?'tour':CFG.conc&&CFG.game==='watch'?'watchC':CFG.rwy==='31'&&CFG.game!=='learn'?CFG.game+'31':CFG.game}]`).checked=true;hourIn.value=o.hour!==undefined?o.hour:CFG.night?22:15;showHour();startFlight()},
   run:(sec)=>{if(CFG.game==='watch'){ST.t+=sec;return {t:ST.t}}const h=1/120;for(let i=0;i<sec*120&&!ST.ended;i++){physStep(h);if(i%60===0)recordHistory();if(i%12===0)aiTick()}return {ended:ST.ended,td:ST.td,t:ST.t,x:ST.x,y:ST.y,z:ST.z,V:ST.V/KT,d:PATH.pts[ST.pi].d}},
   get mode(){return mode},updateAI,AIC,footOf,GSE,GSE_KINDS,AIRBOX,rwS,BGRID,updateGSE,gseLamps:()=>gseLamps,fpAt,fpDist,hitOn,damageModel,aiHit,DEBRIS,EMIT,aiTick,ctl(){return aiControl},get CFG(){return CFG},frame:(now)=>frame(now,true),get FOCUS(){return FOCUS},step:()=>physStep(1/120),rwS,setZoom:z=>{CFG.zoom=z},get AI(){return AI},get GSE(){return GSE},get BRIDGE(){return BRIDGE},STAND_S,STAND_TY,lineupT,lineupT31,arrivalPts,tugAt,standL,PB,get parked(){return parked},gseAt:(t)=>{ST.t=t;updateGSE();return GSE.map(e=>({k:e.kind,x:e.p.x,z:e.p.z,psi:e.p.psi,lift:e.lift}))},get shipLights(){return shipLights},get PORT(){return PORT},get SHIPS(){return SHIPS},get DISP(){return DISP},get deck(){return deckGroup},get streetCam(){return STREET_CAM},get BB(){return BB},get water(){return water},get camera(){return camera},get nStreets(){return STREETS.length},drawDisplays,look,setView,terrainAt,buildingAt,groundInfo};
 })();

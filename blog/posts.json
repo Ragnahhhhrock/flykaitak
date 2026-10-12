@@ -1,5 +1,39 @@
 [
   {
+    "slug": "harder-scoring-fresh-high-score-table",
+    "title": "Harder scoring and a fresh high score table",
+    "dek": "Two perfect 100s and a crowd of 90s was too easy. Landings are now scored on the whole approach and rollout, and the table starts again.",
+    "description": "Fly Kai Tak scoring is much stricter: touchdown, approach and rollout are all scored, a 100 needs every part perfect, and the high score table restarts.",
+    "date": "2026-10-12",
+    "tag": "Update",
+    "category": "scores",
+    "keywords": [
+      "scoring",
+      "high score",
+      "perfect score",
+      "IGS 13 approach",
+      "glidepath",
+      "Captain rank",
+      "Kai Tak",
+      "flight simulator"
+    ],
+    "hero": "scoring-v2-result",
+    "hero_alt": "The result screen after a Runway 13 landing: grade B, the score out of 100, the two parts that lost the most points, and rows for glidepath error, approach track, speed control and rollout centreline.",
+    "hero_caption": "The result screen now shows how the approach and rollout went.",
+    "card_kicker": "VHHH · HIGH SCORES · 1998",
+    "card_title": "A much harder 100",
+    "card_sub": "Scored on the whole approach, with a fresh table",
+    "card_image": "scoring-v2-result",
+    "card_focus": 50,
+    "zh": {
+      "title": "評分更嚴格，最高分榜重新開始",
+      "dek": "兩個滿分 100 同一大堆 90 幾分太易。而家整個進場同滑行都會計分，榜單亦重新開始。",
+      "description": "Fly Kai Tak 評分嚴格好多：接地、進場同滑行都會計分，要攞 100 分每一項都要完美，最高分榜亦重新開始。",
+      "hero_alt": "13 號跑道降落後嘅結果畫面：評級 B、100 分滿分嘅分數、失分最多嘅兩項，同埋下滑道誤差、進場航跡、速度控制同滑行中線嘅資料行。",
+      "hero_caption": "結果畫面而家會顯示進場同滑行嘅表現。"
+    }
+  },
+  {
     "slug": "share-button-aligned",
     "title": "The Share button now lines up",
     "dek": "On the home screen, Share sat a little lower than Facebook and Instagram. All three now sit on one row.",

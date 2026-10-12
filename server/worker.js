@@ -13,6 +13,9 @@ const EVENTS = new Set(['game_start', 'landing_attempt', 'landing', 'crash', 'mi
 const tok = (v, n = 24) => String(v == null ? '' : v).replace(/[^A-Za-z0-9 _.,:'\/\-]/g, '').trim().slice(0, n) || null;
 const num = (v, lo, hi) => { v = Math.round(Number(v)); return Number.isFinite(v) && v >= lo && v <= hi ? v : null; };
 
+// Scoring v2 started on 12 Oct 2026. Older scores stay in the database but are not served. Keep in step with HS_SINCE in index.html.
+const SINCE = 1791784800000;
+
 export default {
   async fetch(req, env) {
     const origin = req.headers.get('Origin') || '';
@@ -53,8 +56,8 @@ export default {
 
     if (req.method === 'GET') {
       const { results } = await env.DB.prepare(
-        'SELECT id, name AS n, score AS s, grade AS g, ac, wx, tod, ts AS d FROM scores ORDER BY score DESC, ts ASC LIMIT 100'
-      ).all();
+        'SELECT id, name AS n, score AS s, grade AS g, ac, wx, tod, ts AS d FROM scores WHERE ts >= ?1 ORDER BY score DESC, ts ASC LIMIT 100'
+      ).bind(SINCE).all();
       return json(results);
     }
     if (req.method === 'POST') {
