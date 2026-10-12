@@ -15,7 +15,7 @@ Play at https://flykaitak.com, or serve the folder with any static web server (`
 Data: © Lands Department, HKSAR Government (CSDI). Roads: Transport Department Intelligent Road Network via DATA.GOV.HK, packaged by Esri China (Hong Kong) Ltd. Public housing estates: Housing Authority via DATA.GOV.HK, hosted by Esri China (Hong Kong) Ltd. Elevation: SRTM via AWS Terrain Tiles.
 
 ## MVP features
-- Aircraft: 747-400, 777-200, A330-300, A340-300 (plus a delta-wing supersonic jet that only visits Plane Spotter), each with its own flight model (mass, wing area, thrust, Vref, roll rate, flap labels and limits)
+- Aircraft: 747-400, 777-200, A330-300, A340-300 and Concorde (a US$7 premium aircraft; see docs/concorde.md; it also visits Plane Spotter for free), each with its own flight model (mass, wing area, thrust, Vref, roll rate, flap labels and limits)
 - Sun, moon and time of day: a 24-hour clock (Dawn, Day, Dusk, Night presets) with the sun and moon placed for Hong Kong in early July 1998, a moon with phase, turning stars, twilight colours and lights that come on at sunset
 - Day / night: lit windows, street lights, neon signs, runway, approach and lead-in strobe lights, PAPI
 - Weather: clear, rain, typhoon, storm, low cloud, fog, plus a lightning toggle. Wind, gusts and turbulence affect the flight

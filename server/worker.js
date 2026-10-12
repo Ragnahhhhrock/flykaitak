@@ -5,6 +5,11 @@
 //   GET  /stats   -> public aggregate counts for flykaitak.com/stats/
 //   GET  /replays -> {ok:true,max} when replay share links are switched on (an R2 bucket is bound as REPLAYS)
 //   POST /replays -> multipart {video: mp4, poster: jpg, card: png, meta: json} -> {id, url}
+//   POST /store/checkout {product} -> {ok,url}  Stripe Checkout page for a paid aircraft (Concorde, $7 USD)
+//   POST /store/claim {session}    -> {ok,key}  after paying: Stripe returns the buyer to the sim with ?concorde_session=cs_...; the Worker checks it with Stripe and issues a licence key
+//   POST /store/redeem {code}      -> {ok,key}  a free giveaway code (FKT-XXXX-XXXX), or a licence key typed in on a new device
+//   POST /store/check {key,product}-> {ok}      is this licence key valid (not revoked)
+//   /admin/*  (Authorization: Bearer ADMIN_TOKEN)  make and list giveaway codes, revoke a licence, sales counts. See docs/concorde.md
 //   GET  /r/<id>  -> the share page for one replay (video, report card, Open Graph tags so a posted link shows the video)
 //   GET  /v/<id>.mp4, /p/<id>.jpg, /c/<id>.png -> the video (with HTTP ranges), its poster frame, the report card image
 const ORIGINS = ['https://flykaitak.com', 'https://www.flykaitak.com'];
@@ -22,7 +27,7 @@ export default {
     const cors = {
       'Access-Control-Allow-Origin': ORIGINS.includes(origin) ? origin : ORIGINS[0],
       'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-      'Access-Control-Allow-Headers': 'content-type',
+      'Access-Control-Allow-Headers': 'content-type,authorization',
       Vary: 'Origin',
     };
     const json = (body, status = 200, extra = {}) =>
@@ -31,6 +36,7 @@ export default {
     if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
 
     if (url.pathname === '/stats' && req.method === 'GET') return stats(env, json);
+    if (url.pathname.startsWith('/store/') || url.pathname.startsWith('/admin/')) return store(req, env, url, json);
     if (url.pathname === '/replays') {
       if (req.method === 'GET') return json(env.REPLAYS ? { ok: true, max: MAX_VIDEO } : { ok: false });
       if (req.method === 'POST') return replayUpload(req, env, json);
@@ -101,6 +107,145 @@ async function stats(env, json) {
     landings: land.results[0],
   };
   return json(body, 200, { 'Cache-Control': 'public, max-age=60' });
+}
+
+/* ---------------- paid aircraft: Stripe Checkout, licence keys and free codes ----------------
+   Nothing about the buyer is kept. A licence is just a random key with the Stripe session (or giveaway code) it came from.
+   The sim stores the key in the browser and asks /store/check when an aircraft is chosen. Secrets (wrangler secret put):
+     STRIPE_SECRET_KEY  a Stripe secret or restricted key that can create and read Checkout Sessions (sales stay off without it)
+     ADMIN_TOKEN        a long random string; it protects /admin/*
+   Optional vars: SITE_BASE (default https://flykaitak.com, where Stripe sends the buyer back), STRIPE_API (tests). */
+const PRODUCTS = {
+  concorde: { name: 'Concorde for Fly Kai Tak', desc: 'Fly the delta-wing Concorde into Kai Tak: droop nose, reheat take-off and the Runway 13 approach. One payment, yours to keep.', cents: 700, cur: 'usd', pre: 'CONC' },
+};
+const KEY_ABC = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const rnd = (n) => Array.from(crypto.getRandomValues(new Uint8Array(n)), (x) => KEY_ABC[x % 32]).join('');
+const eq = (a, b) => { a = String(a); b = String(b); let d = a.length ^ b.length; for (let i = 0; i < Math.max(a.length, b.length); i++) d |= (a.charCodeAt(i) || 0) ^ (b.charCodeAt(i) || 0); return d === 0; };
+const KEY_RE = /^[A-Z]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/, CODE_RE = /^FKT-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
+const normKey = (v) => String(v == null ? '' : v).toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 40);
+
+async function mintLicence(env, product, src, ref) {
+  const P = PRODUCTS[product];
+  for (let i = 0; i < 5; i++) {
+    const key = `${P.pre}-${rnd(4)}-${rnd(4)}-${rnd(4)}`;
+    try {
+      await env.DB.prepare('INSERT INTO licences (key, product, src, ref, ts) VALUES (?1,?2,?3,?4,?5)').bind(key, product, src, ref, Date.now()).run();
+      return key;
+    } catch (e) {
+      if (src === 'purchase') { const r = await env.DB.prepare("SELECT key FROM licences WHERE src='purchase' AND ref=?1").bind(ref).first(); if (r) return r.key; }
+      if (!/UNIQUE|constraint/i.test(String(e))) throw e;
+    }
+  }
+  throw new Error('could not issue a key');
+}
+
+async function stripe(env, method, path, form) {
+  const r = await fetch((env.STRIPE_API || 'https://api.stripe.com') + path, {
+    method, headers: { authorization: 'Bearer ' + env.STRIPE_SECRET_KEY, ...(form ? { 'content-type': 'application/x-www-form-urlencoded' } : {}) },
+    body: form ? new URLSearchParams(form).toString() : undefined });
+  let j = null; try { j = await r.json(); } catch {}
+  return { ok: r.ok, status: r.status, j };
+}
+
+async function store(req, env, url, json) {
+  const path = url.pathname;
+  if (path.startsWith('/admin/')) return admin(req, env, url, json);
+  if (req.method !== 'POST') return json({ error: 'method not allowed' }, 405);
+  let b; try { b = await req.json(); } catch { return json({ ok: false, error: 'bad json' }, 400); }
+  const product = PRODUCTS[b.product] ? b.product : 'concorde', P = PRODUCTS[product];
+  const who = await sha((req.headers.get('cf-connecting-ip') || '') + (env.SALT || 'fkt-replays'));
+  // wrong codes, keys and sessions are limited to 15 an hour from one address (kept only as a salted hash)
+  const limited = async () => { const r = await env.DB.prepare('SELECT COUNT(*) n FROM lic_fail WHERE who = ?1 AND ts > ?2').bind(who, Date.now() - 3600e3).first(); return r && r.n >= 15; };
+  const fail = async (error, status) => { await env.DB.prepare('INSERT INTO lic_fail (who, ts) VALUES (?1,?2)').bind(who, Date.now()).run(); return json({ ok: false, error }, status); };
+
+  if (path === '/store/check') {
+    const key = normKey(b.key);
+    if (!KEY_RE.test(key)) return json({ ok: false });
+    const r = await env.DB.prepare('SELECT product, revoked FROM licences WHERE key = ?1').bind(key).first();
+    return json({ ok: !!r && !r.revoked && r.product === product });
+  }
+  if (path === '/store/checkout') {
+    if (!env.STRIPE_SECRET_KEY) return json({ ok: false, error: 'sales are not switched on yet' }, 503);
+    const base = (env.SITE_BASE || 'https://flykaitak.com').replace(/\/$/, '');
+    const r = await stripe(env, 'POST', '/v1/checkout/sessions', {
+      mode: 'payment', 'line_items[0][quantity]': '1', 'line_items[0][price_data][currency]': P.cur,
+      'line_items[0][price_data][unit_amount]': String(P.cents), 'line_items[0][price_data][product_data][name]': P.name,
+      'line_items[0][price_data][product_data][description]': P.desc,
+      success_url: `${base}/?${product}_session={CHECKOUT_SESSION_ID}`, cancel_url: `${base}/?${product}=cancelled`,
+      'metadata[product]': product });
+    if (!r.ok || !r.j || !r.j.url) return json({ ok: false, error: 'could not start checkout' }, 502);
+    return json({ ok: true, url: r.j.url });
+  }
+  if (path === '/store/claim') {
+    if (!env.STRIPE_SECRET_KEY) return json({ ok: false, error: 'sales are not switched on yet' }, 503);
+    const sid = String(b.session || '');
+    if (!/^cs_(live|test)_[A-Za-z0-9]{10,200}$/.test(sid)) return fail('invalid', 400);
+    if (await limited()) return json({ ok: false, error: 'too many tries, try again later' }, 429);
+    const have = await env.DB.prepare("SELECT key, revoked FROM licences WHERE src='purchase' AND ref=?1").bind(sid).first();
+    if (have) return have.revoked ? json({ ok: false, error: 'revoked' }, 403) : json({ ok: true, key: have.key, product });
+    const r = await stripe(env, 'GET', '/v1/checkout/sessions/' + sid);
+    const s = r.j;
+    // only a paid session that this Worker made for this product counts (so a coffee payment cannot unlock an aircraft)
+    if (!r.ok || !s || s.payment_status !== 'paid' || !s.metadata || s.metadata.product !== product || s.currency !== P.cur || !(s.amount_total >= P.cents)) return fail('not paid', 402);
+    return json({ ok: true, key: await mintLicence(env, product, 'purchase', sid), product });
+  }
+  if (path === '/store/redeem') {
+    if (await limited()) return json({ ok: false, error: 'too many tries, try again later' }, 429);
+    const raw = normKey(b.code);
+    if (KEY_RE.test(raw)) {   // a licence key typed in on another device: hand it back if it is good
+      const r = await env.DB.prepare('SELECT product, revoked FROM licences WHERE key = ?1').bind(raw).first();
+      return r && !r.revoked && r.product === product ? json({ ok: true, key: raw, product, restored: true }) : fail('invalid', 404);
+    }
+    if (!CODE_RE.test(raw)) return fail('invalid', 404);
+    const c = await env.DB.prepare('SELECT * FROM codes WHERE code = ?1').bind(raw).first();
+    if (!c || c.disabled || c.product !== product) return fail('invalid', 404);
+    if (c.expires && c.expires < Date.now()) return fail('expired', 410);
+    // take one use atomically, so two people cannot share the last use
+    const u = await env.DB.prepare('UPDATE codes SET uses = uses + 1 WHERE code = ?1 AND uses < max_uses AND disabled = 0').bind(raw).run();
+    if (!u.meta || u.meta.changes !== 1) return fail('used', 410);
+    return json({ ok: true, key: await mintLicence(env, product, 'code', raw), product });
+  }
+  return json({ error: 'not found' }, 404);
+}
+
+async function admin(req, env, url, json) {
+  const tok = (req.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
+  if (!env.ADMIN_TOKEN || !tok || !eq(tok, env.ADMIN_TOKEN)) return json({ error: 'unauthorised' }, 401);
+  const path = url.pathname;
+  if (path === '/admin/codes' && req.method === 'GET') {
+    const { results } = await env.DB.prepare('SELECT code, product, max_uses, uses, note, ts, expires, disabled FROM codes ORDER BY ts DESC LIMIT 500').all();
+    return json({ codes: results });
+  }
+  if (path === '/admin/sales' && req.method === 'GET') {
+    const { results } = await env.DB.prepare('SELECT product, src, revoked, COUNT(*) n FROM licences GROUP BY product, src, revoked').all();
+    const c = await env.DB.prepare('SELECT COUNT(*) codes, COALESCE(SUM(max_uses),0) allowed, COALESCE(SUM(uses),0) used FROM codes').first();
+    return json({ licences: results, codes: c });
+  }
+  if (req.method !== 'POST') return json({ error: 'method not allowed' }, 405);
+  let b; try { b = await req.json(); } catch { return json({ error: 'bad json' }, 400); }
+  if (path === '/admin/codes') {
+    const product = PRODUCTS[b.product] ? b.product : 'concorde';
+    const count = Math.min(500, Math.max(1, Math.floor(Number(b.count) || 1))), uses = Math.min(100000, Math.max(1, Math.floor(Number(b.uses) || 1)));
+    const days = Number(b.days) > 0 ? Number(b.days) : 0, expires = days ? Date.now() + days * 86400e3 : null, note = txt(b.note, 80);
+    const codes = [];
+    for (let i = 0; i < count; i++) {
+      for (let t = 0; t < 5; t++) {
+        const code = `FKT-${rnd(4)}-${rnd(4)}`;
+        try { await env.DB.prepare('INSERT INTO codes (code, product, max_uses, uses, note, ts, expires, disabled) VALUES (?1,?2,?3,0,?4,?5,?6,0)').bind(code, product, uses, note, Date.now(), expires).run(); codes.push(code); break; }
+        catch (e) { if (!/UNIQUE|constraint/i.test(String(e))) throw e; }
+      }
+    }
+    return json({ ok: true, product, uses, expires, note, codes });
+  }
+  if (path === '/admin/codes/disable') {
+    const r = await env.DB.prepare('UPDATE codes SET disabled = ?2 WHERE code = ?1').bind(normKey(b.code), b.enable ? 0 : 1).run();
+    return json({ ok: !!(r.meta && r.meta.changes) });
+  }
+  if (path === '/admin/licences/revoke') {
+    const r = await env.DB.prepare('UPDATE licences SET revoked = ?2 WHERE key = ?1').bind(normKey(b.key), b.restore ? 0 : 1).run();
+    return json({ ok: !!(r.meta && r.meta.changes) });
+  }
+  return json({ error: 'not found' }, 404);
 }
 
 /* ---------------- replay share links ----------------

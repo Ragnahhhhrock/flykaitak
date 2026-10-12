@@ -1,5 +1,38 @@
 [
   {
+    "slug": "fly-concorde-at-kai-tak",
+    "title": "Fly Concorde at Kai Tak",
+    "dek": "Concorde is now a flyable aircraft: a one-off US$7 unlock, or free with a giveaway code.",
+    "description": "Fly Concorde into Kai Tak: delta-wing flight model, drooping nose, reheat take-off and a flight engineer panel. US$7 once, or free with a giveaway code.",
+    "date": "2026-10-12",
+    "tag": "New",
+    "category": "aircraft",
+    "keywords": [
+      "Concorde",
+      "Kai Tak",
+      "supersonic",
+      "delta wing",
+      "premium aircraft",
+      "giveaway code",
+      "flight simulator"
+    ],
+    "hero": "concorde-final",
+    "hero_alt": "Concorde on final approach to Runway 13 seen from behind, lined up on the centreline over the harbour.",
+    "hero_caption": "Concorde lined up for Runway 13.",
+    "card_kicker": "AIRCRAFT · NEW",
+    "card_title": "Fly Concorde",
+    "card_sub": "US$7, or free with a code",
+    "card_image": "concorde-tower",
+    "card_focus": 50,
+    "zh": {
+      "title": "喺啟德飛協和式客機",
+      "dek": "協和式客機而家可以親自飛：一次過 US$7 解鎖，或者用贈送代碼免費解鎖。",
+      "description": "喺啟德機場飛協和式客機：三角翼飛行模型、下垂機鼻、復燃起飛同飛行工程師面板。一次過 US$7，或用贈送代碼免費解鎖。",
+      "hero_alt": "由後面望協和式客機最後進場 13 跑道，對正中線喺海港上空。",
+      "hero_caption": "協和式客機對正 13 跑道。"
+    }
+  },
+  {
     "slug": "harder-scoring-fresh-high-score-table",
     "title": "Harder scoring and a fresh high score table",
     "dek": "Two perfect 100s and a crowd of 90s was too easy. Landings are now scored on the whole approach and rollout, and the table starts again.",

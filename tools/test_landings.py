@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Landing regression test for Fly Kai Tak.
 
-Usage:  python3 tools/test_landings.py [--rwy 13|31|both] [--night] [--ac b744,b772,a333,a343] [--wx clear,rain,...]
+Usage:  python3 tools/test_landings.py [--rwy 13|31|both] [--night] [--ac b744,b772,a333,a343,conc] [--wx clear,rain,...]
 
 Serves the repo, opens it in headless Chromium and uses the sim's test hooks (window.__kt) to check, for each
 runway and weather preset:
@@ -121,7 +121,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--rwy", default="both")
     ap.add_argument("--night", action="store_true")
-    ap.add_argument("--ac", default="b744")
+    ap.add_argument("--ac", default="b744,conc")
     ap.add_argument("--wx", default=",".join(WX))
     ap.add_argument("--sec", type=int, default=420)
     a = ap.parse_args()
@@ -155,6 +155,11 @@ def main():
             r = pg.evaluate(TAKEOFF, [{"game": "free", "rwy": rwy, "ac": "b744", "wx": "clear", "night": a.night, "deck": False, "ap": False}, 200])
             ok = r["kind"] == "airborne" and r["alt"] > 500
             print(f"RWY {rwy} take-off (free flight)    -> {r['kind']:8s} airborne at {r['air']}s, alt {r['alt']} m, {r['V']} kt {'' if ok else r['title']} {'' if ok else r['why']}", flush=True)
+            fails += 0 if ok else 1
+        for rwy in rwys:   # Concorde: heavy reheat take-off, nose droops to 5 degrees and the aircraft climbs away
+            r = pg.evaluate(TAKEOFF, [{"game": "free", "rwy": rwy, "ac": "conc", "wx": "clear", "night": a.night, "deck": False, "ap": False}, 200])
+            ok = r["kind"] == "airborne" and r["alt"] > 500
+            print(f"RWY {rwy} Concorde take-off         -> {r['kind']:8s} airborne at {r['air']}s, alt {r['alt']} m, {r['V']} kt {'' if ok else r['title']} {'' if ok else r['why']}", flush=True)
             fails += 0 if ok else 1
         for rwy in rwys:
             r = pg.evaluate(SPOTTER, {"game": "watch", "rwy": rwy, "wx": "clear", "night": False, "deck": False})

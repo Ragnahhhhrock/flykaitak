@@ -332,6 +332,23 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
 @media (max-width:560px){.hst .opt{display:none}}
 .res-actions{display:flex;gap:8px;flex-wrap:wrap}
 .res-actions .go{flex:1;justify-content:center}
+/* Premium aircraft (Concorde): card badge and the unlock window */
+.card.prem{border-color:rgba(232,87,31,.5)}
+.card .badge{position:absolute;top:9px;right:10px;font-family:var(--f-num);font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-style:normal;color:var(--checker-ink);background:var(--checker);padding:2px 6px;border-radius:2px}
+.card .badge.on{display:none;background:var(--jade-bright);color:var(--ink)}
+.card.prem.owned .badge.lock{display:none}.card.prem.owned .badge.on{display:block}
+#concModal{position:fixed;inset:0;z-index:60;display:grid;place-items:center;background:rgba(6,10,12,.74);padding:16px;overflow:auto}
+#concModal[hidden]{display:none!important}
+.cm-list{margin:0;padding-left:18px;color:var(--text);font-size:14px;line-height:1.65}
+.cm-note{margin:0;color:var(--muted);font-size:12.5px;line-height:1.5}
+.cm-code{display:grid;gap:8px;border-top:1px solid var(--line);padding-top:14px}
+.cm-code label{font-size:12.5px;color:var(--muted)}
+.cm-row{display:flex;gap:8px}
+.cm-row input{flex:1;min-width:0;background:var(--ink);color:var(--text);border:1px solid var(--line-2);border-radius:3px;padding:10px 12px;font-family:var(--f-num);font-size:14px;letter-spacing:.08em;text-transform:uppercase}
+.cm-msg{margin:0;min-height:1.3em;font-size:13px;color:var(--amber)}
+.cm-msg.ok{color:var(--phosphor)}
+.cm-key{font-family:var(--f-num);font-size:20px;letter-spacing:.1em;color:var(--phosphor);background:var(--ink);border:1px solid var(--line-2);border-radius:3px;padding:12px 14px;text-align:center;user-select:all;overflow-wrap:anywhere}
+.cm-price{font-family:var(--f-num);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber)}
 .res-actions .btn{padding:13px 14px}
 .res-share{border-top:1px solid var(--line);padding-top:14px;display:grid;gap:10px}
 /* ---------- flight replay: transport bar along the bottom, REPLAY tag top left ---------- */
@@ -593,7 +610,7 @@ body.bigmap #radio{top:calc(env(safe-area-inset-top,0px) + 396px)}
       <section class="homeblog" id="homeBlog" aria-labelledby="homeBlogH">
         <h3 id="homeBlogH"><span class="l-en">Latest update</span><span class="l-zh" lang="zh-HK">最新消息</span></h3>
         <ul>
-          <li><a href="/blog/harder-scoring-fresh-high-score-table/" class="hb-top"><span class="hb-thumb"><img src="/assets/blog/og/harder-scoring-fresh-high-score-table.jpg" width="1200" height="630" loading="lazy" alt=""></span><span class="hb-txt"><span class="hb-meta"><time datetime="2026-10-12"><span class="l-en">12 Oct</span><span class="l-zh" lang="zh-HK">10月12日</span></time> &middot; <span class="l-en">Scores &amp; Sharing</span><span class="l-zh" lang="zh-HK">分數同分享</span></span><b><span class="l-en">Harder scoring and a fresh high score table</span><span class="l-zh" lang="zh-HK">評分更嚴格，最高分榜重新開始</span></b></span></a></li>
+          <li><a href="/blog/fly-concorde-at-kai-tak/" class="hb-top"><span class="hb-thumb"><img src="/assets/blog/og/fly-concorde-at-kai-tak.jpg" width="1200" height="630" loading="lazy" alt=""></span><span class="hb-txt"><span class="hb-meta"><time datetime="2026-10-12"><span class="l-en">12 Oct</span><span class="l-zh" lang="zh-HK">10月12日</span></time> &middot; <span class="l-en">Aircraft</span><span class="l-zh" lang="zh-HK">飛機</span></span><b><span class="l-en">Fly Concorde at Kai Tak</span><span class="l-zh" lang="zh-HK">喺啟德飛協和式客機</span></b></span></a></li>
         </ul>
         <a class="hb-all" href="/blog/"><span class="l-en">All updates on the blog</span><span class="l-zh" lang="zh-HK">網誌睇晒所有更新</span> <span aria-hidden="true">&rarr;</span></a>
       </section>
@@ -704,6 +721,38 @@ body.bigmap #radio{top:calc(env(safe-area-inset-top,0px) + 396px)}
       </div>
       <p class="later">Aerial imagery and map data © Lands Department, HKSAR Government (CSDI open data). Elevation: SRTM via AWS Terrain Tiles. Modern imagery is corrected to 1998 around Kai Tak, West Kowloon and the Central waterfront.</p>
       <p class="foot">Contact: <a href="mailto:contact@flykaitak.com">contact@flykaitak.com</a></p>
+    </div>
+  </div>
+  <div id="concModal" hidden role="dialog" aria-modal="true" aria-labelledby="cmTitle">
+    <div class="res cm">
+      <div class="checkband" aria-hidden="true"></div>
+      <div class="res-body">
+        <div id="cmOffer">
+          <p class="eyebrow">Premium aircraft</p>
+          <h2 id="cmTitle">Fly Concorde into Kai Tak</h2>
+          <p class="cm-price">$7 USD · one payment · yours to keep</p>
+          <ul class="cm-list">
+            <li>A delta wing flown the way Concorde was: about 13° nose up on the approach</li>
+            <li>The droop nose, reheat take-off and a flight engineer's panel</li>
+            <li>Runway 13 and Runway 31, every weather, day and night</li>
+          </ul>
+          <div class="res-actions"><button class="go" id="cmBuy" type="button"><span>Buy Concorde · $7 USD</span></button></div>
+          <p class="cm-note">Pay with Stripe. You get a licence key that works in any browser.</p>
+          <div class="cm-code">
+            <label for="cmCode">Have a licence key or a free code?</label>
+            <div class="cm-row"><input id="cmCode" maxlength="24" placeholder="FKT-XXXX-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false"><button class="btn" id="cmRedeem" type="button">Unlock</button></div>
+          </div>
+        </div>
+        <div id="cmDone" hidden>
+          <p class="eyebrow">Concorde unlocked</p>
+          <h2>Welcome aboard</h2>
+          <p class="why">Concorde is yours. Keep this licence key: it unlocks Concorde in any other browser or on another device.</p>
+          <div class="cm-key" id="cmKey"></div>
+          <div class="res-actions"><button class="go" id="cmFly" type="button"><span>Fly Concorde</span></button><button class="btn" id="cmCopy" type="button">Copy key</button></div>
+        </div>
+        <p class="cm-msg" id="cmMsg" role="status"></p>
+        <div class="res-actions"><button class="btn" id="cmClose" type="button">Not now</button></div>
+      </div>
     </div>
   </div>
 </section>
@@ -933,13 +982,13 @@ const AC={
  b744:{name:'Boeing 747-400',short:'747-400',eng:4,vref:150,S:541,span:64.4,len:70.7,diam:6.5,thr:1008e3,roll:14,engR:1.35,engX:[11.9,21.2],winglet:{h:1.9,rc:.8,tc:.28,sw:58,cant:29,bl:.1},fus:{nl:.14,ne:.58,drop:.55,tl:.70,up:.5},hump:true,belly:2.5,tail:11.5,flaps:['UP','1','10','20','30'],flapV:[999,280,240,205,180],note:'Four engines · upper-deck hump'},
  b772:{name:'Boeing 777-200',short:'777-200',eng:2,vref:140,S:427.8,span:60.9,len:63.7,diam:6.2,thr:800e3,roll:16,engR:1.75,engX:[9.7],winglet:null,fus:{nl:.125,ne:.62,drop:.4,tl:.70,up:.45},hump:false,belly:2.0,tail:10.5,flaps:['UP','1','5','20','30'],flapV:[999,255,235,205,180],note:'Two engines · new for 1996'},
  a333:{name:'Airbus A330-300',short:'A330-300',eng:2,vref:138,S:361.6,span:60.3,len:63.7,diam:5.64,thr:600e3,roll:17,engR:1.45,engX:[9.4],winglet:{h:2.1,rc:.82,tc:.3,sw:48,cant:24,bl:.38},fus:{nl:.12,ne:.66,drop:.4,tl:.73,up:.5},hump:false,belly:1.9,tail:10.5,flaps:['0','1','2','3','FULL'],flapV:[999,240,215,195,180],note:'Two engines · regional workhorse'},
- conc:{name:'Concorde',short:'Concorde',spot:true,eng:4,vref:162,S:358.6,span:25.6,len:61.7,diam:2.9,thr:677e3,roll:18,engR:.62,engX:[4.6,5.95],winglet:null,fus:{nl:.21,ne:1.15,drop:0,tl:.74,up:.32},delta:{cr:27.7,ct:2.2,zle:-9.9,tr:.9,us:.115,fz:15.4,fc:9.3,ni:30.2},hump:false,belly:2.6,tail:7.4,flaps:['0'],flapV:[999],note:'Four engines · supersonic',apt:11,vR:98,clm:14,gam:11},
+ conc:{name:'Concorde',short:'Concorde',prem:true,noFlaps:true,mL:108e3,mTO:150e3,pr:3.2,rotMax:13.5,tailCap:16.5,am:{CLa:2.0,Kv:3.4,aS:24*D2R,CD0:.0215,K:.21,CLm:1.43},eng:4,vref:162,S:358.6,span:25.6,len:61.7,diam:2.9,thr:677e3,roll:18,engR:.62,engX:[4.6,5.95],winglet:null,fus:{nl:.21,ne:1.15,drop:0,tl:.74,up:.32},delta:{cr:27.7,ct:2.2,zle:-9.9,tr:.9,us:.115,fz:15.4,fc:9.3,ni:30.2},hump:false,belly:2.6,tail:7.4,flaps:['0'],flapV:[999],note:'Four engines · supersonic · premium',apt:11,vR:98,clm:14,gam:11},
  a343:{name:'Airbus A340-300',short:'A340-300',eng:4,vref:142,S:361.6,span:60.3,len:63.7,diam:5.64,thr:560e3,roll:15,engR:1.05,engX:[9.3,17.4],winglet:{h:2.1,rc:.82,tc:.3,sw:48,cant:24,bl:.38},fus:{nl:.12,ne:.66,drop:.4,tl:.73,up:.5},hump:false,belly:1.9,tail:9.5,flaps:['0','1','2','3','FULL'],flapV:[999,240,215,195,180],note:'Four engines · long haul'},
  // cargo aircraft: they work the cargo apron and are never offered to the player (spot)
  b744f:{name:'Boeing 747-400F',short:'747-400F',spot:true,cargo:true,eng:4,vref:150,S:541,span:64.4,len:70.7,diam:6.5,thr:1008e3,roll:14,engR:1.35,engX:[11.9,21.2],winglet:{h:1.9,rc:.8,tc:.28,sw:58,cant:29,bl:.1},fus:{nl:.14,ne:.58,drop:.55,tl:.70,up:.5},hump:true,belly:2.5,tail:11.5,flaps:['UP','1','10','20','30'],flapV:[999,280,240,205,180],note:'Four engines · freighter'},
  a306f:{name:'Airbus A300-600F',short:'A300-600F',spot:true,cargo:true,eng:2,vref:136,S:260,span:44.84,len:54.08,diam:5.64,thr:524e3,roll:17,engR:1.35,engX:[7.0],winglet:null,fus:{nl:.13,ne:.64,drop:.4,tl:.74,up:.5},hump:false,belly:1.9,tail:10.4,flaps:['0','1','2','3','FULL'],flapV:[999,240,215,195,180],note:'Two engines · freighter'},
 };
-for(const k in AC){const a=AC[k];const v=a.vref*KT;a.mass=0.5*RHO*v*v*a.S*1.29/G;a.strike=Math.asin(Math.min(1,4.4/(a.span/2)));a.tailMax=(k==='a343'?9.5:k==='b744'?11:10)*D2R;a.R=a.diam/2;a.cy=a.belly+a.R}
+for(const k in AC){const a=AC[k];const v=a.vref*KT;a.mass=a.mL||0.5*RHO*v*v*a.S*1.29/G;a.strike=Math.asin(Math.min(1,4.4/(a.span/2)));a.tailMax=a.tailCap?a.tailCap*D2R:(k==='a343'?9.5:k==='b744'?11:10)*D2R;a.R=a.diam/2;a.cy=a.belly+a.R}
 
 /* ---------------- weather presets ---------------- */
 const WX={
@@ -4499,14 +4548,29 @@ function pylonGeo(Rn){const sh=new THREE.Shape();sh.moveTo(-.9*Rn,.85*Rn);sh.lin
 // an engine nacelle: lipped intake, fan cowl, smaller core cowl and a plug; axis along z, intake at -2.3R
 function nacelleGeo(Rn){const f=[[-2.3,.9],[-2.24,.98],[-2.0,1.02],[-1.3,1.03],[-.2,.98],[1.0,.86],[1.7,.7],[1.95,.56],[2.45,.5],[2.95,.1]],pts=f.map(q=>new THREE.Vector2(q[1]*Rn,q[0]*Rn));pts.push(new THREE.Vector2(0,3*Rn));
   return new THREE.LatheGeometry(pts,24).rotateX(Math.PI/2)}
-// a Concorde engine pod: long and slim, hung under the wing, a dark intake at the front tapering to the nozzle at the back
-function concNacelle(g,PT,sd,ex,wy,nacM,dark,L,dl){const sz=2.9,zi=-L/2+dl.ni,y=wy-1.15;
-  const nac=new THREE.Mesh(nacelleGeo(1),nacM);nac.scale.set(.62,.85,sz);nac.position.set(sd*ex,y,zi+2.3*sz);g.add(nac);nac.userData.ex=ex;PT.eng.push(nac);
-  const inlet=new THREE.Mesh(new THREE.CircleGeometry(.86,16),dark);inlet.scale.set(.62,.85,1);inlet.position.set(sd*ex,y,nac.position.z-2.05*sz);inlet.rotation.y=Math.PI;g.add(inlet);inlet.userData.ex=ex;PT.eng.push(inlet)}
+// Concorde has one nacelle under each wing, a rounded box holding two engines side by side: two dark rectangular intakes at the front, a flat
+// side that runs back past the trailing edge, and two nozzles. concPodGeo lofts the box (a superellipse section) from the intake lip to the exit
+function concPodGeo(zf,zr,W,H){const NS=28,NZ=16,pos=[],idx=[],n=4,rim=[];
+  const prof=f=>({w:W*(f>.78?1-.22*Math.pow((f-.78)/.22,1.5):1)*(f<.05?.93+1.4*f:1),h:H*(f>.68?1-.3*Math.pow((f-.68)/.32,1.4):1)*(f<.05?.88+2.4*f:1)});
+  for(let i=0;i<=NZ;i++){const f=i/NZ,p=prof(f),z=zf+(zr-zf)*f;for(let j=0;j<NS;j++){const t=j/NS*Math.PI*2,c=Math.cos(t),s_=Math.sin(t),k=1/Math.pow(Math.pow(Math.abs(c),n)+Math.pow(Math.abs(s_),n),1/n);pos.push(c*k*p.w/2,s_*k*p.h/2,z)}}
+  for(let i=0;i<NZ;i++)for(let j=0;j<NS;j++){const a_=i*NS+j,b_=i*NS+(j+1)%NS,c_=a_+NS,d_=b_+NS;idx.push(a_,c_,b_,b_,c_,d_)}
+  const mk=(p,ix)=>{const g_=new THREE.BufferGeometry();g_.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g_.setIndex(ix);g_.computeVertexNormals();return g_};
+  const cap=(ring,z)=>{const p=[],ix=[];for(let j=0;j<NS;j++){const q=ring*3*NS+j*3;p.push(pos[q],pos[q+1],z)}p.push(0,0,z);for(let j=0;j<NS;j++)ix.push(j,(j+1)%NS,NS);return mk(p,ix)};
+  return {body:mk(pos,idx),front:cap(0,zf-.02),rear:cap(NZ,zr+.02)}}
+function concNacelle(g,PT,sd,ex,wy,nacM,dark,L,dl,first,ex0,ex1){
+  const zf=-1.8,zr=18.1,y=wy-.98,cx=(ex0+ex1)/2;
+  if(first){const G=concPodGeo(zf,zr,ex1-ex0+2.2,1.75),body=new THREE.Mesh(G.body,nacM);body.position.set(sd*cx,y,0);g.add(body);body.userData.ex=ex0;PT.eng.push(body);
+    const fr=new THREE.Mesh(G.front,dark);fr.position.set(sd*cx,y,0);g.add(fr);fr.userData.ex=ex0;PT.eng.push(fr);
+    const rr_=new THREE.Mesh(G.rear,dark);rr_.position.set(sd*cx,y,0);g.add(rr_);rr_.userData.ex=ex0;PT.eng.push(rr_);
+    const sp=new THREE.Mesh(new THREE.BoxGeometry(.12,1.5,.5),nacM);sp.position.set(sd*cx,y,zf+.05);g.add(sp);sp.userData.ex=ex0;PT.eng.push(sp)}   // the splitter between the two intakes
+  // a nozzle for this engine, and its reheat flame
+  const nz=new THREE.Mesh(new THREE.CylinderGeometry(.5,.66,2.0,16,1,true).rotateX(Math.PI/2),dark);nz.position.set(sd*ex,y,zr+.9);g.add(nz);nz.userData.ex=ex;PT.eng.push(nz);
+  const fl=new THREE.Group(),fm=(r,h,c,o)=>new THREE.Mesh(new THREE.ConeGeometry(r,h,12,1,true).rotateX(Math.PI/2).translate(0,0,h/2),new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:o,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
+  fl.add(fm(.5,8,0xff8a2a,.7),fm(.26,5,0xffe2a0,.9));fl.position.set(sd*ex,y,zr+1.9);fl.visible=false;g.add(fl);(g.userData.flames=g.userData.flames||[]).push(fl)}
 function buildAircraftModel(a,opt={}){
   const g=new THREE.Group();const L=a.len,R=a.R,cy=a.cy,dl=a.delta;
   const white=new THREE.MeshLambertMaterial({color:0xf2f2ee}),grey=new THREE.MeshLambertMaterial({color:0xb9bcbf}),dark=new THREE.MeshLambertMaterial({color:0x22272b});
-  const tailC=new THREE.MeshLambertMaterial({color:opt.tail||0x1d6f6a,side:THREE.DoubleSide}),wingM=new THREE.MeshLambertMaterial({color:0xc4c7ca,side:THREE.DoubleSide});
+  const tailC=new THREE.MeshLambertMaterial({color:opt.tail||0x1d6f6a,side:THREE.DoubleSide}),wingM=new THREE.MeshLambertMaterial({color:dl?0xe9e8e2:0xc4c7ca,side:THREE.DoubleSide});
   // fuselage: rings along z (nose at -z). Windscreen, windows and stripes are patches on this same skin, so nothing sits on top of it
   const F=a.fus,nl=F.nl,tl=F.tl;
   const rad=u=>{if(u<=nl)return R*Math.pow(Math.sin(u/nl*Math.PI/2),F.ne);if(u<=tl)return R;return R*(1-.9*Math.pow((u-tl)/(1-tl),1.35))};
@@ -4554,27 +4618,28 @@ function buildAircraftModel(a,opt={}){
   // wings
   const cr=dl?dl.cr:L*.2,ct=dl?dl.ct:cr*.24,semi=a.span/2,sweep=dl?(cr-ct)/semi:Math.tan(36*D2R),zle=dl?dl.zle:-L*.08,wy=dl?cy-R*.72:cy-R*.45,dih=dl?0:5*D2R,wtr=dl?dl.tr:cr*.115;
   // a wing lofted from its planform: flat top, underside deepest near a third of the chord, thickness in proportion to the local chord
-  const wingGeo=(semi,cr,ct,zle,tr)=>{const NX=10,NC=12,pos=[],idx=[],kt=ct/cr,prof=c=>Math.sin(Math.PI*Math.pow(c,.6));
-    const st=(i,j)=>{const x=semi*i/NX,ch=cr+(ct-cr)*i/NX;return[x,zle+x*sweep+j/NC*ch,tr*(1-(1-kt)*i/NX)*prof(j/NC)]};
+  // og: Concorde's ogival wing. The leading edge is swept about 71 degrees at the root and eases to about 48 at the tip, and the trailing edge stays straight
+  const wingGeo=(semi,cr,ct,zle,tr,og)=>{const NX=og?24:10,NC=12,pos=[],idx=[],kt=ct/cr,prof=c=>Math.sin(Math.PI*Math.pow(c,.6));
+    const st=(i,j)=>{const t=i/NX,x=semi*t,S=1.45*t-.45*t*t,ch=og?cr-(cr-ct)*S:cr+(ct-cr)*t,le=og?zle+(cr-ct)*S:zle+x*sweep;return[x,le+j/NC*ch,tr*(1-(1-kt)*t)*prof(j/NC)]};
     for(let i=0;i<=NX;i++)for(let j=0;j<=NC;j++){const q=st(i,j);pos.push(q[0],0,q[1])}
     for(let i=0;i<=NX;i++)for(let j=0;j<=NC;j++){const q=st(i,j);pos.push(q[0],-q[2],q[1])}
     const T=(i,j)=>i*(NC+1)+j,B=(i,j)=>(NX+1)*(NC+1)+i*(NC+1)+j;
     for(let i=0;i<NX;i++)for(let j=0;j<NC;j++){idx.push(T(i,j),T(i+1,j),T(i,j+1),T(i,j+1),T(i+1,j),T(i+1,j+1),B(i,j),B(i,j+1),B(i+1,j),B(i,j+1),B(i+1,j+1),B(i+1,j))}
     for(let j=0;j<NC;j++)idx.push(T(NX,j),T(NX,j+1),B(NX,j),T(NX,j+1),B(NX,j+1),B(NX,j));
     const ge=new THREE.BufferGeometry();ge.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));ge.setIndex(idx);ge.computeVertexNormals();return ge};
-  const nacM=new THREE.MeshLambertMaterial({color:0xb9bcbf,side:THREE.DoubleSide});
+  const nacM=new THREE.MeshLambertMaterial({color:dl?0xd3d5d4:0xb9bcbf,side:THREE.DoubleSide});
   const PT={wing:[],stab:[],eng:[],misc:[]},surf={ail:[],elev:[],flap:[],spl:[]};const surfM=new THREE.MeshLambertMaterial({color:0xb5b9bc,side:THREE.DoubleSide});
   // a hinged surface on a wing-shaped mesh: hinge line along the trailing edge, deflection about the hinge
   const hinged=(parent,semi_,cr_,ct_,zle_,sweep_,x0,len,ch,top,thick)=>{const k=(semi_*sweep_+ct_-cr_)/semi_;const zte=zle_+cr_+x0*k;
     const piv=new THREE.Group();piv.position.set(x0,top?.02:-thick/2,top?zte-ch*2.2:zte-ch);piv.rotation.y=-Math.atan(k);parent.add(piv);
     const h=new THREE.Group();piv.add(h);const m=new THREE.Mesh(new THREE.BoxGeometry(len/Math.cos(Math.atan(k)),top?.12:thick*.8,ch).translate(len/Math.cos(Math.atan(k))/2,top?.06:0,ch/2),surfM);h.add(m);return h};
-  for(const sd of[-1,1]){const w=new THREE.Mesh(wingGeo(semi,cr,ct,zle,wtr),wingM);w.scale.x=sd;w.position.y=wy;w.rotation.z=sd*dih;g.add(w);w.userData.brk={sd,semi,cr,ct,zle,tr:wtr};PT.wing.push(w);
+  for(const sd of[-1,1]){const w=new THREE.Mesh(wingGeo(semi,cr,ct,zle,wtr,!!dl),wingM);w.scale.x=sd;w.position.y=wy;w.rotation.z=sd*dih;g.add(w);w.userData.brk={sd,semi,cr,ct,zle,tr:wtr,og:!!dl};PT.wing.push(w);
     surf.ail.push({h:dl?hinged(w,semi,cr,ct,zle,sweep,semi*.55,semi*.42,2.4,false,.2):hinged(w,semi,cr,ct,zle,sweep,semi*.7,semi*.22,ct*.38,false,.2),sd});if(dl)surf.elev.push({h:hinged(w,semi,cr,ct,zle,sweep,R*1.2,semi*.5-R*1.2,3.2,false,.2),sd});
     if(!dl)surf.flap.push({h:hinged(w,semi,cr,ct,zle,sweep,R*1.05,semi*.58-R,cr*.16,false,.2),sd});
     if(!dl)surf.spl.push({h:hinged(w,semi,cr,ct,zle,sweep,R*1.3,semi*.42,cr*.11,true,.2),sd});
     if(a.winglet){const W=a.winglet,wm=new THREE.Mesh(wingletGeo(W.h,ct*W.rc,ct*W.tc,W.sw,W.cant,W.bl,.055),tailC);wm.position.set(sd*(semi*Math.cos(5*D2R)-.5),cy-R*.45+semi*Math.sin(5*D2R)-.45,zle+semi*sweep+ct*.1);wm.scale.x=sd;g.add(wm);PT.misc.push(wm)}
     // engines
-    for(const ex of a.engX){if(dl){concNacelle(g,PT,sd,ex,wy,nacM,dark,L,dl);continue}const ez=zle+ex*sweep-a.engR*2.6;const ey=cy-R*.45+ex*Math.tan(5*D2R)-a.engR-.6;
+    for(const ex of a.engX){if(dl){concNacelle(g,PT,sd,ex,wy,nacM,dark,L,dl,ex===a.engX[0],a.engX[0],a.engX[a.engX.length-1]);continue}const ez=zle+ex*sweep-a.engR*2.6;const ey=cy-R*.45+ex*Math.tan(5*D2R)-a.engR-.6;
       const nac=new THREE.Mesh(nacelleGeo(a.engR),nacM);nac.position.set(sd*ex,ey,ez);g.add(nac);nac.userData.ex=ex;PT.eng.push(nac);
       const inlet=new THREE.Mesh(new THREE.CircleGeometry(a.engR*.86,20),dark);inlet.position.set(sd*ex,ey,ez-a.engR*2.05);inlet.rotation.y=Math.PI;g.add(inlet);inlet.userData.ex=ex;PT.eng.push(inlet);
       const py=new THREE.Mesh(pylonGeo(a.engR),nacM);py.position.set(sd*ex,ey,ez);g.add(py);py.userData.ex=ex;PT.eng.push(py)}
@@ -4585,14 +4650,14 @@ function buildAircraftModel(a,opt={}){
   // fin
   {const sh=new THREE.Shape();const fh=a.tail,fc=dl?dl.fc:L*.14;sh.moveTo(0,0);sh.lineTo(fc,0);sh.lineTo(fc+fh*.95,fh);sh.lineTo(fc*.45+fh*.95,fh);sh.lineTo(0,0);
    const eg=new THREE.ExtrudeGeometry(sh,{depth:.5,bevelEnabled:false});eg.rotateY(-Math.PI/2);const fin=new THREE.Mesh(eg,tailC);fin.position.set(.25,cy+R*(dl?.35:.55),dl?dl.fz:L*.3);fin.userData.fin=true;g.add(fin);
-   const stripe=new THREE.Mesh(new THREE.BoxGeometry(.56,.9,fc*.9),new THREE.MeshLambertMaterial({color:0xef6a2c}));stripe.position.set(0,cy+R*(dl?.35:.55)+fh*.55,(dl?dl.fz:L*.3)+fc*.55+fh*.5);stripe.rotation.x=-.75;stripe.userData.fin=true;g.add(stripe)}
+   const stripe=new THREE.Mesh(new THREE.BoxGeometry(.56,.9,fc*.9),new THREE.MeshLambertMaterial({color:dl?0xc8202f:0xef6a2c}));stripe.position.set(0,cy+R*(dl?.35:.55)+fh*.55,(dl?dl.fz:L*.3)+fc*.55+fh*.5);stripe.rotation.x=-.75;stripe.userData.fin=true;g.add(stripe)}
   // landing gear
   const gear=new THREE.Group();const tyre=new THREE.MeshLambertMaterial({color:0x151515});
   const wheel=(x,z)=>{const w=new THREE.Mesh(new THREE.CylinderGeometry(.62,.62,.5,12).rotateZ(Math.PI/2),tyre);w.position.set(x,.62,z);gear.add(w)};
   const bog=(x,z,rows,lh)=>{const H=lh||cy-R*.4;for(let r=0;r<rows;r++){wheel(x-.45,z+r*1.5);wheel(x+.45,z+r*1.5)}const st=new THREE.Mesh(new THREE.BoxGeometry(.4,H,.4).translate(0,H/2,0),grey);st.position.set(x,.6,z+.75*(rows-1));gear.add(st)};
-  bog(0,-L/2+L*.11,1);
+  bog(0,-L/2+L*(dl?.16:.11),1);
   const mz=zle+cr*.55;
-  if(dl){bog(-3.85,mz,2,wy-1.1);bog(3.85,mz,2,wy-1.1)}
+  if(dl){const bx=(a.engX[0]+a.engX[a.engX.length-1])/2;bog(-bx,mz,2,wy-1.1);bog(bx,mz,2,wy-1.1)}   // two four-wheel bogies, one under each nacelle
   else if(a.eng===4&&a.hump){bog(-4.4,mz,2);bog(4.4,mz,2);bog(-1.8,mz+3.2,2);bog(1.8,mz+3.2,2)}
   else if(a.short==='777-200'){bog(-5.5,mz,3);bog(5.5,mz,3)}
   else {bog(-5.3,mz,2);bog(5.3,mz,2);if(a.eng===4)bog(0,mz+1,2)}
@@ -4621,18 +4686,22 @@ function groundInfo(x,z){
 }
 function resetFlight(){
   const a=AC[CFG.ac];const P=PATH.pts;
-  Object.assign(ST,{ac:a,t:0,pi:0,x:P[0].x,z:P[0].z,y:P[0].alt,V:175*KT,gamma:-GP,psi:P[0].h,phi:0,flapIdx:2,flapPos:2,gearDown:false,gearPos:0,
+  Object.assign(ST,{ac:a,t:0,pi:0,x:P[0].x,z:P[0].z,y:P[0].alt,V:(a.noFlaps?205:175)*KT,gamma:-GP,psi:P[0].h,phi:0,flapIdx:a.noFlaps?0:2,flapPos:a.noFlaps?0:2,gearDown:false,gearPos:0,m:(CFG.game==='approach'?a.mass:(a.mTO||a.mass)),nose:0,
     throttle:.1,thrust:0,onGround:false,ended:null,stall:false,gdot:0,apI:0,inPitch:0,inRoll:0,td:null,Gs:0,psiG:0,vx:0,vy:0,vz:0,ra:900,
     ph:[0,1,2,3,4,5].map(()=>rnd()*6.28),callouts:{},warnT:0,warn:'',ap:CFG.ap,crashT:0,lastGPWS:0,tailstrike:false,apUsed:false,rewound:false,trk:{t:0,v2:0,l2:0,s2:0,rl:0}});
   // trim for the glidepath
-  const q=.5*RHO*ST.V*ST.V;const CL=a.mass*G*Math.cos(ST.gamma)/(q*a.S);const al=(CL-CL0S[2])/CLA;ST.theta=ST.gamma+al;
-  const D=q*a.S*(CD0+CDFS[2]+KI*CL*CL);const T=D+a.mass*G*Math.sin(ST.gamma);ST.thrust=Math.max(T,.03*a.thr);ST.throttle=ST.thrust/a.thr;
+  const q=.5*RHO*ST.V*ST.V;const CL=ST.m*G*Math.cos(ST.gamma)/(q*a.S);const al=a.am?amAlpha(a.am,CL):(CL-CL0S[2])/CLA;ST.theta=ST.gamma+al;
+  const D=q*a.S*((a.am?a.am.CD0:CD0+CDFS[2])+(a.am?a.am.K:KI)*CL*CL);const T=D+ST.m*G*Math.sin(ST.gamma);ST.thrust=Math.max(T,.03*a.thr);ST.throttle=ST.thrust/a.thr;
   // initial wind correction
   const w=windAt(ST.y,0);ST.vx=ST.V*Math.sin(ST.psi)+w[0];ST.vz=-ST.V*Math.cos(ST.psi)+w[2];
   if(CFG.game!=='approach'){const q0=rwP(LND.id==='31'?RWY.len-40:40,0);Object.assign(ST,{x:q0[0],z:q0[1],y:RWY.elev,V:0,Gs:0,gamma:0,theta:0,phi:0,psi:LND.hdg*D2R,psiG:LND.hdg*D2R,onGround:true,
-    flapIdx:2,flapPos:2,gearDown:true,gearPos:1,throttle:0,thrust:.035*a.thr,vx:0,vz:0,vy:0,ap:false,ra:0});ST.pi=pathNearestGlobal(ST.x,ST.z)}
+    flapIdx:a.noFlaps?0:2,flapPos:a.noFlaps?0:2,gearDown:true,gearPos:1,nose:a.delta?5:0,throttle:0,thrust:.035*a.thr,vx:0,vz:0,vy:0,ap:false,ra:0});ST.pi=pathNearestGlobal(ST.x,ST.z)}
 }
+// a delta wing: the lift curve is shallow and gains vortex lift as the nose comes up, so Concorde flies the approach at about 13 degrees of alpha
+function amAlpha(m,CL){return(-m.CLa+Math.sqrt(m.CLa*m.CLa+4*m.Kv*Math.max(0,CL)))/(2*m.Kv)}
+function amCL(m,al){const x=Math.min(al,m.aS);const c=m.CLa*x+m.Kv*x*Math.abs(x);return al<=m.aS?c:Math.max(.6,m.CLm-3*(al-m.aS))}
 function aero(a,s){
+  if(a.am){const m=a.am,al=s.theta-s.gamma,kt=s.V/KT;return {CL:amCL(m,al),CDF:0,al,aStall:m.aS,K:m.K,CD0:m.CD0+(kt>430?4e-6*(kt-430)*(kt-430):0)}}   // wave drag builds above 430 kt, so free flight tops out near 520 kt
   const fp=s.flapPos,i0=Math.min(3,Math.floor(fp)),ft=fp-i0;
   const CL0=lerp(CL0S[i0],CL0S[i0+1],ft),CLM=lerp(CLMS[i0],CLMS[i0+1],ft),CDF=lerp(CDFS[i0],CDFS[i0+1],ft);
   const aStall=(CLM-CL0)/CLA;const al=s.theta-s.gamma;
@@ -4641,15 +4710,15 @@ function aero(a,s){
 }
 function physStep(dt){
   const s=ST,a=s.ac;if(s.ended)return;if(mode==='fly')recTick(s);
-  if(s.ap&&!s.onGround)(CFG.game==='free'?apHold(dt):apUpdate(dt));else if(!s.ap){s.cmdPitchRate=s.inPitch*4*D2R;s.cmdRollRate=s.inRoll*a.roll*D2R}
+  if(s.ap&&!s.onGround)(CFG.game==='free'?apHold(dt):apUpdate(dt));else if(!s.ap){s.cmdPitchRate=s.inPitch*(a.pr||4)*D2R;s.cmdRollRate=s.inRoll*a.roll*D2R}
   s.flapPos+=clamp(s.flapIdx-s.flapPos,-.28*dt,.28*dt);
   s.gearPos+=clamp((s.gearDown?1:0)-s.gearPos,-dt/8,dt/8);
   const tc=Math.max(.035,s.throttle)*a.thr;s.thrust+=(tc-s.thrust)*Math.min(1,dt/(tc>s.thrust?3.2:2.2));
   const w=windAt(s.y-RWY.elev,s.t);s.wind=w;
   if(!s.onGround){
-    const ae=aero(a,s);const q=.5*RHO*s.V*s.V;const L=q*a.S*ae.CL;const D=q*a.S*(CD0+ae.CDF+CDG*s.gearPos+KI*ae.CL*ae.CL);
+    const ae=aero(a,s);const q=.5*RHO*s.V*s.V;const L=q*a.S*ae.CL;const D=q*a.S*((ae.CD0??CD0)+ae.CDF+CDG*s.gearPos+(ae.K??KI)*ae.CL*ae.CL);
     s.alpha=ae.al;s.stall=ae.al>ae.aStall-1.6*D2R;
-    const V=Math.max(25,s.V),m=a.mass;
+    const V=Math.max(25,s.V),m=s.m;
     const Vd=(s.thrust*Math.cos(ae.al)-D)/m-G*Math.sin(s.gamma);
     const gd=(L*Math.cos(s.phi)+s.thrust*Math.sin(ae.al)-m*G*Math.cos(s.gamma))/(m*V);
     const pd=L*Math.sin(s.phi)/(m*V*Math.cos(s.gamma));
@@ -4665,6 +4734,8 @@ function physStep(dt){
     trkSample(dt);
     checkAirborne();
   } else groundRoll(dt);
+  if(a.mTO&&s.m>a.mass)s.m=Math.max(a.mass,s.m-s.thrust/a.thr*28*dt);   // fuel burn: Concorde drinks about 100 tonnes an hour at full reheat
+  if(a.delta){const nt=!s.gearDown?0:s.onGround?(s.td?12.5:5):(s.liftoffT!==undefined&&s.t-s.liftoffT<60?5:12.5);s.nose+=clamp(nt-s.nose,-1.1*dt,1.1*dt)}   // the droop nose follows the gear: 5 degrees to taxi and take off, 12.5 to land
   s.t+=dt;
 }
 function checkAirborne(){
@@ -4706,13 +4777,13 @@ function touchdown(){
 }
 function groundRoll(dt){
   const s=ST,a=s.ac;s.y=RWY.elev;s.vy=0;s.gamma=0;
-  if(!s.td&&s.Gs>35&&s.inPitch>.2)s.theta=Math.min(12*D2R,s.theta+s.inPitch*3*D2R*dt);else s.theta=Math.max(0,s.theta-(s.Gs>40&&s.inPitch>.3&&!s.ap?0:2.2*D2R*dt));s.phi*=Math.max(0,1-4*dt);
+  if(!s.td&&s.Gs>35&&s.inPitch>.2)s.theta=Math.min((a.rotMax||12)*D2R,s.theta+s.inPitch*3*D2R*dt);else s.theta=Math.max(0,s.theta-(s.Gs>40&&s.inPitch>.3&&!s.ap?0:2.2*D2R*dt));s.phi*=Math.max(0,1-4*dt);
   const lr=lL(s.x,s.z),sr=lS(s.x,s.z);const rh=LND.hdg*D2R;
   if(s.td&&s.trk)s.trk.rl=Math.max(s.trk.rl,Math.abs(lr));
   let steer;if(s.ap)steer=clamp(-lr*.004-angDiff(s.psiG,rh)*1.2,-3*D2R,3*D2R);else steer=s.inRoll*3*D2R-angDiff(s.psiG,rh)*.25;
   s.psiG+=steer*dt;s.psi=s.psiG;
-  const q=.5*RHO*s.Gs*s.Gs;const drag=q*a.S*(CD0+CDFS[4]+CDG+.08)/a.mass;
-  const rev=s.td&&s.throttle<.12?.5:0;const brake=s.td?(s.throttle<.3&&s.Gs>1.5?1.5:0):(s.throttle<.05&&s.Gs>.5?1.2:0);const thr=(s.td?s.throttle>.12:true)?s.thrust/a.mass:0;
+  const q=.5*RHO*s.Gs*s.Gs;const drag=q*a.S*(a.am?a.am.CD0+CDG+.03:CD0+CDFS[4]+CDG+.08)/s.m;
+  const rev=s.td&&s.throttle<.12?.5:0;const brake=s.td?(s.throttle<.3&&s.Gs>1.5?1.5:0):(s.throttle<.05&&s.Gs>.5?1.2:0);const thr=(s.td?s.throttle>.12:true)?s.thrust/s.m:0;
   s.Gs=Math.max(0,s.Gs+(thr-drag-rev-brake-.15)*dt);s.V=s.Gs;
   s.vx=s.Gs*Math.sin(s.psiG);s.vz=-s.Gs*Math.cos(s.psiG);const px=s.x,pz=s.z;s.x+=s.vx*dt;s.z+=s.vz*dt;s.ra=0;
   // aircraft on the ground stay on the tarmac: all three wheels must be on it (see onPaved). Off it at speed is a crash; at walking pace the aircraft just stops at the edge
@@ -4723,8 +4794,8 @@ function groundRoll(dt){
   if(s.td&&s.Gs<3*KT){s.Gs=0;if(CFG.game==='free'){if(!s.stopNoted){s.stopNoted=1;const g=gradeLanding(s.td);toast('Landed: grade '+g.g+', '+Math.round(g.fpm)+' fpm. Add thrust to go again.');trackLanding({grade:g.g,score:Math.max(0,g.pts),touchdown_fpm:Math.round(g.fpm),mode:'free'})}if(s.throttle>.3){s.td=null;s.stopNoted=0;s.attempted=false}return}return landed()}
   if(s.td&&CFG.game==='free'&&s.throttle>.6&&s.Gs>20){s.td=null;s.stopNoted=0;s.attempted=false}  // touch-and-go
   // liftoff
-  if(!s.td){const fp=s.flapPos,i0=Math.min(3,Math.floor(fp)),ft=fp-i0;const CL=lerp(CL0S[i0],CL0S[i0+1],ft)+CLA*s.theta;
-    if(.5*RHO*s.Gs*s.Gs*a.S*CL>a.mass*G*1.01&&s.Gs>30){s.onGround=false;s.V=s.Gs;s.gamma=.5*D2R;s.psi=s.psiG;s.vy=0;s.y=RWY.elev+.05;s.liftoffT=s.t;toast('Rotate… positive climb. Gear up (G).');track('takeoff',{})}}
+  if(!s.td){const fp=s.flapPos,i0=Math.min(3,Math.floor(fp)),ft=fp-i0;const CL=a.am?amCL(a.am,s.theta):lerp(CL0S[i0],CL0S[i0+1],ft)+CLA*s.theta;
+    if(.5*RHO*s.Gs*s.Gs*a.S*CL>s.m*G*1.01&&s.Gs>30){s.onGround=false;s.V=s.Gs;s.gamma=.5*D2R;s.psi=s.psiG;s.vy=0;s.y=RWY.elev+.05;s.liftoffT=s.t;toast('Rotate… positive climb. Gear up (G).');track('takeoff',{})}}
 }
 function apHold(dt){const s=ST,a=s.ac;if(s.apT===undefined||s.apT===null){s.apT={alt:Math.max(s.y,RWY.elev+460),hdg:Math.atan2(s.vx,-s.vz),v:Math.max(s.V,(a.vref+30)*KT)}}
   const T=s.apT;const trk=Math.atan2(s.vx,-s.vz);const bankCmd=clamp(angDiff(T.hdg,trk)*2,-25*D2R,25*D2R);s.cmdRollRate=clamp((bankCmd-s.phi)*1.8,-6*D2R,6*D2R);
@@ -4750,7 +4821,7 @@ function apUpdate(dt){
   s.cmdPitchRate=clamp((flare?1.1:.55)*(gC-s.gamma)-(flare?1.3:1.0)*s.gdot,-3*D2R,3*D2R);
   // configuration & speed
   const d=p.d;let fl,vt;
-  if(d>9500){fl=2;vt=175}else if(d>6800){fl=3;vt=160}else{fl=4;vt=a.vref+5}
+  if(a.noFlaps){fl=0;vt=d>9500?205:d>6800?182:a.vref+5}else if(d>9500){fl=2;vt=175}else if(d>6800){fl=3;vt=160}else{fl=4;vt=a.vref+5}
   if(d<9800)s.gearDown=true;
   s.flapIdx=fl;
   const err=vt-s.V/KT;s.apI=clamp(s.apI+err*.006*dt,-.25,.4);
@@ -4784,7 +4855,7 @@ window.addEventListener('pagehide',()=>{flightEnd('page_closed',true);sendSummar
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')sendSummary(true)});
 
 /* ---------------- time travel ---------------- */
-const HIST=[];const HKEYS=['x','y','z','V','gamma','psi','theta','phi','flapIdx','flapPos','gearDown','gearPos','throttle','thrust','onGround','Gs','psiG','vx','vy','vz','t','pi','apI','ap','tailstrike','gdot'];
+const HIST=[];const HKEYS=['x','y','z','V','gamma','psi','theta','phi','flapIdx','flapPos','gearDown','gearPos','throttle','thrust','onGround','Gs','psiG','vx','vy','vz','t','pi','apI','ap','tailstrike','gdot','m'];
 function recordHistory(){const s=ST;if(s.ended)return;const last=HIST[HIST.length-1];if(last&&s.t-last.t<.5)return;const o={};for(const k of HKEYS)o[k]=s[k];o.td=s.td?{...s.td}:null;o.callouts={...s.callouts};HIST.push(o);if(HIST.length>2400)HIST.shift()}
 function timeJump(sec){
   if(mode!=='fly'&&mode!=='ended')return;const s=ST;track(sec<0?'rewind':'fast_forward',{seconds:Math.abs(sec)});
@@ -5309,7 +5380,7 @@ function hsCommitName(){if(!HS_ENTRY)return;const el=document.getElementById('hs
    SOUND
    ===================================================================== */
 const sfx=(()=>{
-  let ctx,master,eng,engF,whine,whineG,wind,windF,rainG,revG,revF,sqG,sqLfo,hydG,hydO,flapG,flapO,rumG,rumF;
+  let ctx,master,eng,engF,whine,whineG,wind,windF,rainG,revG,revF,sqG,sqLfo,hydG,hydO,flapG,flapO,rumG,rumF,abG,abF;
   function buf(brown){const b=ctx.createBuffer(1,ctx.sampleRate*2,ctx.sampleRate);const d=b.getChannelData(0);let l=0;for(let i=0;i<d.length;i++){const w=Math.random()*2-1;if(brown){l=(l+.02*w)/1.02;d[i]=l*3.5+w*.05}else d[i]=w}return b}
   let BROWN,WHITE,duckK=1;
   function src(b){const s=ctx.createBufferSource();s.buffer=b;s.loop=true;s.start();return s}
@@ -5333,7 +5404,9 @@ const sfx=(()=>{
       const hydN=chain(src(WHITE),filt('bandpass',2200,3),gain(.0));hydG.hiss=hydN;
       flapO=ctx.createOscillator();flapO.type='triangle';flapO.frequency.value=380;flapO.start();flapG=chain(flapO,filt('bandpass',400,2),gain());
       // gear-down airflow rumble
-      rumF=filt('lowpass',180);rumG=chain(src(BROWN),rumF,gain())},
+      rumF=filt('lowpass',180);rumG=chain(src(BROWN),rumF,gain());
+      // Concorde reheat: a deep, ragged roar under the engines at full power
+      abF=filt('lowpass',420);abG=chain(src(BROWN),abF,gain())},
     update(thr,V,rainI,inside,m={}){if(!ctx)return;const t=ctx.currentTime;const k=inside?.55:1;
       eng.gain.setTargetAtTime((.08+.4*thr)*k,t,.3);engF.frequency.setTargetAtTime(220+700*thr,t,.4);
       whine.frequency.setTargetAtTime(420+900*thr,t,.6);whineG.gain.setTargetAtTime(.006+.018*thr,t,.4);
@@ -5342,11 +5415,12 @@ const sfx=(()=>{
       sqG.gain.setTargetAtTime(m.brake||0,t,.15);
       hydG.gain.setTargetAtTime(m.gearMove?.05:0,t,.25);hydG.hiss.gain.setTargetAtTime(m.gearMove?.02:0,t,.25);
       flapG.gain.setTargetAtTime(m.flapMove?.035:0,t,.2);
-      rumG.gain.setTargetAtTime((m.gearDrag||0)*.35*k,t,.5);rumF.frequency.setTargetAtTime(120+(m.gearDrag||0)*160,t,.5)},
+      rumG.gain.setTargetAtTime((m.gearDrag||0)*.35*k,t,.5);rumF.frequency.setTargetAtTime(120+(m.gearDrag||0)*160,t,.5);
+      abG.gain.setTargetAtTime(m.ab?.9*k:0,t,m.ab?.5:1.2);abF.frequency.setTargetAtTime(m.ab?700:300,t,.6)},
     mute(on){if(master){master.gain.cancelScheduledValues(0);master.gain.value=on?.9*duckK:0}},
     // duck: lower everything under the tour guide's voice (k = 1 back to full)
     duck(k){if(duckK===k)return;duckK=k;if(master&&CFG.sound)master.gain.setTargetAtTime(.9*k,ctx.currentTime,.25)},
-    stopAll(){if(!ctx)return;const t=ctx.currentTime;for(const g of[eng,whineG,wind,revG,sqG,hydG,flapG,rumG])g.gain.setTargetAtTime(0,t,.2);hydG.hiss.gain.setTargetAtTime(0,t,.2)},
+    stopAll(){if(!ctx)return;const t=ctx.currentTime;for(const g of[eng,whineG,wind,revG,sqG,hydG,flapG,rumG,abG])g.gain.setTargetAtTime(0,t,.2);hydG.hiss.gain.setTargetAtTime(0,t,.2)},
     burst(len,freq,g0,delay=0,type='lowpass',q){if(!ctx)return;const s=ctx.createBufferSource();s.buffer=WHITE;const f=filt(type,freq,q);const g=gain();const t=ctx.currentTime+delay;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(g0,t+.012);g.gain.exponentialRampToValueAtTime(.001,t+len);s.connect(f);f.connect(g);g.connect(master);s.start(t);s.stop(t+len+.1)},
     squelch(){this.burst(.07,3400,.09,0,'bandpass',1.4);this.burst(.05,1900,.05,.02,'bandpass',2)},
     thump(k){this.burst(.6,140,.9*k);this.burst(.25,420,.35*k)},
@@ -5543,8 +5617,8 @@ function wxDir(){const d=WX[CFG.wx].wd;return LND.id==='31'?(d+180)%360:d}
 /* =====================================================================
    FLIGHT DECK (per type) & PASSENGER CABIN
    ===================================================================== */
-const DECK={boeing744:{panel:0x55524c,trim:0x8d877b,yoke:true,disp:.20,crt:true},boeing772:{panel:0x4e5054,trim:0x8e8b84,yoke:true,disp:.21,crt:false},airbus:{panel:0x4c5866,trim:0x7f8a96,yoke:false,disp:.19,crt:false}};
-function deckKind(k){return k==='b744'?'boeing744':k==='b772'?'boeing772':'airbus'}
+const DECK={boeing744:{panel:0x55524c,trim:0x8d877b,yoke:true,disp:.20,crt:true},boeing772:{panel:0x4e5054,trim:0x8e8b84,yoke:true,disp:.21,crt:false},airbus:{panel:0x4c5866,trim:0x7f8a96,yoke:false,disp:.19,crt:false},concorde:{panel:0x2f3234,trim:0x62666a,yoke:true,disp:.17,crt:false}};
+function deckKind(k){return k==='b744'?'boeing744':k==='b772'?'boeing772':k==='conc'?'concorde':'airbus'}
 const DISP={};let COCKPIT_MATS=[],CABIN_MATS=[];
 function dispCanvas(name){const c=document.createElement('canvas');c.width=c.height=256;const t=new THREE.CanvasTexture(c);t.anisotropy=4;DISP[name]={c,g:c.getContext('2d'),t};return t}
 function eyeOf(a){return {x:-.55,y:a.cy+(a.hump?a.R*1.15:a.R*.45),z:-a.len/2+a.len*.075}}
@@ -5608,6 +5682,18 @@ function buildCockpit(a,key){
     for(const sd of[-1,1])B(.42,.02,.28,trimM,sd*.6,ey-.86,ez-.62)}
   // first officer's seat
   B(.5,.08,.5,M(0x2c2c2c),.55,ey-.98,ez+.15);B(.5,.75,.1,M(0x2c2c2c),.55,ey-.6,ez+.42,.12);B(.28,.2,.08,M(0x3a3a3a),.55,ey-.12,ez+.45,.12);
+  // Concorde: the flight engineer sits behind the first officer and faces a wall of round dials on the starboard side
+  if(kind==='concorde'){
+    const fe=new THREE.Mesh(new THREE.PlaneGeometry(1.2,1.05),new THREE.MeshBasicMaterial({map:canvasTex(512,448,(c,w,h)=>{c.fillStyle='#202325';c.fillRect(0,0,w,h);
+      const lab=['ENG 1','ENG 2','ENG 3','ENG 4','FUEL','HYD','AIR','INTAKE','CG','TEMP','VOLT','OXY'];
+      for(let r=0;r<3;r++)for(let k=0;k<4;k++){const x=64+k*128,y=70+r*130,i=r*4+k;c.fillStyle='#0b0c0d';c.beginPath();c.arc(x,y,48,0,7);c.fill();c.strokeStyle='#8d9296';c.lineWidth=3;c.stroke();
+        c.strokeStyle='#cfd2d4';c.lineWidth=1;for(let t=0;t<=10;t++){const an=Math.PI*.75+t*Math.PI*1.5/10;c.beginPath();c.moveTo(x+Math.cos(an)*38,y+Math.sin(an)*38);c.lineTo(x+Math.cos(an)*44,y+Math.sin(an)*44);c.stroke()}
+        const na=Math.PI*.75+Math.PI*1.5*(.35+((i*37)%50)/100);c.strokeStyle='#ffb84a';c.lineWidth=2.5;c.beginPath();c.moveTo(x,y);c.lineTo(x+Math.cos(na)*36,y+Math.sin(na)*36);c.stroke();
+        c.fillStyle='#d8d8d0';c.font='bold 11px monospace';c.textAlign='center';c.fillText(lab[i],x,y+64)}
+      for(let k=0;k<16;k++){c.fillStyle=k%5===0?'#ffb84a':k%3===0?'#7af59a':'#3a3d3f';c.fillRect(20+k*30,424-14,18,10)}})}));
+    fe.position.set(1.33,ey-.3,ez+.7);fe.rotation.y=-Math.PI/2;fe.material.userData.base=0xffffff;COCKPIT_MATS.push(fe.material);g.add(fe);
+    B(.5,.08,.5,M(0x2c2c2c),.78,ey-.98,ez+.7);B(.1,.7,.5,M(0x2c2c2c),.55,ey-.6,ez+.7,0,0,-.1);
+    g.scale.x=.9}   // a narrow flight deck
   g.userData.eye=E;g.visible=false;
   return g;
 }
@@ -5631,6 +5717,7 @@ function drawDisplays(dt){
    g.fillStyle=airbus?'#7af59a':'#ff5ad9';g.font='10px monospace';g.fillText(airbus?'SPEED':'SPD',6,32);g.fillText(s.ap?(airbus?'AP1':'A/P'):'',212,32);
    g.fillStyle='#fff';g.font='bold 12px monospace';g.textAlign='center';g.fillText(String(Math.round(hdg)).padStart(3,'0'),128,215);g.textAlign='left';
    g.fillStyle='#7af59a';g.fillText(((s.vy/FT*60)>=0?'+':'')+Math.round(s.vy/FT*60/10)*10,190,236);
+   if(a.delta){const al=(s.alpha||0)*R2D;g.fillStyle=al>20?'#ff4040':al>16?'#ffb84a':'#ffd23b';g.font='bold 12px monospace';g.fillText('\u03b1 '+al.toFixed(1)+'\u00b0',6,236)}
    if(p.d>0){const dev=clamp((s.y-p.alt)/Math.max(12,p.d*Math.tan(.35*D2R)),-2.5,2.5);g.fillStyle='#ff5ad9';g.beginPath();g.arc(196,115-dev*14,4,0,7);g.fill();
      const lv=clamp(pathLateral(s.pi,s.x,s.z)/clamp(p.d*.0175,30,260),-2.5,2.5);g.beginPath();g.arc(128-lv*14,196,4,0,7);g.fill()}
    if(s.warn){g.fillStyle=/PULL|STALL/.test(s.warn)?'#ff4040':'#ffb84a';g.font='bold 13px monospace';g.textAlign='center';g.fillText(s.warn,128,58);g.textAlign='left'}
@@ -5650,13 +5737,16 @@ function drawDisplays(dt){
      const ang=Math.PI*.75+Math.PI*1.5*clamp(n1/110,0,1);g.strokeStyle='#7af59a';g.beginPath();g.moveTo(cx,cy);g.lineTo(cx+Math.cos(ang)*22,cy+Math.sin(ang)*22);g.stroke();
      g.fillStyle='#fff';g.font='11px monospace';g.textAlign='center';g.fillText(n1.toFixed(1),cx,cy+38);if(rev){g.fillStyle='#7af59a';g.fillText('REV',cx,cy-28)}}
    g.textAlign='left';g.fillStyle='#3bf0ff';g.font='10px monospace';g.fillText('N1',112,104);
-   g.fillStyle='#fff';g.fillText(airbus?'FLAPS':'FLAPS',20,150);g.fillStyle='#7af59a';g.font='bold 16px monospace';g.fillText(a.flaps[Math.round(s.flapIdx)],20,172);
-   const fpos=s.flapPos/4;g.strokeStyle='#fff';g.strokeRect(90,140,120,10);g.fillStyle='#7af59a';g.fillRect(90,140,120*fpos,10);
+   if(a.delta){g.fillStyle='#fff';g.fillText('NOSE',20,150);g.fillStyle='#7af59a';g.font='bold 16px monospace';g.fillText(s.nose.toFixed(1)+'\u00b0',20,172);
+     g.strokeStyle='#fff';g.strokeRect(90,140,120,10);g.fillStyle='#7af59a';g.fillRect(90,140,120*clamp(s.nose/12.5,0,1),10);
+     if(s.throttle>.88&&s.thrust>.8*a.thr){g.fillStyle='#ffb84a';g.font='bold 12px monospace';g.fillText('REHEAT',150,172)}}
+   else{g.fillStyle='#fff';g.fillText(airbus?'FLAPS':'FLAPS',20,150);g.fillStyle='#7af59a';g.font='bold 16px monospace';g.fillText(a.flaps[Math.round(s.flapIdx)],20,172);
+   const fpos=s.flapPos/4;g.strokeStyle='#fff';g.strokeRect(90,140,120,10);g.fillStyle='#7af59a';g.fillRect(90,140,120*fpos,10)}
    for(let i=0;i<3;i++){const x=40+i*70,y=200;const dn=s.gearPos>.99,up=s.gearPos<.01;g.strokeStyle=dn?'#7af59a':up?'#555':'#ffb84a';g.lineWidth=2;g.strokeRect(x-22,y,44,26);g.fillStyle=g.strokeStyle;g.font='bold 11px monospace';g.textAlign='center';g.fillText(dn?'DOWN':up?'UP':'TRANS',x,y+17)}
    g.textAlign='left';DISP.eng.t.needsUpdate=true}
   // lower: status / checklist
   {const g=DISP.sys.g;g.fillStyle='#000';g.fillRect(0,0,256,256);g.fillStyle='#fff';g.font='12px monospace';g.fillText(airbus?'STATUS':'LANDING CHECKLIST',14,22);
-   const items=[['GEAR','DOWN',s.gearPos>.99],['FLAPS',a.flaps[4],s.flapIdx>=4],['SPEEDBRAKE','ARMED',true],['AUTOBRAKE','2',true],['LANDING LIGHTS','ON',true]];
+   const items=a.delta?[['GEAR','DOWN',s.gearPos>.99],['NOSE','12.5\u00b0',s.nose>12.2],['VISOR','UP',true],['AUTOBRAKE','2',true],['LANDING LIGHTS','ON',true]]:[['GEAR','DOWN',s.gearPos>.99],['FLAPS',a.flaps[4],s.flapIdx>=4],['SPEEDBRAKE','ARMED',true],['AUTOBRAKE','2',true],['LANDING LIGHTS','ON',true]];
    items.forEach((it,i)=>{g.fillStyle=it[2]?'#7af59a':'#fff';g.fillText((it[2]?'✓ ':'  ')+it[0].padEnd(15,'.')+it[1],14,54+i*24)});
    g.fillStyle='#3bf0ff';g.fillText(LND.id==='31'?'KAI TAK  VHHH  RWY 31':'KAI TAK  VHHH  IGS 13',14,200);g.fillStyle='#fff';g.fillText('QNH 1012  T 27C',14,222);DISP.sys.t.needsUpdate=true}
 }
@@ -5665,11 +5755,11 @@ function animateDeck(){
   const pi=s.ap?clamp(s.cmdPitchRate/(4*D2R),-1,1):s.inPitch,ri=s.ap?clamp(s.cmdRollRate/(s.ac.roll*D2R),-1,1):s.inRoll;
   for(const c of g.userData.controls){if(c.yk){c.yk.rotation.z=-ri*1.2;c.col.rotation.x=-pi*.18}else{c.stick.rotation.z=-ri*.3;c.stick.rotation.x=-pi*.3}}
   for(const l of g.userData.levers)l.rotation.x=lerp(.5,-.4,s.throttle)+(s.onGround&&s.throttle<.12?.25:0);
-  g.userData.flapLever.rotation.x=lerp(-.3,.5,s.flapIdx/4);
+  g.userData.flapLever.rotation.x=lerp(-.3,.5,s.ac.delta?s.nose/12.5:s.flapIdx/4);   // Concorde: the same lever is the nose
   g.userData.gearLever.position.y=eyeOf(s.ac).y-.48+(s.gearDown?-.05:.05);
 }
 /* ---- passenger cabin ---- */
-const CABIN={b744:{layout:[3,4,3],seat:0x2f4f8a},b772:{layout:[3,3,3],seat:0x2e6d63},a333:{layout:[2,4,2],seat:0x7a2a35},a343:{layout:[2,4,2],seat:0x283d6b}};
+const CABIN={b744:{layout:[3,4,3],seat:0x2f4f8a},b772:{layout:[3,3,3],seat:0x2e6d63},a333:{layout:[2,4,2],seat:0x7a2a35},a343:{layout:[2,4,2],seat:0x283d6b},conc:{layout:[2,2],seat:0x6f7782}};
 function cabinGeom(a){const Ri=a.R-.22,floor=a.cy-a.R*.32,z0=-a.len/2+a.len*.15,z1=a.len/2-a.len*.2;return {Ri,floor,z0,z1}}
 function buildCabin(a,key){
   const g=new THREE.Group();g.rotation.order='YXZ';const C=cabinGeom(a),cfg=CABIN[key];const L=C.z1-C.z0;
@@ -6016,9 +6106,9 @@ const DEBRIS=[],EMIT=[];
 const scorchTex=canvasTex(64,64,g=>{const r=g.createRadialGradient(32,32,2,32,32,32);r.addColorStop(0,'rgba(12,9,7,.96)');r.addColorStop(.55,'rgba(24,18,13,.7)');r.addColorStop(1,'rgba(24,18,13,0)');g.fillStyle=r;g.fillRect(0,0,64,64)});
 function breakPart(m,mesh,xb){const b=mesh.userData.brk;if(!b||mesh.userData.broken)return;mesh.userData.broken=true;
   const gf=m.userData.wingGeo,sw=m.userData.sweep;xb=clamp(xb,b.semi*.1,b.semi*.94);const cb=b.cr+(b.ct-b.cr)*xb/b.semi,kt=b.ct/b.cr;
-  const loose=new THREE.Mesh(gf(b.semi-xb,cb,b.ct,b.zle+xb*sw,b.tr*(1-(1-kt)*xb/b.semi)).translate(xb,0,0),mesh.material);
+  const loose=new THREE.Mesh(gf(b.semi-xb,cb,b.ct,b.zle+xb*sw,b.tr*(1-(1-kt)*xb/b.semi),b.og).translate(xb,0,0),mesh.material);
   loose.scale.copy(mesh.scale);loose.position.copy(mesh.position);loose.rotation.copy(mesh.rotation);m.add(loose);
-  mesh.geometry.dispose();mesh.geometry=gf(xb,b.cr,cb,b.zle,b.tr);
+  mesh.geometry.dispose();mesh.geometry=gf(xb,b.cr,cb,b.zle,b.tr,b.og);
   for(const c of mesh.children)if(c.position.x>xb-1)c.visible=false;
   for(const w of m.userData.parts.misc)if(w.scale.x===b.sd)w.visible=false;   // winglet
   for(const e of m.userData.parts.eng)if(Math.sign(e.position.x)===b.sd&&e.userData.ex>xb-1.5)e.visible=false;
@@ -6669,7 +6759,7 @@ const _tint=new THREE.Color(1,.93,.8);
 const look={yaw:0,pitch:0,orbitYaw:0,orbitPitch:.18,dist:1};
 function spawnAircraftModel(){
   if(acModel){scene.remove(acModel)}
-  acModel=buildAircraftModel(ST.ac,{tail:0x1f8a5b,cheat:0x005f4b});acModel.rotation.order='YXZ';scene.add(acModel);
+  acModel=buildAircraftModel(ST.ac,ST.ac.delta?{tail:0x1c2d52,cheat:0x1c2d52}:{tail:0x1f8a5b,cheat:0x005f4b});acModel.rotation.order='YXZ';scene.add(acModel);
   if(deckGroup)scene.remove(deckGroup);if(cabinGroup)scene.remove(cabinGroup);COCKPIT_MATS=[];CABIN_MATS=[];
   deckGroup=buildCockpit(ST.ac,CFG.ac);cabinGroup=buildCabin(ST.ac,CFG.ac);scene.add(deckGroup,cabinGroup);applyInteriorLight();
   const nv=[],sb=[];for(const p of acModel.userData.navPts)nv.push(p[0],p[1],p[2],p[3],p[4],p[5],2.2,-1);
@@ -6679,6 +6769,9 @@ function spawnAircraftModel(){
   if(!shadow){shadow=new THREE.Mesh(new THREE.CircleGeometry(1,24).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.3,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-8,polygonOffsetUnits:-8}));scene.add(shadow)}
 }
 const _qa=new THREE.Quaternion(),_qb=new THREE.Quaternion(),_ea=new THREE.Euler(0,0,0,'YXZ');
+// Concorde: the flight deck is in the drooping nose. noseFrame leaves the droop rotation in _qn and returns where the hinge moves the nose (body frame)
+const _qn=new THREE.Quaternion(),_ax=new THREE.Vector3(1,0,0),_h1=new THREE.Vector3(),_h2=new THREE.Vector3();
+function noseFrame(a,n){_qn.setFromAxisAngle(_ax,-n*D2R);_h1.set(0,a.cy,-a.len/2+a.delta.us*a.len);_h2.copy(_h1).applyQuaternion(_qn);return _h1.sub(_h2)}
 function updateAircraftVisual(){
   const s=ST,a=s.ac;if(!acModel)return;
   acModel.position.set(s.x,s.y,s.z);acModel.rotation.set(s.theta,-s.psi,-s.phi,'YXZ');
@@ -6688,6 +6781,9 @@ function updateAircraftVisual(){
    animateSurfaces(acModel,ail,el,s.flapPos/4,s.onGround&&s.td?1:0)}
   const inCab=CFG.view==='cabin';acModel.traverse(o=>{if(o.userData.winStrip)o.visible=!inCab});
   for(const G of[deckGroup,cabinGroup])if(G){G.position.copy(acModel.position);G.rotation.copy(acModel.rotation)}
+  if(a.delta){const nz=acModel.userData.nose;if(nz)nz.rotation.x=-s.nose*D2R;
+    const rh=!s.ended&&s.throttle>.88&&s.thrust>.8*a.thr;for(const f of acModel.userData.flames||[]){f.visible=rh;if(rh)f.scale.set(1,1,.8+.3*Math.random())}
+    if(deckGroup){const off=noseFrame(a,s.nose);deckGroup.quaternion.copy(acModel.quaternion).multiply(_qn);deckGroup.position.copy(off).applyQuaternion(acModel.quaternion).add(acModel.position)}}
   if(deckGroup)deckGroup.visible=CFG.view==='cockpit'&&CFG.deck&&!s.ended&&mode!=='attract';if(cabinGroup)cabinGroup.visible=inCab&&!s.ended&&mode!=='attract';
   // landing light & shadow
   const night=CFG.night;landingLight.intensity=night&&s.gearDown?2.2:0;
@@ -6714,8 +6810,10 @@ function updateCamera(dt){
   camera.near=(V==='cockpit'||V==='cabin'||V==='heli')?.05:TVIEWS[V]&&!TVIEWS[V].out?.12:1;
   if(TI.g)TI.g.visible=!!(TVIEWS[V]&&!TVIEWS[V].out);
   if(V==='cockpit'){
-    const E=eyeOf(A);_v.set(E.x,E.y,E.z).applyQuaternion(acModel.quaternion).add(acModel.position);camera.position.copy(_v);
-    _ea.set(look.pitch-6*D2R,look.yaw,0,'YXZ');_qa.setFromEuler(_ea);camera.quaternion.copy(acModel.quaternion).multiply(_qa);camera.fov=66;
+    const E=eyeOf(A);_ea.set(look.pitch-6*D2R,look.yaw,0,'YXZ');_qa.setFromEuler(_ea);
+    if(A.delta){const off=noseFrame(A,s0.nose);_v.set(E.x,E.y,E.z).applyQuaternion(_qn).add(off).applyQuaternion(acModel.quaternion).add(acModel.position);camera.position.copy(_v);camera.quaternion.copy(acModel.quaternion).multiply(_qn).multiply(_qa)}   // the pilots look down through the drooped nose
+    else{_v.set(E.x,E.y,E.z).applyQuaternion(acModel.quaternion).add(acModel.position);camera.position.copy(_v);camera.quaternion.copy(acModel.quaternion).multiply(_qa)}
+    camera.fov=66;
   } else if(V==='cabin'){
     const U=cabinGroup.userData,C=U.C,side=CFG.seatLeft?-1:1;const r=clamp(CFG.seatRow-4,0,U.rows-1);
     const key=r+','+(side<0?0:U.xs.length-1);if(U.pax&&U.hiddenKey!==key){const P=U.pax;
@@ -6890,7 +6988,7 @@ function gpws(dt){
   else if(pull)w='PULL UP';
   else if(raFt<1000&&vs<-1700)w='SINK RATE';
   else if(raFt<500&&!s.gearDown&&s.V/KT<200&&(CFG.game==='approach'||vs<-200))w='TOO LOW · GEAR';
-  else if(raFt<250&&s.flapIdx<3&&p.d<2500&&(CFG.game==='approach'||vs<-200))w='TOO LOW · FLAPS';
+  else if(raFt<250&&s.flapIdx<3&&!s.ac.noFlaps&&p.d<2500&&(CFG.game==='approach'||vs<-200))w='TOO LOW · FLAPS';
   else if(CFG.game==='approach'&&p.d>0&&raFt<900&&(s.y-p.alt)<-Math.max(12,p.d*Math.tan(.35*D2R))*1.4)w='GLIDESLOPE';
   else if(Math.abs(s.phi)>35*D2R)w='BANK ANGLE';
   if(w&&w!==s.warn){speak(w==='PULL UP'?'Terrain, terrain. Pull up.':w==='TOO LOW · GEAR'?'Too low, gear':w==='TOO LOW · FLAPS'?'Too low, flaps':w.toLowerCase(),true);s.lastGPWS=s.t}
@@ -6908,7 +7006,7 @@ const keys={};
 window.addEventListener('keydown',e=>{
   if(mode==='ended'&&(e.code==='BracketLeft')){timeJump(-10);return}
   if(e.target&&(e.target.tagName==='INPUT'||e.target.tagName==='SELECT')&&e.key!=='Enter')return;
-  if(mode==='attract'&&e.key==='Enter'&&!document.getElementById('setup').hidden){startFlight();return}
+  if(mode==='attract'&&e.key==='Enter'&&!document.getElementById('setup').hidden&&cmEl.hidden){entStart();return}
   if(mode==='attract'&&e.code==='KeyM'&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&!document.getElementById('setup').hidden){toggleMap();return}
   if(mode==='attract'&&e.code==='KeyB'&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&!document.getElementById('setup').hidden){toggleFidsHome();return}
   if(mode!=='fly')return;
@@ -6958,7 +7056,7 @@ function readInputs(dt){
   if(document.activeElement!==thrEl){thrEl.value=Math.round(s.throttle*100)}thrV.textContent=Math.round(s.throttle*100)+'%';
 }
 function toggleGear(){if(ST.ap){toggleAP(false)}ST.gearDown=!ST.gearDown;tog('gear',ST.gearDown?'down':'up');syncButtons()}
-function setFlaps(d){if(ST.ap)toggleAP(false);const o=ST.flapIdx;ST.flapIdx=clamp(ST.flapIdx+d,0,4);if(ST.flapIdx!==o)tog('flaps',ST.ac.flaps[ST.flapIdx]);syncButtons();toast('Flaps '+ST.ac.flaps[ST.flapIdx])}
+function setFlaps(d){if(ST.ac.noFlaps){toast('Concorde has no flaps: the delta wing and the droop nose do the work');return}if(ST.ap)toggleAP(false);const o=ST.flapIdx;ST.flapIdx=clamp(ST.flapIdx+d,0,4);if(ST.flapIdx!==o)tog('flaps',ST.ac.flaps[ST.flapIdx]);syncButtons();toast('Flaps '+ST.ac.flaps[ST.flapIdx])}
 function toggleDeck(){CFG.deck=!CFG.deck;tog('deck',CFG.deck?'on':'off');syncButtons()}
 function applyMap(){const o=document.getElementById('optMap');if(o)o.checked=CFG.map;const m=document.getElementById('map');
   const att=mode==='attract',big=att||(mode==='fly'&&CFG.game==='watch');document.body.classList.toggle('bigmap',big);
@@ -7204,7 +7302,71 @@ function lessonTip(e){for(const [re,t] of LESSON_TIPS)if(re.test(e.title))return
    UI WIRING
    ===================================================================== */
 const acCards=document.getElementById('acCards');
-for(const k in AC){const a=AC[k];if(a.spot)continue;const l=document.createElement('label');l.className='card';l.innerHTML=`<input type="radio" name="ac" value="${k}" ${k===CFG.ac?'checked':''}><b>${a.name}</b><span>${a.note}<br>Vref ${a.vref} kt · span ${a.span} m</span>`;acCards.appendChild(l)}
+for(const k in AC){const a=AC[k];if(a.spot)continue;const l=document.createElement('label');l.className='card'+(a.prem?' prem':'');l.innerHTML=`<input type="radio" name="ac" value="${k}" ${k===CFG.ac?'checked':''}><b>${a.name}</b><span>${a.note}<br>Vref ${a.vref} kt · span ${a.span} m</span>${a.prem?'<i class="badge lock">$7 USD</i><i class="badge on">Unlocked</i>':''}`;acCards.appendChild(l)}
+/* ---------------- paid aircraft: Concorde licence ----------------
+   A licence key (CONC-XXXX-XXXX-XXXX) is kept in this browser. The Worker (server/worker.js, /store/*) issues it after a Stripe payment or a free
+   giveaway code, and checks it again whenever Concorde is chosen. See docs/concorde.md. */
+const ENT={key:'',v:0,vs:false,had:false},ENT_KEY='fkt-lic';
+const cmT=(en,zh)=>LANG==='zh'?zh:en;
+try{const o=JSON.parse(localStorage.getItem(ENT_KEY)||'null');if(o&&/^CONC-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(o.key)){ENT.key=o.key;ENT.v=+o.v||0}}catch(e){}
+const entOwned=()=>!!ENT.key&&ENT.v>0;
+function entSave(){try{if(ENT.key)localStorage.setItem(ENT_KEY,JSON.stringify({key:ENT.key,v:ENT.v}));else localStorage.removeItem(ENT_KEY)}catch(e){}}
+function entPost(path,body,ms=8000){const api=window.FKT_API;if(!api)return Promise.resolve({net:true});const c=new AbortController(),t=setTimeout(()=>c.abort(),ms);
+  return fetch(api+path,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body),signal:c.signal})
+    .then(async r=>{let j=null;try{j=await r.json()}catch(e){}return j?{status:r.status,j}:{net:true}}).catch(()=>({net:true})).finally(()=>clearTimeout(t))}
+// true when it is fine to fly Concorde: the server accepts the key, or it cannot be reached and the server has accepted this key before
+async function entVerify(){
+  if(!ENT.key)return false;if(ENT.vs)return true;
+  const r=await entPost('/store/check',{key:ENT.key,product:'concorde'},3500);
+  if(r.net)return ENT.v>0;
+  if(r.j.ok){ENT.vs=true;ENT.v=Date.now();entSave();return true}
+  ENT.had=true;ENT.key='';ENT.v=0;entSave();entRefresh();return false}   // revoked, or never a real key
+function entRefresh(){const own=entOwned();for(const l of document.querySelectorAll('#acCards .card.prem'))l.classList.toggle('owned',own)}
+const cmEl=document.getElementById('concModal');let cmPrev='b744';   // cmPrev: the aircraft chosen before Concorde, restored if the window is closed without unlocking
+function entMsg(t,ok){const m=document.getElementById('cmMsg');m.textContent=t||'';m.classList.toggle('ok',!!ok)}
+function entOpen(note){const own=entOwned();document.getElementById('cmOffer').hidden=own;document.getElementById('cmDone').hidden=!own;if(own)document.getElementById('cmKey').textContent=ENT.key;entMsg(note||'');cmEl.hidden=false;
+  setTimeout(()=>{const f=document.getElementById(own?'cmFly':'cmBuy');if(f)f.focus()},30);track('concorde_offer_view',{owned:own})}
+function entClose(){cmEl.hidden=true;if(entOwned())return;const c=document.querySelector('input[name=ac]:checked');
+  if(c&&AC[c.value]&&AC[c.value].prem){const r=document.querySelector('input[name=ac][value='+cmPrev+']');if(r)r.checked=true}}
+function entUnlocked(key,how){ENT.key=key;ENT.v=Date.now();ENT.vs=true;entSave();entRefresh();track('concorde_unlock',{method:how});
+  const r=document.querySelector('input[name=ac][value=conc]');if(r){r.checked=true;cmPrev='conc'}entOpen();entMsg('')}
+const CM_ERR={invalid:['That code is not valid. Check it and try again.','呢個代碼無效，請檢查後再試。'],used:['That code has already been used up.','呢個代碼已經用晒次數。'],expired:['That code has expired.','呢個代碼已經過期。'],
+  limit:['Too many tries. Please try again in an hour.','試太多次，請一個鐘後再試。'],net:['Could not reach the server. Check your connection and try again.','連唔到伺服器，請檢查網絡後再試。'],
+  off:['Sales are not switched on yet. Please try again soon.','暫時未開放購買，請稍後再試。']};
+const cmErr=k=>cmT(...(CM_ERR[k]||CM_ERR.invalid));
+async function cmRedeem(){const code=document.getElementById('cmCode').value.trim();if(!code){entMsg(cmErr('invalid'));return}
+  const b=document.getElementById('cmRedeem');b.disabled=true;entMsg(cmT('Checking…','檢查緊…'),true);
+  const r=await entPost('/store/redeem',{code,product:'concorde'});b.disabled=false;
+  if(r.net){entMsg(cmErr('net'));return}
+  if(r.j.ok){entUnlocked(r.j.key,r.j.restored?'restore':'code');return}
+  entMsg(cmErr(r.status===429?'limit':r.j.error))}
+async function cmBuy(){const b=document.getElementById('cmBuy');b.disabled=true;entMsg(cmT('Opening Stripe…','打開緊 Stripe…'),true);track('concorde_checkout',{});
+  const r=await entPost('/store/checkout',{product:'concorde'});b.disabled=false;
+  if(r.j&&r.j.ok&&/^https:\/\/checkout\.stripe\.com\//.test(r.j.url)){location.href=r.j.url;return}
+  entMsg(cmErr(r.net?'net':r.status===503?'off':'net'))}
+// back from Stripe: ?concorde_session=cs_... (paid) or ?concorde=cancelled
+async function entReturn(){let q;try{q=new URLSearchParams(location.search)}catch(e){return}
+  const sid=q.get('concorde_session'),c=q.get('concorde');if(!sid&&c!=='cancelled')return;
+  try{history.replaceState(null,'',location.pathname+location.hash)}catch(e){}
+  if(!sid){entOpen(cmT('Checkout cancelled. You have not been charged.','已取消付款，你冇被收費。'));return}
+  entOpen();entMsg(cmT('Confirming your payment…','確認緊你嘅付款…'),true);
+  let r;for(let i=0;i<4;i++){r=await entPost('/store/claim',{session:sid,product:'concorde'},15000);if(r.j&&r.j.ok)break;if(r.status!==402)break;await new Promise(f=>setTimeout(f,3000))}
+  if(r.j&&r.j.ok){entUnlocked(r.j.key,'purchase');return}
+  entMsg(cmT('We could not confirm that payment. If you were charged, email contact@flykaitak.com with your Stripe receipt and we will sort it out.','確認唔到呢筆付款。如果你已經被收費，請用 Stripe 收據電郵 contact@flykaitak.com，我哋會跟進。'))}
+// the user's start buttons: a premium aircraft is checked with the server first
+async function entStart(){const el=document.querySelector('input[name=ac]:checked'),k=el&&el.value;if(!k||!AC[k]||!AC[k].prem){startFlight();return}
+  ENT.had=false;if(await entVerify()){startFlight();return}
+  if(document.getElementById('setup').hidden)showSetup();
+  entOpen(ENT.had?cmT('That licence key is no longer valid.','呢個授權碼已經失效。'):'')}
+document.getElementById('cmBuy').addEventListener('click',cmBuy);
+document.getElementById('cmRedeem').addEventListener('click',cmRedeem);
+document.getElementById('cmCode').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();e.stopPropagation();cmRedeem()}});
+document.getElementById('cmClose').addEventListener('click',entClose);
+document.getElementById('cmFly').addEventListener('click',()=>{cmEl.hidden=true;entStart()});
+document.getElementById('cmCopy').addEventListener('click',async e=>{const b=e.currentTarget;try{await navigator.clipboard.writeText(ENT.key);b.textContent=cmT('Copied','已複製')}catch(_){}});
+cmEl.addEventListener('click',e=>{if(e.target===cmEl)entClose()});
+window.addEventListener('keydown',e=>{if(e.key==='Escape'&&!cmEl.hidden){e.stopPropagation();entClose()}},true);
+
 const wxChips=document.getElementById('wxChips'),wxSel=document.getElementById('wxSel');
 for(const k in WX){const l=document.createElement('label');l.className='chip';l.innerHTML=`<input type="radio" name="wx" value="${k}" ${k===CFG.wx?'checked':''}><span>${WX[k].label}</span>`;wxChips.appendChild(l);const o=document.createElement('option');o.value=k;o.textContent=WX[k].label;wxSel.appendChild(o)}
 const MODE_TXT={learnland:['Start the lesson','Ready to land? A guided IGS 13 approach, one step at a time: wheels down, flaps, speed, the turn at the checkerboard, the flare and the stop. No experience needed.'],learn:['Start the lesson','New to flying? A guided take-off on Runway 13, one step at a time: full power, stay straight, lift the nose, wheels up. No experience needed.'],approach:['Begin descent','Start on the IGS at 3,100 ft and land on Runway 13.'],approach31:['Begin descent','Start eight miles out over the sea at 2,700 ft, fly through the Lei Yue Mun gap and land on Runway 31.'],free31:['Line up on Runway 31','Start lined up on Runway 31, pointing at Kowloon City. Full thrust, pull back at about 150 kt, climb and turn left, then fly anywhere. Landings are graded but the flight carries on.'],free:['Line up on Runway 13','Start lined up on Runway 13. Full thrust, pull back at about 150 kt, then fly anywhere. Landings are graded but the flight carries on.'],
@@ -7252,6 +7414,25 @@ const ZH={
 'Two engines · new for 1996':'雙引擎 · 1996 年新機',
 'Two engines · regional workhorse':'雙引擎 · 區域主力機',
 'Four engines · long haul':'四引擎 · 長途機',
+'Four engines · supersonic · premium':'四引擎 · 超音速 · 高級機型',
+'$7 USD':'$7 美元',
+'Unlocked':'已解鎖',
+'Premium aircraft':'高級機型',
+'Fly Concorde into Kai Tak':'駕駛協和式客機飛入啟德',
+'$7 USD · one payment · yours to keep':'$7 美元 · 一次付款 · 永久擁有',
+'A delta wing flown the way Concorde was: about 13° nose up on the approach':'用協和式嘅方法飛三角翼：進場時機頭抬高約 13°',
+'The droop nose, reheat take-off and a flight engineer\'s panel':'下垂機頭、後燃器起飛，同埋飛行工程師面板',
+'Runway 13 and Runway 31, every weather, day and night':'13 號同 31 號跑道，任何天氣，日夜皆可',
+'Buy Concorde · $7 USD':'購買協和式 · $7 美元',
+'Pay with Stripe. You get a licence key that works in any browser.':'用 Stripe 付款。你會收到一個授權碼，喺任何瀏覽器都用得。',
+'Have a licence key or a free code?':'有授權碼或者免費代碼？',
+'Unlock':'解鎖',
+'Concorde unlocked':'協和式已解鎖',
+'Welcome aboard':'歡迎登機',
+'Concorde is yours. Keep this licence key: it unlocks Concorde in any other browser or on another device.':'協和式已經屬於你。請保存呢個授權碼：喺其他瀏覽器或者裝置都可以用佢解鎖協和式。',
+'Fly Concorde':'駕駛協和式',
+'Copy key':'複製授權碼',
+'Not now':'遲啲先',
 'Clear':'晴朗','Rain':'落雨','Typhoon':'颱風','Storm':'雷暴','Low cloud':'低雲','Fog':'大霧',
 'Clouds':'雲層',
 'Map':'地圖',
@@ -7310,8 +7491,9 @@ function applyLang(){
   for(const s of b.querySelectorAll('span'))s.classList.toggle('on',s.dataset.l===LANG)}
 document.getElementById('btnLang').addEventListener('click',e=>{LANG=LANG==='zh'?'en':'zh';try{localStorage.setItem('fkt-lang',LANG)}catch(_){}track('language_toggle',{language:LANG==='zh'?'cantonese':'english'});applyLang();fidsLast=-1e9;e.currentTarget.blur()});
 applyLang();
+entRefresh();entReturn();if(ENT.key)entVerify();   // a revoked key is dropped quietly, so the card shows locked again
 function readSetup(){const gv=document.querySelector('input[name=game]:checked').value;CFG.tour=gv==='tour';CFG.lesson=gv==='learn';CFG.conc=gv==='watchC';CFG.lland=gv==='learnland';CFG.game=gv==='learnland'||gv==='approach31'?'approach':gv==='free31'?'free':gv==='watch31'||gv==='watchC'||gv==='tour'?'watch':CFG.lesson?'free':gv;CFG.rwy=gv==='approach31'||gv==='free31'||gv==='watch31'?'31':'13';CFG.ac=document.querySelector('input[name=ac]:checked').value;CFG.hour=parseFloat(document.getElementById('optHour').value)||0;CFG.night=solarState(CFG.hour).sunEl<0;CFG.wx=document.querySelector('input[name=wx]:checked').value;
-  CFG.lightning=document.getElementById('optLightning').checked;CFG.clouds=document.getElementById('optClouds').checked;CFG.map=document.getElementById('optMap').checked;CFG.guide=document.getElementById('optGuide').checked;CFG.ap=document.getElementById('optAP').checked;CFG.walled=document.getElementById('optWalled').checked;CFG.wreck=document.getElementById('optWreck').checked;if(CFG.lland){CFG.ap=false;CFG.guide=true}}
+  CFG.lightning=document.getElementById('optLightning').checked;CFG.clouds=document.getElementById('optClouds').checked;CFG.map=document.getElementById('optMap').checked;CFG.guide=document.getElementById('optGuide').checked;CFG.ap=document.getElementById('optAP').checked;CFG.walled=document.getElementById('optWalled').checked;CFG.wreck=document.getElementById('optWreck').checked;if(CFG.lland){CFG.ap=false;CFG.guide=true}if((CFG.lesson||CFG.lland)&&AC[CFG.ac].noFlaps)CFG.ac='b744'}   // the lessons teach on the 747: Concorde has no flaps
 // Home screen: Day/Night, Weather, Clouds and Lightning change the live sim rendering behind the menu straight away.
 function applyHomeEnv(){if(mode!=='attract')return;const q=n=>document.querySelector('input[name='+n+']:checked');const wx=q('wx');
   CFG.hour=parseFloat(document.getElementById('optHour').value)||0;if(wx&&WX[wx.value])CFG.wx=wx.value;CFG.clouds=document.getElementById('optClouds').checked;CFG.lightning=document.getElementById('optLightning').checked;
@@ -7320,15 +7502,15 @@ document.getElementById('setup').addEventListener('change',e=>{const t=e.target;
   if(t.name==='tod'||t.id==='optHour'||t.name==='wx'||t.id==='optClouds'||t.id==='optLightning')applyHomeEnv();
   if(t.id==='optMap'){CFG.map=t.checked;applyMap()}
   if(t.id==='optWreck')setWreck(t.checked);
-  if(t.name==='ac')track('aircraft_select',{aircraft:t.value});
+  if(t.name==='ac'){track('aircraft_select',{aircraft:t.value});if(AC[t.value].prem&&!entOwned())entOpen();else cmPrev=t.value}
   else track('setup_option',{option:t.name||t.id,value:t.type==='checkbox'?(t.checked?'on':'off'):t.value})});
 const hourIn=document.getElementById('optHour'),hourOut=document.getElementById('hourOut');
 function showHour(){const v=parseFloat(hourIn.value)||0,h=Math.floor(v),m=Math.round((v-h)*60);hourOut.textContent=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
   for(const r of document.querySelectorAll('input[name=tod]'))r.checked=Math.abs(parseFloat(r.value)-v)<.01}
 hourIn.addEventListener('input',()=>{showHour();applyHomeEnv()});
 for(const r of document.querySelectorAll('input[name=tod]'))r.addEventListener('change',()=>{if(r.checked){hourIn.value=r.value;showHour()}});
-document.getElementById('btnGo').addEventListener('click',startFlight);
-document.getElementById('btnAgain').addEventListener('click',startFlight);
+document.getElementById('btnGo').addEventListener('click',entStart);
+document.getElementById('btnAgain').addEventListener('click',entStart);
 document.getElementById('btnSetup').addEventListener('click',showSetup);
 {const hn=document.getElementById('hsName');hn.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter'){e.preventDefault();hsCommitName();hn.blur()}});hn.addEventListener('keyup',e=>e.stopPropagation());hn.addEventListener('change',hsCommitName);hn.addEventListener('blur',hsCommitName);document.getElementById('hsSave').addEventListener('click',()=>{hsCommitName();if(!hsCallsign()||hsCallsign()==='PILOT')hn.focus()})}
 hsRenderHome();hsSync().then(hsRenderHome);
@@ -7393,7 +7575,9 @@ function tourCapOff(){tourHush();const e=document.getElementById('tourCap');if(e
 function showSetup(){tourCapOff();replayHide();hsRenderHome();setMore(false);try{if(screen.orientation&&screen.orientation.unlock)screen.orientation.unlock()}catch(e){}flightEnd('quit');mode='attract';paused=false;for(const id of['bar','ctl','map','result','cabin'])document.getElementById(id).hidden=true;document.getElementById('setup').hidden=false;applyMap();sfx.stopAll();if(synth)synth.cancel();radioClear();coachHide();syncMode();
   clearFX();CFG.ap=true;setRunway('13');resetFlight();ST.ap=true;spawnAircraftModel();buildAI();CFG.view='chase';applyHomeEnv();setWalled(document.getElementById('optWalled').checked);setWreck(document.getElementById('optWreck').checked)}
 function startFlight(){
-  setMore(false);readSetup();setRunway(CFG.lesson?'13':CFG.rwy==='31'?'31':'13');flightEnd('restart');clearFX();mode='fly';paused=false;SEED=window.__capture?1998:1998+Math.floor(Math.random()*1000);
+  setMore(false);readSetup();
+  if(AC[CFG.ac].prem&&!entOwned()&&!window.__capture){if(document.getElementById('setup').hidden)showSetup();entOpen();return}   // premium aircraft need a licence (the tests set __capture)
+ setRunway(CFG.lesson?'13':CFG.rwy==='31'?'31':'13');flightEnd('restart');clearFX();mode='fly';paused=false;SEED=window.__capture?1998:1998+Math.floor(Math.random()*1000);
   for(const id of['setup','result'])document.getElementById(id).hidden=true;for(const id of['bar','ctl','map'])document.getElementById(id).hidden=false;
   resetFlight();ST.attempted=false;flightBegin();radioReset();HIST.length=0;REC.f.length=0;REC.r.length=0;replayHide();spawnAircraftModel();FOCUS=null;
   if(CFG.game==='watch')buildAISchedule(CFG.phase??0,true,{n:CFG.concN??(CFG.conc?-1:2)});else if(CFG.game==='free')buildAISchedule(-100,false);else buildAI();
@@ -7571,7 +7755,7 @@ function frame(now,manual){
   else if(mode==='fly'){const s=ST,on=s.onGround&&!s.ended;const rev=on&&s.throttle<.12&&s.Gs>30*KT;
     const gm=s.gearPos>.01&&s.gearPos<.99;if(s._gp!==undefined&&((s._gp<.99&&s.gearPos>=.99)||(s._gp>.01&&s.gearPos<=.01)))sfx.clunk();s._gp=s.gearPos;
     sfx.update(s.ended?0:(s.thrust/s.ac.thr+(rev?.35:0)),s.V,w.rain,CFG.view==='cockpit'||CFG.view==='cabin',
-      {rev,brake:on&&s.Gs>6?clamp(s.Gs/70,.05,.4)*.22:0,gearMove:gm&&!s.ended,flapMove:Math.abs(s.flapPos-s.flapIdx)>.01&&!s.ended,gearDrag:s.ended?0:s.gearPos*clamp(s.V/90,0,1)})}
+      {rev,ab:!s.ended&&!!s.ac.delta&&s.throttle>.88&&s.thrust>.8*s.ac.thr,brake:on&&s.Gs>6?clamp(s.Gs/70,.05,.4)*.22:0,gearMove:gm&&!s.ended,flapMove:Math.abs(s.flapPos-s.flapIdx)>.01&&!s.ended,gearDrag:s.ended?0:s.gearPos*clamp(s.V/90,0,1)})}
   else if(mode==='replay')rpSound();
   if(toastT&&now>toastT){document.getElementById('toast').classList.remove('on');toastT=0}
   LIGHT_U.uScale.value=HH*renderer.getPixelRatio()/(2*Math.tan(camera.fov*D2R/2));

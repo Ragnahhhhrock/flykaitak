@@ -50,3 +50,31 @@ CREATE TABLE IF NOT EXISTS replays (
   card    INTEGER
 );
 CREATE INDEX IF NOT EXISTS replays_who_ts ON replays (who, ts);
+
+-- Paid aircraft (see docs/concorde.md). A licence is a random key; src is 'purchase' (ref = Stripe Checkout session) or 'code' (ref = giveaway code).
+CREATE TABLE IF NOT EXISTS licences (
+  key     TEXT PRIMARY KEY,
+  product TEXT NOT NULL,
+  src     TEXT NOT NULL,
+  ref     TEXT,
+  ts      INTEGER NOT NULL,
+  revoked INTEGER NOT NULL DEFAULT 0
+);
+CREATE UNIQUE INDEX IF NOT EXISTS licences_purchase ON licences (ref) WHERE src = 'purchase';
+-- Free giveaway codes: max_uses people can each redeem one.
+CREATE TABLE IF NOT EXISTS codes (
+  code     TEXT PRIMARY KEY,
+  product  TEXT NOT NULL,
+  max_uses INTEGER NOT NULL DEFAULT 1,
+  uses     INTEGER NOT NULL DEFAULT 0,
+  note     TEXT,
+  ts       INTEGER NOT NULL,
+  expires  INTEGER,
+  disabled INTEGER NOT NULL DEFAULT 0
+);
+-- Wrong codes, keys and sessions, to limit guessing. who is a salted hash of the address.
+CREATE TABLE IF NOT EXISTS lic_fail (
+  who TEXT NOT NULL,
+  ts  INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS lic_fail_who_ts ON lic_fail (who, ts);

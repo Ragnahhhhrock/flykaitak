@@ -28,3 +28,6 @@ Every event also carries `aircraft`, `weather` and `time_of_day`. Events only se
 `flight_seconds` is real play time (excludes pauses and rewinds). `sim_seconds` is simulation time (affected by time speed and rewinds).
 
 To report on parameters in GA4, register them as custom dimensions (Admin > Custom definitions): event-scoped text for `control`, `state`, `via`, `outcome`, `game_mode`, `grade`, `how`, `option`, `value`; event-scoped numbers for `flight_seconds`, `landing_attempts`, `successful_landings`, `touchdown_fpm`, `score`.
+| `concorde_offer_view` | Concorde purchase / code window opened | `owned` (true if already unlocked) |
+| `concorde_checkout` | Buy button clicked (before going to Stripe) | none |
+| `concorde_unlock` | Concorde unlocked | `method` (`purchase`, `code`, `restore`) |
