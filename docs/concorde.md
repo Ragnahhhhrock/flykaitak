@@ -20,7 +20,14 @@ Make codes with the admin API (`Authorization: Bearer $ADMIN_TOKEN`):
     curl -X POST https://<worker>/admin/codes -H "authorization: Bearer $ADMIN_TOKEN" \
       -d '{"count":5,"uses":1,"days":30,"note":"streamer giveaway"}'
 
-`count` (1-500 codes), `uses` per code (default 1), `days` until expiry (optional), `note`. Codes look like `FKT-XXXX-XXXX`; the player pastes one in the Concorde window and gets a licence key.
+`count` (1-500 codes), `uses` per code (default 1; `"unlimited"` or `0` for no cap), `days` until expiry (leave out or `0` for never), `note`. Each use mints its own licence key.
+
+Make an existing code reusable with no expiry:
+
+    curl -X POST https://<worker>/admin/codes/update -H "authorization: Bearer $ADMIN_TOKEN" \
+      -d '{"code":"FKT-XXXX-XXXX","uses":"unlimited","days":0}'
+
+`uses` and `days` are each optional; only the ones sent are changed. Codes look like `FKT-XXXX-XXXX`; the player pastes one in the Concorde window and gets a licence key.
 - `GET /admin/codes` lists codes and use counts; `GET /admin/sales` counts licences by source.
 - `POST /admin/codes/disable {"code":"FKT-...","enable":false}` stops a code (`enable:true` turns it back on).
 - `POST /admin/licences/revoke {"key":"CONC-...","restore":false}` revokes a licence (a revoked purchase cannot be re-claimed).

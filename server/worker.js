@@ -208,6 +208,11 @@ async function store(req, env, url, json) {
   return json({ error: 'not found' }, 404);
 }
 
+// giveaway code limits: uses "unlimited" (or 0) means no cap; days 0 or missing means it never expires
+const UNLIMITED = 2147483647;
+const codeUses = (u) => (u === 'unlimited' || u === 0 || u === '0') ? UNLIMITED : Math.min(UNLIMITED, Math.max(1, Math.floor(Number(u) || 1)));
+const codeExpiry = (d) => Number(d) > 0 ? Date.now() + Number(d) * 86400e3 : null;
+
 async function admin(req, env, url, json) {
   const tok = (req.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
   if (!env.ADMIN_TOKEN || !tok || !eq(tok, env.ADMIN_TOKEN)) return json({ error: 'unauthorised' }, 401);
@@ -225,8 +230,8 @@ async function admin(req, env, url, json) {
   let b; try { b = await req.json(); } catch { return json({ error: 'bad json' }, 400); }
   if (path === '/admin/codes') {
     const product = PRODUCTS[b.product] ? b.product : 'concorde';
-    const count = Math.min(500, Math.max(1, Math.floor(Number(b.count) || 1))), uses = Math.min(100000, Math.max(1, Math.floor(Number(b.uses) || 1)));
-    const days = Number(b.days) > 0 ? Number(b.days) : 0, expires = days ? Date.now() + days * 86400e3 : null, note = txt(b.note, 80);
+    const count = Math.min(500, Math.max(1, Math.floor(Number(b.count) || 1))), uses = codeUses(b.uses);
+    const expires = codeExpiry(b.days), note = txt(b.note, 80);
     const codes = [];
     for (let i = 0; i < count; i++) {
       for (let t = 0; t < 5; t++) {
@@ -236,6 +241,16 @@ async function admin(req, env, url, json) {
       }
     }
     return json({ ok: true, product, uses, expires, note, codes });
+  }
+  if (path === '/admin/codes/update') {
+    // change an existing code: {"code":"FKT-...","uses":"unlimited","days":0} makes it reusable with no expiry
+    const code = normKey(b.code), sets = [], args = [code];
+    if (b.uses !== undefined) { args.push(codeUses(b.uses)); sets.push(`max_uses = ?${args.length}`); }
+    if (b.days !== undefined) { args.push(codeExpiry(b.days)); sets.push(`expires = ?${args.length}`); }
+    if (!sets.length) return json({ error: 'nothing to change' }, 400);
+    const r = await env.DB.prepare(`UPDATE codes SET ${sets.join(', ')} WHERE code = ?1`).bind(...args).run();
+    const c = await env.DB.prepare('SELECT code, product, max_uses, uses, note, ts, expires, disabled FROM codes WHERE code = ?1').bind(code).first();
+    return json({ ok: !!(r.meta && r.meta.changes), code: c });
   }
   if (path === '/admin/codes/disable') {
     const r = await env.DB.prepare('UPDATE codes SET disabled = ?2 WHERE code = ?1').bind(normKey(b.code), b.enable ? 0 : 1).run();
