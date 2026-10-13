@@ -610,7 +610,7 @@ body.bigmap #radio{top:calc(env(safe-area-inset-top,0px) + 396px)}
       <section class="homeblog" id="homeBlog" aria-labelledby="homeBlogH">
         <h3 id="homeBlogH"><span class="l-en">Latest update</span><span class="l-zh" lang="zh-HK">最新消息</span></h3>
         <ul>
-          <li><a href="/blog/fly-concorde-at-kai-tak/" class="hb-top"><span class="hb-thumb"><img src="/assets/blog/og/fly-concorde-at-kai-tak.jpg" width="1200" height="630" loading="lazy" alt=""></span><span class="hb-txt"><span class="hb-meta"><time datetime="2026-10-12"><span class="l-en">12 Oct</span><span class="l-zh" lang="zh-HK">10月12日</span></time> &middot; <span class="l-en">Aircraft</span><span class="l-zh" lang="zh-HK">飛機</span></span><b><span class="l-en">Fly Concorde at Kai Tak</span><span class="l-zh" lang="zh-HK">喺啟德飛協和式客機</span></b></span></a></li>
+          <li><a href="/blog/concorde-intakes-under-the-wing/" class="hb-top"><span class="hb-thumb"><img src="/assets/blog/og/concorde-intakes-under-the-wing.jpg" width="1200" height="630" loading="lazy" alt=""></span><span class="hb-txt"><span class="hb-meta"><time datetime="2026-10-13"><span class="l-en">13 Oct</span><span class="l-zh" lang="zh-HK">10月13日</span></time> &middot; <span class="l-en">Aircraft</span><span class="l-zh" lang="zh-HK">飛機</span></span><b><span class="l-en">Concorde&#x27;s engine intakes now sit under the wing</span><span class="l-zh" lang="zh-HK">協和式客機引擎進氣口而家喺機翼下面</span></b></span></a></li>
         </ul>
         <a class="hb-all" href="/blog/"><span class="l-en">All updates on the blog</span><span class="l-zh" lang="zh-HK">網誌睇晒所有更新</span> <span aria-hidden="true">&rarr;</span></a>
       </section>
@@ -4550,19 +4550,22 @@ function nacelleGeo(Rn){const f=[[-2.3,.9],[-2.24,.98],[-2.0,1.02],[-1.3,1.03],[
   return new THREE.LatheGeometry(pts,24).rotateX(Math.PI/2)}
 // Concorde has one nacelle under each wing, a rounded box holding two engines side by side: two dark rectangular intakes at the front, a flat
 // side that runs back past the trailing edge, and two nozzles. concPodGeo lofts the box (a superellipse section) from the intake lip to the exit
-function concPodGeo(zf,zr,W,H){const NS=28,NZ=16,pos=[],idx=[],n=4,rim=[];
+// zfAt(x) gives the z of the intake lip at local x across the box, so the lip can follow the swept wing leading edge instead of sticking out ahead of it
+function concPodGeo(zfAt,zr,W,H){const NS=28,NZ=16,pos=[],idx=[],n=4,rim=[];
   const prof=f=>({w:W*(f>.78?1-.22*Math.pow((f-.78)/.22,1.5):1)*(f<.05?.93+1.4*f:1),h:H*(f>.68?1-.3*Math.pow((f-.68)/.32,1.4):1)*(f<.05?.88+2.4*f:1)});
-  for(let i=0;i<=NZ;i++){const f=i/NZ,p=prof(f),z=zf+(zr-zf)*f;for(let j=0;j<NS;j++){const t=j/NS*Math.PI*2,c=Math.cos(t),s_=Math.sin(t),k=1/Math.pow(Math.pow(Math.abs(c),n)+Math.pow(Math.abs(s_),n),1/n);pos.push(c*k*p.w/2,s_*k*p.h/2,z)}}
+  for(let i=0;i<=NZ;i++){const f=i/NZ,p=prof(f);for(let j=0;j<NS;j++){const t=j/NS*Math.PI*2,c=Math.cos(t),s_=Math.sin(t),k=1/Math.pow(Math.pow(Math.abs(c),n)+Math.pow(Math.abs(s_),n),1/n),vx=c*k*p.w/2,zl=zfAt(vx);pos.push(vx,s_*k*p.h/2,zl+(zr-zl)*f)}}
   for(let i=0;i<NZ;i++)for(let j=0;j<NS;j++){const a_=i*NS+j,b_=i*NS+(j+1)%NS,c_=a_+NS,d_=b_+NS;idx.push(a_,c_,b_,b_,c_,d_)}
   const mk=(p,ix)=>{const g_=new THREE.BufferGeometry();g_.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g_.setIndex(ix);g_.computeVertexNormals();return g_};
-  const cap=(ring,z)=>{const p=[],ix=[];for(let j=0;j<NS;j++){const q=ring*3*NS+j*3;p.push(pos[q],pos[q+1],z)}p.push(0,0,z);for(let j=0;j<NS;j++)ix.push(j,(j+1)%NS,NS);return mk(p,ix)};
-  return {body:mk(pos,idx),front:cap(0,zf-.02),rear:cap(NZ,zr+.02)}}
-function concNacelle(g,PT,sd,ex,wy,nacM,dark,L,dl,first,ex0,ex1){
-  const zf=-1.8,zr=18.1,y=wy-.98,cx=(ex0+ex1)/2;
-  if(first){const G=concPodGeo(zf,zr,ex1-ex0+2.2,1.75),body=new THREE.Mesh(G.body,nacM);body.position.set(sd*cx,y,0);g.add(body);body.userData.ex=ex0;PT.eng.push(body);
+  const cap=(ring,dz,two)=>{const p=[],ix=[];let zs=0;for(let j=0;j<NS;j++){const q=ring*3*NS+j*3;p.push(pos[q],pos[q+1],pos[q+2]+dz);zs+=pos[q+2]+dz}p.push(0,0,zs/NS);for(let j=0;j<NS;j++){ix.push(j,(j+1)%NS,NS);if(two)ix.push(j,NS,(j+1)%NS)}return mk(p,ix)};   // the intake face is drawn from both sides so it reads as a dark opening from the front
+  return {body:mk(pos,idx),front:cap(0,-.02,true),rear:cap(NZ,.02)}}
+function concNacelle(g,PT,sd,ex,wy,nacM,dark,L,dl,first,ex0,ex1,semi){
+  const zr=18.1,y=wy-.98,cx=(ex0+ex1)/2;
+  // the intakes sit under the wing: each lip follows the leading edge (same ogival curve as wingGeo) and stays 0.3 m behind it, so nothing pokes out ahead of the wing
+  const le=x=>{const t=Math.min(1,Math.abs(x)/semi),S=1.45*t-.45*t*t;return dl.zle+(dl.cr-dl.ct)*S},zfAt=vx=>le(cx+sd*vx)+.3,zf=zfAt(0);
+  if(first){const G=concPodGeo(zfAt,zr,ex1-ex0+2.2,1.75),body=new THREE.Mesh(G.body,nacM);body.position.set(sd*cx,y,0);g.add(body);body.userData.ex=ex0;PT.eng.push(body);
     const fr=new THREE.Mesh(G.front,dark);fr.position.set(sd*cx,y,0);g.add(fr);fr.userData.ex=ex0;PT.eng.push(fr);
     const rr_=new THREE.Mesh(G.rear,dark);rr_.position.set(sd*cx,y,0);g.add(rr_);rr_.userData.ex=ex0;PT.eng.push(rr_);
-    const sp=new THREE.Mesh(new THREE.BoxGeometry(.12,1.5,.5),nacM);sp.position.set(sd*cx,y,zf+.05);g.add(sp);sp.userData.ex=ex0;PT.eng.push(sp)}   // the splitter between the two intakes
+    const sp=new THREE.Mesh(new THREE.BoxGeometry(.12,1.5,.5),nacM);sp.position.set(sd*cx,y,zf+.25);g.add(sp);sp.userData.ex=ex0;PT.eng.push(sp)}   // the splitter between the two intakes
   // a nozzle for this engine, and its reheat flame
   const nz=new THREE.Mesh(new THREE.CylinderGeometry(.5,.66,2.0,16,1,true).rotateX(Math.PI/2),dark);nz.position.set(sd*ex,y,zr+.9);g.add(nz);nz.userData.ex=ex;PT.eng.push(nz);
   const fl=new THREE.Group(),fm=(r,h,c,o)=>new THREE.Mesh(new THREE.ConeGeometry(r,h,12,1,true).rotateX(Math.PI/2).translate(0,0,h/2),new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:o,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
@@ -4639,7 +4642,7 @@ function buildAircraftModel(a,opt={}){
     if(!dl)surf.spl.push({h:hinged(w,semi,cr,ct,zle,sweep,R*1.3,semi*.42,cr*.11,true,.2),sd});
     if(a.winglet){const W=a.winglet,wm=new THREE.Mesh(wingletGeo(W.h,ct*W.rc,ct*W.tc,W.sw,W.cant,W.bl,.055),tailC);wm.position.set(sd*(semi*Math.cos(5*D2R)-.5),cy-R*.45+semi*Math.sin(5*D2R)-.45,zle+semi*sweep+ct*.1);wm.scale.x=sd;g.add(wm);PT.misc.push(wm)}
     // engines
-    for(const ex of a.engX){if(dl){concNacelle(g,PT,sd,ex,wy,nacM,dark,L,dl,ex===a.engX[0],a.engX[0],a.engX[a.engX.length-1]);continue}const ez=zle+ex*sweep-a.engR*2.6;const ey=cy-R*.45+ex*Math.tan(5*D2R)-a.engR-.6;
+    for(const ex of a.engX){if(dl){concNacelle(g,PT,sd,ex,wy,nacM,dark,L,dl,ex===a.engX[0],a.engX[0],a.engX[a.engX.length-1],semi);continue}const ez=zle+ex*sweep-a.engR*2.6;const ey=cy-R*.45+ex*Math.tan(5*D2R)-a.engR-.6;
       const nac=new THREE.Mesh(nacelleGeo(a.engR),nacM);nac.position.set(sd*ex,ey,ez);g.add(nac);nac.userData.ex=ex;PT.eng.push(nac);
       const inlet=new THREE.Mesh(new THREE.CircleGeometry(a.engR*.86,20),dark);inlet.position.set(sd*ex,ey,ez-a.engR*2.05);inlet.rotation.y=Math.PI;g.add(inlet);inlet.userData.ex=ex;PT.eng.push(inlet);
       const py=new THREE.Mesh(pylonGeo(a.engR),nacM);py.position.set(sd*ex,ey,ez);g.add(py);py.userData.ex=ex;PT.eng.push(py)}
