@@ -1,5 +1,38 @@
 [
   {
+    "slug": "the-history-of-concorde",
+    "title": "The History of Concorde",
+    "dek": "From a 1962 treaty to the last flight in 2003: how Concorde was built, flown and retired.",
+    "description": "The history of Concorde: the 1962 treaty, first flights in 1969, service from 1976, the 2000 Paris accident and the last flights in 2003.",
+    "date": "2026-10-13",
+    "tag": "History",
+    "category": "aircraft",
+    "keywords": [
+      "Concorde",
+      "history",
+      "supersonic",
+      "delta wing",
+      "1976",
+      "2003",
+      "Kai Tak"
+    ],
+    "hero": "concorde-intakes-after-side",
+    "hero_alt": "Low side view of the delta-wing jet on the runway with its engine intakes tucked under the leading edge of the wing.",
+    "hero_caption": "The sim's Concorde on the runway.",
+    "card_kicker": "AIRCRAFT · HISTORY",
+    "card_title": "The History of Concorde",
+    "card_sub": "1962 treaty to the last flight in 2003",
+    "card_image": "concorde-final",
+    "card_focus": 50,
+    "zh": {
+      "title": "協和式客機嘅歷史",
+      "dek": "由 1962 年條約到 2003 年最後一次飛行：協和式點樣製造、飛行同退役。",
+      "description": "協和式客機嘅歷史：1962 年條約、1969 年首飛、1976 年投入服務、2000 年巴黎事故同 2003 年最後飛行。",
+      "hero_alt": "喺跑道上低角度側面望三角翼客機，引擎進氣口收埋喺機翼前緣下面。",
+      "hero_caption": "模擬器入面嘅協和式喺跑道上。"
+    }
+  },
+  {
     "slug": "concorde-intakes-under-the-wing",
     "title": "Concorde's engine intakes now sit under the wing",
     "dek": "The intakes no longer stick out ahead of the wing. They sit under the leading edge, as on the real aircraft.",
