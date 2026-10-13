@@ -64,6 +64,9 @@ The home screen shows the live sim of the airport in the background, with the na
 ### Social reel
 `assets/video/social/` holds a second cut for YouTube (1920x1080), Facebook (1920x1080) and Instagram Reels / YouTube Shorts (1080x1920), with titles and descriptions in `titles-and-descriptions.md`. It uses only exterior and cockpit-windscreen cameras, never the passenger cabin. `python3 tools/reel.py render yt|ig --out DIR` records the takes from the sim (software WebGL draws about 4 s a frame, so the sim steps at 24 Hz and draws every second step), `python3 tools/reel_card.py DIR/card` renders the end card, and `python3 tools/reel_assemble.py DIR OUT` interpolates each take to 24 fps, joins them, adds the music and encodes the files (needs ffmpeg). The music is an original synthesised track from `tools/reel_music.py` (144 BPM, E minor, a hit on every cut). `python3 tools/reel.py scout yt|ig` saves three stills per take to check framing first.
 
+### Concorde launch promo
+`assets/video/social/concorde-launch/` holds the launch announcement for Concorde: a landscape cut (1920x1080) and a portrait cut (1080x1920), each about 26 s, plus two still images (1600x900 and 1080x1350) and `titles-and-descriptions.md` for YouTube, Shorts, Instagram, Facebook, TikTok, X, LinkedIn and Threads. Rebuild with `python3 tools/concorde_promo.py` (scout, render, build, image).
+
 ### 60-second explainer
 `assets/video/social/flykaitak-explainer-60s.mp4` (1920x1080, 56 s) shows the main features and how to watch and save a flight highlights reel (highlights autoplay, markers, Director camera, Save video, 16:9 and 9:16). Titles and descriptions are in `assets/video/social/explainer-titles-and-descriptions.md`.
 
