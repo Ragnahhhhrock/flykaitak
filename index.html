@@ -97,6 +97,25 @@ html:lang(zh) body{font-family:var(--f-ui),"PingFang HK","Microsoft JhengHei","N
 .brand-meta .credit a:hover,.foot a:hover{text-decoration-color:var(--checker)}
 .coffee{justify-self:start;display:inline-flex;align-items:center;gap:8px;background:var(--checker);color:var(--checker-ink);font-weight:700;font-size:12px;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;padding:10px 14px;border-radius:3px;text-shadow:none;border:1px solid var(--checker)}
 .coffee[hidden]{display:none!important}
+/* Home screen social proof: live totals from /stats, counted up on load (baked values show instantly if the API is slow). */
+.homestats{max-width:420px;text-shadow:none}
+.homestats .fst-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));background:var(--panel);border:1px solid var(--line-2);border-top:3px solid var(--jade-bright);border-radius:3px;backdrop-filter:blur(6px);color:inherit;text-decoration:none;overflow:hidden}
+.homestats .fst{display:grid;gap:3px;padding:10px 12px 9px;min-width:0;opacity:0;transform:translateY(10px);animation:fstIn .6s cubic-bezier(.2,.7,.2,1) forwards}
+.homestats .fst+.fst{border-left:1px solid var(--line-2)}
+.homestats .fst:nth-child(2){animation-delay:.12s}.homestats .fst:nth-child(3){animation-delay:.24s}
+.homestats .fst b{font-family:var(--f-num);font-weight:400;font-size:clamp(20px,2.2vw,28px);line-height:1;color:var(--paper);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.homestats .fst[data-k=landing] b{color:var(--phosphor)}
+.homestats .fst[data-k=crash] b{color:var(--checker)}
+.homestats .fst span{font-family:var(--f-num);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.homestats .fst-row:hover{border-color:var(--muted);border-top-color:var(--jade-bright)}
+.homestats .fst-row:focus-visible{outline:2px solid var(--checker);outline-offset:2px}
+.homestats .fst-live{display:flex;align-items:center;gap:7px;margin-top:6px;font-family:var(--f-num);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--paper);text-shadow:0 1px 8px rgba(0,0,0,.9),0 0 2px rgba(0,0,0,.9);opacity:0;animation:fstIn .6s .4s forwards}
+.homestats .fst-live i{width:7px;height:7px;border-radius:50%;background:var(--phosphor);box-shadow:0 0 0 0 rgba(143,245,168,.6);animation:fstPulse 2s 1s infinite}
+@keyframes fstIn{to{opacity:1;transform:none}}
+@keyframes fstPulse{0%{box-shadow:0 0 0 0 rgba(143,245,168,.55)}70%{box-shadow:0 0 0 7px rgba(143,245,168,0)}100%{box-shadow:0 0 0 0 rgba(143,245,168,0)}}
+.homestats .l-zh,html:lang(zh-HK) .homestats .l-en{display:none}
+html:lang(zh-HK) .homestats .l-zh{display:inline}
+@media (prefers-reduced-motion:reduce){.homestats .fst,.homestats .fst-live{animation:none;opacity:1;transform:none}.homestats .fst-live i{animation:none}}
 .homeblog{max-width:420px;padding:12px 14px 10px;background:var(--panel);border:1px solid var(--line-2);border-left:3px solid var(--checker);border-radius:3px;text-shadow:none;backdrop-filter:blur(6px)}
 .homeblog h3{margin:0 0 8px;font-family:var(--f-num);font-weight:400;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--checker)}
 .homeblog ul{list-style:none;margin:0;padding:0;display:grid}
@@ -606,11 +625,19 @@ body.bigmap #radio{top:calc(env(safe-area-inset-top,0px) + 396px)}
       <div class="code">VHHH · KAI TAK</div>
       <div class="sub">Hong Kong · 1998</div>
       <div class="credit"><a href="https://malgordon.com" target="_blank" rel="noopener">Another Mal Gordon project</a></div>
+      <section class="homestats" id="homeStats" aria-label="Fly Kai Tak in numbers">
+        <a class="fst-row" href="/stats/" aria-label="See all live stats">
+          <div class="fst" data-k="game_start"><b data-v="3499">0</b><span><span class="l-en">Flights</span><span class="l-zh" lang="zh-HK">航班</span></span></div>
+          <div class="fst" data-k="landing"><b data-v="681">0</b><span><span class="l-en">Landings</span><span class="l-zh" lang="zh-HK">成功降落</span></span></div>
+          <div class="fst" data-k="crash"><b data-v="1576">0</b><span><span class="l-en">Crashes</span><span class="l-zh" lang="zh-HK">墜機</span></span></div>
+        </a>
+        <div class="fst-live"><i aria-hidden="true"></i><span class="l-en">Live from pilots worldwide</span><span class="l-zh" lang="zh-HK">全球機師即時數據</span></div>
+      </section>
       <!-- BLOG:LATEST -->
       <section class="homeblog" id="homeBlog" aria-labelledby="homeBlogH">
         <h3 id="homeBlogH"><span class="l-en">Latest update</span><span class="l-zh" lang="zh-HK">最新消息</span></h3>
         <ul>
-          <li><a href="/blog/the-history-of-concorde/" class="hb-top"><span class="hb-thumb"><img src="/assets/blog/og/the-history-of-concorde.jpg" width="1200" height="630" loading="lazy" alt=""></span><span class="hb-txt"><span class="hb-meta"><time datetime="2026-10-13"><span class="l-en">13 Oct</span><span class="l-zh" lang="zh-HK">10月13日</span></time> &middot; <span class="l-en">Aircraft</span><span class="l-zh" lang="zh-HK">飛機</span></span><b><span class="l-en">The History of Concorde</span><span class="l-zh" lang="zh-HK">協和式客機嘅歷史</span></b></span></a></li>
+          <li><a href="/blog/live-stats-on-the-home-screen/" class="hb-top"><span class="hb-thumb"><img src="/assets/blog/og/live-stats-on-the-home-screen.jpg" width="1200" height="630" loading="lazy" alt=""></span><span class="hb-txt"><span class="hb-meta"><time datetime="2026-10-15"><span class="l-en">15 Oct</span><span class="l-zh" lang="zh-HK">10月15日</span></time> &middot; <span class="l-en">Site &amp; Language</span><span class="l-zh" lang="zh-HK">網站同語言</span></span><b><span class="l-en">Live Stats on the Home Screen</span><span class="l-zh" lang="zh-HK">主頁即時統計</span></b></span></a></li>
         </ul>
         <a class="hb-all" href="/blog/"><span class="l-en">All updates on the blog</span><span class="l-zh" lang="zh-HK">網誌睇晒所有更新</span> <span aria-hidden="true">&rarr;</span></a>
       </section>
@@ -7484,7 +7511,7 @@ function zhOf(s){const t=s.trim();if(!t)return null;if(Object.prototype.hasOwnPr
 function applyLang(){
   const w=document.createTreeWalker(document.getElementById('setup'),NodeFilter.SHOW_TEXT);
   for(let n;n=w.nextNode();){
-    if(n.parentNode.closest('#btnLang,.fids'))continue;
+    if(n.parentNode.closest('#btnLang,.fids,.homestats'))continue;
     let o=langOrig.get(n);if(o===undefined){o=n.nodeValue;langOrig.set(n,o)}
     const z=LANG==='zh'?zhOf(o):null;
     const v=z===null?o:o.slice(0,o.length-o.trimStart().length)+z+o.slice(o.trimEnd().length);
@@ -7783,6 +7810,30 @@ fontsReady.then(()=>setTimeout(boot,30));
 window.__kt={gradeLanding,hsShowResult,radioSay,radioPump,RAD,setWreck,WRECK,SF,SF_ROUTES,sfSeek,sfAdvance,penTour,HELI,HPAD,updateHeli,hPlan,hHerm,hGround,masts:()=>apronMasts,port:()=>PORT,geo:()=>GEO,inPortYard,PORT_QUAYS,PORT_BLD,SHIPS,FAIRWAYS,waterAt,laneOffset,rwP,STAND_C,CTY,stS,NCG,ESTATES,RC,rcEv,rcVac,rcRoll,rcStrip,rcClearBy,rcTakeoffWhy,rcView,rcPlayer,CYC,onPaved,gearPaved,rwS,LINKS,rb:()=>rbMasts13,bat:buildingAt,setHour,solarState,SUN_DIR,MOON_DIR,ENV,AI,CFG,ST,COACH,LESSON,keys,coachUpdate,coachResync,coachGo,rwL,get PATH(){return PATH},LND,setRunway,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,{rwy:'13',conc:false,tour:false},o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.tour?'tour':CFG.conc&&CFG.game==='watch'?'watchC':CFG.rwy==='31'&&CFG.game!=='learn'?CFG.game+'31':CFG.game}]`).checked=true;hourIn.value=o.hour!==undefined?o.hour:CFG.night?22:15;showHour();startFlight()},
   run:(sec)=>{if(CFG.game==='watch'){ST.t+=sec;return {t:ST.t}}const h=1/120;for(let i=0;i<sec*120&&!ST.ended;i++){physStep(h);if(i%60===0)recordHistory();if(i%12===0)aiTick()}return {ended:ST.ended,td:ST.td,t:ST.t,x:ST.x,y:ST.y,z:ST.z,V:ST.V/KT,d:PATH.pts[ST.pi].d}},
   get mode(){return mode},updateAI,AIC,footOf,GSE,GSE_KINDS,AIRBOX,rwS,BGRID,updateGSE,gseLamps:()=>gseLamps,fpAt,fpDist,hitOn,damageModel,aiHit,DEBRIS,EMIT,aiTick,ctl(){return aiControl},get CFG(){return CFG},frame:(now)=>frame(now,true),get FOCUS(){return FOCUS},step:()=>physStep(1/120),rwS,setZoom:z=>{CFG.zoom=z},get AI(){return AI},get GSE(){return GSE},get BRIDGE(){return BRIDGE},STAND_S,STAND_TY,lineupT,lineupT31,arrivalPts,tugAt,standL,PB,get parked(){return parked},gseAt:(t)=>{ST.t=t;updateGSE();return GSE.map(e=>({k:e.kind,x:e.p.x,z:e.p.z,psi:e.p.psi,lift:e.lift}))},get shipLights(){return shipLights},get PORT(){return PORT},get SHIPS(){return SHIPS},get DISP(){return DISP},get deck(){return deckGroup},get streetCam(){return STREET_CAM},get BB(){return BB},get water(){return water},get camera(){return camera},get nStreets(){return STREETS.length},drawDisplays,look,setView,terrainAt,buildingAt,groundInfo};
+})();
+
+/* Home screen stats: count up to the baked totals at once, then to the live /stats totals when they arrive. */
+(function homeStats(){
+  const box=document.getElementById('homeStats');if(!box)return;
+  const els=[...box.querySelectorAll('.fst b')],fmt=n=>Math.round(n).toLocaleString('en-US');
+  const still=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const cur=new Map(els.map(e=>[e,0]));
+  function to(e,v,delay){
+    if(!(v>0))return;
+    if(still){cur.set(e,v);e.textContent=fmt(v);return}
+    const from=cur.get(e),dur=1600,t0=performance.now()+(delay||0);
+    e.dataset.tgt=v;
+    (function f(t){if(e.dataset.tgt!=String(v))return;const k=Math.min(1,Math.max(0,(t-t0)/dur)),x=from+(v-from)*(1-Math.pow(1-k,3));cur.set(e,x);e.textContent=fmt(x);if(k<1)requestAnimationFrame(f)})(performance.now());
+  }
+  const setup=document.getElementById('setup');let go=false;
+  function start(){if(go||setup.hidden)return;go=true;els.forEach((e,i)=>to(e,+e.dataset.v,i*120))}   // count once the home screen is first on show
+  if(setup.hidden){const mo=new MutationObserver(()=>{start();if(go)mo.disconnect()});mo.observe(setup,{attributes:true,attributeFilter:['hidden']})}else start();
+  const api=window.FKT_API;if(!api||!window.fetch)return;
+  const c=new AbortController();setTimeout(()=>c.abort(),6000);
+  fetch(api+'/stats',{signal:c.signal}).then(r=>r.ok?r.json():null).then(j=>{
+    if(!j||!Array.isArray(j.kinds))return;const n={};for(const r of j.kinds)n[r.k]=r.n;
+    for(const e of els){const v=n[e.parentNode.dataset.k];if(v>+e.dataset.v){e.dataset.v=v;if(go)to(e,v,0)}}
+  }).catch(()=>{});
 })();
 </script>
 <!--/FRAG:BODY-->

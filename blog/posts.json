@@ -1,5 +1,37 @@
 [
   {
+    "slug": "live-stats-on-the-home-screen",
+    "title": "Live Stats on the Home Screen",
+    "dek": "Flights, landings and crashes from every pilot, counted up as the home screen loads.",
+    "description": "The Fly Kai Tak home screen now shows live totals of flights, landings and crashes, animated as the page loads and linked to the stats page.",
+    "date": "2026-10-15",
+    "tag": "Feature",
+    "category": "site",
+    "keywords": [
+      "stats",
+      "home screen",
+      "landings",
+      "crashes",
+      "live",
+      "Kai Tak"
+    ],
+    "hero": "home-stats",
+    "hero_alt": "The Fly Kai Tak home screen with a strip of three totals under the airport name: flights, landings and crashes.",
+    "hero_caption": "Live totals on the home screen.",
+    "card_kicker": "SITE · FEATURE",
+    "card_title": "Live Stats on the Home Screen",
+    "card_sub": "Flights, landings and crashes, counted live",
+    "card_image": "home-stats-close",
+    "card_focus": 50,
+    "zh": {
+      "title": "主頁即時統計",
+      "dek": "所有機師嘅航班、降落同墜機數字，主頁載入時即時數上去。",
+      "description": "Fly Kai Tak 主頁而家會顯示航班、降落同墜機嘅即時總數，載入時有動畫，仲連住統計頁。",
+      "hero_alt": "Fly Kai Tak 主頁，機場名下面有一條顯示三個總數嘅橫條：航班、降落同墜機。",
+      "hero_caption": "主頁上嘅即時總數。"
+    }
+  },
+  {
     "slug": "the-history-of-concorde",
     "title": "The History of Concorde",
     "dek": "From a 1962 treaty to the last flight in 2003: how Concorde was built, flown and retired.",
