@@ -1,5 +1,7 @@
 # Concorde (premium aircraft)
 
+The An-225 is sold the same way: see `docs/an225.md`. The store, codes and admin API below take a `product` (`concorde` or `an225`).
+
 A flyable delta-wing supersonic jet, US$7, one-off. Code is in `index.html` (`AC.conc`, `concPodGeo`, `noseFrame`, the `#concModal` window, the `ENT` licence code) and `server/worker.js` (`/store/*`, `/admin/*`). Generic navy/red livery: no real airline names or logos.
 
 ## Flying it

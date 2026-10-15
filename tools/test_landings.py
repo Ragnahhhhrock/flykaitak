@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 """Landing regression test for Fly Kai Tak.
 
-Usage:  python3 tools/test_landings.py [--rwy 13|31|both] [--night] [--ac b744,b772,a333,a343,conc] [--wx clear,rain,...]
+Usage:  python3 tools/test_landings.py [--rwy 13|31|both] [--night] [--ac b744,b772,a333,a343,conc,an225] [--wx clear,rain,...]
 
 Serves the repo, opens it in headless Chromium and uses the sim's test hooks (window.__kt) to check, for each
 runway and weather preset:
   1. the autopilot lands the aircraft (no crash, no missed approach), touching down on the runway;
   2. with no input at all (autopilot off) the aircraft crashes;
   3. aircraft on the ground (AI traffic taxiing, docking, pushing back) keep all three wheels on the tarmac, never on the grass;
-  4. the player's aircraft steered off the runway at walking pace stops at the tarmac edge, and at speed crashes (runway excursion).
+  4. the player's aircraft steered off the runway at walking pace stops at the tarmac edge, and at speed crashes (runway excursion);
+  5. the An-225 takes off at its capped weight, and on the ground it stops at the runway edge (its wings do not fit the taxiways).
 Exit code 0 means every check passed.
 """
 import argparse
@@ -121,7 +122,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--rwy", default="both")
     ap.add_argument("--night", action="store_true")
-    ap.add_argument("--ac", default="b744,conc")
+    ap.add_argument("--ac", default="b744,conc,an225")
     ap.add_argument("--wx", default=",".join(WX))
     ap.add_argument("--sec", type=int, default=420)
     a = ap.parse_args()
@@ -161,6 +162,12 @@ def main():
             ok = r["kind"] == "airborne" and r["alt"] > 500
             print(f"RWY {rwy} Concorde take-off         -> {r['kind']:8s} airborne at {r['air']}s, alt {r['alt']} m, {r['V']} kt {'' if ok else r['title']} {'' if ok else r['why']}", flush=True)
             fails += 0 if ok else 1
+        for rwy in rwys:   # An-225: take-off at the capped 560 t (520 t wet)
+            for wx in ("clear", "rain"):
+                r = pg.evaluate(TAKEOFF, [{"game": "free", "rwy": rwy, "ac": "an225", "wx": wx, "night": a.night, "deck": False, "ap": False}, 200])
+                ok = r["kind"] == "airborne" and r["alt"] > 500
+                print(f"RWY {rwy} An-225 take-off {wx:5s}     -> {r['kind']:8s} airborne at {r['air']}s, alt {r['alt']} m, {r['V']} kt {'' if ok else r['title']} {'' if ok else r['why']}", flush=True)
+                fails += 0 if ok else 1
         for rwy in rwys:
             r = pg.evaluate(SPOTTER, {"game": "watch", "rwy": rwy, "wx": "clear", "night": False, "deck": False})
             ok = r["bad"] == 0 and r["n"] > 0
@@ -178,6 +185,11 @@ def main():
                     r = pg.evaluate(EDGE, [{"game": "free", "rwy": rwy, "ac": "b744", "wx": "clear", "night": False, "deck": False, "ap": False}, speed, side])
                     ok = r["kind"] == want and not r["off"]
                     print(f"RWY {rwy} steer {nm:19s} at {speed:2d} m/s -> {r['kind']:5s} l={r['l']} {r['title'] or ''} {'' if ok else 'WRONG'}", flush=True)
+                    fails += 0 if ok else 1
+                    # the An-225 keeps its wheels on the runway: held at the runway edge, never onto a taxiway
+                    r = pg.evaluate(EDGE, [{"game": "free", "rwy": rwy, "ac": "an225", "wx": "clear", "night": False, "deck": False, "ap": False}, speed, side])
+                    ok = r["kind"] == want and not r["off"] and abs(r["l"]) <= 27
+                    print(f"RWY {rwy} An-225 {nm:19s} at {speed:2d} m/s -> {r['kind']:5s} l={r['l']} {r['title'] or ''} {'' if ok else 'WRONG'}", flush=True)
                     fails += 0 if ok else 1
         b.close()
     srv.shutdown()

@@ -31,3 +31,5 @@ To report on parameters in GA4, register them as custom dimensions (Admin > Cust
 | `concorde_offer_view` | Concorde purchase / code window opened | `owned` (true if already unlocked) |
 | `concorde_checkout` | Buy button clicked (before going to Stripe) | none |
 | `concorde_unlock` | Concorde unlocked | `method` (`purchase`, `code`, `restore`) |
+
+`an225_offer_view`, `an225_checkout`, `an225_unlock`: the same three events as Concorde's, for the An-225 (see `docs/an225.md`).

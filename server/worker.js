@@ -5,8 +5,8 @@
 //   GET  /stats   -> public aggregate counts for flykaitak.com/stats/
 //   GET  /replays -> {ok:true,max} when replay share links are switched on (an R2 bucket is bound as REPLAYS)
 //   POST /replays -> multipart {video: mp4, poster: jpg, card: png, meta: json} -> {id, url}
-//   POST /store/checkout {product} -> {ok,url}  Stripe Checkout page for a paid aircraft (Concorde, $7 USD)
-//   POST /store/claim {session}    -> {ok,key}  after paying: Stripe returns the buyer to the sim with ?concorde_session=cs_...; the Worker checks it with Stripe and issues a licence key
+//   POST /store/checkout {product} -> {ok,url}  Stripe Checkout page for a paid aircraft (Concorde or the An-225, $7 USD each)
+//   POST /store/claim {session}    -> {ok,key}  after paying: Stripe returns the buyer to the sim with ?<product>_session=cs_...; the Worker checks it with Stripe and issues a licence key
 //   POST /store/redeem {code}      -> {ok,key}  a free giveaway code (FKT-XXXX-XXXX), or a licence key typed in on a new device
 //   POST /store/check {key,product}-> {ok}      is this licence key valid (not revoked)
 //   /admin/*  (Authorization: Bearer ADMIN_TOKEN)  make and list giveaway codes, revoke a licence, sales counts. See docs/concorde.md
@@ -117,6 +117,7 @@ async function stats(env, json) {
    Optional vars: SITE_BASE (default https://flykaitak.com, where Stripe sends the buyer back), STRIPE_API (tests). */
 const PRODUCTS = {
   concorde: { name: 'Concorde for Fly Kai Tak', desc: 'Fly the delta-wing Concorde into Kai Tak: droop nose, reheat take-off and the Runway 13 approach. One payment, yours to keep.', cents: 700, cur: 'usd', pre: 'CONC' },
+  an225: { name: 'Antonov An-225 Mriya for Fly Kai Tak', desc: 'Fly the six-engine An-225 into Kai Tak: 88 m of wing through the checkerboard turn, with a take-off weight capped for the runway. One payment, yours to keep.', cents: 700, cur: 'usd', pre: 'MRYA' },
 };
 const KEY_ABC = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const rnd = (n) => Array.from(crypto.getRandomValues(new Uint8Array(n)), (x) => KEY_ABC[x % 32]).join('');
