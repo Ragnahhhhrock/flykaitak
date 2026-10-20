@@ -27,3 +27,6 @@ Only state facts that are in the README or the code. Do not use real airline nam
 
 ## Home screen
 `tools/blog.py` also rewrites the "Latest updates" panel on the home screen (`index.html`, between the `<!-- BLOG:LATEST -->` markers): the newest post with its card image, in English and Cantonese. Never edit inside the markers by hand.
+
+## Content strategy
+The 90-day daily plan (personas, pillars, calendar and posting times) is in `docs/content-strategy/`. Regenerate the calendar and schedule with `python3 tools/content_plan.py`.
