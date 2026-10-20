@@ -7,11 +7,11 @@ Re-test after 30 days with GA4 (sessions by hour of day and by referrer) and mov
 | # | Date | Blog (HKT) | Social (HKT) | Persona | Why this slot | Article |
 |---|---|---|---|---|---|---|
 | 1 | Wed 21 Oct 2026 | 20:21 | 20:41 | Sim Sam | HK evening, Perth evening, European lunch | Six aircraft at Kai Tak: which one should you fly? |
-| 2 | Thu 22 Oct 2026 | 19:34 | 19:54 | History Harry | early evening HKT, European lunch | Why Kai Tak was one of the hardest airports to land at |
+| 2 | Thu 22 Oct 2026 | 19:34 | 19:54 | History Harry | early evening HKT, European lunch | Why the Kai Tak approach is so demanding |
 | 3 | Fri 23 Oct 2026 | 13:02 | 13:22 | Casual Casey | lunch break | How landings are scored: the road to 100 out of 100 |
 | 4 | Sat 24 Oct 2026 | 17:58 | 18:18 | Casual Casey | after school and work | Plane Spotter: watch Kai Tak from the car park roof |
-| 5 | Sun 25 Oct 2026 | 07:56 | 08:16 | Eddie | early planning time, Perth and Hong Kong | Why build a Kai Tak simulator in the browser? |
-| 6 | Mon 26 Oct 2026 | 22:28 | 22:48 | Sim Sam | late evening HKT, US morning | Fly your first Kai Tak approach in 10 minutes |
+| 5 | Sun 25 Oct 2026 | 07:56 | 08:16 | Eddie | early planning time, Perth and Hong Kong | A Kai Tak simulator that runs in your browser |
+| 6 | Mon 26 Oct 2026 | 22:28 | 22:48 | Sim Sam | late evening HKT, US morning | Fly your first Kai Tak approach with the Landing lesson |
 | 7 | Tue 27 Oct 2026 | 08:41 | 09:01 | Wing | Hong Kong commute | Kowloon City in 1998: the shop signs under the flight path |
 | 8 | Wed 28 Oct 2026 | 09:53 | 10:13 | Sim Sam | US evening, Australian morning | The 747-400 flight deck: CRT glass, yokes and four thrust levers |
 | 9 | Thu 29 Oct 2026 | 11:13 | 11:33 | History Harry | late morning HKT, US evening | The IGS approach explained: guiding a jet to the hill |

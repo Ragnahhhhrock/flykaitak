@@ -30,3 +30,6 @@ Only state facts that are in the README or the code. Do not use real airline nam
 
 ## Content strategy
 The 90-day daily plan (personas, pillars, calendar and posting times) is in `docs/content-strategy/`. Regenerate the calendar and schedule with `python3 tools/content_plan.py`.
+
+## Queued posts (publish at a set time)
+Drafted posts wait in `blog/queue/<date>-<slug>/` (`post.json` with a `publish_at` time, `en.html`, `zh.html`; screenshots already in `assets/blog/shots/`). `python3 tools/publish_queue.py --list` shows the queue; `python3 tools/publish_queue.py --push` publishes everything that is due (copies the bodies to `blog/src/`, adds the `posts.json` entry with that day's date, renders the card, rebuilds the blog, commits and pushes to `main`); `--slug <slug>` publishes one post now. A scheduled task runs it at each post's time.

@@ -1,0 +1,32 @@
+<p>Fly Kai Tak 係一個模擬 1998 年香港啟德 13 跑道 IGS 進場嘅飛行模擬器，喺瀏覽器入面就玩到，網址係 flykaitak.com。唔使下載，唔使安裝。呢篇文講吓即係點，同埋佢係點樣砌出嚟。</p>
+<div class="readouts" role="list">
+  <div class="readout" role="listitem"><b>0</b><span>安裝<i>喺瀏覽器入面玩</i></span></div>
+  <div class="readout" role="listitem"><b>1998</b><span>年份<i>當年嘅啟德</i></span></div>
+  <div class="readout" role="listitem"><b>24,000</b><span>樓宇<i>真實平面圖</i></span></div>
+</div>
+
+<h2>一個頁面，冇建置步驟</h2>
+<p>模擬器係一個用 Three.js 寫嘅 <code>index.html</code>，冇建置步驟。地圖數據由倉庫入面嘅腳本預先處理，開始嗰陣頁面先至載入。因為地圖數據係喺網上讀取，所以你可以用任何靜態網頁伺服器跑自己一份。</p>
+<h2>用真實香港做地圖</h2>
+<p>航空相片、海岸線同大約 24,000 幢樓宇嘅平面圖，來自香港地政總署嘅開放數據。道路用運輸署嘅道路網絡，並已經去除 1998 年之後建成嘅道路。地形用 SRTM 高度數據，並已濾走樓宇嘅凸起。</p>
+<figure class="wide">
+  <img src="/assets/blog/shots/lion-rock-aerial.jpg" width="1600" height="900" loading="lazy" alt="喺九龍灣上空望啟德 13 跑道，九龍升上青綠色山脊，獅子山喺正中。">
+  <figcaption>13 跑道同九龍後面嘅山脊，用開放數據砌成。</figcaption>
+</figure>
+
+<h2>為瀏覽器而設</h2>
+<ul>
+  <li><strong>手機同電腦：</strong>有觸控、滑鼠同鍵盤操控。</li>
+  <li><strong>中英文：</strong>主畫面同網誌都有 EN / 粵 按鈕。</li>
+  <li><strong>高分榜：</strong>記錄喺你嘅瀏覽器，另有可選嘅共用榜單。</li>
+  <li><strong>分享降落：</strong>可以貼成績卡，或者喺瀏覽器入面直接儲存 MP4 重播影片。</li>
+</ul>
+<div class="callout">
+  <p><strong>免費同付費：</strong>四款客機、所有模式同飛機迷模式都免費。協和式同 An-225 每款 7 美元。</p>
+</div>
+<h2>延伸閱讀</h2>
+<ul>
+  <li><a href="/blog/real-hong-kong-1998-open-data/">用開放數據重現 1998 年香港</a></li>
+  <li><a href="/blog/flying-kai-tak-on-your-phone/">用手機飛啟德</a></li>
+  <li><a href="/blog/blog-in-cantonese/">廣東話網誌</a></li>
+</ul>

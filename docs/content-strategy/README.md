@@ -65,4 +65,8 @@ Checkpoints: day 30 (drop or double the weakest pillar), day 60 (re-rank the cal
 - **Duplicates.** Existing release posts already cover many features (Concorde, An-225, Plane Spotter, the shop). Guides add a how-to or story angle, never a repeat.
 
 ## Publishing mechanics
-`posts.json` stores a date, not a time. To publish at the scheduled time, prepare posts ahead on a branch or in a queue and push to `main` at the slot time (a scheduled task or a GitHub Actions cron run), then `tools/blog.py` rebuilds the pages. Set the `date` field to the publish day.
+`posts.json` stores a date, not a time, so posts are drafted ahead in `blog/queue/` with a `publish_at` time from `posting-schedule.md`. A scheduled task runs `python3 tools/publish_queue.py --push` at each time: it moves the post into `blog/src/` and `posts.json` (date = publish day), renders the social card, rebuilds the blog and pushes to `main`. See `docs/blog.md`.
+
+## Progress
+- Drafted and queued: days 1 to 7 (21 to 27 Oct 2026), each with an English and a Cantonese body, reusing existing in-game screenshots.
+- Next: days 8 to 14. Facts in every draft come from the README, `docs/` or the code; history posts still need a sourced fact check before they are drafted.

@@ -1,0 +1,32 @@
+<p>Fly Kai Tak is a flight simulator of the 1998 Runway 13 IGS approach into Hong Kong Kai Tak, and it runs in a web browser at flykaitak.com. There is nothing to download or install. This post explains what that means and how it is put together.</p>
+<div class="readouts" role="list">
+  <div class="readout" role="listitem"><b>0</b><span>Installs<i>runs in the browser</i></span></div>
+  <div class="readout" role="listitem"><b>1998</b><span>Year<i>Kai Tak as it was</i></span></div>
+  <div class="readout" role="listitem"><b>24,000</b><span>Buildings<i>real footprints</i></span></div>
+</div>
+
+<h2>One page, no build step</h2>
+<p>The sim is a single <code>index.html</code> using Three.js, with no build step. The map data is prepared ahead of time by scripts in the repository, and the page loads it when you start. Because the map data is fetched, you can serve the folder with any static web server to run your own copy.</p>
+<h2>Real Hong Kong as the map</h2>
+<p>The aerial imagery, coastline and about 24,000 building footprints come from the Hong Kong Lands Department's open data. The roads are the Transport Department's road network with every road built after 1998 taken out. Terrain comes from SRTM elevation data, with the building bumps filtered out.</p>
+<figure class="wide">
+  <img src="/assets/blog/shots/lion-rock-aerial.jpg" width="1600" height="900" loading="lazy" alt="Kai Tak's Runway 13 seen from above Kowloon Bay, with Kowloon climbing to a green ridge and Lion Rock at its centre.">
+  <figcaption>Runway 13 and the ridge behind Kowloon, built from open data.</figcaption>
+</figure>
+
+<h2>Made for a browser</h2>
+<ul>
+  <li><strong>Phone and desktop:</strong> there are touch, mouse and keyboard controls.</li>
+  <li><strong>English and Cantonese:</strong> the home screen and the blog both have an EN / 粵 button.</li>
+  <li><strong>High scores:</strong> kept in your browser, with an optional shared table.</li>
+  <li><strong>Share a landing:</strong> post a report card, or save a replay video as an MP4 made right in the browser.</li>
+</ul>
+<div class="callout">
+  <p><strong>Free and paid:</strong> the four airliners, all the modes and Plane Spotter are free. Concorde and the An-225 are US$7 each.</p>
+</div>
+<h2>Keep reading</h2>
+<ul>
+  <li><a href="/blog/real-hong-kong-1998-open-data/">Real Hong Kong, 1998, from open data</a></li>
+  <li><a href="/blog/flying-kai-tak-on-your-phone/">Flying Kai Tak on your phone</a></li>
+  <li><a href="/blog/blog-in-cantonese/">The blog in Cantonese</a></li>
+</ul>

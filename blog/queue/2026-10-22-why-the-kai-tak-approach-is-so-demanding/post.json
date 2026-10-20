@@ -1,0 +1,32 @@
+{
+ "publish_at": "2026-10-22T19:34:00+08:00",
+ "title": "Why the Kai Tak approach is so demanding",
+ "dek": "One straight leg, a 47-degree turn low over Kowloon City, hills on one side and a runway that ends in the bay.",
+ "description": "The IGS 13 approach at Kai Tak: start at 3,100 ft, fly to the checkerboard, make a 47° right turn at 650 ft and land on a runway that ends in the bay.",
+ "tag": "History",
+ "category": "flying",
+ "keywords": [
+  "Kai Tak approach",
+  "IGS 13",
+  "checkerboard turn",
+  "47 degree turn",
+  "Kowloon City",
+  "flight simulator"
+ ],
+ "hero": "checkerboard-turn-mid",
+ "hero_alt": "A 747 halfway through the checkerboard turn, with the orange-and-white checkerboard on the hill to the left.",
+ "hero_caption": "Halfway round the turn, with the checkerboard off the left wing.",
+ "card_kicker": "FLYING · HISTORY",
+ "card_title": "Why the approach is so demanding",
+ "card_sub": "IGS 13 and the 47° turn",
+ "card_image": "checkerboard-turn-mid",
+ "card_focus": 50,
+ "zh": {
+  "title": "點解啟德進場咁有挑戰性",
+  "dek": "一段直線、九龍城上空低飛 47° 轉彎、一邊係山、跑道盡頭係海灣。",
+  "description": "啟德 IGS 13 進場：3,100 呎開始，向棋盤飛，650 呎右轉 47°，降落喺盡頭係海灣嘅跑道。",
+  "hero_alt": "一架 747 轉到一半，橙白相間嘅棋盤喺左邊山上。",
+  "hero_caption": "轉到一半，棋盤喺左翼外面。"
+ },
+ "slug": "why-the-kai-tak-approach-is-so-demanding"
+}

@@ -38,7 +38,7 @@ PERSONA_OVERRIDE = {
 
 # (title, category, tag, keywords, existing posts to link, note)
 MON = [
-    ("Fly your first Kai Tak approach in 10 minutes", "flying", "Feature", "Kai Tak approach simulator, first landing, beginner", "landing-lesson-for-first-time-pilots, checkerboard-turn-igs-13-approach", "Start-to-landing walkthrough using the landing lesson"),
+    ("Fly your first Kai Tak approach with the Landing lesson", "flying", "Feature", "Kai Tak approach simulator, first landing, beginner", "landing-lesson-for-first-time-pilots, checkerboard-turn-igs-13-approach", "Start-to-landing walkthrough using the landing lesson"),
     ("Reading the IGS 13: heading 088 to the checkerboard", "flying", "Feature", "IGS 13 approach, heading 088, checkerboard", "checkerboard-turn-igs-13-approach, checkerboard-turn-wider-and-higher", "Where to be and when, from Tsing Yi at about 3,100 ft"),
     ("The 47-degree right turn over Kowloon City, step by step", "flying", "Feature", "47 degree turn, Kowloon City, checkerboard turn", "checkerboard-turn-tightens-at-the-end, kowloon-walled-city-rebuilt", "In at about 650 ft, out at about 140 ft"),
     ("Speed, flaps and Vref: flying the approach on speed", "flying", "Feature", "Vref, flap settings, approach speed", "landing-lesson-for-first-time-pilots, first-perfect-score-100", "Per-type numbers come from the flight models in the code"),
@@ -82,7 +82,7 @@ WED = [
     ("The sound of Kai Tak: engines, GPWS and the touchdown chirp", "aircraft", "Feature", "flight sim sound, GPWS, touchdown", "quiet-take-offs-no-false-too-low-calls, flight-board-flap-sound", "Listen-through post; include a short clip"),
 ]
 THU = [
-    ("Why Kai Tak was one of the hardest airports to land at", "flying", "History", "Kai Tak, hardest airport, checkerboard approach", "checkerboard-turn-igs-13-approach, lion-rock-and-kai-tak", "Opening explainer; source every claim"),
+    ("Why the Kai Tak approach is so demanding", "flying", "History", "Kai Tak approach, IGS 13, checkerboard approach", "checkerboard-turn-igs-13-approach, lion-rock-and-kai-tak", "Written from the sim and README facts; drafted"),
     ("The IGS approach explained: guiding a jet to the hill", "flying", "History", "IGS approach, instrument guidance system, Kai Tak", "checkerboard-turn-igs-13-approach, landing-lesson-for-first-time-pilots", "How the IGS 13 worked"),
     ("The checkerboard: how a hillside marker became an icon", "scenery", "History", "checkerboard, Kai Tak icon, 啟德", "checkerboard-turn-igs-13-approach, lion-rock-and-kai-tak", "Use period photos already researched for the build"),
     ("A runway into the harbour: Kai Tak's geography", "scenery", "History", "Kai Tak geography, Kowloon Bay, runway 13", "real-hong-kong-1998-open-data, runway-31-easterly-approach-lei-yue-mun", "Why the runway sits where it does"),
@@ -127,7 +127,7 @@ SAT = [
     ("Runway 31 spotting: easterly arrivals", "scenery", "Feature", "Runway 31, plane spotter, easterly", "runway-31-plane-spotter, runway-31-easterly-approach-lei-yue-mun", "The other direction of traffic"),
 ]
 SUN = [
-    ("Why build a Kai Tak simulator in the browser?", "site", "Behind the scenes", "Kai Tak simulator, browser game, Three.js", "latest-updates-on-the-home-screen, real-hong-kong-1998-open-data", "Founder story; short and personal"),
+    ("A Kai Tak simulator that runs in your browser", "site", "Behind the scenes", "Kai Tak simulator, browser game, Three.js", "real-hong-kong-1998-open-data, flying-kai-tak-on-your-phone", "Drafted from README facts; add a personal founder story only if the owner supplies one"),
     ("From open data to Three.js: how the map is built", "site", "Behind the scenes", "Three.js, open data, map building", "real-hong-kong-1998-open-data, real-1998-road-network", "The tools in tools/ and the steps"),
     ("Rebuilding the checkerboard from period photos", "scenery", "Behind the scenes", "checkerboard, period photos, 3D model", "checkerboard-turn-igs-13-approach, lion-rock-and-kai-tak", "Photo to model, with before and after"),
     ("How we test it: the autopilot in every weather preset", "site", "Behind the scenes", "testing, autopilot, flight sim development", "typhoons-fog-and-night-flying, first-perfect-score-100", "The no-input crash test and autoland test"),

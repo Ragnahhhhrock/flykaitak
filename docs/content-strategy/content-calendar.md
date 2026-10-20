@@ -9,16 +9,16 @@ Titles are working titles. Every article needs: screenshots (`tools/screenshot.p
 | # | Date | Pillar | Persona | Working title | Category | Tag | Angle |
 |---|---|---|---|---|---|---|---|
 | 1 | Wed 21 Oct | 3. Aircraft Hangar | Sim Sam | Six aircraft at Kai Tak: which one should you fly? | aircraft | Feature | Comparison table of the six types |
-| 2 | Thu 22 Oct | 4. The Kai Tak Story | History Harry | Why Kai Tak was one of the hardest airports to land at | flying | History | Opening explainer; source every claim |
+| 2 | Thu 22 Oct | 4. The Kai Tak Story | History Harry | Why the Kai Tak approach is so demanding | flying | History | Written from the sim and README facts; drafted |
 | 3 | Fri 23 Oct | 1. Fly the Approach | Casual Casey | How landings are scored: the road to 100 out of 100 | scores | Feature | Spell out the score bands from the code |
 | 4 | Sat 24 Oct | 2. Real Hong Kong 1998 | Casual Casey | Plane Spotter: watch Kai Tak from the car park roof | scenery | Feature | The no-pressure way into the sim |
-| 5 | Sun 25 Oct | 5. Behind the Build | Eddie | Why build a Kai Tak simulator in the browser? | site | Behind the scenes | Founder story; short and personal |
+| 5 | Sun 25 Oct | 5. Behind the Build | Eddie | A Kai Tak simulator that runs in your browser | site | Behind the scenes | Drafted from README facts; add a personal founder story only if the owner supplies one |
 
 ## Week 2 (week of 26 Oct 2026)
 
 | # | Date | Pillar | Persona | Working title | Category | Tag | Angle |
 |---|---|---|---|---|---|---|---|
-| 6 | Mon 26 Oct | 1. Fly the Approach | Sim Sam | Fly your first Kai Tak approach in 10 minutes | flying | Feature | Start-to-landing walkthrough using the landing lesson |
+| 6 | Mon 26 Oct | 1. Fly the Approach | Sim Sam | Fly your first Kai Tak approach with the Landing lesson | flying | Feature | Start-to-landing walkthrough using the landing lesson |
 | 7 | Tue 27 Oct | 2. Real Hong Kong 1998 | Wing | Kowloon City in 1998: the shop signs under the flight path | scenery | Feature | Photo story; Cantonese first |
 | 8 | Wed 28 Oct | 3. Aircraft Hangar | Sim Sam | The 747-400 flight deck: CRT glass, yokes and four thrust levers | aircraft | Feature | Flight deck tour |
 | 9 | Thu 29 Oct | 4. The Kai Tak Story | History Harry | The IGS approach explained: guiding a jet to the hill | flying | History | How the IGS 13 worked |

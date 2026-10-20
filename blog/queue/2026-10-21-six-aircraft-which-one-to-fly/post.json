@@ -1,0 +1,34 @@
+{
+ "publish_at": "2026-10-21T20:21:00+08:00",
+ "title": "Six aircraft at Kai Tak: which one should you fly?",
+ "dek": "Four free airliners, Concorde and the An-225: their approach speeds, flight decks and how they differ.",
+ "description": "Fly Kai Tak has six aircraft: 747-400, 777-200, A330-300, A340-300, Concorde and An-225. Compare approach speeds, flight decks and which to fly first.",
+ "tag": "Feature",
+ "category": "aircraft",
+ "keywords": [
+  "Kai Tak aircraft",
+  "747-400",
+  "777-200",
+  "A330-300",
+  "A340-300",
+  "Concorde",
+  "An-225",
+  "flight simulator"
+ ],
+ "hero": "models-747-winglet",
+ "hero_alt": "The left wing of a 747-400 with its winglet, two engines and the tail fin, over a bay and green hills.",
+ "hero_caption": "The 747-400, the aircraft the sim starts you in.",
+ "card_kicker": "AIRCRAFT · GUIDE",
+ "card_title": "Six aircraft at Kai Tak",
+ "card_sub": "Which one should you fly?",
+ "card_image": "models-747-winglet",
+ "card_focus": 50,
+ "zh": {
+  "title": "啟德嘅六款飛機：你應該揀邊款？",
+  "dek": "四款免費客機、協和式同 An-225：進場速度、駕駛艙同分別。",
+  "description": "Fly Kai Tak 有六款飛機：747-400、777-200、A330-300、A340-300、協和式同 An-225。比較進場速度同駕駛艙，睇吓應該揀邊款。",
+  "hero_alt": "波音 747-400 嘅左翼，連翼尖小翼、兩部引擎同垂直尾翼，下面係海灣同青綠色山嶺。",
+  "hero_caption": "波音 747-400，模擬器預設用嘅飛機。"
+ },
+ "slug": "six-aircraft-which-one-to-fly"
+}
