@@ -419,7 +419,11 @@ async function tts(req, env, json, cors) {
     headers: { 'xi-api-key': env.ELEVENLABS_API_KEY, 'content-type': 'application/json', accept: 'audio/mpeg' },
     body: JSON.stringify({ text, model_id: env.ELEVENLABS_MODEL || 'eleven_turbo_v2_5', voice_settings: { stability: 0.55, similarity_boost: 0.75, speed: role === 'OTH' ? 1.1 : 1.05 } }),
   });
-  if (!r.ok) return json({ error: 'voice service error' }, 502);
+  if (!r.ok) {
+    const detail = (await r.text().catch(() => '')).slice(0, 300);
+    console.log('tts upstream', r.status, detail);
+    return json({ error: 'voice service error', upstream: r.status, detail }, 502);
+  }
   const audio = await r.arrayBuffer();
   await env.TTS.put(key, audio, { httpMetadata: { contentType: 'audio/mpeg' } });
   await env.DB.prepare('INSERT INTO tts_gen (who, ts) VALUES (?1,?2)').bind(who, Date.now()).run();
