@@ -20,10 +20,10 @@ binding = "TTS"
 bucket_name = "flykaitak-radio"
 
 [vars]
-ELEVENLABS_VOICE_APP = "REPLACE_WITH_VOICE_ID"   # Hong Kong Approach
-ELEVENLABS_VOICE_TWR = "REPLACE_WITH_VOICE_ID"   # Kai Tak Tower
-ELEVENLABS_VOICE_YOU = "REPLACE_WITH_VOICE_ID"   # your readbacks
-ELEVENLABS_VOICE_OTH = "REPLACE_WITH_VOICE_ID"   # other crews
+ELEVENLABS_VOICE_APP = "onwK4e9ZLuTAKqWW03F9"   # Hong Kong Approach: Daniel, steady broadcaster
+ELEVENLABS_VOICE_TWR = "pqHfZKP75CvOlQylNhV4"   # Kai Tak Tower: Bill, wise and mature
+ELEVENLABS_VOICE_YOU = "iP95p4xoKVk53GoZ742B"   # your readbacks: Chris, down-to-earth
+ELEVENLABS_VOICE_OTH = "IKne3meq5aSn9XLyUdCD"   # other crews: Charlie, deep and energetic
 
 # Optional: serve the share pages from your own domain instead of workers.dev (DNS is on Cloudflare).
 # Uncomment the PUBLIC_BASE line under [vars] above and the routes line near the top, then run npx wrangler deploy again.

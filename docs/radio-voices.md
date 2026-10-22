@@ -5,7 +5,7 @@ The radio lines (Approach 119.1, Tower 118.7, your readbacks, other crews) can b
 ## Switch it on
 1. Create the bucket: `npx wrangler r2 bucket create flykaitak-radio`
 2. Apply the new table: `npx wrangler d1 execute flykaitak-scores --remote --command "CREATE TABLE IF NOT EXISTS tts_gen (who TEXT NOT NULL, ts INTEGER NOT NULL); CREATE INDEX IF NOT EXISTS tts_gen_who_ts ON tts_gen (who, ts);"`
-3. In ElevenLabs pick four voices and put their voice IDs in `server/wrangler.toml` under `[vars]` (`ELEVENLABS_VOICE_APP`, `_TWR`, `_YOU`, `_OTH`).
+3. Voices are set in `server/wrangler.toml` under `[vars]` (`ELEVENLABS_VOICE_APP`, `_TWR`, `_YOU`, `_OTH`): Daniel, Bill, Chris and Charlie from the ElevenLabs default voices. Change the IDs to use other voices.
 4. Store the API key as a secret: `npx wrangler secret put ELEVENLABS_API_KEY`
 5. `npx wrangler deploy` from `server/`.
 
