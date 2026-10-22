@@ -1,5 +1,36 @@
 [
   {
+    "slug": "meet-the-voices-on-the-radio",
+    "title": "Meet the voices on the radio",
+    "dek": "Approach, Tower, you and other crews each have their own voice. Here is who speaks, and when, on an approach.",
+    "description": "Who you hear on the Kai Tak radio: Hong Kong Approach 119.1, Kai Tak Tower 118.7, your readbacks and other crews, and when each speaks.",
+    "tag": "Update",
+    "category": "controls",
+    "keywords": [
+      "ATC radio",
+      "Hong Kong Approach",
+      "Kai Tak Tower",
+      "radio calls",
+      "flight simulator voices"
+    ],
+    "hero": "radio-voices-tower",
+    "hero_alt": "A 747 low over Kowloon City on the approach, with the Hong Kong Approach clearance shown as a caption on the left.",
+    "hero_caption": "The caption on the left shows each call while its voice speaks it.",
+    "card_kicker": "CONTROLS · UPDATE",
+    "card_title": "Meet the voices on the radio",
+    "card_sub": "Who speaks, and when",
+    "card_image": "radio-voices-tower",
+    "card_focus": 50,
+    "zh": {
+      "title": "認識無線電入面嘅聲音",
+      "dek": "進近管制、塔台、你同其他機組各有自己嘅聲音。呢度講下進場時邊個、幾時講嘢。",
+      "description": "啟德無線電入面你會聽到邊個：香港進近管制 119.1、啟德塔台 118.7、你嘅覆誦同其他機組，同埋佢哋幾時講嘢。",
+      "hero_alt": "一架 747 喺九龍城上空低飛進場，左邊以字幕顯示香港進近管制嘅許可。",
+      "hero_caption": "每句通話讀出嘅同時，左邊會顯示字幕。"
+    },
+    "date": "2026-10-22"
+  },
+  {
     "slug": "radio-voices-elevenlabs",
     "title": "ATC radio gets studio voices",
     "dek": "Approach, Tower, your readbacks and other crews each speak with their own ElevenLabs voice, through a radio filter.",
