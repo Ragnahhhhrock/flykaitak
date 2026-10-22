@@ -10,6 +10,7 @@
 //   POST /store/redeem {code}      -> {ok,key}  a free giveaway code (FKT-XXXX-XXXX), or a licence key typed in on a new device
 //   POST /store/check {key,product}-> {ok}      is this licence key valid (not revoked)
 //   /admin/*  (Authorization: Bearer ADMIN_TOKEN)  make and list giveaway codes, revoke a licence, sales counts. See docs/concorde.md
+//   POST /tts {role,text} -> audio/mpeg  an ATC radio line voiced by ElevenLabs (role APP, TWR, YOU or OTH). Needs the ELEVENLABS_API_KEY secret; lines are cached in R2 so each one is only generated once. 503 = not set up, the sim falls back to the browser voice. See docs/radio-voices.md
 //   GET  /r/<id>  -> the share page for one replay (video, report card, Open Graph tags so a posted link shows the video)
 //   GET  /v/<id>.mp4, /p/<id>.jpg, /c/<id>.png -> the video (with HTTP ranges), its poster frame, the report card image
 const ORIGINS = ['https://flykaitak.com', 'https://www.flykaitak.com'];
@@ -37,6 +38,7 @@ export default {
 
     if (url.pathname === '/stats' && req.method === 'GET') return stats(env, json);
     if (url.pathname.startsWith('/store/') || url.pathname.startsWith('/admin/')) return store(req, env, url, json);
+    if (url.pathname === '/tts' && req.method === 'POST') return tts(req, env, json, cors);
     if (url.pathname === '/replays') {
       if (req.method === 'GET') return json(env.REPLAYS ? { ok: true, max: MAX_VIDEO } : { ok: false });
       if (req.method === 'POST') return replayUpload(req, env, json);
@@ -391,3 +393,35 @@ video{display:block;width:100%;height:auto;background:#000;border:1px solid var(
 .share a,.share button{font:inherit;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--text);background:var(--ink);border:1px solid var(--line-2);border-radius:3px;padding:9px 12px;text-decoration:none;cursor:pointer}
 .share a:hover,.share button:hover{border-color:var(--paper)}a:focus-visible,button:focus-visible{outline:2px solid var(--checker);outline-offset:2px}
 .foot{text-align:center;color:var(--muted);font-size:12px;margin-top:16px}.foot a{color:var(--checker);text-decoration:none}`;
+
+
+// ATC radio voices (ElevenLabs). The API key stays here as a Worker secret and never reaches the browser.
+const TTS_ROLES = new Set(['APP', 'TWR', 'YOU', 'OTH']);
+const TTS_HOURLY = 60;   // new (uncached) lines one visitor can ask for per hour; cached lines are free
+async function tts(req, env, json, cors) {
+  const origin = req.headers.get('Origin') || '';
+  if (!ORIGINS.includes(origin) && !/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return json({ error: 'forbidden' }, 403);
+  if (!env.ELEVENLABS_API_KEY || !env.TTS) return json({ error: 'radio voices are not switched on' }, 503);
+  let b; try { b = await req.json(); } catch { return json({ error: 'bad request' }, 400); }
+  const role = String(b.role || ''), text = String(b.text || '').replace(/\s+/g, ' ').trim();
+  if (!TTS_ROLES.has(role) || text.length < 2 || text.length > 400) return json({ error: 'bad request' }, 400);
+  const voice = env['ELEVENLABS_VOICE_' + role];
+  if (!voice) return json({ error: 'no voice set for ' + role }, 503);
+  const key = 'tts/' + role + '-' + (await sha(voice + '|' + text)).slice(0, 40) + '.mp3';
+  const hit = await env.TTS.get(key);
+  const out = { 'content-type': 'audio/mpeg', 'cache-control': 'public, max-age=31536000, immutable', ...cors };
+  if (hit) return new Response(hit.body, { headers: out });
+  const who = await sha((req.headers.get('cf-connecting-ip') || '') + (env.SALT || 'fkt-replays'));
+  const n = await env.DB.prepare('SELECT COUNT(*) n FROM tts_gen WHERE who = ?1 AND ts > ?2').bind(who, Date.now() - 3600e3).first();
+  if (n && n.n >= TTS_HOURLY) return json({ error: 'slow down' }, 429);
+  const r = await fetch('https://api.elevenlabs.io/v1/text-to-speech/' + encodeURIComponent(voice) + '?output_format=mp3_44100_64', {
+    method: 'POST',
+    headers: { 'xi-api-key': env.ELEVENLABS_API_KEY, 'content-type': 'application/json', accept: 'audio/mpeg' },
+    body: JSON.stringify({ text, model_id: env.ELEVENLABS_MODEL || 'eleven_turbo_v2_5', voice_settings: { stability: 0.55, similarity_boost: 0.75, speed: role === 'OTH' ? 1.1 : 1.05 } }),
+  });
+  if (!r.ok) return json({ error: 'voice service error' }, 502);
+  const audio = await r.arrayBuffer();
+  await env.TTS.put(key, audio, { httpMetadata: { contentType: 'audio/mpeg' } });
+  await env.DB.prepare('INSERT INTO tts_gen (who, ts) VALUES (?1,?2)').bind(who, Date.now()).run();
+  return new Response(audio, { headers: out });
+}

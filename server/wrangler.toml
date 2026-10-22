@@ -13,7 +13,18 @@ database_id = "REPLACE_WITH_ID_FROM_wrangler_d1_create"
 binding = "REPLAYS"
 bucket_name = "flykaitak-replays"
 
+# ATC radio voices (see docs/radio-voices.md): generated lines are cached in this R2 bucket.
+# Secret: npx wrangler secret put ELEVENLABS_API_KEY
+[[r2_buckets]]
+binding = "TTS"
+bucket_name = "flykaitak-radio"
+
+[vars]
+ELEVENLABS_VOICE_APP = "REPLACE_WITH_VOICE_ID"   # Hong Kong Approach
+ELEVENLABS_VOICE_TWR = "REPLACE_WITH_VOICE_ID"   # Kai Tak Tower
+ELEVENLABS_VOICE_YOU = "REPLACE_WITH_VOICE_ID"   # your readbacks
+ELEVENLABS_VOICE_OTH = "REPLACE_WITH_VOICE_ID"   # other crews
+
 # Optional: serve the share pages from your own domain instead of workers.dev (DNS is on Cloudflare).
-# Uncomment both [vars] lines here and the routes line near the top, then run npx wrangler deploy again.
-# [vars]
+# Uncomment the PUBLIC_BASE line under [vars] above and the routes line near the top, then run npx wrangler deploy again.
 # PUBLIC_BASE = "https://replay.flykaitak.com"

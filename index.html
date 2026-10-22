@@ -637,7 +637,7 @@ body.bigmap #radio{top:calc(env(safe-area-inset-top,0px) + 396px)}
       <section class="homeblog" id="homeBlog" aria-labelledby="homeBlogH">
         <h3 id="homeBlogH"><span class="l-en">Latest update</span><span class="l-zh" lang="zh-HK">最新消息</span></h3>
         <ul>
-          <li><a href="/blog/why-the-kai-tak-approach-is-so-demanding/" class="hb-top"><span class="hb-thumb"><img src="/assets/blog/og/why-the-kai-tak-approach-is-so-demanding.jpg" width="1200" height="630" loading="lazy" alt=""></span><span class="hb-txt"><span class="hb-meta"><time datetime="2026-10-22"><span class="l-en">22 Oct</span><span class="l-zh" lang="zh-HK">10月22日</span></time> &middot; <span class="l-en">Flying &amp; Procedures</span><span class="l-zh" lang="zh-HK">飛行同程序</span></span><b><span class="l-en">Why the Kai Tak approach is so demanding</span><span class="l-zh" lang="zh-HK">點解啟德進場咁有挑戰性</span></b></span></a></li>
+          <li><a href="/blog/radio-voices-elevenlabs/" class="hb-top"><span class="hb-thumb"><img src="/assets/blog/og/radio-voices-elevenlabs.jpg" width="1200" height="630" loading="lazy" alt=""></span><span class="hb-txt"><span class="hb-meta"><time datetime="2026-10-22"><span class="l-en">22 Oct</span><span class="l-zh" lang="zh-HK">10月22日</span></time> &middot; <span class="l-en">Controls &amp; Devices</span><span class="l-zh" lang="zh-HK">操控同裝置</span></span><b><span class="l-en">ATC radio gets studio voices</span><span class="l-zh" lang="zh-HK">無線電換上錄音室級聲音</span></b></span></a></li>
         </ul>
         <a class="hb-all" href="/blog/"><span class="l-en">All updates on the blog</span><span class="l-zh" lang="zh-HK">網誌睇晒所有更新</span> <span aria-hidden="true">&rarr;</span></a>
       </section>
@@ -5435,7 +5435,7 @@ function hsCommitName(){if(!HS_ENTRY)return;const el=document.getElementById('hs
 const sfx=(()=>{
   let ctx,master,eng,engF,whine,whineG,wind,windF,rainG,revG,revF,sqG,sqLfo,hydG,hydO,flapG,flapO,rumG,rumF,abG,abF;
   function buf(brown){const b=ctx.createBuffer(1,ctx.sampleRate*2,ctx.sampleRate);const d=b.getChannelData(0);let l=0;for(let i=0;i<d.length;i++){const w=Math.random()*2-1;if(brown){l=(l+.02*w)/1.02;d[i]=l*3.5+w*.05}else d[i]=w}return b}
-  let BROWN,WHITE,duckK=1;
+  let BROWN,WHITE,duckK=1,vox=null;
   function src(b){const s=ctx.createBufferSource();s.buffer=b;s.loop=true;s.start();return s}
   function chain(s,...nodes){let n=s;for(const x of nodes){n.connect(x);n=x}n.connect(master);return nodes[nodes.length-1]}
   const filt=(type,f,q)=>{const x=ctx.createBiquadFilter();x.type=type;x.frequency.value=f;if(q)x.Q.value=q;return x};
@@ -5476,6 +5476,13 @@ const sfx=(()=>{
     stopAll(){if(!ctx)return;const t=ctx.currentTime;for(const g of[eng,whineG,wind,revG,sqG,hydG,flapG,rumG,abG])g.gain.setTargetAtTime(0,t,.2);hydG.hiss.gain.setTargetAtTime(0,t,.2)},
     burst(len,freq,g0,delay=0,type='lowpass',q){if(!ctx)return;const s=ctx.createBufferSource();s.buffer=WHITE;const f=filt(type,freq,q);const g=gain();const t=ctx.currentTime+delay;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(g0,t+.012);g.gain.exponentialRampToValueAtTime(.001,t+len);s.connect(f);f.connect(g);g.connect(master);s.start(t);s.stop(t+len+.1)},
     squelch(){this.burst(.07,3400,.09,0,'bandpass',1.4);this.burst(.05,1900,.05,.02,'bandpass',2)},
+    // ATC voice lines from the voice service: decoded once, played through a narrow radio band with a little static under the words
+    decode(ab){return new Promise((ok,no)=>{if(!ctx)return no();try{const r=ctx.decodeAudioData(ab,ok,no);if(r&&r.then)r.then(ok,no)}catch(e){no(e)}})},
+    voice(b,k){if(!ctx)return 0;this.voiceStop();const s=ctx.createBufferSource();s.buffer=b;const hp=filt('highpass',320),lp=filt('lowpass',3100),g=gain(1.15*k);s.connect(hp);hp.connect(lp);lp.connect(g);g.connect(master);
+      const n=ctx.createBufferSource();n.buffer=WHITE;n.loop=true;const nf=filt('bandpass',2400,.8),ng=gain(.012);n.connect(nf);nf.connect(ng);ng.connect(master);
+      s.onended=()=>{try{n.stop()}catch(e){}};s.start();n.start();vox={s,n};return b.duration},
+    voiceStop(){if(vox){try{vox.s.stop()}catch(e){}try{vox.n.stop()}catch(e){}vox=null}},
+    ready(){return !!ctx},
     thump(k){this.burst(.6,140,.9*k);this.burst(.25,420,.35*k)},
     screech(k){this.burst(.55,1500,.32*k,.02,'bandpass',4);this.burst(.4,2300,.18*k,.06,'bandpass',5)},
     clunk(){this.burst(.18,260,.5);this.burst(.08,900,.15,.01)},
@@ -5510,18 +5517,27 @@ function spokenize(t){return t.replace(/\d+(?:\.\d+)?/g,m=>m.split('').map(c=>c=
 function windText(){const w=WX[CFG.wx];if(w.ws<4)return 'wind variable at '+Math.max(1,Math.round(w.ws))+' knots';
   return 'wind '+String(Math.round(wxDir()/10)%36*10).padStart(3,'0')+' at '+Math.round(w.ws)+' knots'+(w.gust>=4?' gusting '+Math.round(w.ws+w.gust*.9):'')}
 function visText(){const w=WX[CFG.wx];return w.vis<5000?', visibility '+(Math.round(w.vis/100)*100)+' metres':''}
-function radioClear(){RAD.q.length=0;RAD.cur=null;RAD.gap=0;for(const l of RAD.lines)l.el.remove();RAD.lines.length=0;const el=document.getElementById('radio');if(el)el.hidden=true}
+function radioClear(){sfx.voiceStop();RAD.q.length=0;RAD.cur=null;RAD.gap=0;for(const l of RAD.lines)l.el.remove();RAD.lines.length=0;const el=document.getElementById('radio');if(el)el.hidden=true}
 function radioReset(){radioClear();RAD.flags={};RAD.next=28;RAD.lastChk=-99;RAD.nChk=0;RAD.call='Harbour '+(100+Math.floor(Math.random()*890))}
 function radioSay(who,text){
   if(!CFG.radio||mode!=='fly')return;
   if(RAD.q.length>=6){const i=RAD.q.findIndex(m=>m.who==='OTH');RAD.q.splice(i>=0?i:0,1)}
-  RAD.q.push({who,text});
+  const m={who,text,a:{s:'none'}};radioFetch(m);RAD.q.push(m);
+}
+// ElevenLabs voices through the Worker's /tts route (server/worker.js). Any failure, or no key set up, falls back to the browser voice.
+function radioFetch(m){
+  if(RAD.tts===false||!CFG.sound||CFG.tour||!sfx.ready()||typeof FKT_API==='undefined'||!FKT_API)return;
+  m.a.s='load';
+  fetch(FKT_API+'/tts',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({role:m.who,text:spokenize(m.text)})})
+    .then(r=>{if(r.status===503){RAD.tts=false;throw 0}if(!r.ok)throw 0;return r.arrayBuffer()})
+    .then(ab=>sfx.decode(ab)).then(b=>{m.a.s='ok';m.a.b=b}).catch(()=>{m.a.s='fail'});
 }
 function radioShow(m){
   const el=document.getElementById('radio');el.hidden=false;
   if(mode==='fly')REC.r.push({t:ST.t,who:m.who,text:m.text,d:m.t});
   const d=document.createElement('div');d.className='rl '+m.who;const b=document.createElement('b');b.textContent=RV[m.who].l;d.append(b,document.createTextNode(m.text));el.appendChild(d);
   RAD.lines.push({el:d,t:14});while(RAD.lines.length>4)RAD.lines.shift().el.remove();
+  if(m.a&&m.a.s==='ok'&&CFG.sound&&!CFG.tour){m.t=sfx.voice(m.a.b,RV[m.who].v/.9)+.3;return}
   if(synth&&CFG.sound&&!CFG.tour){try{const u=new SpeechSynthesisUtterance(spokenize(m.text));const v=RV[m.who];if(voice)u.voice=voice;u.rate=v.r;u.pitch=v.p;u.volume=v.v;synth.speak(u)}catch(e){}}
 }
 function radioPump(dt){
@@ -5529,7 +5545,9 @@ function radioPump(dt){
   if(!RAD.lines.length&&!RAD.cur)document.getElementById('radio').hidden=true;
   if(RAD.cur){RAD.cur.t-=dt;if(RAD.cur.t<=0){RAD.cur=null;RAD.gap=.5+Math.random()*.6;if(CFG.sound&&!CFG.tour)sfx.squelch()}}
   else if(RAD.gap>0)RAD.gap-=dt;
-  if(!RAD.cur&&RAD.gap<=0&&RAD.q.length){const m=RAD.q.shift();m.t=Math.max(2,spokenize(m.text).length*.056)+.3;RAD.cur=m;if(CFG.sound&&!CFG.tour)sfx.squelch();radioShow(m)}
+  if(!RAD.cur&&RAD.gap<=0&&RAD.q.length){
+    const h=RAD.q[0];if(h.a&&h.a.s==='load'&&(h.w=(h.w||0)+dt)<2.5)return;   // give the voice up to 2.5 s to arrive
+    const m=RAD.q.shift();m.t=Math.max(2,spokenize(m.text).length*.056)+.3;RAD.cur=m;if(CFG.sound&&!CFG.tour)sfx.squelch();radioShow(m)}
 }
 // Random crew chatter is only for Approach. Every runway clearance, to the AI traffic or to the player, comes from runway control (rcTower and atcUpdate)
 function chatter(freq){
@@ -5588,7 +5606,7 @@ function atcUpdate(dt){
     const busy=RAD.q.length||RAD.cur||s.warn||(CFG.game==='approach'&&!s.onGround&&s.ra/FT<700&&PATH.pts[s.pi].d<PATH.turnD+1800);
     if(!busy)chatter(freq)}
 }
-function toggleRadio(){CFG.radio=!CFG.radio;if(!CFG.radio){radioClear();if(synth)synth.cancel()}tog('radio',CFG.radio?'on':'off');syncButtons()}
+function toggleRadio(){CFG.radio=!CFG.radio;if(!CFG.radio){radioClear();sfx.voiceStop();if(synth)synth.cancel()}tog('radio',CFG.radio?'on':'off');syncButtons()}
 
 /* =====================================================================
    EXPLOSION
