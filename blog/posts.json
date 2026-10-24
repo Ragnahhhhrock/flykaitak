@@ -1,5 +1,36 @@
 [
  {
+  "slug": "a-kai-tak-simulator-in-your-browser",
+  "title": "A Kai Tak simulator that runs in your browser",
+  "dek": "No download: one page, real Hong Kong open data and the 1998 Runway 13 approach.",
+  "description": "Fly Kai Tak runs in a web browser with nothing to install. How the simulator is put together: one page, Three.js and Hong Kong open data.",
+  "tag": "Behind the scenes",
+  "category": "site",
+  "keywords": [
+   "Kai Tak simulator",
+   "browser flight simulator",
+   "Three.js",
+   "Hong Kong open data",
+   "Fly Kai Tak"
+  ],
+  "hero": "lion-rock-aerial",
+  "hero_alt": "Kai Tak's Runway 13 seen from above Kowloon Bay, with Kowloon climbing to a green ridge and Lion Rock at its centre.",
+  "hero_caption": "Runway 13 and the ridge behind Kowloon, built from open data.",
+  "card_kicker": "SITE · BEHIND THE SCENES",
+  "card_title": "A Kai Tak simulator in your browser",
+  "card_sub": "Nothing to install",
+  "card_image": "lion-rock-aerial",
+  "card_focus": 50,
+  "zh": {
+   "title": "喺瀏覽器入面玩嘅啟德模擬器",
+   "dek": "唔使下載：一個頁面、真實嘅香港開放數據，同 1998 年 13 跑道進場。",
+   "description": "Fly Kai Tak 喺瀏覽器入面就玩到，唔使安裝。睇吓呢個模擬器點樣砌成：一個頁面、Three.js 同香港開放數據。",
+   "hero_alt": "喺九龍灣上空望啟德 13 跑道，九龍升上青綠色山脊，獅子山喺正中。",
+   "hero_caption": "13 跑道同九龍後面嘅山脊，用開放數據砌成。"
+  },
+  "date": "2026-10-25"
+ },
+ {
   "slug": "plane-spotter-from-the-car-park-roof",
   "title": "Plane Spotter: watch Kai Tak from the car park roof",
   "dek": "No flying needed: pick a viewpoint, watch the traffic and use the sim clock to see the whole day.",
