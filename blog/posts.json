@@ -1,5 +1,36 @@
 [
  {
+  "slug": "plane-spotter-from-the-car-park-roof",
+  "title": "Plane Spotter: watch Kai Tak from the car park roof",
+  "dek": "No flying needed: pick a viewpoint, watch the traffic and use the sim clock to see the whole day.",
+  "description": "Plane Spotter in Fly Kai Tak: watch arrivals, departures and pushbacks from the car park roof, with zoom, time controls, a live map and the flight board.",
+  "tag": "Feature",
+  "category": "scenery",
+  "keywords": [
+   "plane spotter",
+   "Kai Tak car park",
+   "spotter view",
+   "Hong Kong 1998",
+   "flight simulator"
+  ],
+  "hero": "carpark-spotter-view",
+  "hero_alt": "The view from the car park roof rail: the terminal roof below, the apron and the runway beyond, and Hong Kong Island across the harbour.",
+  "hero_caption": "From the car park roof: over the terminal to the apron, the runway and the harbour.",
+  "card_kicker": "SCENERY · GUIDE",
+  "card_title": "Plane Spotter",
+  "card_sub": "From the car park roof",
+  "card_image": "carpark-spotter-view",
+  "card_focus": 50,
+  "zh": {
+   "title": "飛機迷模式：喺停車場天台睇啟德",
+   "dek": "唔使駕駛：揀個觀景點，睇住飛機嚟嚟去去，再用模擬器時鐘睇齊成日。",
+   "description": "Fly Kai Tak 嘅飛機迷模式：喺停車場天台睇飛機升降同推機，有放大、時間控制、即時地圖同航班資訊板。",
+   "hero_alt": "喺停車場天台欄杆望出去：下面係客運大樓屋頂，遠處係停機坪同跑道，海港對面係香港島。",
+   "hero_caption": "喺停車場天台：越過客運大樓望向停機坪、跑道同海港。"
+  },
+  "date": "2026-10-24"
+ },
+ {
   "slug": "how-landings-are-scored",
   "title": "How landings are scored: the road to 100 out of 100",
   "dek": "Eleven parts, each with a tight window for full marks, and the ranks they add up to.",
