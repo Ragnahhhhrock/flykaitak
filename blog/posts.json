@@ -1,5 +1,36 @@
 [
  {
+  "slug": "fly-your-first-approach-with-the-landing-lesson",
+  "title": "Fly your first Kai Tak approach with the Landing lesson",
+  "dek": "Nine coached steps from gear down to a full stop, with guide hoops and live meters.",
+  "description": "Land at Kai Tak for the first time with the Landing lesson: nine coached steps on the IGS 13 approach, from gear down to braking to a stop.",
+  "tag": "Feature",
+  "category": "flying",
+  "keywords": [
+   "Kai Tak landing lesson",
+   "first landing",
+   "IGS 13 approach",
+   "beginner flight sim",
+   "guide hoops"
+  ],
+  "hero": "landing-lesson-turn",
+  "hero_alt": "The lesson panel at step 6, Turn right over the checkerboard, with a meter counting down the turn still to go, and the checkerboard on the hill beside the jet.",
+  "hero_caption": "Step 6: the turn meter counts down to a runway-aligned heading.",
+  "card_kicker": "FLYING · GUIDE",
+  "card_title": "Your first Kai Tak approach",
+  "card_sub": "With the Landing lesson",
+  "card_image": "landing-lesson-turn",
+  "card_focus": 50,
+  "zh": {
+   "title": "用降落課程飛你第一次啟德進場",
+   "dek": "九個教練步驟，由放起落架到完全停定，有導引圈同即時儀表。",
+   "description": "用降落課程第一次喺啟德降落：IGS 13 進場嘅九個教練步驟，由放起落架到剎車停定。",
+   "hero_alt": "課程面板第 6 步「喺棋盤右轉」，有倒數餘下轉彎角度嘅儀表，棋盤喺飛機旁邊嘅山上。",
+   "hero_caption": "第 6 步：轉彎儀表倒數到同跑道對正嘅航向。"
+  },
+  "date": "2026-10-26"
+ },
+ {
   "slug": "a-kai-tak-simulator-in-your-browser",
   "title": "A Kai Tak simulator that runs in your browser",
   "dek": "No download: one page, real Hong Kong open data and the 1998 Runway 13 approach.",
