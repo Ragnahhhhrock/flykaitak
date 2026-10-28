@@ -1,5 +1,35 @@
 [
  {
+  "slug": "747-upper-deck-windows-match-the-cabin",
+  "title": "747-400 upper-deck windows now match the cabin windows",
+  "dek": "The upper-deck windows are the same size as the main-deck passenger windows.",
+  "description": "The 747-400's upper-deck windows in Fly Kai Tak are now the same size as the main-deck passenger windows.",
+  "tag": "Update",
+  "category": "aircraft",
+  "keywords": [
+   "747-400",
+   "upper deck",
+   "windows",
+   "Fly Kai Tak"
+  ],
+  "hero": "747-windows-after",
+  "hero_alt": "A 747-400 with upper-deck windows the same size as the main-deck windows.",
+  "hero_caption": "Both decks now use the same window size.",
+  "card_kicker": "AIRCRAFT · 747-400",
+  "card_title": "747 upper-deck windows",
+  "card_sub": "Now the same size as the cabin windows",
+  "card_image": "747-windows-after",
+  "card_focus": 50,
+  "zh": {
+   "title": "747-400 上層嘅窗而家同客艙窗一樣大",
+   "dek": "上層嘅窗同下層乘客窗大細一致。",
+   "description": "Fly Kai Tak 嘅 747-400 上層嘅窗，而家同下層乘客窗一樣大。",
+   "hero_alt": "747-400，上層嘅窗同下層嘅窗一樣大。",
+   "hero_caption": "兩層而家用同一個窗嘅大細。"
+  },
+  "date": "2026-10-28"
+ },
+ {
   "slug": "kowloon-city-shop-signs-under-the-flight-path",
   "title": "Kowloon City in 1998: the shop signs under the flight path",
   "dek": "Period shop signs, rooftop aerials and scaffolding, and a jet passing just overhead.",
