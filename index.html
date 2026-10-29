@@ -464,6 +464,11 @@ summary{cursor:pointer;font-size:12px;letter-spacing:.14em;text-transform:upperc
 
 #loading{position:fixed;inset:0;display:grid;place-items:center;background:var(--ink);font-family:var(--f-num);font-size:12px;letter-spacing:.2em;color:var(--muted)}
 #loading[hidden]{display:none!important}
+#ldBox{width:min(320px,78vw);text-align:center}
+#ldBar{height:4px;margin:16px 0 10px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden}
+#ldBar i{display:block;height:100%;width:0;background:var(--jade-bright);box-shadow:0 0 10px var(--jade-bright);border-radius:2px;transition:width .25s ease-out}
+#ldPct{font-size:11px;color:var(--phosphor)}
+@media (prefers-reduced-motion:reduce){#ldBar i{transition:none}}
 
 @media (max-width:820px){
   #setup{grid-template-columns:minmax(0,1fr);background:rgba(10,17,21,.55)}
@@ -637,7 +642,7 @@ body.bigmap #radio{top:calc(env(safe-area-inset-top,0px) + 396px)}
       <section class="homeblog" id="homeBlog" aria-labelledby="homeBlogH">
         <h3 id="homeBlogH"><span class="l-en">Latest update</span><span class="l-zh" lang="zh-HK">最新消息</span></h3>
         <ul>
-          <li><a href="/blog/radio-voices-prerecorded/" class="hb-top"><span class="hb-thumb"><img src="/assets/blog/og/radio-voices-prerecorded.jpg" width="1200" height="630" loading="lazy" alt=""></span><span class="hb-txt"><span class="hb-meta"><time datetime="2026-10-29"><span class="l-en">29 Oct</span><span class="l-zh" lang="zh-HK">10月29日</span></time> &middot; <span class="l-en">Controls &amp; Devices</span><span class="l-zh" lang="zh-HK">操控同裝置</span></span><b><span class="l-en">ATC voices are now pre-recorded</span><span class="l-zh" lang="zh-HK">ATC 聲音改為預先錄好</span></b></span></a></li>
+          <li><a href="/blog/loading-progress-bar/" class="hb-top"><span class="hb-thumb"><img src="/assets/blog/og/loading-progress-bar.jpg" width="1200" height="630" loading="lazy" alt=""></span><span class="hb-txt"><span class="hb-meta"><time datetime="2026-10-30"><span class="l-en">30 Oct</span><span class="l-zh" lang="zh-HK">10月30日</span></time> &middot; <span class="l-en">Site &amp; Language</span><span class="l-zh" lang="zh-HK">網站同語言</span></span><b><span class="l-en">A progress bar while the sim loads</span><span class="l-zh" lang="zh-HK">載入時有進度條</span></b></span></a></li>
         </ul>
         <a class="hb-all" href="/blog/"><span class="l-en">All updates on the blog</span><span class="l-zh" lang="zh-HK">網誌睇晒所有更新</span> <span aria-hidden="true">&rarr;</span></a>
       </section>
@@ -880,7 +885,7 @@ body.bigmap #radio{top:calc(env(safe-area-inset-top,0px) + 396px)}
   </div>
 </div>
 
-<div id="loading">BUILDING HONG KONG…</div>
+<div id="loading"><div id="ldBox"><div id="ldTxt">BUILDING HONG KONG…</div><div id="ldBar" role="progressbar" aria-label="Loading" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i></i></div><div id="ldPct">0%</div></div></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
@@ -992,8 +997,8 @@ const TEX={};
 async function loadGeo(progress){
   const get=async(u,t)=>{const r=await fetch(u);if(!r.ok)throw new Error(u+' '+r.status);const j=await r.json();if(t==='json')return j;const s=atob(j.b64);const u8=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u8[i]=s.charCodeAt(i);return u8.buffer};
   const tl=new THREE.TextureLoader();const tex=u=>new Promise((res,rej)=>tl.load(u,res,undefined,()=>rej(new Error(u))));
-  progress('LOADING TERRAIN');
-  const [tb,bb,roads,to,ti,streets,estates,lb,tla]=await Promise.all([get('assets/terrain.json'),get('assets/buildings.json'),get('assets/roads.json','json'),tex('assets/aerial_outer.jpg'),tex('assets/aerial_inner.jpg'),get('assets/streets.json','json').catch(()=>[]),get('assets/estates.json','json').catch(()=>[]),get('assets/lantau.json').catch(()=>null),tex('assets/aerial_lantau.jpg').catch(()=>null)]);
+  progress('LOADING TERRAIN',0);let ldN=0;const ldTick=v=>{progress('LOADING TERRAIN',.45*(++ldN)/9);return v};
+  const [tb,bb,roads,to,ti,streets,estates,lb,tla]=await Promise.all([get('assets/terrain.json'),get('assets/buildings.json'),get('assets/roads.json','json'),tex('assets/aerial_outer.jpg'),tex('assets/aerial_inner.jpg'),get('assets/streets.json','json').catch(()=>[]),get('assets/estates.json','json').catch(()=>[]),get('assets/lantau.json').catch(()=>null),tex('assets/aerial_lantau.jpg').catch(()=>null)].map(p=>p.then(ldTick)));
   GEO.streets=streets;GEO.estates=estates;
   const hd=new Int32Array(tb,0,4);const nO=hd[0]*hd[1],nI=hd[2]*hd[3];
   const hO=new Int16Array(tb,16,nO),hI=new Int16Array(tb,16+nO*2,nI);
@@ -1046,7 +1051,7 @@ let paused=false;
    ===================================================================== */
 const canvas=document.getElementById('gl');
 let renderer;
-try{renderer=new THREE.WebGLRenderer({canvas,antialias:true,logarithmicDepthBuffer:true,powerPreference:'high-performance'})}catch(e){document.getElementById('loading').textContent='WEBGL IS NOT AVAILABLE IN THIS BROWSER';throw e}
+try{renderer=new THREE.WebGLRenderer({canvas,antialias:true,logarithmicDepthBuffer:true,powerPreference:'high-performance'})}catch(e){document.getElementById('ldTxt').textContent='WEBGL IS NOT AVAILABLE IN THIS BROWSER';throw e}
 renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));
 const scene=new THREE.Scene();
 const camera=new THREE.PerspectiveCamera(60,1,1,90000);
@@ -7890,10 +7895,14 @@ function frame(now,manual){
    BOOT
    ===================================================================== */
 async function boot(){
-  const ld=document.getElementById('loading');
-  try{await loadGeo(t=>ld.textContent=t)}catch(e){ld.textContent='COULD NOT LOAD MAP DATA. OPEN THIS PAGE FROM A WEB SERVER, NOT A FILE.';console.error(e);return}
-  ld.textContent='BUILDING HONG KONG…';await new Promise(r=>setTimeout(r,20));
-  buildTerrain();buildRoads();buildLandmarks();buildCity();buildHappyValley();buildOceanPark();buildBigBuddha();buildPeak();buildStreetScene();buildBillboards();buildAirport();buildGSE();buildPort();buildShips();buildRain();
+  const ld=document.getElementById('loading'),tx=document.getElementById('ldTxt'),bar=document.querySelector('#ldBar i'),pc=document.getElementById('ldPct'),pb=document.getElementById('ldBar');
+  const setP=(t,f)=>{if(t)tx.textContent=t;const v=Math.max(0,Math.min(100,Math.round(f*100)));bar.style.width=v+'%';pc.textContent=v+'%';pb.setAttribute('aria-valuenow',v)};
+  const paint=()=>new Promise(r=>requestAnimationFrame(()=>setTimeout(r,0)));
+  try{await loadGeo(setP)}catch(e){tx.textContent='COULD NOT LOAD MAP DATA. OPEN THIS PAGE FROM A WEB SERVER, NOT A FILE.';pb.hidden=pc.hidden=true;console.error(e);return}
+  // build steps run in order; the bar advances 45% to 100% and repaints between steps
+  const steps=[buildTerrain,buildRoads,buildLandmarks,buildCity,buildHappyValley,buildOceanPark,buildBigBuddha,buildPeak,buildStreetScene,buildBillboards,buildAirport,buildGSE,buildPort,buildShips,buildRain];
+  setP('BUILDING HONG KONG…',.45);await paint();
+  for(let i=0;i<steps.length;i++){steps[i]();setP(null,.45+.55*(i+1)/steps.length);await paint()}
   resize();showSetup();ld.hidden=true;
   requestAnimationFrame(frame);
 }

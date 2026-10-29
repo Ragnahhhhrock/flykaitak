@@ -1,5 +1,35 @@
 [
  {
+  "slug": "loading-progress-bar",
+  "title": "A progress bar while the sim loads",
+  "dek": "The loading screen now shows a bar and a percentage, so you can see how far along it is.",
+  "description": "Fly Kai Tak now shows a loading progress bar and percentage while the map downloads and the city is built.",
+  "tag": "Update",
+  "category": "site",
+  "keywords": [
+   "loading screen",
+   "progress bar",
+   "Fly Kai Tak",
+   "browser flight simulator"
+  ],
+  "hero": "loading-progress-bar",
+  "hero_alt": "The loading screen with the message Building Hong Kong, a green progress bar about two thirds full and a percentage under it.",
+  "hero_caption": "The loading screen part-way through building the city.",
+  "card_kicker": "SITE · UPDATE",
+  "card_title": "A progress bar while it loads",
+  "card_sub": "See how far along it is",
+  "card_image": "loading-progress-bar",
+  "card_focus": 50,
+  "zh": {
+   "title": "載入時有進度條",
+   "dek": "載入畫面而家有進度條同百分比，一眼就知載入到幾多。",
+   "description": "Fly Kai Tak 載入地圖同起城市時，而家會顯示進度條同百分比。",
+   "hero_alt": "載入畫面顯示「Building Hong Kong」字樣，下面有條約三分之二滿嘅綠色進度條同百分比。",
+   "hero_caption": "起城市途中嘅載入畫面。"
+  },
+  "date": "2026-10-30"
+ },
+ {
   "slug": "radio-voices-prerecorded",
   "title": "ATC voices are now pre-recorded",
   "dek": "Radio calls play from about 320 recorded pieces, so they start at once and never need a live voice service.",
