@@ -13,6 +13,7 @@ Usage:
   python3 tools/radio_presets.py build --via-worker    same, but through the deployed Worker's /tts route (no key needed;
                                                         the Worker limits new pieces per hour per IP: on 429, wait and run again)
   python3 tools/radio_presets.py build --force         record everything again (after changing a voice)
+  python3 tools/radio_presets.py build --digits-only   record only the number words again (after changing DIGIT_TEMPO)
 
 build needs ELEVENLABS_API_KEY in the environment (unless --via-worker). Voice IDs come from server/wrangler.toml.
 It is safe to run again: pieces that already have an MP3 are skipped.
@@ -25,6 +26,7 @@ import os
 import pathlib
 import re
 import socketserver
+import subprocess
 import sys
 import threading
 import time
@@ -42,6 +44,15 @@ NUMW = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", 
 def voices():
     t = (ROOT / "server" / "wrangler.toml").read_text()
     return {r: re.search(r"ELEVENLABS_VOICE_%s\s*=\s*\"([^\"]+)\"" % r, t).group(1) for r in ROLES}
+
+
+DIGIT_TEMPO = 1.3   # number words are read faster than phrases (ffmpeg atempo, pitch kept), so a call with many digits is not slow
+
+
+def speed_up(path):
+    tmp = str(path) + ".tmp.mp3"
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(path), "-af", "atempo=%s" % DIGIT_TEMPO, "-b:a", "64k", tmp], check=True)
+    os.replace(tmp, path)
 
 
 def fname(role, text):
@@ -214,7 +225,9 @@ def cmd_build(a):
     key = os.environ.get("ELEVENLABS_API_KEY")
     if not key and not a.via_worker:
         sys.exit("Set ELEVENLABS_API_KEY, or use --via-worker.")
-    todo = [(r, t) for r in ROLES for t in man[r] if a.force or not (OUT / fname(r, t)).exists()]
+    nums = set(NUMW + ["decimal"])
+    todo = [(r, t) for r in ROLES for t in man[r]
+            if (a.force or not (OUT / fname(r, t)).exists() or (a.digits_only and t in nums)) and (not a.digits_only or t in nums)]
     print("%d pieces to record" % len(todo))
     done = 0
     for r, t in todo:
@@ -232,6 +245,8 @@ def cmd_build(a):
             print("stopped at %s '%s': HTTP %d %s" % (r, t, e.code, body))
             break
         (OUT / f).write_bytes(audio)
+        if t in nums:
+            speed_up(OUT / f)
         idx[r + "|" + t] = f
         done += 1
         if done % 20 == 0:
@@ -257,6 +272,7 @@ def main():
     b = sub.add_parser("build")
     b.add_argument("--via-worker", action="store_true")
     b.add_argument("--force", action="store_true")
+    b.add_argument("--digits-only", action="store_true", help="record the number words again (after changing DIGIT_TEMPO)")
     a = ap.parse_args()
     {"list": cmd_list, "build": cmd_build}[a.cmd](a)
 
