@@ -397,7 +397,7 @@ video{display:block;width:100%;height:auto;background:#000;border:1px solid var(
 
 // ATC radio voices (ElevenLabs). The API key stays here as a Worker secret and never reaches the browser.
 const TTS_ROLES = new Set(['APP', 'TWR', 'YOU', 'OTH']);
-const TTS_HOURLY = 60;   // new (uncached) lines one visitor can ask for per hour; cached lines are free
+const TTS_HOURLY = 120;  // new (uncached) pieces one visitor can ask for per hour; cached pieces are free (the sim asks for a line in pieces)
 async function tts(req, env, json, cors) {
   const origin = req.headers.get('Origin') || '';
   if (!ORIGINS.includes(origin) && !/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return json({ error: 'forbidden' }, 403);

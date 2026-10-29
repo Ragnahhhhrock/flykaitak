@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<script>if(location.protocol==="http:"&&/(^|\.)flykaitak\.com$/.test(location.hostname))location.replace("https://flykaitak.com"+location.pathname+location.search+location.hash);</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ATC voices now use far fewer credits | Fly Kai Tak</title>
+<meta name="description" content="Fly Kai Tak ATC radio calls are now built from cached ElevenLabs pieces, cutting credit use, with the browser voice as the fallback.">
+<link rel="canonical" href="https://flykaitak.com/blog/radio-voices-in-pieces/">
+<meta name="theme-color" content="#0a1115">
+<meta name="color-scheme" content="dark">
+<meta name="author" content="Fly Kai Tak">
+<meta name="keywords" content="ATC radio, ElevenLabs, radio voices, Kai Tak, flight simulator voices">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="icon" href="/assets/brand/mark.svg" type="image/svg+xml">
+<link rel="icon" href="/assets/brand/favicon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="alternate" type="application/rss+xml" title="Fly Kai Tak blog" href="/blog/feed.xml">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Fly Kai Tak">
+<meta property="og:title" content="ATC voices now use far fewer credits | Fly Kai Tak">
+<meta property="og:description" content="Fly Kai Tak ATC radio calls are now built from cached ElevenLabs pieces, cutting credit use, with the browser voice as the fallback.">
+<meta property="og:url" content="https://flykaitak.com/blog/radio-voices-in-pieces/">
+<meta property="og:image" content="https://flykaitak.com/assets/blog/og/radio-voices-in-pieces.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="A 747 on the IGS 13 approach over Kowloon City, with the Approach call about the glidepath shown as a caption on the left.">
+<meta property="og:locale" content="en_GB">
+<meta property="article:published_time" content="2026-10-29">
+<meta property="article:modified_time" content="2026-10-29">
+<meta property="article:section" content="Controls &amp; Devices">
+<meta property="article:author" content="Fly Kai Tak">
+<meta property="article:tag" content="ATC radio">
+<meta property="article:tag" content="ElevenLabs">
+<meta property="article:tag" content="radio voices">
+<meta property="article:tag" content="Kai Tak">
+<meta property="article:tag" content="flight simulator voices">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ATC voices now use far fewer credits | Fly Kai Tak">
+<meta name="twitter:description" content="Fly Kai Tak ATC radio calls are now built from cached ElevenLabs pieces, cutting credit use, with the browser voice as the fallback.">
+<meta name="twitter:image" content="https://flykaitak.com/assets/blog/og/radio-voices-in-pieces.jpg">
+<meta name="twitter:image:alt" content="A 747 on the IGS 13 approach over Kowloon City, with the Approach call about the glidepath shown as a caption on the left.">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"ATC voices now use far fewer credits","description":"Fly Kai Tak ATC radio calls are now built from cached ElevenLabs pieces, cutting credit use, with the browser voice as the fallback.","image":["https://flykaitak.com/assets/blog/og/radio-voices-in-pieces.jpg","https://flykaitak.com/assets/blog/shots/radio-cheaper-voices.jpg"],"datePublished":"2026-10-29","dateModified":"2026-10-29","author":{"@type":"Organization","name":"Fly Kai Tak","url":"https://flykaitak.com/"},"publisher":{"@type":"Organization","name":"Fly Kai Tak","url":"https://flykaitak.com/","logo":{"@type":"ImageObject","url":"https://flykaitak.com/assets/brand/icon-512.png"}},"mainEntityOfPage":{"@type":"WebPage","@id":"https://flykaitak.com/blog/radio-voices-in-pieces/"},"keywords":"ATC radio, ElevenLabs, radio voices, Kai Tak, flight simulator voices","articleSection":"Controls & Devices","inLanguage":"en-GB","wordCount":232,"isPartOf":{"@type":"Blog","name":"Fly Kai Tak blog","url":"https://flykaitak.com/blog/"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Fly Kai Tak","item":"https://flykaitak.com/"},{"@type":"ListItem","position":2,"name":"Blog","item":"https://flykaitak.com/blog/"},{"@type":"ListItem","position":3,"name":"Controls & Devices","item":"https://flykaitak.com/blog/category/controls/"},{"@type":"ListItem","position":4,"name":"ATC voices now use far fewer credits","item":"https://flykaitak.com/blog/radio-voices-in-pieces/"}]}</script>
+<script>
+window.FKT_ANALYTICS={id:'G-7MNP3SBEF8',src:'/metrics/',fallback:'https://www.googletagmanager.com/gtag/js',hosts:['flykaitak.com','www.flykaitak.com']};
+(function(c){window.dataLayer=window.dataLayer||[];window.gtag=function(){dataLayer.push(arguments)};
+  if(!/^G-[A-Z0-9]{6,}$/.test(c.id)||c.id==='G-XXXXXXXXXX'||c.hosts.indexOf(location.hostname)<0)return;
+  function load(u,f){var s=document.createElement('script');s.async=true;s.src=u+(u.indexOf('?')<0?'?':'&')+'id='+c.id;if(f)s.onerror=f;document.head.appendChild(s)}
+  load(c.src,function(){load(c.fallback)});
+  gtag('js',new Date());gtag('config',c.id,{anonymize_ip:true});})(window.FKT_ANALYTICS);
+</script>
+<meta name="fkt-zh-title" content="ATC 聲音用少咗好多額度 | Fly Kai Tak">
+<script>try{if(localStorage.getItem('fkt-lang')==='zh')document.documentElement.setAttribute('data-lang','zh')}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=B612:wght@400;700&family=B612+Mono:wght@400;700&family=Noto+Serif+TC:wght@900&display=swap">
+<link rel="stylesheet" href="/assets/blog/blog.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="checkband" aria-hidden="true"></div>
+<header class="site"><div class="wrap">
+  <a class="brandlink" href="/" aria-label="Fly Kai Tak, play the simulator"><img src="/assets/brand/mark.svg" width="32" height="32" alt=""><span>Fly Kai Tak</span><span class="han" lang="zh-Hant" aria-hidden="true">啟德機場</span></a>
+  <nav aria-label="Main"><a href="/blog/" aria-current="page">Blog</a><a href="/shop/">Shop</a><a href="/">Play</a><button class="langtog" id="btnLang" type="button" aria-pressed="false" aria-label="Language: English / 廣東話" title="English / 廣東話"><span data-l="en" class="on">EN</span><span data-l="zh" lang="zh-HK">粵</span></button></nav>
+</div></header>
+<main id="main"><article>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Fly Kai Tak</a> / <a href="/blog/">Blog</a> / <a href="/blog/category/controls/" data-zh="操控同裝置">Controls &amp; Devices</a> / <span aria-current="page">Fix</span></nav>
+  <header class="post-head">
+    <p class="eyebrow"><span>Fix</span> &middot; <a href="/blog/category/controls/" data-zh="操控同裝置">Controls &amp; Devices</a></p>
+    <h1 data-zh="ATC 聲音用少咗好多額度">ATC voices now use far fewer credits</h1>
+    <p class="dek" data-zh="無線電通話分段保存再接合，隨機呼號唔使次次都生成新一句。">Radio calls are voiced in cached pieces, so random callsigns no longer mean a new line every time.</p>
+    <div class="byline"><time datetime="2026-10-29">29 October 2026</time><span>2 min read</span><span>Fly Kai Tak</span></div>
+  </header>
+  <section class="share share--top" aria-label="Share this post" data-share data-url="https://flykaitak.com/blog/radio-voices-in-pieces/" data-title="ATC voices now use far fewer credits" data-slug="radio-voices-in-pieces"><h2>Share this post</h2><ul><li><a data-method="x" href="https://twitter.com/intent/tweet?text=ATC%20voices%20now%20use%20far%20fewer%20credits%20%7C%20Fly%20Kai%20Tak&url=https%3A%2F%2Fflykaitak.com%2Fblog%2Fradio-voices-in-pieces%2F" target="_blank" rel="noopener noreferrer">Post on X</a></li><li><a data-method="facebook" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fflykaitak.com%2Fblog%2Fradio-voices-in-pieces%2F" target="_blank" rel="noopener noreferrer">Facebook</a></li><li><a data-method="reddit" href="https://www.reddit.com/submit?url=https%3A%2F%2Fflykaitak.com%2Fblog%2Fradio-voices-in-pieces%2F&title=ATC%20voices%20now%20use%20far%20fewer%20credits" target="_blank" rel="noopener noreferrer">Reddit</a></li><li><a data-method="linkedin" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fflykaitak.com%2Fblog%2Fradio-voices-in-pieces%2F" target="_blank" rel="noopener noreferrer">LinkedIn</a></li><li><a data-method="whatsapp" href="https://wa.me/?text=ATC%20voices%20now%20use%20far%20fewer%20credits%20%7C%20Fly%20Kai%20Tak%20https%3A%2F%2Fflykaitak.com%2Fblog%2Fradio-voices-in-pieces%2F" target="_blank" rel="noopener noreferrer">WhatsApp</a></li><li><a data-method="threads" href="https://www.threads.net/intent/post?text=ATC%20voices%20now%20use%20far%20fewer%20credits%20%7C%20Fly%20Kai%20Tak%20https%3A%2F%2Fflykaitak.com%2Fblog%2Fradio-voices-in-pieces%2F" target="_blank" rel="noopener noreferrer">Threads</a></li><li><a data-method="email" href="mailto:?subject=ATC%20voices%20now%20use%20far%20fewer%20credits&body=https%3A%2F%2Fflykaitak.com%2Fblog%2Fradio-voices-in-pieces%2F"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="m22 6-10 7L2 6"/></svg>Email</a></li><li hidden><button type="button" data-copy><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><span>Copy link</span></button></li><li hidden><button type="button" data-native><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg><span>Share&hellip;</span></button></li></ul></section>
+  <figure class="hero">
+    <img src="/assets/blog/shots/radio-cheaper-voices.jpg" width="1600" height="900" fetchpriority="high" alt="A 747 on the IGS 13 approach over Kowloon City, with the Approach call about the glidepath shown as a caption on the left." data-zh-alt="一架 747 喺九龍城上空進行 IGS 13 進場，左邊以字幕顯示進近管制有關下滑道嘅通話。">
+    <figcaption data-zh="同一句進近通話，而家由已保存嘅分段組成。">The same Approach call, now built from cached pieces.</figcaption>
+  </figure>
+  <div class="prose" data-lang="en">
+<p>The ATC radio voices now run on far fewer ElevenLabs credits, and they stay switched on for longer. Each call is voiced in pieces, and each piece is only ever generated once.</p>
+
+<h2>What changed</h2>
+<ul>
+  <li>A call such as "Harbour 837, check your height, you are below the glidepath" is split into its fixed phrase and its number groups (the callsign digits, runway, wind, QNH).</li>
+  <li>Each piece is generated once, kept on the server and kept in your browser for the rest of the session, then the pieces are joined into one call. Callsigns are random, so before this change every new callsign meant a brand-new line.</li>
+  <li>Quiet gaps at the start and end of each piece are trimmed, with a short pause where a comma or full stop falls.</li>
+  <li>The radio filter, static and squelch click are unchanged, and so are the captions.</li>
+</ul>
+
+<figure class="wide">
+  <img src="/assets/blog/shots/radio-cheaper-voices.jpg" width="1600" height="900" loading="lazy" alt="A 747 on the IGS 13 approach over Kowloon City, with the Approach call about the glidepath shown as a caption on the left.">
+  <figcaption>The same Approach call, now built from cached pieces.</figcaption>
+</figure>
+
+<h2>If the voice service runs out of credits</h2>
+<ul>
+  <li>The sim uses the browser's speech voice for that call, exactly as before.</li>
+  <li>After three voice-service errors in a row it stops asking for the rest of the session, so calls are not held up while it waits.</li>
+  <li>Very long calls with many numbers are still sent as one piece, so they sound smooth.</li>
+</ul>
+<p>The autopilot still lands in every weather preset, and flying with no input still ends in a crash.</p>
+  </div>
+  <div class="prose" data-lang="zh" lang="zh-HK">
+<p>無線電嘅 ATC 聲音而家用少好多 ElevenLabs 額度，開住嘅時間亦長咗。每一句通話會分段讀出，每一段只會生成一次。</p>
+
+<h2>有咩改變</h2>
+<ul>
+  <li>好似「Harbour 837, check your height, you are below the glidepath」呢類通話，會拆成固定句子同數字組（呼號數字、跑道、風、QNH）。</li>
+  <li>每一段只生成一次，保存喺伺服器，今次遊戲期間亦會留喺你嘅瀏覽器，然後將各段接成一句通話。呼號係隨機嘅，所以之前每個新呼號都要生成全新一句。</li>
+  <li>每段頭尾嘅靜音會剪走，逗號同句號位置會留一個短停頓。</li>
+  <li>無線電濾波、靜電聲同靜噪咔聲冇變，字幕都冇變。</li>
+</ul>
+
+<figure class="wide">
+  <img src="/assets/blog/shots/radio-cheaper-voices.jpg" width="1600" height="900" loading="lazy" alt="一架 747 喺九龍城上空進行 IGS 13 進場，左邊以字幕顯示進近管制有關下滑道嘅通話。">
+  <figcaption>同一句進近通話，而家由已保存嘅分段組成。</figcaption>
+</figure>
+
+<h2>如果語音服務額度用晒</h2>
+<ul>
+  <li>遊戲會照舊用返瀏覽器嘅語音讀嗰句通話。</li>
+  <li>連續三次語音服務出錯後，餘下嘅遊戲時間就唔再請求，唔會因為等候而拖慢通話。</li>
+  <li>數字好多嘅超長通話仍然當一段送出，咁樣聽落更順。</li>
+</ul>
+<p>自動駕駛喺所有天氣預設下都照樣降落，完全唔操作照樣會墜毀。</p>
+  </div>
+  <section class="share" aria-label="Share this post" data-share data-url="https://flykaitak.com/blog/radio-voices-in-pieces/" data-title="ATC voices now use far fewer credits" data-slug="radio-voices-in-pieces"><h2>Share this post</h2><ul><li><a data-method="x" href="https://twitter.com/intent/tweet?text=ATC%20voices%20now%20use%20far%20fewer%20credits%20%7C%20Fly%20Kai%20Tak&url=https%3A%2F%2Fflykaitak.com%2Fblog%2Fradio-voices-in-pieces%2F" target="_blank" rel="noopener noreferrer">Post on X</a></li><li><a data-method="facebook" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fflykaitak.com%2Fblog%2Fradio-voices-in-pieces%2F" target="_blank" rel="noopener noreferrer">Facebook</a></li><li><a data-method="reddit" href="https://www.reddit.com/submit?url=https%3A%2F%2Fflykaitak.com%2Fblog%2Fradio-voices-in-pieces%2F&title=ATC%20voices%20now%20use%20far%20fewer%20credits" target="_blank" rel="noopener noreferrer">Reddit</a></li><li><a data-method="linkedin" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fflykaitak.com%2Fblog%2Fradio-voices-in-pieces%2F" target="_blank" rel="noopener noreferrer">LinkedIn</a></li><li><a data-method="whatsapp" href="https://wa.me/?text=ATC%20voices%20now%20use%20far%20fewer%20credits%20%7C%20Fly%20Kai%20Tak%20https%3A%2F%2Fflykaitak.com%2Fblog%2Fradio-voices-in-pieces%2F" target="_blank" rel="noopener noreferrer">WhatsApp</a></li><li><a data-method="threads" href="https://www.threads.net/intent/post?text=ATC%20voices%20now%20use%20far%20fewer%20credits%20%7C%20Fly%20Kai%20Tak%20https%3A%2F%2Fflykaitak.com%2Fblog%2Fradio-voices-in-pieces%2F" target="_blank" rel="noopener noreferrer">Threads</a></li><li><a data-method="email" href="mailto:?subject=ATC%20voices%20now%20use%20far%20fewer%20credits&body=https%3A%2F%2Fflykaitak.com%2Fblog%2Fradio-voices-in-pieces%2F"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="m22 6-10 7L2 6"/></svg>Email</a></li><li hidden><button type="button" data-copy><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg><span>Copy link</span></button></li><li hidden><button type="button" data-native><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg><span>Share&hellip;</span></button></li></ul></section>
+  <aside class="cta" aria-label="Play Fly Kai Tak">
+    <span class="han" lang="zh-Hant" aria-hidden="true">啟德</span>
+    <strong>Fly the approach yourself</strong>
+    <p>It runs in your browser. Pick an aircraft, a time of day and the weather, then hit the checkerboard.</p>
+    <a class="btn go" href="/">Begin descent</a>
+  </aside>
+  <section class="more-posts"><h2 class="label" style="font-family:var(--f-num);font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);font-weight:400;margin:0 0 20px">More from the blog</h2><div class="cards">
+<a class="pcard" href="/blog/meet-the-voices-on-the-radio/">
+  <img src="/assets/blog/og/meet-the-voices-on-the-radio.jpg" width="1200" height="630" loading="lazy" alt="A 747 low over Kowloon City on the approach, with the Hong Kong Approach clearance shown as a caption on the left." data-zh-alt="一架 747 喺九龍城上空低飛進場，左邊以字幕顯示香港進近管制嘅許可。">
+  <div class="body">
+    <span class="catpill" data-zh="操控同裝置">Controls &amp; Devices</span>
+    <div class="meta">Update &middot; 22 October 2026</div>
+    <h3 data-zh="認識無線電入面嘅聲音">Meet the voices on the radio</h3>
+    <p data-zh="啟德無線電入面你會聽到邊個：香港進近管制 119.1、啟德塔台 118.7、你嘅覆誦同其他機組，同埋佢哋幾時講嘢。">Who you hear on the Kai Tak radio: Hong Kong Approach 119.1, Kai Tak Tower 118.7, your readbacks and other crews, and when each speaks.</p>
+    <span class="more">Read the post &rarr;</span>
+  </div>
+</a>
+<a class="pcard" href="/blog/radio-voices-elevenlabs/">
+  <img src="/assets/blog/og/radio-voices-elevenlabs.jpg" width="1200" height="630" loading="lazy" alt="A 747 on the IGS 13 approach over the harbour, with the Hong Kong Approach clearance shown as a caption on the left." data-zh-alt="一架 747 喺維港上空進行 IGS 13 進場，左邊以字幕顯示香港進近管制嘅許可。">
+  <div class="body">
+    <span class="catpill" data-zh="操控同裝置">Controls &amp; Devices</span>
+    <div class="meta">Feature &middot; 22 October 2026</div>
+    <h3 data-zh="無線電換上錄音室級聲音">ATC radio gets studio voices</h3>
+    <p data-zh="啟德無線電而家可以用 ElevenLabs 聲音讀出進近、塔台同其他機組嘅通話，用唔到就用返瀏覽器語音。">The Kai Tak ATC radio can now use ElevenLabs voices for Approach, Tower and other crews, with the browser voice as a fallback.</p>
+    <span class="more">Read the post &rarr;</span>
+  </div>
+</a>
+  </div></section>
+</div>
+</article></main>
+<footer class="foot"><div class="wrap">
+  <div class="row">
+    <span>&copy; Fly Kai Tak. <a href="https://malgordon.com" target="_blank" rel="noopener">Another Mal Gordon project</a></span>
+    <span><a href="mailto:contact@flykaitak.com">contact@flykaitak.com</a> &middot; <a href="/blog/feed.xml">RSS</a> &middot; <a href="https://www.facebook.com/flykaitak" target="_blank" rel="noopener">Facebook</a> &middot; <a href="https://www.instagram.com/flykaitak" target="_blank" rel="noopener">Instagram</a> &middot; <a href="https://github.com/Ragnahhhhrock/flykaitak" target="_blank" rel="noopener">GitHub</a></span>
+  </div>
+  <div>Map data &copy; Lands Department, HKSAR Government. Elevation: SRTM via AWS Terrain Tiles. Aircraft and liveries are not real airlines.</div>
+</div></footer>
+<script src="/assets/blog/lang.js"></script>
+<script>
+(function(){
+  document.querySelectorAll('[data-share]').forEach(function(box){
+    var url=box.getAttribute('data-url'),title=box.getAttribute('data-title'),slug=box.getAttribute('data-slug');
+    function track(m){try{window.gtag&&gtag('event','share',{method:m,content_type:'article',item_id:slug})}catch(e){}}
+    box.querySelectorAll('a[data-method]').forEach(function(a){a.addEventListener('click',function(){track(a.getAttribute('data-method'))})});
+    var copy=box.querySelector('[data-copy]');
+    if(copy){copy.parentNode.hidden=false;copy.addEventListener('click',function(){
+      function ok(){var zh=document.documentElement.getAttribute('data-lang')==='zh';var t=copy.querySelector('span');var o=t.textContent;t.textContent=zh?'已複製連結':'Link copied';copy.classList.add('done');track('copy_link');
+        setTimeout(function(){t.textContent=o;copy.classList.remove('done')},2200)}
+      if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(url).then(ok,function(){window.prompt(zh?'複製呢條連結':'Copy this link',url)})}
+      else{window.prompt(zh?'複製呢條連結':'Copy this link',url)}})}
+    var nat=box.querySelector('[data-native]');
+    if(nat&&navigator.share){nat.parentNode.hidden=false;nat.addEventListener('click',function(){
+      navigator.share({title:title,url:url}).then(function(){track('native')}).catch(function(){})})}
+  });
+})();
+</script>
+</body>
+</html>

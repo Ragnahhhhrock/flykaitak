@@ -1,0 +1,22 @@
+<p>The ATC radio voices now run on far fewer ElevenLabs credits, and they stay switched on for longer. Each call is voiced in pieces, and each piece is only ever generated once.</p>
+
+<h2>What changed</h2>
+<ul>
+  <li>A call such as "Harbour 837, check your height, you are below the glidepath" is split into its fixed phrase and its number groups (the callsign digits, runway, wind, QNH).</li>
+  <li>Each piece is generated once, kept on the server and kept in your browser for the rest of the session, then the pieces are joined into one call. Callsigns are random, so before this change every new callsign meant a brand-new line.</li>
+  <li>Quiet gaps at the start and end of each piece are trimmed, with a short pause where a comma or full stop falls.</li>
+  <li>The radio filter, static and squelch click are unchanged, and so are the captions.</li>
+</ul>
+
+<figure class="wide">
+  <img src="/assets/blog/shots/radio-cheaper-voices.jpg" width="1600" height="900" loading="lazy" alt="A 747 on the IGS 13 approach over Kowloon City, with the Approach call about the glidepath shown as a caption on the left.">
+  <figcaption>The same Approach call, now built from cached pieces.</figcaption>
+</figure>
+
+<h2>If the voice service runs out of credits</h2>
+<ul>
+  <li>The sim uses the browser's speech voice for that call, exactly as before.</li>
+  <li>After three voice-service errors in a row it stops asking for the rest of the session, so calls are not held up while it waits.</li>
+  <li>Very long calls with many numbers are still sent as one piece, so they sound smooth.</li>
+</ul>
+<p>The autopilot still lands in every weather preset, and flying with no input still ends in a crash.</p>

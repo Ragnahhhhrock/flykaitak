@@ -1,5 +1,36 @@
 [
  {
+  "slug": "radio-voices-in-pieces",
+  "title": "ATC voices now use far fewer credits",
+  "dek": "Radio calls are voiced in cached pieces, so random callsigns no longer mean a new line every time.",
+  "description": "Fly Kai Tak ATC radio calls are now built from cached ElevenLabs pieces, cutting credit use, with the browser voice as the fallback.",
+  "tag": "Fix",
+  "category": "controls",
+  "keywords": [
+   "ATC radio",
+   "ElevenLabs",
+   "radio voices",
+   "Kai Tak",
+   "flight simulator voices"
+  ],
+  "hero": "radio-cheaper-voices",
+  "hero_alt": "A 747 on the IGS 13 approach over Kowloon City, with the Approach call about the glidepath shown as a caption on the left.",
+  "hero_caption": "The same Approach call, now built from cached pieces.",
+  "card_kicker": "CONTROLS · FIX",
+  "card_title": "ATC voices use far fewer credits",
+  "card_sub": "Calls built from cached pieces",
+  "card_image": "radio-cheaper-voices",
+  "card_focus": 50,
+  "zh": {
+   "title": "ATC 聲音用少咗好多額度",
+   "dek": "無線電通話分段保存再接合，隨機呼號唔使次次都生成新一句。",
+   "description": "啟德無線電通話而家由已保存嘅 ElevenLabs 分段組成，用少咗額度，用唔到就用返瀏覽器語音。",
+   "hero_alt": "一架 747 喺九龍城上空進行 IGS 13 進場，左邊以字幕顯示進近管制有關下滑道嘅通話。",
+   "hero_caption": "同一句進近通話，而家由已保存嘅分段組成。"
+  },
+  "date": "2026-10-29"
+ },
+ {
   "slug": "747-upper-deck-windows-match-the-cabin",
   "title": "747-400 upper-deck windows now match the cabin windows",
   "dek": "The upper-deck windows are the same size as the main-deck passenger windows.",
