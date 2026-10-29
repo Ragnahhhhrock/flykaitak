@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Pre-record the ATC radio pieces so the sim never has to call ElevenLabs while you fly.
 
-The sim builds every radio call from pieces (fixed phrases and single number words, see radioParts in index.html).
+The sim builds every radio call from pieces (fixed phrases and numbers read as digits, see radioParts in index.html).
 This tool finds every piece the sim can say, records each one once and writes assets/radio/*.mp3 plus
 assets/radio/index.json, which the sim loads at start. A piece missing from the index still works through the
 Worker's /tts route (if set up), then the browser voice.
@@ -12,8 +12,8 @@ Usage:
   python3 tools/radio_presets.py build                 record every piece in the manifest that has no MP3 yet
   python3 tools/radio_presets.py build --via-worker    same, but through the deployed Worker's /tts route (no key needed;
                                                         the Worker limits new pieces per hour per IP: on 429, wait and run again)
-  python3 tools/radio_presets.py build --force         record everything again (after changing a voice)
-  python3 tools/radio_presets.py build --digits-only   record only the number words again (after changing DIGIT_TEMPO)
+  python3 tools/radio_presets.py build --force         record everything again (after changing a voice or a TEMPO)
+  python3 tools/radio_presets.py build --numbers-only  record only the number groups again (after changing NUM_TEMPO)
 
 build needs ELEVENLABS_API_KEY in the environment (unless --via-worker). Voice IDs come from server/wrangler.toml.
 It is safe to run again: pieces that already have an MP3 are skipped.
@@ -38,7 +38,6 @@ OUT = ROOT / "assets" / "radio"
 WORKER = "https://flykaitak-scores.malgordonperth.workers.dev/tts"
 WX = ["clear", "rain", "typhoon", "storm", "lowcloud", "fog"]
 ROLES = ["APP", "TWR", "YOU", "OTH"]
-NUMW = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "niner"]
 
 
 def voices():
@@ -46,12 +45,18 @@ def voices():
     return {r: re.search(r"ELEVENLABS_VOICE_%s\s*=\s*\"([^\"]+)\"" % r, t).group(1) for r in ROLES}
 
 
-DIGIT_TEMPO = 1.3   # number words are read faster than phrases (ffmpeg atempo, pitch kept), so a call with many digits is not slow
+NUMW = {"zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "niner", "decimal"}
+NUM_TEMPO = 1.25    # number groups are read a little faster than phrases (ffmpeg atempo, pitch kept)
+PHRASE_TEMPO = 1.1  # and every phrase a touch faster than the raw recording, so stitched calls are brisk like real ATC
 
 
-def speed_up(path):
+def is_number(text):
+    return all(w in NUMW for w in text.split())
+
+
+def speed_up(path, tempo):
     tmp = str(path) + ".tmp.mp3"
-    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(path), "-af", "atempo=%s" % DIGIT_TEMPO, "-b:a", "64k", tmp], check=True)
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(path), "-af", "atempo=%s" % tempo, "-b:a", "64k", tmp], check=True)
     os.replace(tmp, path)
 
 
@@ -97,7 +102,9 @@ FLY = """
       if (i % 4 === 0) K.atc(1 / 30);
     }
   }
-  return window.__radioLog.map(l => ({who: l.who, text: l.text, parts: K.radioParts(l.text).map(p => p.t)}));
+  const wxp = K.WX[cfg.wx];
+  return {lines: window.__radioLog.map(l => ({who: l.who, text: l.text, parts: K.radioParts(l.text).map(p => p.t)})),
+          ctx: {W: K.windText(), V: K.visText(), q: String(K.QNH[cfg.wx]), wet: wxp.rain > .3 ? ', runway wet' : '', rid: K.LND.id}, calls: K.CALLS};
 }
 """
 
@@ -105,19 +112,24 @@ FLY = """
 OTHERS = ["Lantau 120", "Pearl 66", "Victoria 318", "Jade 7", "Lamma 905", "Tsing Yi 41"]   # OTHERS in index.html
 
 
-def extras():
+def extras(ctxs, calls):
     """Lines the autopilot and the scripted traffic rarely or never trigger (a low approach, a go-around, hold reasons,
-    runway-control calls to other crews), written out from the templates in atcUpdate, rcTower and chatter. Numbers
-    do not matter: they become single number words whatever they are. The sim's own radioParts splits them, so the
-    pieces match what it asks for in flight."""
+    runway-control calls to other crews), written out from the templates in atcUpdate, rcTower and chatter, with the
+    real wind, visibility and QNH of every weather and runway (ctxs) and every callsign number (calls). The sim's own
+    radioParts splits them, so the pieces match what it asks for in flight."""
     out = []
-    call, full, q = "Harbour 482", "Harbour 482 Heavy", "1013"
     whys = ["a departure is on the runway", "the runway is occupied", "traffic is on final"]
-    winds = ["wind variable at 3 knots", "wind 310 at 12 knots", "wind 310 at 12 knots gusting 20"]
-    vis = ["", ", visibility 800 metres"]
-    wet = ["", ", runway wet"]
-    for E in (False, True):
-        rid, sight = ("31", "Lei Yue Mun") if E else ("13", "checkerboard")
+    for n in calls:   # the callsign number, said by Approach, Tower and in your readbacks
+        for who in ("APP", "TWR", "YOU"):
+            out.append((who, "Harbour %d" % n))
+    for cs in OTHERS:
+        for who in ("APP", "TWR", "OTH"):
+            out.append((who, cs))
+    call, full = "Harbour 482", "Harbour 482 Heavy"
+    for c in ctxs:
+        W, V, q, wet, rid = c["W"], c["V"], c["q"], c["wet"], c["rid"]
+        E = rid == "31"
+        sight = "Lei Yue Mun" if E else "checkerboard"
         if E:
             out += [("APP", "%s, Hong Kong Approach, radar contact. Cleared visual approach runway 31, QNH %s. Report Lei Yue Mun in sight." % (full, q)),
                     ("YOU", "Cleared visual approach 31, QNH %s, will report Lei Yue Mun in sight, %s." % (q, call)),
@@ -132,14 +144,10 @@ def extras():
                 ("TWR", "%s, contact Approach 119.1." % call), ("YOU", "119.1, %s." % call),
                 ("APP", "%s, Hong Kong Approach, radar contact, QNH %s. Report leaving the zone." % (call, q)),
                 ("TWR", "%s, vacate when able and taxi to the apron. Contact Ground." % call), ("YOU", "Vacating, %s." % call),
-                ("TWR", "%s, you are not cleared for takeoff. Stop immediately." % full)]
-        for W in winds:
-            out.append(("TWR", "%s, Kai Tak Tower, %s. Report %s in sight." % (call, W, sight)))
-            for v in vis:
-                for w in wet:
-                    out.append(("TWR", "%s, %s%s%s, runway %s cleared to land." % (call, W, v, w, rid)))
-            for w in wet:
-                out.append(("TWR", "%s, Kai Tak Tower, %s%s, runway %s cleared for takeoff." % (full, W, w, rid)))
+                ("TWR", "%s, you are not cleared for takeoff. Stop immediately." % full),
+                ("TWR", "%s, Kai Tak Tower, %s. Report %s in sight." % (call, W, sight)),
+                ("TWR", "%s, %s%s%s, runway %s cleared to land." % (call, W, V, wet, rid)),
+                ("TWR", "%s, Kai Tak Tower, %s%s, runway %s cleared for takeoff." % (full, W, wet, rid))]
         for y in whys:
             out += [("TWR", "%s, continue approach, %s. Expect clearance when it is clear." % (call, y)),
                     ("TWR", "%s, go around, go around, %s.%s" % (call, y, " Turn left heading 255 toward Stonecutters." if E else "")),
@@ -152,12 +160,11 @@ def extras():
             out += [("TWR", "%s, go around, runway %s is not clear." % (cs, rid)), ("OTH", "Going around, %s." % cs),
                     ("OTH", "Cleared to land %s, %s." % (rid, cs)), ("TWR", "%s, continue approach, runway %s not yet clear." % (cs, rid)),
                     ("OTH", "Continue approach, %s." % cs), ("OTH", "Holding position, %s." % cs),
-                    ("TWR", "%s, runway %s, line up and wait." % (cs, rid)), ("OTH", "Cleared for takeoff %s, %s." % (rid, cs))]
+                    ("TWR", "%s, runway %s, line up and wait." % (cs, rid)), ("OTH", "Cleared for takeoff %s, %s." % (rid, cs)),
+                    ("TWR", "%s, Kai Tak Tower, %s, runway %s cleared to land." % (cs, W, rid)),
+                    ("TWR", "%s, %s, runway %s cleared for takeoff." % (cs, W, rid))]
             for y in whys:
                 out.append(("TWR", "%s, hold position, %s." % (cs, y)))
-            for W in winds:
-                out += [("TWR", "%s, Kai Tak Tower, %s, runway %s cleared to land." % (cs, W, rid)),
-                        ("TWR", "%s, %s, runway %s cleared for takeoff." % (cs, W, rid))]
     return out
 
 
@@ -167,6 +174,8 @@ def cmd_list(a):
     url = "http://127.0.0.1:%d/index.html" % srv.server_address[1]
     pieces = {r: set() for r in ROLES}
     lines = set()
+    ctxs = {}
+    calls = []
     configs = []
     for rwy in ("13", "31"):
         for game in ("approach", "free", "watch"):
@@ -187,20 +196,19 @@ def cmd_list(a):
             except Exception as e:  # keep going: one failed run should not lose the rest
                 print("run failed", cfg, str(e)[:120])
                 continue
-            for l in res:
+            ctxs[json.dumps(res["ctx"], sort_keys=True)] = res["ctx"]
+            calls = res["calls"]
+            for l in res["lines"]:
                 lines.add((l["who"], l["text"]))
                 for t in l["parts"]:
                     pieces[l["who"]].add(t)
-            print("%3d/%d %s %s %s %s -> %d lines, %d pieces so far" % (i + 1, len(configs), cfg["rwy"], cfg["game"], cfg["wx"], "", len(res), sum(len(v) for v in pieces.values())))
-        ex = extras()
+            print("%3d/%d %s %s %s -> %d lines, %d pieces so far" % (i + 1, len(configs), cfg["rwy"], cfg["game"], cfg["wx"], len(res["lines"]), sum(len(v) for v in pieces.values())))
+        ex = extras(list(ctxs.values()), calls)
         parts = pg.evaluate("(L) => L.map(l => window.__kt.radioParts(l[1]).map(p => p.t))", ex)
         for (who, text), ps in zip(ex, parts):
             lines.add((who, text))
             pieces[who].update(ps)
         b.close()
-    # every role can say every number word, whichever call it is reading
-    for r in ROLES:
-        pieces[r].update(NUMW + ["decimal"])
     man = {r: sorted(pieces[r]) for r in ROLES}
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "manifest.json").write_text(json.dumps(man, indent=1, ensure_ascii=False) + "\n")
@@ -225,9 +233,8 @@ def cmd_build(a):
     key = os.environ.get("ELEVENLABS_API_KEY")
     if not key and not a.via_worker:
         sys.exit("Set ELEVENLABS_API_KEY, or use --via-worker.")
-    nums = set(NUMW + ["decimal"])
     todo = [(r, t) for r in ROLES for t in man[r]
-            if (a.force or not (OUT / fname(r, t)).exists() or (a.digits_only and t in nums)) and (not a.digits_only or t in nums)]
+            if (a.force or not (OUT / fname(r, t)).exists() or a.numbers_only) and (not a.numbers_only or is_number(t))]
     print("%d pieces to record" % len(todo))
     done = 0
     for r, t in todo:
@@ -245,15 +252,19 @@ def cmd_build(a):
             print("stopped at %s '%s': HTTP %d %s" % (r, t, e.code, body))
             break
         (OUT / f).write_bytes(audio)
-        if t in nums:
-            speed_up(OUT / f)
+        speed_up(OUT / f, NUM_TEMPO if is_number(t) else PHRASE_TEMPO)
         idx[r + "|" + t] = f
         done += 1
         if done % 20 == 0:
             idx_path.write_text(json.dumps(idx, indent=0, ensure_ascii=False, sort_keys=True) + "\n")
             print("  %d/%d" % (done, len(todo)))
         time.sleep(0.15)
-    # index every piece whose MP3 exists (also ones recorded by an earlier run)
+    # index every piece whose MP3 exists (also ones recorded by an earlier run), and drop MP3s the manifest no longer uses
+    keep = {fname(r, t) for r in ROLES for t in man[r]}
+    for old in OUT.glob("*.mp3"):
+        if old.name not in keep:
+            old.unlink()
+    idx = {k: v for k, v in idx.items() if v in keep}
     for r in ROLES:
         for t in man[r]:
             if (OUT / fname(r, t)).exists():
@@ -272,7 +283,7 @@ def main():
     b = sub.add_parser("build")
     b.add_argument("--via-worker", action="store_true")
     b.add_argument("--force", action="store_true")
-    b.add_argument("--digits-only", action="store_true", help="record the number words again (after changing DIGIT_TEMPO)")
+    b.add_argument("--numbers-only", action="store_true", help="record only the number groups again (after changing NUM_TEMPO)")
     a = ap.parse_args()
     {"list": cmd_list, "build": cmd_build}[a.cmd](a)
 

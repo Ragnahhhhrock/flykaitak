@@ -2,7 +2,7 @@
  {
   "slug": "radio-voices-prerecorded",
   "title": "ATC voices are now pre-recorded",
-  "dek": "Radio calls play from about 170 recorded pieces, so they start at once and never need a live voice service.",
+  "dek": "Radio calls play from about 320 recorded pieces, so they start at once and never need a live voice service.",
   "description": "Fly Kai Tak ATC radio calls now play from pre-recorded voice pieces, with digits read one at a time, instead of live requests.",
   "tag": "Update",
   "category": "controls",
@@ -23,7 +23,7 @@
   "card_focus": 50,
   "zh": {
    "title": "ATC 聲音改為預先錄好",
-   "dek": "無線電通話由約 170 段錄音播放，即刻開聲，唔使再靠即時語音服務。",
+   "dek": "無線電通話由約 320 段錄音播放，即刻開聲，唔使再靠即時語音服務。",
    "description": "啟德無線電通話而家用預先錄好嘅語音分段播放，數字逐個讀出，唔使即時請求。",
    "hero_alt": "一架 747 喺九龍城上空進行 IGS 13 進場，左邊以字幕顯示進近管制有關下滑道嘅通話。",
    "hero_caption": "同一句進近通話，而家用預先錄好嘅分段播放。"
