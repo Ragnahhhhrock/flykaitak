@@ -9,12 +9,17 @@ The radio lines (Approach 119.1, Tower 118.7, your readbacks, other crews) can b
 4. Store the API key as a secret: `npx wrangler secret put ELEVENLABS_API_KEY`
 5. `npx wrangler deploy` from `server/`.
 
-## Credit use
-A line is voiced in pieces, not whole (`radioParts` in `index.html`): fixed phrases and number groups (callsign digits, runway, wind, QNH) each go to `/tts` on their own, are cached in R2 by the Worker and kept decoded in the tab, then are trimmed of edge silence and stitched into one clip. Callsigns are random, so whole lines were almost never cache hits. Short words ("at") join the number after them; a line that splits into more than 8 pieces is sent whole. If the voice service fails 3 times in a row with a 502 (for example, out of credits), the sim stops asking for the rest of the session and uses the browser voice.
+## Pre-recorded pieces (no live calls)
+A radio call is built from pieces (`radioParts` in `index.html`): fixed phrases, and each digit as its own word ("one one eight decimal seven", "niner"), like real ATC read-outs. `tools/radio_presets.py` finds every piece the sim can say and records it once into `assets/radio/` (one MP3 per piece, listed in `assets/radio/index.json`). The sim loads the index at start and plays a call by stitching the MP3s together (edge silence trimmed, a short pause at commas and full stops), through the usual radio filter. Playing a call makes no ElevenLabs or Worker request.
+
+- `python3 tools/radio_presets.py list` flies the sim headless (both runways, every game mode and weather, a few random seeds), adds the rare calls from templates (low on the glidepath, go-around, hold reasons, runway-control calls to other crews) and writes `assets/radio/manifest.json`. About 175 pieces and 3,500 characters in total.
+- `ELEVENLABS_API_KEY=... python3 tools/radio_presets.py build` records every piece without an MP3 (voices from `server/wrangler.toml`). `build --via-worker` does it through the deployed Worker with no key (the Worker limits new pieces per hour per IP; on a 429 wait and run again). Safe to re-run; `--force` records everything again after a voice change.
+- Run `list` again after changing any radio wording in `index.html`, then `build`, and commit `assets/radio/`.
+- A piece missing from the index (a new line nobody has recorded yet) is asked of the Worker's `/tts` route if that is set up (cached in R2, a few credits), then the browser voice. If the voice service fails 3 times in a row with a 502 (for example out of credits) the sim stops asking for the rest of the session.
 
 ## Notes
 - Model defaults to `eleven_turbo_v2_5` (set `ELEVENLABS_MODEL` to change it). Output is `mp3_44100_64`.
 - Text sent is the spoken form (digits as words, "niner"), at most 400 characters. Only `APP`, `TWR`, `YOU`, `OTH` are accepted, from flykaitak.com or localhost.
-- A visitor can cause at most 120 new (uncached) pieces an hour; cached pieces are free. Each new piece is a billed ElevenLabs request, so repeated pieces cost nothing. Redeploy the Worker (`npx wrangler deploy` from `server/`) for the higher limit; the piece caching itself is client-side and works with the old Worker.
+- Through `/tts` a visitor can cause at most 120 new (uncached) pieces an hour; cached pieces are free. With the pre-recorded pieces in `assets/radio/` this route is only a fallback. Redeploy the Worker (`npx wrangler deploy` from `server/`) for the higher limit.
 - The sim waits up to 2.5 s for a line before falling back to the browser voice for that call.
 - Replay videos still use captions and squelch only; the voices are not rendered into them.

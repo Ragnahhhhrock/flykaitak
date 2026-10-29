@@ -5529,38 +5529,42 @@ function radioClear(){sfx.voiceStop();RAD.q.length=0;RAD.cur=null;RAD.gap=0;for(
 function radioReset(){radioClear();RAD.flags={};RAD.next=28;RAD.lastChk=-99;RAD.nChk=0;RAD.call='Harbour '+(100+Math.floor(Math.random()*890))}
 function radioSay(who,text){
   if(!CFG.radio||mode!=='fly')return;
+  if(window.__radioLog)window.__radioLog.push({who,text});
   if(RAD.q.length>=6){const i=RAD.q.findIndex(m=>m.who==='OTH');RAD.q.splice(i>=0?i:0,1)}
   const m={who,text,a:{s:'none'}};radioFetch(m);RAD.q.push(m);
 }
 // ElevenLabs voices through the Worker's /tts route (server/worker.js). Any failure, or no key set up, falls back to the browser voice.
-// A line is voiced in pieces (fixed phrases and number groups, e.g. the callsign digits) so each piece is generated once, cached in the Worker and kept decoded in this tab, then stitched into one clip. That keeps ElevenLabs credit use low even though callsigns are random.
-const TTSC=new Map();
+// Radio lines are built from pieces: fixed phrases and single number words ("niner"), like real ATC read-outs. The pieces are pre-recorded MP3s in assets/radio/ (made once by tools/radio_presets.py, listed in assets/radio/index.json), so playing a call needs no live request. A piece that is not in the index is asked of the Worker's /tts route (ElevenLabs, cached there) if that is set up; any failure falls back to the browser voice for that call.
+const TTSC=new Map();let RIDX=null;
+function radioIndex(){return RIDX||(RIDX=fetch('assets/radio/index.json').then(r=>r.ok?r.json():{}).catch(()=>({})))}
 function radioParts(t){
   const out=[];
   for(const p of t.split(/(\d+(?:\.\d+)?)/)){
     if(!p)continue;
-    if(/\d/.test(p)){out.push({t:p,pause:.06});continue}
+    if(/\d/.test(p)){const w=spokenize(p).split(' ');w.forEach((x,i)=>out.push({t:x,pause:i<w.length-1?.03:.06}));continue}
     if(/^\s*[,.;:]/.test(p)&&out.length)out[out.length-1].pause=.22;
     const s=p.replace(/^[\s,.;:]+/,'').replace(/\s+/g,' ').trim();
     if(!/[A-Za-z]/.test(s))continue;
-    out.push({t:s,pause:/[,.;:?!]$/.test(s)?.22:.06});
+    const q=spokenize(s);out.push({t:q,pause:/[,.;:?!]$/.test(q)?.22:.06});
   }
-  for(let i=out.length-2;i>=0;i--)if(!/\d/.test(out[i].t)&&out[i].t.length<=4&&/^\d/.test(out[i+1].t)){out[i+1].t=out[i].t+' '+out[i+1].t;out.splice(i,1)}   // a short word like "at" goes with the number after it
   return out;
 }
 function ttsPiece(role,text){
   const k=role+'|'+text;let p=TTSC.get(k);if(p)return p;
-  if(TTSC.size>400)TTSC.clear();
-  p=fetch(FKT_API+'/tts',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({role,text})})
-    .then(r=>{if(r.status===503){RAD.tts=false;throw 0}if(!r.ok){if(r.status===502&&(RAD.bad=(RAD.bad||0)+1)>=3)RAD.tts=false;throw 0}RAD.bad=0;return r.arrayBuffer()})   // 3 voice-service errors in a row (e.g. out of credits): stop asking this session
+  if(TTSC.size>600)TTSC.clear();
+  p=radioIndex().then(ix=>{
+    if(ix[k])return fetch('assets/radio/'+ix[k]).then(r=>{if(!r.ok)throw 0;return r.arrayBuffer()});
+    if(RAD.tts===false||typeof FKT_API==='undefined'||!FKT_API)throw 0;
+    return fetch(FKT_API+'/tts',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({role,text})})
+      .then(r=>{if(r.status===503){RAD.tts=false;throw 0}if(!r.ok){if(r.status===502&&(RAD.bad=(RAD.bad||0)+1)>=3)RAD.tts=false;throw 0}RAD.bad=0;return r.arrayBuffer()})})   // 3 voice-service errors in a row (e.g. out of credits): stop asking this session
     .then(ab=>sfx.decode(ab)).then(b=>sfx.trim(b));
   TTSC.set(k,p);p.catch(()=>TTSC.delete(k));return p;
 }
 function radioFetch(m){
-  if(RAD.tts===false||!CFG.sound||CFG.tour||!sfx.ready()||typeof FKT_API==='undefined'||!FKT_API)return;
+  if(!CFG.sound||CFG.tour||!sfx.ready())return;
   m.a.s='load';
-  const parts=radioParts(m.text),segs=parts.length>=2&&parts.length<=8?parts:[{t:m.text,pause:0}];
-  Promise.all(segs.map(s=>ttsPiece(m.who,spokenize(s.t)))).then(bs=>bs.length>1?sfx.stitch(bs,segs.map(s=>s.pause)):bs[0])
+  const segs=radioParts(m.text);if(!segs.length){m.a.s='fail';return}
+  Promise.all(segs.map(s=>ttsPiece(m.who,s.t))).then(bs=>bs.length>1?sfx.stitch(bs,segs.map(s=>s.pause)):bs[0])
     .then(b=>{m.a.s='ok';m.a.b=b}).catch(()=>{m.a.s='fail'});
 }
 function radioShow(m){
@@ -7896,7 +7900,7 @@ const fontsReady=document.fonts&&document.fonts.ready?Promise.race([document.fon
 fontsReady.then(()=>setTimeout(boot,30));
 
 /* test hooks */
-window.__kt={gradeLanding,hsShowResult,radioSay,radioPump,RAD,setWreck,WRECK,SF,SF_ROUTES,sfSeek,sfAdvance,penTour,HELI,HPAD,updateHeli,hPlan,hHerm,hGround,masts:()=>apronMasts,port:()=>PORT,geo:()=>GEO,inPortYard,PORT_QUAYS,PORT_BLD,SHIPS,FAIRWAYS,waterAt,laneOffset,rwP,STAND_C,CTY,stS,NCG,ESTATES,RC,rcEv,rcVac,rcRoll,rcStrip,rcClearBy,rcTakeoffWhy,rcView,rcPlayer,CYC,onPaved,gearPaved,rwS,LINKS,rb:()=>rbMasts13,bat:buildingAt,setHour,solarState,SUN_DIR,MOON_DIR,ENV,AI,CFG,ST,COACH,LESSON,keys,coachUpdate,coachResync,coachGo,rwL,get PATH(){return PATH},LND,setRunway,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,{rwy:'13',conc:false,tour:false},o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.tour?'tour':CFG.conc&&CFG.game==='watch'?'watchC':CFG.rwy==='31'&&CFG.game!=='learn'?CFG.game+'31':CFG.game}]`).checked=true;hourIn.value=o.hour!==undefined?o.hour:CFG.night?22:15;showHour();startFlight()},
+window.__kt={gradeLanding,hsShowResult,radioSay,radioParts,radioFetch,ttsPiece,sfx,radioPump,RAD,setWreck,WRECK,SF,SF_ROUTES,sfSeek,sfAdvance,penTour,HELI,HPAD,updateHeli,hPlan,hHerm,hGround,masts:()=>apronMasts,port:()=>PORT,geo:()=>GEO,inPortYard,PORT_QUAYS,PORT_BLD,SHIPS,FAIRWAYS,waterAt,laneOffset,rwP,STAND_C,CTY,stS,NCG,ESTATES,RC,rcEv,rcVac,rcRoll,rcStrip,rcClearBy,rcTakeoffWhy,rcView,rcPlayer,CYC,onPaved,gearPaved,rwS,LINKS,rb:()=>rbMasts13,bat:buildingAt,setHour,solarState,SUN_DIR,MOON_DIR,ENV,AI,CFG,ST,COACH,LESSON,keys,coachUpdate,coachResync,coachGo,rwL,get PATH(){return PATH},LND,setRunway,AC,terrainAt,setPeakClock:(t)=>{peakClock=t},chk:()=>buildCheckerboard.mesh,sp:()=>SPOTS,RAD,atc:atcUpdate,start:(o={})=>{Object.assign(CFG,{rwy:'13',conc:false,tour:false},o);document.querySelector(`input[name=ac][value=${CFG.ac}]`).checked=true;document.querySelector(`input[name=wx][value=${CFG.wx}]`).checked=true;document.getElementById('optAP').checked=CFG.ap;document.querySelector(`input[name=game][value=${CFG.tour?'tour':CFG.conc&&CFG.game==='watch'?'watchC':CFG.rwy==='31'&&CFG.game!=='learn'?CFG.game+'31':CFG.game}]`).checked=true;hourIn.value=o.hour!==undefined?o.hour:CFG.night?22:15;showHour();startFlight()},
   run:(sec)=>{if(CFG.game==='watch'){ST.t+=sec;return {t:ST.t}}const h=1/120;for(let i=0;i<sec*120&&!ST.ended;i++){physStep(h);if(i%60===0)recordHistory();if(i%12===0)aiTick()}return {ended:ST.ended,td:ST.td,t:ST.t,x:ST.x,y:ST.y,z:ST.z,V:ST.V/KT,d:PATH.pts[ST.pi].d}},
   get mode(){return mode},updateAI,AIC,footOf,GSE,GSE_KINDS,AIRBOX,rwS,BGRID,updateGSE,gseLamps:()=>gseLamps,fpAt,fpDist,hitOn,damageModel,aiHit,DEBRIS,EMIT,aiTick,ctl(){return aiControl},get CFG(){return CFG},frame:(now)=>frame(now,true),get FOCUS(){return FOCUS},step:()=>physStep(1/120),rwS,setZoom:z=>{CFG.zoom=z},get AI(){return AI},get GSE(){return GSE},get BRIDGE(){return BRIDGE},STAND_S,STAND_TY,lineupT,lineupT31,arrivalPts,tugAt,standL,PB,get parked(){return parked},gseAt:(t)=>{ST.t=t;updateGSE();return GSE.map(e=>({k:e.kind,x:e.p.x,z:e.p.z,psi:e.p.psi,lift:e.lift}))},get shipLights(){return shipLights},get PORT(){return PORT},get SHIPS(){return SHIPS},get DISP(){return DISP},get deck(){return deckGroup},get streetCam(){return STREET_CAM},get BB(){return BB},get water(){return water},get camera(){return camera},get nStreets(){return STREETS.length},drawDisplays,look,setView,terrainAt,buildingAt,groundInfo};
 })();
