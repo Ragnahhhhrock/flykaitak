@@ -613,9 +613,7 @@ body.bigmap #radio{top:calc(env(safe-area-inset-top,0px) + 396px)}
 <div id="coach" hidden>
   <div class="coach-top"><span class="eyebrow" id="coachStep"></span><button class="btn" id="coachSkip" type="button">Skip lesson</button></div>
   <h3 id="coachTitle" aria-live="polite"></h3>
-  <p id="coachBody"></p>
   <div id="coachMeter" hidden><div class="cm-row"><span id="cmLabel"></span><b id="cmVal"></b></div><div class="cm-bar" id="cmBar"><i class="cm-zone" id="cmZone"></i><i class="cm-fill" id="cmFill"></i></div></div>
-  <p class="coach-warn" id="coachWarn" hidden></p>
   <div class="coach-actions" id="coachActions" hidden></div>
   <div class="coach-dots" id="coachDots" aria-hidden="true"></div>
 </div>
@@ -752,7 +750,6 @@ body.bigmap #radio{top:calc(env(safe-area-inset-top,0px) + 396px)}
         <a class="coffee" id="btnCoffee" href="#" target="_blank" rel="noopener" hidden>☕ Buy me a coffee · $5 AUD</a>
       </div>
       <p class="later">Aerial imagery and map data © Lands Department, HKSAR Government (CSDI open data). Elevation: SRTM via AWS Terrain Tiles. Modern imagery is corrected to 1998 around Kai Tak, West Kowloon and the Central waterfront.</p>
-      <p class="foot">Contact: <a href="mailto:contact@flykaitak.com">contact@flykaitak.com</a></p>
     </div>
   </div>
   <div id="concModal" hidden role="dialog" aria-modal="true" aria-labelledby="cmTitle">
@@ -788,7 +785,6 @@ body.bigmap #radio{top:calc(env(safe-area-inset-top,0px) + 396px)}
           <div class="cm-key" id="cmKey"></div>
           <div class="res-actions"><button class="go" id="cmFly" type="button"><span data-p="concorde">Fly Concorde</span><span data-p="an225" hidden>Fly the An-225</span></button><button class="btn" id="cmCopy" type="button">Copy key</button></div>
         </div>
-        <p class="cm-msg" id="cmMsg" role="status"></p>
         <div class="res-actions"><button class="btn" id="cmClose" type="button">Not now</button></div>
       </div>
     </div>
@@ -806,12 +802,9 @@ body.bigmap #radio{top:calc(env(safe-area-inset-top,0px) + 396px)}
         </div>
         <div class="grade" id="resGrade">A</div>
       </div>
-      <p class="why" id="resWhy"></p>
       <dl class="stats" id="resStats"></dl>
       <div class="hs" id="resHs" hidden>
-        <p class="hs-hint" id="hsHint" hidden></p>
         <div class="hs-me hs-ask"><label for="hsName" id="hsLbl">Enter your name</label><input id="hsName" maxlength="12" placeholder="YOUR NAME" autocomplete="off" autocapitalize="characters" spellcheck="false"><button class="btn" id="hsSave" type="button">Save</button><span class="hs-rank" id="hsRank"></span></div>
-        <p class="hs-note" id="hsNote"></p>
         <div id="hsResTable"></div>
       </div>
       <div class="res-actions">
@@ -859,14 +852,12 @@ body.bigmap #radio{top:calc(env(safe-area-inset-top,0px) + 396px)}
     <div class="checkband" aria-hidden="true"></div>
     <div class="rpx-body">
       <div class="rpx-head"><h2 id="rpxH">Save your replay</h2><button class="btn rpx-x" id="rpxClose" type="button" aria-label="Close">✕</button></div>
-      <p class="rpx-sub" id="rpxSub"></p>
       <div class="rpx-fmt" id="rpxFmt" role="radiogroup" aria-label="Video format">
         <label><input type="radio" name="rpxf" value="land" checked><span class="rpx-ico land" aria-hidden="true"></span><span><b id="rpxF_land">Landscape 16:9</b><i id="rpxI_land">YouTube, X, Facebook</i></span></label>
         <label><input type="radio" name="rpxf" value="port"><span class="rpx-ico port" aria-hidden="true"></span><span><b id="rpxF_port">Portrait 9:16</b><i id="rpxI_port">Reels, Shorts, TikTok</i></span></label>
       </div>
       <div class="rpx-stage" id="rpxStage" hidden><canvas id="rpxCv"></canvas><video id="rpxVid" playsinline muted loop controls hidden></video></div>
       <div class="rpx-prog" id="rpxProg" hidden><div class="rpx-bar"><i id="rpxBar"></i></div><span id="rpxPct">0%</span><button class="btn" id="rpxCancel" type="button">Cancel</button></div>
-      <p class="rpx-msg" id="rpxMsg" hidden></p>
       <div class="rpx-actions" id="rpxGo"><button class="go" id="rpxMake" type="button"><span id="rpxMakeL">Make video</span></button></div>
       <div class="rpx-actions" id="rpxDone" hidden>
         <button class="go" id="rpxDl" type="button"><span id="rpxDlL">Download MP4</span></button>
@@ -7470,7 +7461,7 @@ async function entReturn(){let q;try{q=new URLSearchParams(location.search)}catc
   entOpen('',p);entMsg(cmT('Confirming your payment…','確認緊你嘅付款…'),true);
   let r;for(let i=0;i<4;i++){r=await entPost('/store/claim',{session:sid,product:p},15000);if(r.j&&r.j.ok)break;if(r.status!==402)break;await new Promise(f=>setTimeout(f,3000))}
   if(r.j&&r.j.ok){entUnlocked(r.j.key,'purchase',p);return}
-  entMsg(cmT('We could not confirm that payment. If you were charged, email contact@flykaitak.com with your Stripe receipt and we will sort it out.','確認唔到呢筆付款。如果你已經被收費，請用 Stripe 收據電郵 contact@flykaitak.com，我哋會跟進。'))}
+  entMsg(cmT('We could not confirm that payment. If you were charged, get in touch with your Stripe receipt and we will sort it out.','確認唔到呢筆付款。如果你已經被收費，請帶同 Stripe 收據聯絡我哋，我哋會跟進。'))}
 // the user's start buttons: a premium aircraft is checked with the server first
 async function entStart(){const el=document.querySelector('input[name=ac]:checked'),k=el&&el.value,p=prodOf(k);if(!p){startFlight();return}
   ENTS[p].had=false;if(await entVerify(p)){startFlight();return}

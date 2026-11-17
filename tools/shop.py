@@ -142,7 +142,7 @@ def page(items):
   <div class="prods">
 {body}
   </div>
-  <p class="small" data-zh="所有設計都係 Fly Kai Tak 原創，冇用任何真實航空公司嘅名或標誌。有問題？電郵 contact@flykaitak.com。">All designs are original to Fly Kai Tak and use no real airline names or logos. Questions? Email contact@flykaitak.com.</p>
+  <p class="small" data-zh="所有設計都係 Fly Kai Tak 原創，冇用任何真實航空公司嘅名或標誌。有問題？可以用有貨通知我掣，或者喺 GitHub 開 issue。">All designs are original to Fly Kai Tak and use no real airline names or logos. Questions? Use the Notify me buttons or open an issue on GitHub.</p>
   <aside class="cta"><span class="han" lang="zh-Hant" aria-hidden="true">啟德</span><strong data-zh="親自飛一次進場">Fly the approach yourself</strong><p data-zh="喺瀏覽器就玩得，免費。">It runs in your browser, free.</p><a class="btn go" href="/" data-zh="開始下降">Begin descent</a></aside>
 </section>
 </main>
