@@ -15,7 +15,7 @@ Usage:
   python3 tools/radio_presets.py build --force         record everything again (after changing a voice or a TEMPO)
   python3 tools/radio_presets.py build --numbers-only  record only the number groups again (after changing NUM_TEMPO)
 
-build needs ELEVENLABS_API_KEY in the environment (unless --via-worker). Voice IDs come from server/wrangler.toml.
+build needs ELEVENLABS_API_KEY in the environment (unless --via-worker). Voice IDs are in voices() below. The ElevenLabs subscription was cancelled in Nov 2026, so build no longer works without a new key.
 It is safe to run again: pieces that already have an MP3 are skipped.
 """
 import argparse
@@ -41,8 +41,11 @@ ROLES = ["APP", "TWR", "YOU", "OTH"]
 
 
 def voices():
-    t = (ROOT / "server" / "wrangler.toml").read_text()
-    return {r: re.search(r"ELEVENLABS_VOICE_%s\s*=\s*\"([^\"]+)\"" % r, t).group(1) for r in ROLES}
+    # the ElevenLabs voices the pieces in assets/radio/ were recorded with (kept here since the Worker no longer carries them)
+    return {"APP": "onwK4e9ZLuTAKqWW03F9",   # Hong Kong Approach: Daniel
+            "TWR": "pqHfZKP75CvOlQylNhV4",   # Kai Tak Tower: Bill
+            "YOU": "iP95p4xoKVk53GoZ742B",   # your readbacks: Chris
+            "OTH": "IKne3meq5aSn9XLyUdCD"}   # other crews: Charlie
 
 
 NUMW = {"zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "niner", "decimal"}

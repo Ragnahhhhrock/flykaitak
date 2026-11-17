@@ -5539,7 +5539,7 @@ function radioSay(who,text){
   if(RAD.q.length>=6){const i=RAD.q.findIndex(m=>m.who==='OTH');RAD.q.splice(i>=0?i:0,1)}
   const m={who,text,a:{s:'none'}};radioFetch(m);RAD.q.push(m);
 }
-// ElevenLabs voices through the Worker's /tts route (server/worker.js). Any failure, or no key set up, falls back to the browser voice.
+// Radio calls play pre-recorded pieces from assets/radio/. A piece that isn't recorded falls back to the browser voice.
 // Radio lines are built from pieces: fixed phrases and numbers read as digits ("one one eight decimal seven", "niner"), like real ATC read-outs. The pieces are pre-recorded MP3s in assets/radio/ (made once by tools/radio_presets.py, listed in assets/radio/index.json), so playing a call needs no live request. A piece that is not in the index is asked of the Worker's /tts route (ElevenLabs, cached there) if that is set up; any failure falls back to the browser voice for that call.
 const TTSC=new Map();let RIDX=null;
 function radioIndex(){return RIDX||(RIDX=fetch('assets/radio/index.json').then(r=>r.ok?r.json():{}).catch(()=>({})))}
@@ -5560,9 +5560,8 @@ function ttsPiece(role,text){
   if(TTSC.size>600)TTSC.clear();
   p=radioIndex().then(ix=>{
     if(ix[k])return fetch('assets/radio/'+ix[k]).then(r=>{if(!r.ok)throw 0;return r.arrayBuffer()});
-    if(RAD.tts===false||typeof FKT_API==='undefined'||!FKT_API)throw 0;
-    return fetch(FKT_API+'/tts',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({role,text})})
-      .then(r=>{if(r.status===503){RAD.tts=false;throw 0}if(!r.ok){if(r.status===502&&(RAD.bad=(RAD.bad||0)+1)>=3)RAD.tts=false;throw 0}RAD.bad=0;return r.arrayBuffer()})})   // 3 voice-service errors in a row (e.g. out of credits): stop asking this session
+    throw 0;   // a piece nobody has recorded: the browser voice reads this call
+  })
     .then(ab=>sfx.decode(ab)).then(b=>sfx.trim(b));
   TTSC.set(k,p);p.catch(()=>TTSC.delete(k));return p;
 }
